@@ -1,0 +1,21 @@
+.mask-style {
+    -webkit-mask-image: url('/path-to-your-mask-image.png');
+    mask-image: url('/path-to-your-mask-image.png');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+
+.leva__root {
+    display: none !important;
+  }
+
+.swiper-wrapper{
+    display: flex ;
+    flex-direction: row !important;
+   
+}
