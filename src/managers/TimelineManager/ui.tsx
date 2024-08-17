@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Timeline } from './components/timeline'
-import { TimelineAction, TimelineRow } from './interface/action';
 import { cloneDeep } from 'lodash';
-import { TimelineEffect } from './interface/effect';
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward } from "@geist-ui/icons"
-import { TimelineState } from './interface/timeline';
 import { AnimatePresence, motion } from "framer-motion"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from 'vxengine/components/shadcn/select';
 import { Slider } from 'vxengine/components/shadcn/slider';
 import { Switch } from 'vxengine/components/shadcn/switch';
+import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
+import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 
 export interface CustomTimelineAction extends TimelineAction {
     data: {
@@ -22,28 +21,30 @@ export interface CusTomTimelineRow extends TimelineRow {
 }
 
 
-const mockData: TimelineRow[] = [{
-    id: "0",
-    actions: [
-        {
-            id: "action00",
-            start: 0,
-            end: 2,
-            effectId: "effect0",
-        },
-    ],
-},
-{
-    id: "1",
-    actions: [
-        {
-            id: "action10",
-            start: 1.5,
-            end: 5,
-            effectId: "effect1",
-        }
-    ],
-}]
+const mockData: TimelineRow[] = [
+    {
+        id: "0",
+        actions: [
+            {
+                id: "action00",
+                start: 0,
+                end: 2,
+                effectId: "effect0",
+            },
+        ],
+    },
+    {
+        id: "1",
+        actions: [
+            {
+                id: "action10",
+                start: 1.5,
+                end: 5,
+                effectId: "effect1",
+            }
+        ],
+    }
+]
 
 const defaultEditorData = cloneDeep(mockData);
 
@@ -61,28 +62,6 @@ const mockEffect: Record<string, TimelineEffect> = {
 export const scaleWidth = 160;
 export const scale = 5;
 export const startLeft = 20;
-
-// export const TimelineSelect = () => {
-//     return (
-//         <>
-//             <Select>
-//                 <SelectTrigger className="w-[180px]">
-//                     <SelectValue placeholder="Select a fruit" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                     <SelectGroup>
-//                         <SelectLabel>Fruits</SelectLabel>
-//                         <SelectItem value="apple">Apple</SelectItem>
-//                         <SelectItem value="banana">Banana</SelectItem>
-//                         <SelectItem value="blueberry">Blueberry</SelectItem>
-//                         <SelectItem value="grapes">Grapes</SelectItem>
-//                         <SelectItem value="pineapple">Pineapple</SelectItem>
-//                     </SelectGroup>
-//                 </SelectContent>
-//             </Select>
-//         </>
-//     )
-// }
 
 const TimelineEditor: React.FC<{
     visible: boolean,
@@ -192,14 +171,31 @@ const TimelineEditor: React.FC<{
                     </button>
                 </div>
             </div>
-            <Timeline
-                editorData={data}
-                effects={mockEffect}
-                ref={timelineState}
-                onChange={(data) => setData(data as CusTomTimelineRow[])}
-                dragLine={snap}
-                scale={scale}
-            />
+            <div className='relative flex flex-row max-h-fit overflow-hidden'>
+                <div
+                    style={{ overflow: 'overlay' }}
+                    onScroll={(e) => {
+                        const target = e.target as HTMLDivElement;
+                        timelineState.current.setScrollTop(target.scrollTop);
+                    }}
+                    className={'timeline-list'}
+                >
+                    {data.map((item) => {
+                        return (
+                            <div className="timeline-list-item" key={item.id}>
+                                <div className="text">{`row${item.id}`}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <Timeline
+                    effects={mockEffect}
+                    ref={timelineState}
+                    onChange={(data) => setData(data as CusTomTimelineRow[])}
+                    dragLine={snap}
+                    scale={scale}
+                />
+            </div>
             <AnimatePresence>
                 {visible && (
                     <motion.div className='relative px-2 flex flex-row gap-2 font-sans-menlo'
@@ -277,7 +273,7 @@ export const TimelineTools: React.FC<{
                         <button className={"bg-neutral-950 border pb-[5px] hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer "}
 
                         >
-                            <Navigation2 fill='white' className='scale-75 ml-[-1px] mt-[-1px]  rotate-[-45deg]'/>
+                            <Navigation2 fill='white' className='scale-75 ml-[-1px] mt-[-1px]  rotate-[-45deg]' />
                         </button>
                         <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer "}
 

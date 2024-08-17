@@ -1,10 +1,10 @@
 import { Interactable } from '@interactjs/core/Interactable';
 import { DragEvent, ResizeEvent } from '@interactjs/types/index';
 import React, { ReactElement, useEffect, useImperativeHandle, useRef } from 'react';
-import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from '../../interface/const';
 import { useAutoScroll } from './hooks/useAutoScroll';
 import { InteractComp } from './interactable';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
+import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from 'vxengine/AnimationEngine/interface/const';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -324,6 +324,8 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     //#endregion
 
     return (
+      // FIXME: idk
+      // @ts-expect-error
       <InteractComp
         interactRef={interactable}
         draggable={enableDragging}

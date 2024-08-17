@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react';
 import { OnScrollParams } from 'react-virtualized';
-import { ITimelineEngine } from '..';
-import { Emitter } from '../engine/emitter';
-import { EventTypes } from '../engine/events';
+import { IAnimationEngine } from '../engine';
+import { Emitter } from '../emitter';
+import { EventTypes } from '../events';
 import { TimelineAction, TimelineRow } from './action';
 import { TimelineEffect } from './effect';
 export * from './action';
 export * from './effect';
+
 export interface EditData {
   /**
    *@description Timeline editing data
@@ -74,7 +75,7 @@ export interface EditData {
   /**
    *@description timeline runner, if not passed, the built-in runner will be used
    */
-  engine?: ITimelineEngine;
+  engine?: IAnimationEngine;
   /**
    *@description Custom action area rendering
    */

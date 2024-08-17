@@ -1,13 +1,13 @@
 import React, { FC, useLayoutEffect, useRef, useState } from 'react';
-import { TimelineAction, TimelineRow } from '../../interface/action';
-import { CommonProp } from '../../interface/common_prop';
-import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID } from '../../interface/const';
 import { prefix } from '../../utils/deal_class_prefix';
 import { getScaleCountByPixel, parserTimeToPixel, parserTimeToTransform, parserTransformToTime } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
 import { RndDragCallback, RndDragEndCallback, RndDragStartCallback, RndResizeCallback, RndResizeEndCallback, RndResizeStartCallback, RowRndApi } from '../row_rnd/row_rnd_interface';
 import { DragLineData } from './drag_lines';
 import './edit_action.scss';
+import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
+import { TimelineAction, TimelineRow } from 'vxengine/AnimationEngine/interface/action';
+import { DEFAULT_MOVE_GRID, DEFAULT_ADSORPTION_DISTANCE } from 'vxengine/AnimationEngine/interface/const';
 
 export type EditActionProps = CommonProp & {
   row: TimelineRow;

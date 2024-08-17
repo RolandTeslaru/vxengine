@@ -3,12 +3,7 @@ import React, { useRef, useState } from "react"
 import { ObjectList, ObjectProperties, ObjectTransformControls } from "../managers/ObjectManager/ui"
 // import { ObjectManagerUI } from "../managers/ObjectManager"
 import { MenubarUI } from "../components/ui/MenubarUI"
-import { SourceManagerUI } from "../managers/SourceManager/ui"
-import { Timeline } from "../managers/TimelineManager/components/timeline"
-import { TimelineRow } from "../managers/TimelineManager/interface/action"
-import { TimelineEffect } from "../managers/TimelineManager/interface/effect"
-import { cloneDeep } from 'lodash';
-import TimelineManagerUI, { TimelineTools } from "../managers/TimelineManager/ui"
+import { TimelineTools } from "../managers/TimelineManager/ui"
 import {motion} from "framer-motion"
 import TimelineEditor from "../managers/TimelineManager/ui"
 

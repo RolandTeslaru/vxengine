@@ -1,21 +1,21 @@
 import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollSync } from 'react-virtualized';
-import { ITimelineEngine, TimelineEngine } from '../engine/engine';
-import { MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from '../interface/const';
-import { TimelineEditor, TimelineRow, TimelineState } from '../interface/timeline';
+import { IAnimationEngine, AnimationEngine } from 'vxengine/AnimationEngine/engine';
 import { checkProps } from '../utils/check_props';
 import { getScaleCountByRows, parserPixelToTime, parserTimeToPixel } from '../utils/deal_data';
 import { Cursor } from './cursor/cursor';
 import { EditArea } from './edit_area/edit_area';
 import './timeline.scss';
 import { TimeArea } from './time_area/time_area';
+import { TimelineEditor, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
+import { MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
+import { useVXEngine } from 'vxengine/engine';
 
 export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, ref) => {
   const checkedProps = checkProps(props);
   const { style } = props;
   let {
     effects,
-    editorData: data,
     scrollTop,
     autoScroll,
     hideCursor,
@@ -26,42 +26,36 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
     minScaleCount,
     maxScaleCount,
     onChange,
-    engine,
     autoReRender = true,
     onScroll: onScrollVertical,
   } = checkedProps;
 
-  const engineRef = useRef<ITimelineEngine>(engine || new TimelineEngine());
+  const { VX_AnimationEngine } = useVXEngine();
   const domRef = useRef<HTMLDivElement>();
   const areaRef = useRef<HTMLDivElement>();
   const scrollSync = useRef<ScrollSync>();
 
   // Editor data
-  const [editorData, setEditorData] = useState(data);
-  // scale quantity
+  const [editorData, setEditorData] = useState<TimelineRow[]>(() => {
+    return VX_AnimationEngine.currentTimeline?.rows || [];
+  });
   const [scaleCount, setScaleCount] = useState(MIN_SCALE_COUNT);
-  // cursor distance
   const [cursorTime, setCursorTime] = useState(START_CURSOR_TIME);
-  // Is it running?
-  const [isPlaying, setIsPlaying] = useState(false);
-  // Current timeline width
   const [width, setWidth] = useState(Number.MAX_SAFE_INTEGER);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   /** Monitor data changes */
-  useLayoutEffect(() => {
-    handleSetScaleCount(getScaleCountByRows(data, { scale }));
-    setEditorData(data);
-  }, [data, minScaleCount, maxScaleCount, scale]);
+  
   useEffect(() => {
-    engineRef.current.effects = effects;
+    VX_AnimationEngine.effects = effects;
   }, [effects]);
 
   useEffect(() => {
-    engineRef.current.data = editorData;
+    VX_AnimationEngine.data = editorData;
   }, [editorData]);
 
   useEffect(() => {
-    autoReRender && engineRef.current.reRender();
+    autoReRender && VX_AnimationEngine.reRender();
   }, [editorData]);
 
   // deprecated
@@ -79,8 +73,8 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
   const handleEditorDataChange = (editorData: TimelineRow[]) => {
     const result = onChange(editorData);
     if (result !== false) {
-      engineRef.current.data = editorData;
-      autoReRender && engineRef.current.reRender();
+      VX_AnimationEngine.data = editorData;
+      autoReRender && VX_AnimationEngine.reRender();
     }
   };
 
@@ -96,8 +90,8 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
 
     let result = true;
     if (updateTime) {
-      result = engineRef.current.setTime(time);
-      autoReRender && engineRef.current.reRender();
+      result = VX_AnimationEngine.setTime(time);
+      autoReRender && VX_AnimationEngine.reRender();
     }
     result && setCursorTime(time);
     return result;
@@ -118,9 +112,9 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
     };
     const handlePlay = () => setIsPlaying(true);
     const handlePaused = () => setIsPlaying(false);
-    engineRef.current.on('setTimeByTick', handleTime);
-    engineRef.current.on('play', handlePlay);
-    engineRef.current.on('paused', handlePaused);
+    VX_AnimationEngine.on('setTimeByTick', handleTime);
+    VX_AnimationEngine.on('play', handlePlay);
+    VX_AnimationEngine.on('paused', handlePaused);
   }, []);
 
   // ref data
@@ -129,21 +123,21 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
       return domRef.current;
     },
     get listener() {
-      return engineRef.current;
+      return VX_AnimationEngine;
     },
     get isPlaying() {
-      return engineRef.current.isPlaying;
+      return VX_AnimationEngine.isPlaying;
     },
     get isPaused() {
-      return engineRef.current.isPaused;
+      return VX_AnimationEngine.isPaused;
     },
-    setPlayRate: engineRef.current.setPlayRate.bind(engineRef.current),
-    getPlayRate: engineRef.current.getPlayRate.bind(engineRef.current),
+    setPlayRate: VX_AnimationEngine.setPlayRate.bind(VX_AnimationEngine),
+    getPlayRate: VX_AnimationEngine.getPlayRate.bind(VX_AnimationEngine),
     setTime: (time: number) => handleSetCursor({ time }),
-    getTime: engineRef.current.getTime.bind(engineRef.current),
-    reRender: engineRef.current.reRender.bind(engineRef.current),
-    play: (param: Parameters<TimelineState['play']>[0]) => engineRef.current.play({ ...param }),
-    pause: engineRef.current.pause.bind(engineRef.current),
+    getTime: VX_AnimationEngine.getTime.bind(VX_AnimationEngine),
+    reRender: VX_AnimationEngine.reRender.bind(VX_AnimationEngine),
+    play: (param: Parameters<TimelineState['play']>[0]) => VX_AnimationEngine.play({ ...param }),
+    pause: VX_AnimationEngine.pause.bind(VX_AnimationEngine),
     setScrollLeft: (val) => {
       scrollSync.current && scrollSync.current.setState({ scrollLeft: Math.max(val, 0) });
     },
@@ -167,7 +161,7 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
   }, []);
 
   return (
-    <div ref={domRef} className={"h-[600px] bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden " + " " + `${PREFIX} ${disableDrag ? PREFIX + '-disable' : ''}`}>
+    <div ref={domRef} className={"max-h-[600px] h-[420px] bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden " + " " + `${PREFIX} ${disableDrag ? PREFIX + '-disable' : ''}`}>
       <ScrollSync ref={scrollSync}>
         {({ scrollLeft, scrollTop, onScroll }) => (
           <>

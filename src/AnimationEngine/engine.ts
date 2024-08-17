@@ -1,5 +1,5 @@
-import { TimelineAction, TimelineRow } from '../interface/action';
-import { TimelineEffect } from '../interface/effect';
+import { IAnimationTimeline, TimelineAction, TimelineRow } from './interface/action';
+import { TimelineEffect } from './interface/effect';
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
 
@@ -7,7 +7,12 @@ const PLAYING = 'playing';
 const PAUSED = 'paused';
 type PlayState = 'playing' | 'paused';
 
-export interface ITimelineEngine extends Emitter<EventTypes> {
+// Actions and Effects:
+// 	•	Actions (TimelineAction): These represent individual events or changes that occur at specific times within the timeline (e.g., moving an object, changing a color).
+// 	•	Effects (TimelineEffect): These are the actual visual or data changes that occur when actions are triggered. Effects are mapped to actions via an effectId.
+// 	3.	Data Structures:
+
+export interface IAnimationEngine extends Emitter<EventTypes> {
   readonly isPlaying: boolean;
   readonly isPaused: boolean;
   effects: Record<string, TimelineEffect>;
@@ -37,14 +42,15 @@ export interface ITimelineEngine extends Emitter<EventTypes> {
  * timeline player
  * Can be run independently of the editor
  * @export
- * @class TimelineEngine
+ * @class AnimationEngine
  * @extends {Emitter<EventTypes>}
  */
-export class TimelineEngine extends Emitter<EventTypes> implements ITimelineEngine {
+export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   constructor() {
     super(new Events());
   }
-
+  private _timelines: IAnimationTimeline[] = [];
+  currentTimeline: IAnimationTimeline | null = null;
   /** requestAnimationFrame timerId */
   private _timerId: number;
 
@@ -81,12 +87,47 @@ export class TimelineEngine extends Emitter<EventTypes> implements ITimelineEngi
   set effects(effects: Record<string, TimelineEffect>) {
     this._effectMap = effects;
   }
+
+  // FIXME: change this stupid naming scheme
+  // data represents the current timeline, this having multiple rows
+  // This generates the rows in the timleine editor for example
   set data(data: TimelineRow[]) {
+    if (!this.currentTimeline) {
+      throw new Error("VXAnimationEngine: No timeline is currently loaded.");
+    }
+
     if (this.isPlaying) this.pause();
-    this._dealData(data);
+
+    // Update the rows of the current timeline
+    this.currentTimeline.rows = data;
+
+    this._dealData(this.currentTimeline);
     this._dealClear();
     this._dealEnter(this._currentTime);
   }
+
+
+  // Set the current timeline by ID
+  setCurrentTimeline(timelineId: string) {
+    const selectedTimeline = this._timelines.find(timeline => timeline.id === timelineId);
+
+    if (!selectedTimeline) {
+      throw new Error(`Timeline with id ${timelineId} not found`);
+    }
+
+    this.currentTimeline = selectedTimeline;
+    this.data = selectedTimeline.rows; // Initialize with the rows of the selected timeline
+  }
+
+  // Load all timelines
+  loadTimelines(timelines: IAnimationTimeline[]) {
+    this._timelines = timelines;
+    console.log("AnimationEngine: Loading timeline ", timelines[0])
+    if (timelines.length > 0) {
+      this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
+    }
+  }
+
 
   /**
    * Set playback rate
@@ -330,19 +371,27 @@ export class TimelineEngine extends Emitter<EventTypes> implements ITimelineEngi
   }
 
   /** Process data */
-  private _dealData(data: TimelineRow[]) {
+  private _dealData(timeline: IAnimationTimeline) {
     const actions: TimelineAction[] = [];
-    data.map((row) => {
+
+    // Iterate over each row in the timeline
+    timeline.rows.forEach((row) => {
+      // Add all actions from this row to the actions array
       actions.push(...row.actions);
     });
+
+    // Sort actions by their start time
     const sortActions = actions.sort((a, b) => a.start - b.start);
+
     const actionMap: Record<string, TimelineAction> = {};
     const actionSortIds: string[] = [];
 
+    // Map actions by their IDs and collect their sorted IDs
     sortActions.forEach((action) => {
       actionSortIds.push(action.id);
       actionMap[action.id] = { ...action };
     });
+
     this._actionMap = actionMap;
     this._actionSortIds = actionSortIds;
   }

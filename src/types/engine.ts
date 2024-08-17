@@ -1,4 +1,5 @@
 import { EffectComposer } from "three-stdlib";
+import { AnimationEngine } from "vxengine/AnimationEngine/engine";
 
 export interface EngineContextProps {
     onScreenTransform: boolean
@@ -6,5 +7,12 @@ export interface EngineContextProps {
     mountEngineUI: boolean
     composer: React.MutableRefObject<EffectComposer | null>;
     transformMode: "translate" | "rotate" | "scale"
-    setTransformMode: (value: "translate" | "rotate" | "scale") => void
+    setTransformMode: (value: "translate" | "rotate" | "scale") => void;
+    VX_AnimationEngine: AnimationEngine;
+}
+
+export interface VXEngineProviderProps {
+    children: React.ReactNode;
+    mount?: boolean;
+    animations_json: any;
 }

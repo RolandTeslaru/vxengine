@@ -36,6 +36,7 @@ export interface TimelineAction {
 export interface TimelineRow {
   /**Action row id */
   id: string;
+  name?: string;
   /**Row action list */
   actions: TimelineAction[];
   /**Customize row height */
@@ -44,4 +45,10 @@ export interface TimelineRow {
   selected?: boolean;
   /**Extended class name of row */
   classNames?: string[];
+}
+
+export interface IAnimationTimeline {
+  name: string;        // Name of the animation timeline
+  id: string;          // Unique identifier for the timeline
+  rows: TimelineRow[]; // Array of rows, each controlling different properties
 }

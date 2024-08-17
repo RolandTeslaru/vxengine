@@ -1,4 +1,4 @@
-import { TimelineEngine } from "../engine/engine";
+import { AnimationEngine } from "../engine"
 import { TimelineAction } from "./action";
 
 export interface TimelineEffect {
@@ -20,7 +20,7 @@ export interface EffectSourceParam {
   /**Action effect */
   effect: TimelineEffect,
   /**Run engine */
-  engine: TimelineEngine,
+  engine: AnimationEngine,
 }
 
 /**

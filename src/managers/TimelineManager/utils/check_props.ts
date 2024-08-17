@@ -1,6 +1,6 @@
-import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE, DEFAULT_SCALE_SPLIT_COUNT, DEFAULT_SCALE_WIDTH, DEFAULT_START_LEFT, MIN_SCALE_COUNT } from "../interface/const";
-import { TimelineEditor } from "../interface/timeline";
+import { TimelineEditor } from "vxengine/AnimationEngine/interface/timeline";
 import ConsoleLogger from "./logger";
+import { DEFAULT_SCALE, DEFAULT_SCALE_SPLIT_COUNT, DEFAULT_SCALE_WIDTH, DEFAULT_START_LEFT, MIN_SCALE_COUNT, DEFAULT_ROW_HEIGHT } from "vxengine/AnimationEngine/interface/const";
 const logger = new ConsoleLogger('timeline');
 
 export function checkProps(props: TimelineEditor): TimelineEditor {
