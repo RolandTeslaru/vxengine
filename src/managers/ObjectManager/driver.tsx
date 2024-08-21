@@ -7,18 +7,18 @@ import { useVXObjectStore } from "vxengine/store";
 
 export const ObjectManagerDriver = () => {
 
-    const { selectObjects, selectedObjectIds, getObjectById } = useVXObjectStore();
+    const { selectObjects, selectedObjects, selectedObjectKeys } = useVXObjectStore();
     const { transformMode } = useVXEngine();
     const firstSelectedObject = useVXObjectStore().selectedObjects[0]?.ref.current
 
     return (
         <>
-            {process.env.NODE_ENV === 'development' && (
+            {/* {process.env.NODE_ENV === 'development' && (
                 <UiInterface/>
-            )}
-            {selectedObjectIds.length === 1 &&
+            )} */}
+            {selectedObjectKeys.length === 1 &&
                 <TransformControls
-                    object={getObjectById(selectedObjectIds[0]).ref.current}
+                    object={selectedObjects[0].ref.current}
                     mode={transformMode}
                     
                 />

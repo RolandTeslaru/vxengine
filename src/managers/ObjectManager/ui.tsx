@@ -71,35 +71,39 @@ export const ObjectManagerUI = () => {
 
 export const ObjectList = () => {
   const [visible, setVisible] = useState(true)
-  const { objects, selectedObjectIds, selectObjects, hoveredObject } = useVXObjectStore();
+  const { objects, selectedObjectKeys, selectObjects, hoveredObject } = useVXObjectStore();
 
   const [lastSelectedIndex, setLastSelectedIndex] = React.useState(null);
-
+  
   const handleObjectClick = (event, obj: StoredObjectProps, index: number) => {
     event.preventDefault();
+
+    // Convert objects to an array to get a slice
+    const objectArray = Object.values(objects);
+
     // Click + SHIFT key
     if (event.shiftKey && lastSelectedIndex !== null) {
       const start = Math.min(lastSelectedIndex, index);
       const end = Math.max(lastSelectedIndex, index);
-      const newSelectedObjectIds = objects.slice(start, end + 1).map(obj => obj.id);
-      selectObjects([...newSelectedObjectIds, ...selectedObjectIds]);
+      const newSelectedObjectKeys = objectArray.slice(start, end + 1).map((obj: StoredObjectProps) => obj.vxkey);
+      selectObjects([...newSelectedObjectKeys, ...selectedObjectKeys]);
     }
     // Click + CTRL key ( command key on macOS )
     else if (event.metaKey || event.ctrlKey) {
-      let newSelectedIds: string[] = [];
-      if (selectedObjectIds.includes(obj.id)) {
-        newSelectedIds = selectedObjectIds.filter(id => id !== obj.id);
+      let newSelectedKeys: string[] = [];
+      if (selectedObjectKeys.includes(obj.vxkey)) {
+        newSelectedKeys = selectedObjectKeys.filter(key => key !== obj.vxkey);
       } else {
-        newSelectedIds = [...selectedObjectIds, obj.id];
+        newSelectedKeys = [...selectedObjectKeys, obj.vxkey];
       }
-      selectObjects(newSelectedIds);
+      selectObjects(newSelectedKeys);
     }
     // Click
     else {
-      selectObjects([obj.id])
+      selectObjects([obj.vxkey]);
     }
     setLastSelectedIndex(index);
-  }
+  };
 
   return (
     <motion.div className='bg-neutral-950 overflow-hidden min-w-60 h-fit  bg-opacity-70 gap-2 flex flex-col rounded-2xl p-2'
@@ -114,18 +118,18 @@ export const ObjectList = () => {
       </div>
       <div className='border-t flex flex-col pt-2 gap-2 border-neutral-700 '>
         <div className='text-xs flex flex-row text-neutral-400'>
-          {selectedObjectIds.length === 1 && (
-            <p className='text-xs text-neutral-400' >{selectedObjectIds.length} object selected</p>
+          {selectedObjectKeys.length === 1 && (
+            <p className='text-xs text-neutral-400' >{selectedObjectKeys.length} object selected</p>
           )}
-          {selectedObjectIds.length > 1 && (
-            <p className='text-xs  text-neutral-400' >{selectedObjectIds.length} objects selected</p>
+          {selectedObjectKeys.length > 1 && (
+            <p className='text-xs  text-neutral-400' >{selectedObjectKeys.length} objects selected</p>
           )}
-          <p className='ml-auto text-xs'>{objects.length} objects</p>
+          <p className='ml-auto text-xs'> objects</p>
         </div>
         <div className='flex flex-col'>
-          {objects.map((obj, index) => {
-            const isSelected = selectedObjectIds.includes(obj.id);
-            const isHovered = hoveredObject?.id === obj.id
+          {Object.values(objects).map((obj: StoredObjectProps, index:number) => {
+            const isSelected = selectedObjectKeys.includes(obj.vxkey);
+            const isHovered = hoveredObject?.vxkey === obj.vxkey
             return (
               <div key={index} className={'h-9 my-1 border flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer ' +
                 `${isHovered && " !bg-blue-800 !border-blue-600"} ${isSelected && " !bg-blue-600 !border-neutral-200"} `}

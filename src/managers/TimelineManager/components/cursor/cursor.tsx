@@ -6,6 +6,9 @@ import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
 import { RowRndApi } from '../row_rnd/row_rnd_interface';
 import './cursor.scss';
+import { handleSetCursor } from '../../utils/handleSetCursor';
+import { useVXEngine } from 'vxengine/engine';
+import { useTimelineEditorStore } from '../../store';
 
 /** Animation timeline component parameters */
 export type CursorProps = CommonProp & {
@@ -23,8 +26,6 @@ export type CursorProps = CommonProp & {
 
 export const Cursor: FC<CursorProps> = ({
   disableDrag,
-  cursorTime,
-  setCursor,
   startLeft,
   timelineWidth,
   scaleWidth,
@@ -32,7 +33,6 @@ export const Cursor: FC<CursorProps> = ({
   scrollLeft,
   scrollSync,
   areaRef,
-  maxScaleCount,
   deltaScrollLeft,
   onCursorDragStart,
   onCursorDrag,
@@ -40,6 +40,10 @@ export const Cursor: FC<CursorProps> = ({
 }) => {
   const rowRnd = useRef<RowRndApi>();
   const draggingLeft = useRef<undefined | number>();
+  const { animationEngine } = useVXEngine();
+  const { setCursorTime, cursorTime } = useTimelineEditorStore(); 
+
+  const maxScaleCount = 100;
 
   useEffect(() => {
     if (typeof draggingLeft.current === 'undefined') {
@@ -67,7 +71,7 @@ export const Cursor: FC<CursorProps> = ({
       }}
       onDragEnd={() => {
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        setCursor({ time });
+        handleSetCursor({ time, animationEngine, scale, setCursorTime })
         onCursorDragEnd && onCursorDragEnd(time);
         draggingLeft.current = undefined;
       }}
@@ -86,7 +90,7 @@ export const Cursor: FC<CursorProps> = ({
         }
         rowRnd.current.updateLeft(draggingLeft.current);
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        setCursor({ time });
+        handleSetCursor({ time, animationEngine, scale, setCursorTime })
         onCursorDrag && onCursorDrag(time);
         return false;
       }}

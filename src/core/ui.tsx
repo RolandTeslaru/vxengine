@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react"
 import { ObjectList, ObjectProperties, ObjectTransformControls } from "../managers/ObjectManager/ui"
 // import { ObjectManagerUI } from "../managers/ObjectManager"
 import { MenubarUI } from "../components/ui/MenubarUI"
-import { TimelineTools } from "../managers/TimelineManager/ui"
+import TimelineEditorUI, { TimelineTools } from "../managers/TimelineManager/ui"
 import {motion} from "framer-motion"
 import TimelineEditor from "../managers/TimelineManager/ui"
 
@@ -62,7 +62,7 @@ export const CoreUI = () => {
                 }
                 
             >
-                <TimelineEditor
+                <TimelineEditorUI
                     visible = {timelineVisible}
                     setVisible={setTimelineVisible}
                 />

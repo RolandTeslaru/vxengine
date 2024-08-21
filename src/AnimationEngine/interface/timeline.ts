@@ -5,18 +5,12 @@ import { Emitter } from '../emitter';
 import { EventTypes } from '../events';
 import { TimelineAction, TimelineRow } from './action';
 import { TimelineEffect } from './effect';
+import { ITrack } from '../types/track';
 export * from './action';
 export * from './effect';
 
 export interface EditData {
-  /**
-   *@description Timeline editing data
-   */
-  editorData: TimelineRow[];
-  /**
-   *@description timeline action effect map
-   */
-  effects: Record<string, TimelineEffect>;
+
   /**
    *@description Single tick mark category (>0)
    *@default 1
@@ -185,7 +179,7 @@ export interface EditData {
   /**
    *@description Get the action id list to prompt the auxiliary line. Calculate it when move/resize start. By default, get all the action ids except the current move action.
    */
-  getAssistDragLineActionIds?: (params: { action: TimelineAction; editorData: TimelineRow[]; row: TimelineRow }) => string[];
+  getAssistDragLineActionIds?: (params: { action: TimelineAction; editorData: ITrack[]; row: TimelineRow }) => string[];
   /**
    *@description cursor starts drag event
    */
@@ -207,33 +201,6 @@ export interface EditData {
 export interface TimelineState {
   /** Dom node*/
   target: HTMLElement;
-  /** Run listener */
-  listener: Emitter<EventTypes>;
-  /** is playing */
-  isPlaying: boolean;
-  /** Is it paused? */
-  isPaused: boolean;
-  /** Set current playback time */
-  setTime: (time: number) => void;
-  /** Get the current play time */
-  getTime: () => number;
-  /** Set playback rate */
-  setPlayRate: (rate: number) => void;
-  /** Set playback rate */
-  getPlayRate: () => number;
-  /** Re-render the current time */
-  reRender: () => void;
-  /** playay */
-  play: (param: {
-    /** By default, it runs from beginning to end, with a priority greater than autoEnd. */
-    toTime?: number;
-    /** Whether to automatically end after playing */
-    autoEnd?: boolean;
-    /** List of action ids to run. If not used, all will be run by default.*/
-    runActionIds?: string[];
-  }) => boolean;
-  /**pause */
-  pause: () => void;
   /**Set scroll left */
   setScrollLeft: (val: number) => void;
   /**Set scroll top */
@@ -272,5 +239,5 @@ export interface TimelineEditor extends EditData {
   /**
    * @description Data change callback will be triggered after the operation action end changes the data (returning false will prevent automatic engine synchronization to reduce performance overhead)
    */
-  onChange?: (editorData: TimelineRow[]) => void | boolean;
+  onChange?: (editorData: ITrack[]) => void | boolean;
 }

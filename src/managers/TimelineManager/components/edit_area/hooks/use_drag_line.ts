@@ -2,13 +2,13 @@ import { useState } from "react";
 import { TimelineAction, TimelineRow } from "../../../interface/action";
 import { parserActionsToPositions, parserTimeToTransform } from "../../../utils/deal_data";
 import { DragLineData } from "../drag_lines";
+import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store";
 
 export function useDragLine() {
   const [dragLineData, setDragLineData] = useState<DragLineData>({ isMoving: false, movePositions: [], assistPositions: [] });
 
   /** 获取辅助线 */
   const defaultGetAssistPosition = (data: {
-    editorData: TimelineRow[];
     assistActionIds?: string[];
     action: TimelineAction;
     row: TimelineRow;
@@ -18,7 +18,8 @@ export function useDragLine() {
     hideCursor: boolean;
     cursorLeft: number;
   }) => {
-    const { editorData, assistActionIds, action, row, scale, scaleWidth, startLeft, cursorLeft, hideCursor } = data;
+    const { assistActionIds, action, row, scale, scaleWidth, startLeft, cursorLeft, hideCursor } = data;
+    const { editorData } = useTimelineEditorStore()
     const otherActions: TimelineAction[] = [];
     if (assistActionIds) {
       editorData.forEach((rowItem) => {

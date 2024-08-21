@@ -26,6 +26,12 @@ export interface TimelineAction {
   minStart?: number;
   /**Maximum end time limit of action */
   maxEnd?: number;
+  
+  params: {
+    property: string;  // The name of the property to modify
+    from: number | { x: number, y: number, z: number }; // Starting value (could be a number or vector)
+    to: number | { x: number, y: number, z: number };   // Ending value
+  };
 }
 
 /**

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Timeline } from './components/timeline'
+import { TimelineVisualEditor } from './components/TimelinevisualEditor'
 import { cloneDeep } from 'lodash';
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward } from "@geist-ui/icons"
 import { AnimatePresence, motion } from "framer-motion"
@@ -8,179 +8,64 @@ import { Slider } from 'vxengine/components/shadcn/slider';
 import { Switch } from 'vxengine/components/shadcn/switch';
 import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
-
-export interface CustomTimelineAction extends TimelineAction {
-    data: {
-        src: string;
-        name: string;
-    };
-}
-
-export interface CusTomTimelineRow extends TimelineRow {
-    actions: CustomTimelineAction[];
-}
-
-
-const mockData: TimelineRow[] = [
-    {
-        id: "0",
-        actions: [
-            {
-                id: "action00",
-                start: 0,
-                end: 2,
-                effectId: "effect0",
-            },
-        ],
-    },
-    {
-        id: "1",
-        actions: [
-            {
-                id: "action10",
-                start: 1.5,
-                end: 5,
-                effectId: "effect1",
-            }
-        ],
-    }
-]
-
-const defaultEditorData = cloneDeep(mockData);
-
-const mockEffect: Record<string, TimelineEffect> = {
-    effect0: {
-        id: "effect0",
-        name: "效果0",
-    },
-    effect1: {
-        id: "effect1",
-        name: "效果1",
-    },
-};
+import { useVXEngine } from 'vxengine/engine';
+import { ITrack } from 'vxengine/AnimationEngine/types/track';
+import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
+import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
+import { useTimelineEditorStore } from './store';
 
 export const scaleWidth = 160;
 export const scale = 5;
-export const startLeft = 20;
+export const startLeft = 0;
 
-const TimelineEditor: React.FC<{
+const TimelineEditorUI: React.FC<{
     visible: boolean,
     setVisible: React.Dispatch<React.SetStateAction<boolean>>
 }> = ({ visible, setVisible }) => {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [time, setTime] = useState(0);
-    const timelineState = useRef<TimelineState>();
-    const [data, setData] = useState(defaultEditorData);
+    const { animationEngine } = useVXEngine();
+    const { setScale, setSnap, snap, scale, editorData } = useTimelineEditorStore();
+    const uiRef = useRef<TimelineState>();
     const autoScrollWhenPlay = useRef<boolean>(true);
-    const [scale, setScale] = useState(1)
-    const [activeTool, setActiveTool] = useState("mouse")
-    const [snap, setSnap] = useState(true);
 
     useEffect(() => {
-        if (!timelineState.current) return;
-        const engine = timelineState.current;
-        engine.listener.on('play', () => setIsPlaying(true));
-        engine.listener.on('paused', () => setIsPlaying(false));
-        engine.listener.on('afterSetTime', ({ time }) => setTime(time));
-        engine.listener.on('setTimeByTick', ({ time }) => {
-            setTime(time);
+        console.log("TimelineEditor: editorData: ", editorData)
+    }, [editorData])
 
-            if (autoScrollWhenPlay.current) {
-                const autoScrollFrom = 500;
-                const left = time * (scaleWidth / scale) + startLeft - autoScrollFrom;
-                timelineState.current.setScrollLeft(left)
-            }
-        });
-
-        return () => {
-            if (!engine) return;
-            engine.pause();
-            engine.listener.offAll();
-        };
-    }, [])
-    //Start or pause
-    const handlePlayOrPause = () => {
-        if (!timelineState.current) return;
-        if (timelineState.current.isPlaying) {
-            timelineState.current.pause();
-        } else {
-            timelineState.current.play({ autoEnd: true });
+    useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {
+        if (autoScrollWhenPlay.current) {
+            const autoScrollFrom = 500;
+            const left = time * (scaleWidth / scale) + startLeft - autoScrollFrom;
+            uiRef.current.setScrollLeft(left)
         }
-    };
-
-    const handleReset = () => {
-        if (!timelineState.current) return;
-        timelineState.current.setTime(0);
-    }
-
-    //Set playback rate
-    const handleRateChange = (rate: number) => {
-        if (!timelineState.current) return;
-        timelineState.current.setPlayRate(rate);
-    };
-
-    //time display
-    const timeRender = (time: number) => {
-        const float = (parseInt((time % 1) * 100 + '') + '').padStart(2, '0');
-        const min = (parseInt(time / 60 + '') + '').padStart(2, '0');
-        const second = (parseInt((time % 60) + '') + '').padStart(2, '0');
-        return <>{`${min}:${second}.${float.replace('0.', '')}`}</>;
-    };
+    })
 
     return (
         <>
-            <div className="flex flex-row gap-2 w-full pr-2 "
-            >
+            <div className="flex flex-row gap-2 w-full pr-2 ">
                 <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
                     onClick={() => setVisible(!visible)}
                 >
                     <ChevronRight className={`${visible === true && " rotate-90 "}  scale-[90%] m-auto`} />
                 </button>
+
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
                     Timeline Editor
                 </p>
+
                 <TimelineSelect />
 
-                <div className='flex flex-row gap-2 w-auto ml-auto'>
-                    <p className="font-sans-menlo text-lg text-center h-auto my-auto mx-2">
-                        {timeRender(time)}
-                    </p>
-                    <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                        onClick={handleReset}
-                    >
-                        <Square fill="white" className='scale-[65%] m-auto' />
-                    </button>
-                    <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                        onClick={handleReset}
-                    >
-                        <SkipBack fill="white" className='scale-[65%] m-auto' />
-                    </button>
-                    <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                        onClick={handlePlayOrPause}
-                    >
-                        {isPlaying ? (
-                            <PauseFill className='scale-[65%] m-auto' />
-                        ) : (
-                            <PlayFill className='scale-[65%] m-auto' />
-                        )}
-                    </button>
-                    <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                        onClick={handleReset}
-                    >
-                        <SkipForward fill="white" className='scale-[65%] m-auto' />
-                    </button>
-                </div>
+                <ProgressionControls />
             </div>
             <div className='relative flex flex-row max-h-fit overflow-hidden'>
                 <div
                     style={{ overflow: 'overlay' }}
                     onScroll={(e) => {
                         const target = e.target as HTMLDivElement;
-                        timelineState.current.setScrollTop(target.scrollTop);
+                        uiRef.current.setScrollTop(target.scrollTop);
                     }}
                     className={'timeline-list'}
                 >
-                    {data.map((item) => {
+                    {editorData?.map((item) => {
                         return (
                             <div className="timeline-list-item" key={item.id}>
                                 <div className="text">{`row${item.id}`}</div>
@@ -188,12 +73,8 @@ const TimelineEditor: React.FC<{
                         );
                     })}
                 </div>
-                <Timeline
-                    effects={mockEffect}
-                    ref={timelineState}
-                    onChange={(data) => setData(data as CusTomTimelineRow[])}
-                    dragLine={snap}
-                    scale={scale}
+                <TimelineVisualEditor
+                    ref={uiRef}
                 />
             </div>
             <AnimatePresence>
@@ -204,12 +85,12 @@ const TimelineEditor: React.FC<{
                         exit={{ opacity: 0 }}
                     >
                         <div className='flex flex-row gap-2'>
-                            <p className='text-xs'>Scale</p>
+                            <p className='text-xs'>Scale {scale}</p>
                             <Slider
                                 defaultValue={[scale]}
                                 max={10}
                                 step={0.5}
-                                min={0.1}
+                                min={0.0}
                                 className='w-52'
                                 onValueChange={(value) => {
                                     setScale(value[0])
@@ -236,21 +117,81 @@ const TimelineEditor: React.FC<{
     )
 }
 
-export default TimelineEditor
+export default TimelineEditorUI
+
+const ProgressionControls = () => {
+    const { animationEngine } = useVXEngine();
+    const { isPlaying } = useVXTimelineStore()
+
+    //Start or pause
+    const handlePlayOrPause = () => {
+        if (isPlaying)
+            animationEngine.pause();
+        else
+            animationEngine.play({ autoEnd: true });
+    };
+
+    const handleReset = () => { animationEngine.setCurrentTime(0, true) }
+
+    return (
+        <div className='flex flex-row gap-2 w-auto ml-auto'>
+            <p className="font-sans-menlo text-lg text-center h-auto my-auto mx-2">
+                <TimeRender />
+            </p>
+            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+                onClick={handleReset}
+            >
+                <Square fill="white" className='scale-[65%] m-auto' />
+            </button>
+            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+                onClick={handleReset}
+            >
+                <SkipBack fill="white" className='scale-[65%] m-auto' />
+            </button>
+            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+                onClick={handlePlayOrPause}
+            >
+                {isPlaying ? (
+                    <PauseFill className='scale-[65%] m-auto' />
+                ) : (
+                    <PlayFill className='scale-[65%] m-auto' />
+                )}
+            </button>
+            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+                onClick={handleReset}
+            >
+                <SkipForward fill="white" className='scale-[65%] m-auto' />
+            </button>
+        </div>
+    )
+}
+
+const TimeRender = () => {
+    const { currentTime } = useVXTimelineStore();
+    const float = (parseInt((currentTime % 1) * 100 + '') + '').padStart(2, '0');
+    const min = (parseInt(currentTime / 60 + '') + '').padStart(2, '0');
+    const second = (parseInt((currentTime % 60) + '') + '').padStart(2, '0');
+    return <>{`${min}:${second}.${float.replace('0.', '')}`}</>;
+};
 
 export const TimelineSelect = () => {
+    const { timelines, currentTimeline } = useVXTimelineStore();
+    const { animationEngine } = useVXEngine();
+
     return (
-        <Select>
+        <Select
+            defaultValue={currentTimeline.id}
+            onValueChange={(value) => {
+                animationEngine.setCurrentTimeline(value)
+            }}>
             <SelectTrigger className="w-[180px] h-7 my-auto">
                 <SelectValue placeholder="Select a Timeline" />
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    <SelectItem value="apple">Intro Timeline</SelectItem>
-                    <SelectItem value="banana">Outro Timeline</SelectItem>
-                    <SelectItem value="blueberry">Blueberry</SelectItem>
-                    <SelectItem value="grapes">Grapes</SelectItem>
-                    <SelectItem value="pineapple">Pineapple</SelectItem>
+                    {timelines.map((timeline) =>
+                        <SelectItem value={timeline.id}>{timeline.name}</SelectItem>
+                    )}
                 </SelectGroup>
             </SelectContent>
         </Select>

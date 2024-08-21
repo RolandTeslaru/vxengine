@@ -1,24 +1,23 @@
 import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import { AutoSizer, Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
-import { TimelineRow } from '../../interface/action';
-import { CommonProp } from '../../interface/common_prop';
-import { EditData } from '../../interface/timeline';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
 import { DragLines } from './drag_lines';
 import './edit_area.scss';
-import { EditRow } from './edit_row';
+import {  EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
+import { ITrack } from 'vxengine/AnimationEngine/types/track';
+import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
+import { EditData } from 'vxengine/AnimationEngine/interface/timeline';
+import { useTimelineEditorStore } from '../../store';
 
 export type EditAreaProps = CommonProp & {
-  /** 距离左侧滚动距离 */
+  /**Scroll distance from the left */
   scrollLeft: number;
   /** 距离顶部滚动距离 */
   scrollTop: number;
   /** 滚动回调，用于同步滚动 */
   onScroll: (params: OnScrollParams) => void;
-  /** 设置编辑器数据 */
-  setEditorData: (params: TimelineRow[]) => void;
   /** 设置scroll left */
   deltaScrollLeft: (scrollLeft: number) => void;
 };
@@ -30,7 +29,6 @@ export interface EditAreaState {
 
 export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, ref) => {
   const {
-    editorData,
     rowHeight,
     scaleWidth,
     scaleCount,
@@ -39,7 +37,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     scrollTop,
     scale,
     hideCursor,
-    cursorTime,
     onScroll,
     dragLine,
     getAssistDragLineActionIds,
@@ -50,6 +47,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     onActionResizeStart,
     onActionResizing,
   } = props;
+  const { editorData, cursorTime } = useTimelineEditorStore()
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
   const editAreaRef = useRef<HTMLDivElement>();
   const gridRef = useRef<Grid>();
@@ -99,11 +97,11 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     }
   };
 
-  /** 获取每个cell渲染内容 */
+  /**Get the rendering content of each cell */
   const cellRenderer: GridCellRenderer = ({ rowIndex, key, style }) => {
-    const row = editorData[rowIndex]; // 行数据
+    const track = editorData[rowIndex]; // 行数据
     return (
-      <EditRow
+      <EditTrack
         {...props}
         style={{
           ...style,
@@ -112,8 +110,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
         }}
         areaRef={editAreaRef}
         key={key}
-        rowHeight={row?.rowHeight || rowHeight}
-        rowData={row}
+        trackData={track}
         dragLineData={dragLineData}
         onActionMoveStart={(data) => {
           handleInitDragLine(data);

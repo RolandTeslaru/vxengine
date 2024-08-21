@@ -8,7 +8,7 @@ export interface EngineContextProps {
     composer: React.MutableRefObject<EffectComposer | null>;
     transformMode: "translate" | "rotate" | "scale"
     setTransformMode: (value: "translate" | "rotate" | "scale") => void;
-    VX_AnimationEngine: AnimationEngine;
+    animationEngine: AnimationEngine;
 }
 
 export interface VXEngineProviderProps {

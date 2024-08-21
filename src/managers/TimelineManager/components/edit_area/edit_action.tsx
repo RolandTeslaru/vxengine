@@ -8,23 +8,25 @@ import './edit_action.scss';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { TimelineAction, TimelineRow } from 'vxengine/AnimationEngine/interface/action';
 import { DEFAULT_MOVE_GRID, DEFAULT_ADSORPTION_DISTANCE } from 'vxengine/AnimationEngine/interface/const';
+import { useTimelineEditorStore } from '../../store';
+import { useVXEngine } from 'vxengine/engine';
+import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
+import { handleSetScaleCount } from '../../utils/handleSetScaleCount';
+
 
 export type EditActionProps = CommonProp & {
-  row: TimelineRow;
-  action: TimelineAction;
+  track: ITrack;
+  keyframe: IKeyframe;
   dragLineData: DragLineData;
-  setEditorData: (params: TimelineRow[]) => void;
   handleTime: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => number;
   areaRef: React.MutableRefObject<HTMLDivElement>;
-  /** 设置scroll left */
+  /**设置scroll left */
   deltaScrollLeft?: (delta: number) => void;
 };
 
 export const EditAction: FC<EditActionProps> = ({
-  editorData,
-  row,
-  action,
-  effects,
+  track,
+  keyframe,
   rowHeight,
   scale,
   scaleWidth,
@@ -32,10 +34,8 @@ export const EditAction: FC<EditActionProps> = ({
   startLeft,
   gridSnap,
   disableDrag,
-
   scaleCount,
   maxScaleCount,
-  setScaleCount,
   onActionMoveStart,
   onActionMoving,
   onActionMoveEnd,
@@ -44,7 +44,6 @@ export const EditAction: FC<EditActionProps> = ({
   onActionResizing,
 
   dragLineData,
-  setEditorData,
   onClickAction,
   onClickActionOnly,
   onDoubleClickAction,
@@ -57,15 +56,16 @@ export const EditAction: FC<EditActionProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const isDragWhenClick = useRef(false);
   const { id, maxEnd, minStart, end, start, selected, flexible = true, movable = true, effectId } = action;
-
-  // 获取最大/最小 像素范围
+  const { editorData, setScaleCount } = useTimelineEditorStore();
+  const { animationEngine } = useVXEngine();
+  //Get the maximum/minimum pixel range
   const leftLimit = parserTimeToPixel(minStart || 0, {
     startLeft,
     scale,
     scaleWidth,
   });
   const rightLimit = Math.min(
-    maxScaleCount * scaleWidth + startLeft, // 根据maxScaleCount限制移动范围
+    maxScaleCount * scaleWidth + startLeft, //Limit the movement range based on maxScaleCount
     parserTimeToPixel(maxEnd || Number.MAX_VALUE, {
       startLeft,
       scale,
@@ -73,7 +73,7 @@ export const EditAction: FC<EditActionProps> = ({
     }),
   );
 
-  // 初始化动作坐标数据
+  //Initialize action coordinate data
   const [transform, setTransform] = useState(() => {
     return parserTimeToTransform({ start, end }, { startLeft, scale, scaleWidth });
   });
@@ -82,24 +82,23 @@ export const EditAction: FC<EditActionProps> = ({
     setTransform(parserTimeToTransform({ start, end }, { startLeft, scale, scaleWidth }));
   }, [end, start, startLeft, scaleWidth, scale]);
 
-  // 配置拖拽网格对其属性
+  //Configure the drag grid and its properties
   const gridSize = scaleWidth / scaleSplitCount;
 
-  // 动作的名称
+  //The name of the action
   const classNames = ['action'];
   if (movable) classNames.push('action-movable');
   if (selected) classNames.push('action-selected');
   if (flexible) classNames.push('action-flexible');
-  if (effects[effectId]) classNames.push(`action-effect-${effectId}`);
 
-  /** 计算scale count */
+  /**计算scale count */
   const handleScaleCount = (left: number, width: number) => {
     const curScaleCount = getScaleCountByPixel(left + width, {
       startLeft,
       scaleCount,
       scaleWidth,
     });
-    if (curScaleCount !== scaleCount) setScaleCount(curScaleCount);
+    if (curScaleCount !== scaleCount) handleSetScaleCount(curScaleCount, { });
   };
 
   //#region [rgba(100,120,156,0.08)] 回调
@@ -119,17 +118,17 @@ export const EditAction: FC<EditActionProps> = ({
   };
 
   const handleDragEnd: RndDragEndCallback = ({ left, width }) => {
-    // 计算时间
+    //计算时间
     const { start, end } = parserTransformToTime({ left, width }, { scaleWidth, scale, startLeft });
 
-    // 设置数据
+    //设置数据
     const rowItem = editorData.find((item) => item.id === row.id);
     const action = rowItem.actions.find((item) => item.id === id);
     action.start = start;
     action.end = end;
-    setEditorData(editorData);
+    animationEngine.setEditorData(editorData);
 
-    // 执行回调
+    //执行回调
     if (onActionMoveEnd) onActionMoveEnd({ action, row, start, end });
   };
 
@@ -149,17 +148,17 @@ export const EditAction: FC<EditActionProps> = ({
   };
 
   const handleResizeEnd: RndResizeEndCallback = (dir, { left, width }) => {
-    // 计算时间
+    //计算时间
     const { start, end } = parserTransformToTime({ left, width }, { scaleWidth, scale, startLeft });
 
-    // 设置数据
+    //设置数据
     const rowItem = editorData.find((item) => item.id === row.id);
     const action = rowItem.actions.find((item) => item.id === id);
     action.start = start;
     action.end = end;
-    setEditorData(editorData);
+    animationEngine.setEditorData(editorData);
 
-    // 触发回调
+    //触发回调
     if (onActionResizeEnd) onActionResizeEnd({ action, row, start, end, dir });
   };
   //#endregion

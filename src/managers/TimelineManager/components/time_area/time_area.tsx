@@ -1,9 +1,12 @@
 import React, { FC, useEffect, useRef } from 'react';
 import { AutoSizer, Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
-import { CommonProp } from '../../interface/common_prop';
 import { prefix } from '../../utils/deal_class_prefix';
 import './time_area.scss';
 import { parserPixelToTime } from '../../utils/deal_data';
+import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
+import { useTimelineEditorStore } from '../../store';
+import { useVXEngine } from 'vxengine/engine';
+import { handleSetCursor } from '../../utils/handleSetCursor';
 
 /** Animation timeline component parameters */
 export type TimeAreaProps = CommonProp & {
@@ -12,11 +15,12 @@ export type TimeAreaProps = CommonProp & {
   /** Scroll callback, used for synchronous scrolling */
   onScroll: (params: OnScrollParams) => void;
   /** Set cursor position */
-  setCursor: (param: { left?: number; time?: number }) => void;
 };
 
 /** Animation timeline component */
-export const TimeArea: FC<TimeAreaProps> = ({ setCursor, maxScaleCount, hideCursor, scale, scaleWidth, scaleCount, scaleSplitCount, startLeft, scrollLeft, onClickTimeArea, getScaleRender }) => {
+export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scale, scaleWidth, scaleSplitCount, startLeft, scrollLeft, onClickTimeArea, getScaleRender }) => {
+  const { scaleCount } = useTimelineEditorStore();
+  const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
   /** Whether to display subdivision scales */
   const showUnit = scaleSplitCount > 0;
@@ -84,7 +88,7 @@ export const TimeArea: FC<TimeAreaProps> = ({ setCursor, maxScaleCount, hideCurs
                   const time = parserPixelToTime(left, { startLeft, scale, scaleWidth });
                   const result = onClickTimeArea && onClickTimeArea(time, e);
                   if (result === false) return; //返回false时阻止设置时间
-                  setCursor({ time });
+                  handleSetCursor({ time, animationEngine, scale, setCursorTime })
                 }}
                 className={prefix('time-area-interact')}
               ></div>

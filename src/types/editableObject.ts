@@ -3,75 +3,63 @@ import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCame
 import { FogProps, MeshProps, SpotLightProps, LineSegmentsProps, LineLoopProps, PointsProps, GroupProps, PerspectiveCameraProps, OrthographicCameraProps, PointLightProps, HemisphereLightProps, DirectionalLightProps, AmbientLightProps, ExtendedColors } from '@react-three/fiber';
 
 export interface VXEditableWrapperProps {
-    id: string;
     type: string;
     children: React.ReactNode;
-    [key: string]: any; // For any additional props
+    vxkey: string;
 }
 
-export type EditableProps<T> = Omit<T, 'visible'> & {
-    visible?: boolean
-    additionalProps?: any;
-    objRef?: any;
+export type EditableObjectProps<T> = Omit<T, 'ref'> & {
+    vxkey: string;
+    ref?: React.Ref<unknown>;
+};
+export type EditableMeshProps = EditableObjectProps<MeshProps> & {
+    ref?: React.Ref<Mesh>;
 };
 
-export type PrimitiveProps = {
-    object: Object3D;
-    visible?: boolean
-    additionalProps?: any;
-    objRef?: any;
-    editableType: keyof JSX.IntrinsicElements;
+export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
+    ref?: React.Ref<SpotLight>;
 };
 
-export type EditableMeshProps = EditableProps<MeshProps> & {
-    ref?: Ref<Mesh>;
+export type EditableLineSegmentsProps = EditableObjectProps<LineSegmentsProps> & {
+    ref?: React.Ref<LineSegments>;
 };
 
-export type EditableSpotLightProps = EditableProps<SpotLightProps> & {
-    ref?: Ref<SpotLight>;
+export type EditableLineLoopProps = EditableObjectProps<LineLoopProps> & {
+    ref?: React.Ref<LineLoop>;
 };
 
-export type EditableLineSegmentsProps = EditableProps<LineSegmentsProps> & {
-    ref?: Ref<LineSegments>;
+export type EditablePointsProps = EditableObjectProps<PointsProps> & {
+    ref?: React.Ref<Points>;
 };
 
-export type EditableLineLoopProps = EditableProps<LineLoopProps> & {
-    ref?: Ref<LineLoop>;
+export type EditableGroupProps = EditableObjectProps<GroupProps> & {
+    ref?: React.Ref<Group>;
 };
 
-export type EditablePointsProps = EditableProps<PointsProps> & {
-    ref?: Ref<Points>;
+export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCameraProps> & {
+    ref?: React.Ref<PerspectiveCamera>;
 };
 
-export type EditableGroupProps = EditableProps<GroupProps> & {
-    ref?: Ref<Group>;
+export type EditableOrthographicCameraProps = EditableObjectProps<OrthographicCameraProps> & {
+    ref?: React.Ref<OrthographicCamera>;
 };
 
-export type EditablePerspectiveCameraProps = EditableProps<PerspectiveCameraProps> & {
-    ref?: Ref<PerspectiveCamera>;
+export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
+    ref?: React.Ref<PointLight>;
 };
 
-export type EditableOrthographicCameraProps = EditableProps<OrthographicCameraProps> & {
-    ref?: Ref<OrthographicCamera>;
+export type EditableHemisphereLightProps = EditableObjectProps<HemisphereLightProps> & {
+    ref?: React.Ref<HemisphereLight>;
 };
 
-export type EditablePointLightProps = EditableProps<PointLightProps> & {
-    ref?: Ref<PointLight>;
+export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLightProps> & {
+    ref?: React.Ref<DirectionalLight>;
 };
 
-export type EditableHemisphereLightProps = EditableProps<HemisphereLightProps> & {
-    ref?: Ref<HemisphereLight>;
+export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> & {
+    ref?: React.Ref<AmbientLight>;
 };
 
-export type EditableDirectionalLightProps = EditableProps<DirectionalLightProps> & {
-    ref?: Ref<DirectionalLight>;
+export type EditableFogProps = EditableObjectProps<FogProps> & {
+    ref?: React.Ref<Fog>;
 };
-
-export type EditableAmbientLightProps = EditableProps<AmbientLightProps> & {
-    ref?: Ref<AmbientLight>;
-};
-
-export type EditableFogProps = EditableProps<FogProps> & {
-    ref?: Ref<Fog>;
-};
-

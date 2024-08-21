@@ -18,7 +18,7 @@ const VXEngineContext = createContext<EngineContextProps>({
     composer: { current: null },
     transformMode: "translate",
     setTransformMode: () => { },
-    VX_AnimationEngine: null
+    animationEngine: null
 })
 
 export const useVXEngine = () => useContext(VXEngineContext)
@@ -42,7 +42,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
 
     const [transformMode, setTransformMode] = useState<"translate" | "scale" | "rotate">("translate")
 
-    const VX_AnimationEngine = useMemo(() => {
+    const animationEngine = useMemo(() => {
         const engine = new AnimationEngine();
         engine.loadTimelines(animations_json)
         return engine
@@ -52,7 +52,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
     return (
         <VXEngineContext.Provider value={{
             onScreenTransform, setOnScreenTransform, mountEngineUI, composer, transformMode, setTransformMode,
-            VX_AnimationEngine
+            animationEngine
         }}>
             <ThemeProvider
                 attribute="class"

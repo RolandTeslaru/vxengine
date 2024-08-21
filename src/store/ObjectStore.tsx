@@ -3,71 +3,57 @@ import { StoredObjectProps, ObjectStoreStateProps } from '../types/objectStore';
 
 const addObject = (state: ObjectStoreStateProps, object: StoredObjectProps): ObjectStoreStateProps => ({
   ...state,
-  objects: [...state.objects, object],
+  objects: {
+    ...state.objects,
+    [object.vxkey]: object,
+  },
 });
 
-const updateObject = (state: ObjectStoreStateProps, id: string, newProps: Partial<StoredObjectProps>): ObjectStoreStateProps => ({
-  ...state,
-  objects: state.objects.map((obj) => (obj.id === id ? { ...obj, ...newProps } : obj)),
-});
-
-const selectObjects = (state: ObjectStoreStateProps, ids: string[]): ObjectStoreStateProps => {
-  // Check if the new selection is different from the current selection
-  const isSelectionChanged = ids.length !== state.selectedObjectIds.length ||
-    ids.some((id, index) => id !== state.selectedObjectIds[index]);
-
-  if (!isSelectionChanged) {
-    return state;
-  }
-
-  const objectsToBeAdded = state.objects.filter((obj) => ids.includes(obj.id))
-
+const selectObjects = (state: ObjectStoreStateProps, vxkeys: string[]): ObjectStoreStateProps => {
+  const selectedObjects = vxkeys.map(vxkey => state.objects[vxkey]).filter(Boolean);
   return {
     ...state,
-    selectedObjectIds: ids,
-    selectedObjects: objectsToBeAdded
+    selectedObjectKeys: vxkeys,
+    selectedObjects,
   };
 };
 
-const removeSelectedObjectUsingIds = (state: ObjectStoreStateProps, ids_to_remove: string[]): ObjectStoreStateProps => {
-  let filteredSelectedObjects = [];
-  state.selectedObjectIds.forEach(objId => {
-    if(!ids_to_remove.includes(objId)){
-      filteredSelectedObjects.push(objId);
-    }
-  });
-
+const removeSelectedObjectUsingKeys = (state: ObjectStoreStateProps, vxkeys_to_remove: string[]): ObjectStoreStateProps => {
+  const selectedObjectKeys = state.selectedObjectKeys.filter(vxkey => !vxkeys_to_remove.includes(vxkey));
   return {
-   ...state,
-    selectedObjectIds: filteredSelectedObjects,
+    ...state,
+    selectedObjectKeys,
+    selectedObjects: selectedObjectKeys.map(vxkey => state.objects[vxkey]),
   };
-}
+};
 
-const removeObject = (state: ObjectStoreStateProps, id: string): ObjectStoreStateProps => ({
-  ...state,
-  objects: state.objects.filter((obj) => obj.id !== id),
-});
+const removeObject = (state: ObjectStoreStateProps, vxkey: string): ObjectStoreStateProps => {
+  const newObjects = { ...state.objects };
+  delete newObjects[vxkey];
+  return {
+    ...state,
+    objects: newObjects,
+  };
+};
 
 const clearObjects = (state: ObjectStoreStateProps): ObjectStoreStateProps => ({
   ...state,
-  objects: [],
+  objects: {},
 });
 
-const getObjectById = (state: ObjectStoreStateProps, id: string): StoredObjectProps | undefined => {
-  return state.objects.find((obj) => obj.id === id);
+const getObjectByKey = (state: ObjectStoreStateProps, vxkey: string): StoredObjectProps | undefined => {
+  return state.objects[vxkey];
 };
 
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
-  objects: [],
-  updateObject: (id, newProps) => set((state) => updateObject(state, id, newProps)),
+  objects: {},
   addObject: (object) => set((state) => addObject(state, object)),
-  removeObject: (id) => set((state) => removeObject(state, id)),
-  clearObjects: () => set((state) => clearObjects(state)),
-  getObjectById: (id) => getObjectById(get(), id),
+  removeObject: (vxkey) => set((state) => removeObject(state, vxkey)),
+  getObjectByKey: (vxkey) => getObjectByKey(get(), vxkey),
   selectedObjects: [],
-  selectedObjectIds: [],
-  selectObjects: (ids) => set((state) => selectObjects(state, ids)),
-  removeSelectedObjectUsingIds: (id_to_remove) => set((state) => removeSelectedObjectUsingIds(state, id_to_remove)),
+  selectedObjectKeys: [],
+  selectObjects: (vxkeys) => set((state) => selectObjects(state, vxkeys)),
+  removeSelectedObjectUsingKeys: (vxkeys_to_remove) => set((state) => removeSelectedObjectUsingKeys(state, vxkeys_to_remove)),
   hoveredObject: undefined,
   setHoveredObject: (obj: StoredObjectProps) => set((state) => ({
     ...state,
