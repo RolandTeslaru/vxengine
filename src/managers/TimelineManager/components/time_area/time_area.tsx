@@ -18,8 +18,8 @@ export type TimeAreaProps = CommonProp & {
 };
 
 /** Animation timeline component */
-export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scale, scaleWidth, scaleSplitCount, startLeft, scrollLeft, onClickTimeArea, getScaleRender }) => {
-  const { scaleCount } = useTimelineEditorStore();
+export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollLeft, onClickTimeArea, getScaleRender }) => {
+  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft } = useTimelineEditorStore();
   const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
   /** Whether to display subdivision scales */

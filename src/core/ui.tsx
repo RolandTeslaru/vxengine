@@ -4,7 +4,7 @@ import { ObjectList, ObjectProperties, ObjectTransformControls } from "../manage
 // import { ObjectManagerUI } from "../managers/ObjectManager"
 import { MenubarUI } from "../components/ui/MenubarUI"
 import TimelineEditorUI, { TimelineTools } from "../managers/TimelineManager/ui"
-import {motion} from "framer-motion"
+import { motion } from "framer-motion"
 import TimelineEditor from "../managers/TimelineManager/ui"
 
 export const CoreUI = () => {
@@ -52,24 +52,34 @@ export const CoreUI = () => {
             {/*  */}
 
             {/* Timeline Panel */}
-            <motion.div className='fixed bottom-5 right-6 w-[800px] h-[500px] backdrop-blur-sm  text-sm bg-neutral-900 
+            <motion.div className='fixed bottom-5 right-6 w-fit h-[500px] backdrop-blur-sm  text-sm bg-neutral-900 
                             bg-opacity-80 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 gap-2'
                 id="VXEngineTimelinePanel"
-                style={{ boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)"} }
-                initial={{height: "45px"}}
+                style={{ boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)" }}
+                initial={{ height: "45px" }}
                 animate={
-                    timelineVisible? {height: "500px"} : {height: "45px"}
+                    timelineVisible ? { height: "500px" } : { height: "45px" }
                 }
-                
+
             >
                 <TimelineEditorUI
-                    visible = {timelineVisible}
+                    visible={timelineVisible}
                     setVisible={setTimelineVisible}
                 />
                 <TimelineTools
                     visible={timelineVisible}
                 />
             </motion.div>
+
+            <a
+                className="fixed pointer-events-auto bottom-5 left-10"
+                href ="https://vexr-labs.com/"
+                target="_blank"
+            >
+                <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
+                    VEXR<span className="font-thin">LABS</span>
+                </h1>
+            </a>
         </div>
     )
 }

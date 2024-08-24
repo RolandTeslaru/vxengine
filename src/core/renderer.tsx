@@ -1,5 +1,5 @@
 "use client"
-import React, { Suspense, useContext, useState } from 'react'
+import React, { Suspense, useContext, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
@@ -10,7 +10,7 @@ import { ObjectManagerDriver as VXObjectManagerDriver } from '../managers/Object
 import { RendererCoreProps } from '../types/core'
 import dynamic from 'next/dynamic'
 import { useVXEngine } from 'vxengine/engine'
-import vx from 'vxengine/store'
+import vx, { useVXObjectStore } from 'vxengine/store'
 import { context as FiberContext } from '@react-three/fiber';
 
 let VXEngineUtils;
@@ -26,6 +26,12 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
 }) => {
   const [dpr_state, setDpr_state] = useState(1.2)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
+  const { animationEngine } = useVXEngine();
+  const { objects } = useVXObjectStore();
+
+  useEffect(() => {
+    animationEngine.reRender({ force: true});
+  }, [objects])
 
   return (
     <>

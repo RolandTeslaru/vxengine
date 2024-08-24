@@ -3,20 +3,32 @@ import * as THREE from "three"
 export interface ITimeline {
     name: string;        
     id: string;          
-    tracks: ITrack[];
+    objects: { 
+        vxkey: string;
+        tracks: ITrack[];
+        staticProps: IStaticProps[];
+    }[]
 }
 
 export interface ITrack {
     propertyPath: string;
-    selected?: boolean;
     classNames?: string[];
     keyframes: IKeyframe[];
-    vxkey: string;
+}
+export interface IStaticProps {
+    name: string;
+    propertyPath: string;
+    value: number;
 }
 
 export interface IKeyframe {
     id: string
-    time: number; // The time (position) of the keyframe
-    value?: number | THREE.Vector3; // The value of the property at this keyframe
-    handles?: [number, number, number, number]; // Optional handles for bezier curves
+    time: number; 
+    value?: number | THREE.Vector3; 
+    handles?: [number, number, number, number]; 
 }
+
+export interface IEditorData {
+    vxkey: string;
+    tracks: ITrack[];
+}[]

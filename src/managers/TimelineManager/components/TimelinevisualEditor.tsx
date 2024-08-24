@@ -16,6 +16,8 @@ import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimation
 import { useTimelineEditorStore } from '../store';
 import { handleSetCursor } from '../utils/handleSetCursor';
 
+export const startLeft = 0;
+
 export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEditor>((props, ref) => {
   const checkedProps = checkProps(props);
   const { style } = props;
@@ -30,23 +32,21 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
   } = checkedProps;
 
   const { animationEngine } = useVXEngine();
-  const { isPlaying } = useVXTimelineStore();
-  const { editorData, scale, setCursorTime, scaleCount, width, setWidth } = useTimelineEditorStore();
-  const domRef = useRef<HTMLDivElement>();
-  const areaRef = useRef<HTMLDivElement>();
-  const scrollSync = useRef<ScrollSync>();
+  const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollSyncRef } = useTimelineEditorStore();
+  const domRef = useRef<HTMLDivElement | null>();
+  const autoScrollWhenPlay = useRef<boolean>(true);
 
   // deprecated
   useEffect(() => {
-    scrollSync.current && scrollSync.current.setState({ scrollTop: scrollTop });
+    scrollSyncRef.current && scrollSyncRef.current.setState({ scrollTop: scrollTop });
   }, [scrollTop]);
 
   /** Set scroll left */
   const handleDeltaScrollLeft = (delta: number) => {
     // Disable automatic scrolling when the maximum distance is exceeded
-    const data = scrollSync.current.state.scrollLeft + delta;
+    const data = scrollSyncRef.current.state.scrollLeft + delta;
     if (data > scaleCount * (scaleWidth - 1) + startLeft - width) return;
-    scrollSync.current && scrollSync.current.setState({ scrollLeft: Math.max(scrollSync.current.state.scrollLeft + delta, 0) });
+    scrollSyncRef.current && scrollSyncRef.current.setState({ scrollLeft: Math.max(scrollSyncRef.current.state.scrollLeft + delta, 0) });
   };
 
   // Process runner related data
@@ -55,27 +55,38 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
     ({ time }) => handleSetCursor({ time, animationEngine, scale, setCursorTime })
   );
 
+  const setScrollLeft = (val) => {
+    scrollSyncRef.current && scrollSyncRef.current.setState({ scrollLeft: Math.max(val, 0) });
+  }
+
+  useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {
+    if (autoScrollWhenPlay.current) {
+        const autoScrollFrom = 500;
+        const left = time * (scaleWidth / scale) + startLeft - autoScrollFrom;
+        setScrollLeft(left);
+    }
+})
+
+
+
   // ref data
   useImperativeHandle(ref, () => ({
-    get target() {
-      return domRef.current;
-    },
     setScrollLeft: (val) => {
-      scrollSync.current && scrollSync.current.setState({ scrollLeft: Math.max(val, 0) });
+      scrollSyncRef.current && scrollSyncRef.current.setState({ scrollLeft: Math.max(val, 0) });
     },
     setScrollTop: (val) => {
-      scrollSync.current && scrollSync.current.setState({ scrollTop: Math.max(val, 0) });
+      scrollSyncRef.current && scrollSyncRef.current.setState({ scrollTop: Math.max(val, 0) });
     },
   }));
 
   // Monitor timeline area width changes
   useEffect(() => {
-    if (areaRef.current) {
+    if (editAreaRef.current) {
       const resizeObserver = new ResizeObserver(() => {
-        if (!areaRef.current) return;
-        setWidth(areaRef.current.getBoundingClientRect().width);
+        if (!editAreaRef.current) return;
+        setWidth(editAreaRef.current.getBoundingClientRect().width);
       });
-      resizeObserver.observe(areaRef.current!);
+      resizeObserver.observe(editAreaRef.current!);
       return () => {
         resizeObserver && resizeObserver.disconnect();
       };
@@ -84,20 +95,16 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
 
   return (
     <div ref={domRef} className={"max-h-[600px] h-[420px] bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden " + " " + `${PREFIX} ${disableDrag ? PREFIX + '-disable' : ''}`}>
-      <ScrollSync ref={scrollSync}>
+      <ScrollSync ref={scrollSyncRef}>
         {({ scrollLeft, scrollTop, onScroll }) => (
           <>
             <TimeArea
               {...checkedProps}
-              timelineWidth={width}
               onScroll={onScroll}
               scrollLeft={scrollLeft}
             />
             <EditArea
               {...checkedProps}
-              timelineWidth={width}
-              ref={(ref) => ((areaRef.current as any) = ref?.domRef.current)}
-              scaleCount={scaleCount}
               scrollTop={scrollTop}
               scrollLeft={scrollLeft}
               deltaScrollLeft={autoScroll && handleDeltaScrollLeft}
@@ -109,12 +116,7 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
             {!hideCursor && (
               <Cursor
                 {...checkedProps}
-                timelineWidth={width}
                 scrollLeft={scrollLeft}
-                scaleCount={scaleCount}
-                editorData={editorData}
-                areaRef={areaRef}
-                scrollSync={scrollSync}
                 deltaScrollLeft={autoScroll && handleDeltaScrollLeft}
               />
             )}

@@ -5,7 +5,7 @@ import { Events, EventTypes } from './events';
 import { StoredObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, ITimeline, ITrack } from './types/track';
+import { IEditorData, IKeyframe, IStaticProps, ITimeline, ITrack } from './types/track';
 import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
@@ -38,14 +38,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   // Setter functions for the states
 
-  setEditorData(newEditorData: ITrack[]) {
+  setEditorData(newEditorData: IEditorData[]) {
     useTimelineEditorStore.setState({ editorData: newEditorData });
     if (!this.currentTimeline)
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
 
     if (this.isPlaying) this.pause();
+    console.log('Current Timeline ', this.currentTimeline)
+    console.log("New editor Data ", newEditorData);
 
-    this.currentTimeline.tracks = newEditorData;
+    this.currentTimeline.objects.forEach(object => {
+      const updatedObject = newEditorData.find(ed => ed.vxkey === object.vxkey);
+      if (updatedObject) {
+        // Update tracks based on the editor data
+        object.tracks = updatedObject.tracks;
+      }
+    })
 
     this._dealData(this.currentTimeline);
     this.reRender();
@@ -56,13 +64,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
   setCurrentTimeline(timelineId: string) {
+    console.log("AnimationEngine: Setting currentTimeline")
     const selectedTimeline = this.timelines.find(timeline => timeline.id === timelineId);
     if (!selectedTimeline) {
       throw new Error(`Timeline with id ${timelineId} not found`);
     }
 
-    useVXTimelineStore.setState({ currentTimeline: selectedTimeline }) // update Zustand state
-    this.setEditorData(selectedTimeline.tracks);
+    useVXTimelineStore.setState({ currentTimeline: selectedTimeline })
+    this._applyAllKeyframes(this.currentTime);
+    this.reRender(this.currentTime);
+    this.setEditorData(selectedTimeline.objects);
   }
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
@@ -87,11 +98,19 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
   }
 
-  reRender() {
-    if (this.isPlaying) return;
-    this._applyAllKeyframes(this.currentTime);
+  reRender(param: {
+    time?: number, 
+    force?: boolean
+  } = {}) {
+    const { time, force } = param
+    if (this.isPlaying && force === false) return;
+    console.log("AnimationEngine: reRendering")
+    if (time !== undefined)
+      this._applyAllKeyframes(time);
+    else
+      this._applyAllKeyframes(this.currentTime)
   }
-
+  
   play(param: {
     /** By default, it runs from beginning to end, with a priority greater than autoEnd. */
     toTime?: number;
@@ -122,6 +141,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     cancelAnimationFrame(this._timerId);
   }
 
+  initObject(object: StoredObjectProps){
+    const tracks =  this.currentTimeline.objects.filter((_obj) => _obj.vxkey === object.vxkey)
+    console.log("Init objet tracks", tracks)
+  }
+
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
     if (this.isPaused) return;
     const { now, autoEnd, to } = data;
@@ -145,16 +169,31 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
   private _applyAllKeyframes(currentTime: number) {
-    this.currentTimeline.tracks.forEach(track => {
-      this._applyKeyframes(track.vxkey, track.propertyPath, track.keyframes, currentTime);
-    });
+    console.log("AnimaionEngine: Applying all Keyframes on ", this.currentTimeline.objects.length, " objects")
+    this.currentTimeline.objects.forEach(object => {
+      object.tracks.forEach(track => {
+        this._applyKeyframes(object.vxkey, track.propertyPath, track.keyframes, currentTime);
+      })
+    })
   }
 
   private _applyKeyframes(vxkey: string, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
-    const object = useVXObjectStore.getState().objects[vxkey]
+    const object = useVXObjectStore.getState().objects[vxkey];
     if (!object) return;
 
-    const interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
+    let interpolatedValue: number | THREE.Vector3;
+
+    if (keyframes.length === 0) return
+
+    if (currentTime < keyframes[0].time) {
+      interpolatedValue = keyframes[0].value;
+    } else if (currentTime > keyframes[keyframes.length - 1].time) {
+      interpolatedValue = keyframes[keyframes.length - 1].value;
+    } else {
+      interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
+    }
+
+    console.log("For Object ",object, " apply on ", propertyPath, " wit value ", interpolatedValue  )
     this._updateObjectProperty(object, propertyPath, interpolatedValue);
   }
 
@@ -206,14 +245,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const propertyKeys = propertyPath.split('.');
     let target = object.ref.current;
 
+    if (target === undefined) return;
+
     // Navigate through the property path
     for (let i = 0; i < propertyKeys.length - 1; i++) {
+      if (target[propertyKeys[i]] === undefined) {
+        return; // Exit if any part of the path is undefined
+      }
       target = target[propertyKeys[i]];
     }
 
-    // Update the final property
+    // Update the final property if target is still defined
     const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
-    target[finalPropertyKey] = newValue;
+    if (target !== undefined) {
+      target[finalPropertyKey] = newValue;
+    }
   }
 
   /** Playback completed */
@@ -226,10 +272,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /** Process data */
   private _dealData(timeline: ITimeline) {
     this._tracks = [];
-
-    timeline.tracks.forEach(track => {
-      track.keyframes.sort((a, b) => a.time - b.time);
-      this._tracks.push(track);
-    });
+    timeline.objects.forEach(object => {
+      object.tracks.forEach(track => {
+        this._tracks.push(track);
+      })
+    })
   }
 }

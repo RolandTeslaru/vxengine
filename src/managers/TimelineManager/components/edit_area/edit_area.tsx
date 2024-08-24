@@ -4,25 +4,19 @@ import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
 import { DragLines } from './drag_lines';
 import './edit_area.scss';
-import {  EditTrack } from './EditTrack';
+import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, IEditorData } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { EditData } from 'vxengine/AnimationEngine/interface/timeline';
 import { useTimelineEditorStore } from '../../store';
 
-export type EditAreaProps = CommonProp & {
-  /**Scroll distance from the left */
+export type EditAreaProps = {
   scrollLeft: number;
-  /** 距离顶部滚动距离 */
   scrollTop: number;
-  /** 滚动回调，用于同步滚动 */
   onScroll: (params: OnScrollParams) => void;
-  /** 设置scroll left */
   deltaScrollLeft: (scrollLeft: number) => void;
 };
 
-/** edit area ref数据 */
 export interface EditAreaState {
   domRef: React.MutableRefObject<HTMLDivElement>;
 }
@@ -31,11 +25,9 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
   const {
     rowHeight,
     scaleWidth,
-    scaleCount,
     startLeft,
     scrollLeft,
     scrollTop,
-    scale,
     hideCursor,
     onScroll,
     dragLine,
@@ -47,31 +39,34 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     onActionResizeStart,
     onActionResizing,
   } = props;
-  const { editorData, cursorTime } = useTimelineEditorStore()
+
+  const { editorData, cursorTime, scaleCount, editAreaRef } = useTimelineEditorStore();
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
-  const editAreaRef = useRef<HTMLDivElement>();
   const gridRef = useRef<Grid>();
   const heightRef = useRef(-1);
 
-  // ref 数据
+  // Flatten the tracks
+  const flattenedTracks = editorData.flatMap((obj) => obj.tracks);
+
+  // ref data
   useImperativeHandle(ref, () => ({
     get domRef() {
       return editAreaRef;
     },
   }));
 
-  const handleInitDragLine: EditData['onActionMoveStart'] = (data) => {
+  const handleInitDragLine = (data) => {
     if (dragLine) {
       const assistActionIds =
         getAssistDragLineActionIds &&
         getAssistDragLineActionIds({
           action: data.action,
           row: data.row,
-          editorData,
+          editorData: flattenedTracks,
         });
       const cursorLeft = parserTimeToPixel(cursorTime, { scaleWidth, scale, startLeft });
       const assistPositions = defaultGetAssistPosition({
-        editorData,
+        editorData: flattenedTracks,
         assistActionIds,
         action: data.action,
         row: data.row,
@@ -85,7 +80,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     }
   };
 
-  const handleUpdateDragLine: EditData['onActionMoving'] = (data) => {
+  const handleUpdateDragLine = (data) => {
     if (dragLine) {
       const movePositions = defaultGetMovePosition({
         ...data,
@@ -97,9 +92,9 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     }
   };
 
-  /**Get the rendering content of each cell */
+  /** Get the rendering content of each cell */
   const cellRenderer: GridCellRenderer = ({ rowIndex, key, style }) => {
-    const track = editorData[rowIndex]; // 行数据
+    const track = flattenedTracks[rowIndex]; // Row data
     return (
       <EditTrack
         {...props}
@@ -108,7 +103,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
           backgroundPositionX: `0, ${startLeft}px`,
           backgroundSize: `${startLeft}px, ${scaleWidth}px`,
         }}
-        areaRef={editAreaRef}
         key={key}
         trackData={track}
         dragLineData={dragLineData}
@@ -153,14 +147,12 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     <div ref={editAreaRef} className={prefix('edit-area')}>
       <AutoSizer>
         {({ width, height }) => {
-          // 获取全部高度
+          // Get total height
           let totalHeight = 0;
-          // 高度列表
-          const heights = editorData.map((row) => {
-            const itemHeight = row.rowHeight || rowHeight;
-            totalHeight += itemHeight;
-            return itemHeight;
-          });
+          // Height list
+          const heights = flattenedTracks.map(() => rowHeight);
+          totalHeight = heights.length * rowHeight;
+
           if (totalHeight < height) {
             heights.push(height - totalHeight);
             if (heightRef.current !== height && heightRef.current >= 0) {

@@ -199,8 +199,6 @@ export interface EditData {
 }
 
 export interface TimelineState {
-  /** Dom node*/
-  target: HTMLElement;
   /**Set scroll left */
   setScrollLeft: (val: number) => void;
   /**Set scroll top */

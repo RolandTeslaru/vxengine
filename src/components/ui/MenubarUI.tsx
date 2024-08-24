@@ -3,8 +3,19 @@ import Image from "next/image"
 import { useVXEngine } from '@/VXEngine'
 import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../shadcn/menubar'
 import {  } from '@radix-ui/react-menubar'
+import { useVXObjectStore } from 'vxengine/store'
 
 export const MenubarUI = () => {
+
+    const { selectObjects, selectedObjectKeys, objects } = useVXObjectStore();
+
+    const handleSelectAll = () => { selectObjects(Object.values(objects).map((object) => object.vxkey)) }
+    const handleSelectNone = () => { selectObjects([]) }
+    const handleSelectInvert = () => {
+        const newKeys = selectedObjectKeys.filter((vxkey) => !selectedObjectKeys.includes(vxkey))
+        selectObjects(newKeys);
+    }
+
     return (
         <>
             {/* Icon */}
@@ -53,9 +64,9 @@ export const MenubarUI = () => {
                     <MenubarMenu>
                         <MenubarTrigger><p className='font-sans-menlo'>Select</p></MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>All</MenubarItem>
-                            <MenubarItem>None</MenubarItem>
-                            <MenubarItem>Invert</MenubarItem>
+                            <MenubarItem onClick={handleSelectAll}>All</MenubarItem>
+                            <MenubarItem onClick={handleSelectNone}>None</MenubarItem>
+                            <MenubarItem onClick={handleSelectInvert}>Invert</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     {/* Add Button */}
@@ -101,3 +112,4 @@ export const MenubarUI = () => {
         </>
     )
 }
+

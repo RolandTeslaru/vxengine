@@ -13,35 +13,21 @@ import { ITrack } from 'vxengine/AnimationEngine/types/track';
 import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
+import { useVXObjectStore } from 'vxengine/store';
 
 export const scaleWidth = 160;
 export const scale = 5;
-export const startLeft = 0;
+
 
 const TimelineEditorUI: React.FC<{
     visible: boolean,
     setVisible: React.Dispatch<React.SetStateAction<boolean>>
 }> = ({ visible, setVisible }) => {
-    const { animationEngine } = useVXEngine();
-    const { setScale, setSnap, snap, scale, editorData } = useTimelineEditorStore();
-    const uiRef = useRef<TimelineState>();
-    const autoScrollWhenPlay = useRef<boolean>(true);
-
-    useEffect(() => {
-        console.log("TimelineEditor: editorData: ", editorData)
-    }, [editorData])
-
-    useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {
-        if (autoScrollWhenPlay.current) {
-            const autoScrollFrom = 500;
-            const left = time * (scaleWidth / scale) + startLeft - autoScrollFrom;
-            uiRef.current.setScrollLeft(left)
-        }
-    })
+    const { setScale, setSnap, snap, scale } = useTimelineEditorStore();
 
     return (
         <>
-            <div className="flex flex-row gap-2 w-full pr-2 ">
+            <div className="flex flex-row gap-2 w-full min-w-[800px] pr-2 ">
                 <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
                     onClick={() => setVisible(!visible)}
                 >
@@ -56,26 +42,9 @@ const TimelineEditorUI: React.FC<{
 
                 <ProgressionControls />
             </div>
-            <div className='relative flex flex-row max-h-fit overflow-hidden'>
-                <div
-                    style={{ overflow: 'overlay' }}
-                    onScroll={(e) => {
-                        const target = e.target as HTMLDivElement;
-                        uiRef.current.setScrollTop(target.scrollTop);
-                    }}
-                    className={'timeline-list'}
-                >
-                    {editorData?.map((item) => {
-                        return (
-                            <div className="timeline-list-item" key={item.id}>
-                                <div className="text">{`row${item.id}`}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-                <TimelineVisualEditor
-                    ref={uiRef}
-                />
+            <div className='relative flex flex-row  overflow-hidden'>
+                <TimelineTrackList />
+                <TimelineVisualEditor />
             </div>
             <AnimatePresence>
                 {visible && (
@@ -118,6 +87,91 @@ const TimelineEditorUI: React.FC<{
 }
 
 export default TimelineEditorUI
+
+
+export const TimelineTrackList = () => {
+    const { editorData } = useTimelineEditorStore();
+    const { objects } = useVXObjectStore();
+
+    // Helper function to group tracks by their parent keys
+    const groupTracksByParent = (tracks: ITrack[]) => {
+        const groupedTracks: Record<string, any> = {};
+
+        tracks.forEach((track) => {
+            const pathSegments = track.propertyPath.split('.');
+
+            let currentGroup = groupedTracks;
+
+            pathSegments.forEach((key, index) => {
+                if (!currentGroup[key]) {
+                    currentGroup[key] = { children: {}, track: null };
+                }
+
+                if (index === pathSegments.length - 1) {
+                    currentGroup[key].track = track;
+                } else {
+                    currentGroup = currentGroup[key].children;
+                }
+            });
+        });
+
+        return groupedTracks;
+    };
+
+    const renderGroupedTracks = (groupedTracks: Record<string, any>, depth = 1, shouldIndent = false) => {
+        return Object.entries(groupedTracks).map(([key, group]) => {
+            const hasChildren = group.children && Object.keys(group.children).length > 0;
+    
+            // Determine if the group has multiple children
+            const isColGroup = hasChildren && Object.keys(group.children).length > 1;
+    
+            const isFinalGroup = hasChildren && Object.values(group.children).every(
+                (child: any) => child.track && (!child.children || Object.keys(child.children).length === 0)
+            );
+    
+            // Determine if padding should be added based on sibling relationships
+            const shouldIndentChildren = isColGroup && !group.track && !isFinalGroup ;
+
+            // console.log(key, " isColGroup", isColGroup, " hasChildren", hasChildren, " shouldIndent", shouldIndentChildren);
+    
+            return (
+                <div key={key} className={`${key} w-full flex ${isColGroup ? "flex-col" : "flex-row"}`} style={{paddingLeft: shouldIndent && 16}}>
+                    <div className={`h-8 flex items-center`} style={{ marginLeft: group.track ? "auto" : undefined }}>
+                        <p className={`${group.track ? 'text-neutral-500' : 'font-bold'} mr-2`}>
+                            {key}
+                        </p>
+                        {group.track && (
+                            <div>
+                                <button>(key)</button>
+                            </div>
+                        )}
+                    </div>
+                    {!group.track && hasChildren && renderGroupedTracks(group.children, depth + 1, shouldIndentChildren)}
+                </div>
+            );
+        });
+    };
+
+    return (
+        <div className="bg-neutral-950 mr-2 mt-[34px] w-fit text-xs rounded-2xl py-2 px-4">
+            {editorData?.map(({ vxkey, tracks }) => {
+                const object = objects[vxkey];
+                const groupedTracks = groupTracksByParent(tracks);
+
+                return (
+                    <div key={vxkey} className="flex flex-col ">
+                        <div className='h-8 bg-neutral-900 flex'>
+                            <p className="font-bold h-auto my-auto text-white">{object?.name}</p>
+                        </div>
+                        <div className="flex flex-col rounded-md">
+                            {renderGroupedTracks(groupedTracks, 0, true)}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
 const ProgressionControls = () => {
     const { animationEngine } = useVXEngine();
@@ -189,8 +243,8 @@ export const TimelineSelect = () => {
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    {timelines.map((timeline) =>
-                        <SelectItem value={timeline.id}>{timeline.name}</SelectItem>
+                    {timelines.map((timeline, index) =>
+                        <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
                     )}
                 </SelectGroup>
             </SelectContent>

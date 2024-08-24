@@ -16,8 +16,6 @@ export type CursorProps = CommonProp & {
   scrollLeft: number;
   /** Set cursor position */
   setCursor: (param: { left?: number; time?: number }) => boolean;
-  /** timeline area dom ref */
-  areaRef: React.MutableRefObject<HTMLDivElement>;
   /** Set scroll left */
   deltaScrollLeft: (delta: number) => void;
   /** Scroll synchronization ref (TODO: This data is used to temporarily solve the problem of out-of-synchronization when scrollLeft is dragged) */
@@ -27,12 +25,9 @@ export type CursorProps = CommonProp & {
 export const Cursor: FC<CursorProps> = ({
   disableDrag,
   startLeft,
-  timelineWidth,
   scaleWidth,
   scale,
   scrollLeft,
-  scrollSync,
-  areaRef,
   deltaScrollLeft,
   onCursorDragStart,
   onCursorDrag,
@@ -41,7 +36,7 @@ export const Cursor: FC<CursorProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const draggingLeft = useRef<undefined | number>();
   const { animationEngine } = useVXEngine();
-  const { setCursorTime, cursorTime } = useTimelineEditorStore(); 
+  const { setCursorTime, cursorTime, width, editAreaRef, scrollSyncRef } = useTimelineEditorStore(); 
 
   const maxScaleCount = 100;
 
@@ -56,10 +51,9 @@ export const Cursor: FC<CursorProps> = ({
     <RowDnd
       start={startLeft}
       ref={rowRnd}
-      parentRef={areaRef}
       bounds={{
         left: 0,
-        right: Math.min(timelineWidth, maxScaleCount * scaleWidth + startLeft - scrollLeft),
+        right: Math.min(width, maxScaleCount * scaleWidth + startLeft - scrollLeft),
       }}
       deltaScrollLeft={deltaScrollLeft}
       enableDragging={!disableDrag}
@@ -76,7 +70,7 @@ export const Cursor: FC<CursorProps> = ({
         draggingLeft.current = undefined;
       }}
       onDrag={({ left }, scroll = 0) => {
-        const scrollLeft = scrollSync.current.state.scrollLeft;
+        const scrollLeft = scrollSyncRef.current.state.scrollLeft;
 
         if (!scroll || scrollLeft === 0) {
           // 拖拽时，如果当前left < left min，将数值设置为 left min
