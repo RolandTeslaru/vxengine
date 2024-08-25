@@ -11,6 +11,8 @@ import { useVXObjectStore } from 'vxengine/store'
 import { StoredObjectProps } from 'vxengine/types/objectStore'
 import { useVXEngine } from 'vxengine/engine'
 import { Input } from 'vxengine/components/shadcn/input'
+import { useObjectManagerStore } from './store'
+import { shallow } from 'zustand/shallow'
 
 export const ObjectManagerUI = () => {
 
@@ -71,8 +73,13 @@ export const ObjectManagerUI = () => {
 
 export const ObjectList = () => {
   const [visible, setVisible] = useState(true)
-  const { objects, selectedObjectKeys, selectObjects, hoveredObject } = useVXObjectStore();
-
+  const { objects } = useVXObjectStore();
+  const { selectedObjectKeys, selectObjects, hoveredObject } = useObjectManagerStore(state => ({
+    selectedObjectKeys: state.selectedObjectKeys,
+    selectObjects: state.selectObjects,
+    hoveredObject: state.hoveredObject
+  }), shallow);
+  
   const [lastSelectedIndex, setLastSelectedIndex] = React.useState(null);
   
   const handleObjectClick = (event, obj: StoredObjectProps, index: number) => {
@@ -155,8 +162,11 @@ export const ObjectList = () => {
 
 export const ObjectTransformControls = () => {
 
-  const { transformMode, setTransformMode } = useVXEngine()
-  const { selectedObjects } = useVXObjectStore();
+  const { selectedObjects, transformMode, setTransformMode } = useObjectManagerStore(state => ({
+    selectedObjects: state.selectedObjects,
+    transformMode: state.transformMode,
+    setTransformMode: state.setTransformMode
+  }));
 
   return (
     <AnimatePresence>
@@ -173,7 +183,7 @@ export const ObjectTransformControls = () => {
             >
               <Move className='scale-90' />
             </button>
-            <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer " + (transformMode === "rotate" && "!border-neutral-200 !bg-blue-600   ")}
+            <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer " + ( transformMode === "rotate" && "!border-neutral-200 !bg-blue-600   ")}
               onClick={() => setTransformMode("rotate")}
             >
               <RefreshCcw className='scale-75' />
@@ -196,7 +206,7 @@ export const ObjectTransformControls = () => {
 
 export const ObjectProperties = () => {
 
-  const firstObjectSelected = useVXObjectStore((state) => state.selectedObjects[0])
+  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0])
 
   useEffect(() => {
 
@@ -216,7 +226,7 @@ export const ObjectProperties = () => {
 }
 
 export const TransformProperties = () => {
-  const firstObjectSelected = useVXObjectStore((state) => state.selectedObjects[0]?.ref.current)
+  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0]?.ref.current)
 
   const handlePositionChange = (axis: 'x' | 'y' | 'z', value: string) => {
     if (firstObjectSelected) {

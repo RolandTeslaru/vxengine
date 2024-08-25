@@ -32,7 +32,15 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
   } = checkedProps;
 
   const { animationEngine } = useVXEngine();
-  const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollSyncRef } = useTimelineEditorStore();
+  const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollSyncRef } = useTimelineEditorStore(state => ({
+    scale: state.scale,
+    setCursorTime: state.setCursorTime,
+    scaleCount: state.scaleCount,
+    width: state.width,
+    setWidth: state.setWidth,
+    editAreaRef: state.editAreaRef,
+    scrollSyncRef: state.scrollSyncRef
+  }));
   const domRef = useRef<HTMLDivElement | null>();
   const autoScrollWhenPlay = useRef<boolean>(true);
 

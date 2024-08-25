@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useVXObjectStore } from './ObjectStore';
 import { Edges } from '@react-three/drei';
 import { StoredObjectProps } from '../types/objectStore';
+import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 
 const dev = (fn: () => void) => {
     if(process.env.NODE_ENV === "development")
@@ -16,7 +17,17 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
         if(vxkey === undefined) {
             throw new Error(`No vxkey was passed to name: ${type}` )
         }
-        const { addObject, removeObject, selectObjects, setHoveredObject, hoveredObject, selectedObjectKeys } = useVXObjectStore();
+        const { addObject, removeObject } = useVXObjectStore(state => ({
+            addObject: state.addObject,
+            removeObject: state.removeObject,
+        }));
+
+        const { selectObjects, setHoveredObject, hoveredObject, selectedObjectKeys } = useObjectManagerStore(state => ({
+            selectObjects: state.selectObjects,
+            setHoveredObject: state.setHoveredObject,
+            hoveredObject: state.hoveredObject,
+            selectedObjectKeys: state.selectedObjectKeys
+        }))
 
         // Create an internal ref in case forwardedRef is null
         const internalRef = useRef(null);
@@ -155,7 +166,11 @@ const EditableGroup = forwardRef<Group, EditableGroupProps>((props, forwardedRef
     if(props.vxkey === undefined) {
         throw new Error("<vx.group> wasn't provided a vxkey")
     }
-    const { addObject, removeObject, selectObjects } = useVXObjectStore();
+    const { addObject, removeObject, selectObjects } = useVXObjectStore(state => ({
+        addObject: state.addObject,
+        removeObject: state.removeObject,
+        selectObjects: state.selectObjects
+    }));
     const id = useMemo(() => { return `group-${Math.random()}`; }, [])
 
     const internalRef = useRef(null);

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { StoredObjectProps, } from '../types/objectStore';
 import { TimelineStoreStateProps } from '../types/timelineStore';
 import { ITimeline } from 'vxengine/AnimationEngine/types/track';
+import { shallow } from 'zustand/shallow';
+import { createWithEqualityFn } from 'zustand/traditional';
 
 const addTimeline = (state: TimelineStoreStateProps, newTimeline: ITimeline) => ({
     ...state,
@@ -12,7 +14,12 @@ const getTimelineById = (timelines: ITimeline[], id: string): ITimeline | undefi
     return timelines.find((timeline) => timeline.id === id);
 }
 
-export const useVXTimelineStore = create<TimelineStoreStateProps>((set, get) => ({
+function createStoreWithShallowEquality(config) {
+    const store = create(config);
+    return (selector) => store(selector, shallow);
+  }
+
+export const useVXTimelineStore = createWithEqualityFn<TimelineStoreStateProps>((set, get) => ({
     timelines: [],
     addTimeline: (newTimeline: ITimeline) => set((state) => addTimeline(state, newTimeline)),
     currentTimeline: undefined,
@@ -23,4 +30,4 @@ export const useVXTimelineStore = create<TimelineStoreStateProps>((set, get) => 
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),
 }))
 
-// if a setter function is not present then it means that state needsto be changed thru the AnimationEngine
+// if a setter function is not present then it means that state needs be changed thru the AnimationEngine

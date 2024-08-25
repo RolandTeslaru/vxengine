@@ -6,8 +6,6 @@ export interface EngineContextProps {
     setOnScreenTransform: (value: boolean) => void
     mountEngineUI: boolean
     composer: React.MutableRefObject<EffectComposer | null>;
-    transformMode: "translate" | "rotate" | "scale"
-    setTransformMode: (value: "translate" | "rotate" | "scale") => void;
     animationEngine: AnimationEngine;
 }
 

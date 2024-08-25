@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { ScrollSync } from 'react-virtualized';
-import { CommonProp } from '../../interface/common_prop';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
@@ -9,6 +8,7 @@ import './cursor.scss';
 import { handleSetCursor } from '../../utils/handleSetCursor';
 import { useVXEngine } from 'vxengine/engine';
 import { useTimelineEditorStore } from '../../store';
+import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 
 /** Animation timeline component parameters */
 export type CursorProps = CommonProp & {
@@ -36,7 +36,13 @@ export const Cursor: FC<CursorProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const draggingLeft = useRef<undefined | number>();
   const { animationEngine } = useVXEngine();
-  const { setCursorTime, cursorTime, width, editAreaRef, scrollSyncRef } = useTimelineEditorStore(); 
+  const { setCursorTime, cursorTime, width, editAreaRef, scrollSyncRef } = useTimelineEditorStore(state => ({
+    setCursorTime: state.setCursorTime,
+    cursorTime: state.cursorTime,
+    width: state.width,
+    editAreaRef: state.editAreaRef,
+    scrollSyncRef: state.scrollSyncRef
+  })); 
 
   const maxScaleCount = 100;
 

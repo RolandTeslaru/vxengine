@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { TimelineAction, TimelineRow } from "../../../interface/action";
 import { parserActionsToPositions, parserTimeToTransform } from "../../../utils/deal_data";
 import { DragLineData } from "../drag_lines";
 import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store";
+import { TimelineAction, TimelineRow } from "vxengine/AnimationEngine/interface/action";
 
 export function useDragLine() {
   const [dragLineData, setDragLineData] = useState<DragLineData>({ isMoving: false, movePositions: [], assistPositions: [] });
@@ -19,16 +19,18 @@ export function useDragLine() {
     cursorLeft: number;
   }) => {
     const { assistActionIds, action, row, scale, scaleWidth, startLeft, cursorLeft, hideCursor } = data;
-    const { editorData } = useTimelineEditorStore()
+    const { editorData } = useTimelineEditorStore(state => ({
+      editorData: state.editorData
+    }))
     const otherActions: TimelineAction[] = [];
     if (assistActionIds) {
-      editorData.forEach((rowItem) => {
+      editorData.forEach((rowItem: any) => {
         rowItem.actions.forEach((actionItem) => {
           if (assistActionIds.includes(actionItem.id)) otherActions.push(actionItem);
         });
       });
     } else {
-      editorData.forEach((rowItem) => {
+      editorData.forEach((rowItem: any) => {
         if (rowItem.id !== row.id) {
           otherActions.push(...rowItem.actions);
         } else {

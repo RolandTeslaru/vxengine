@@ -56,7 +56,10 @@ export const EditAction: FC<EditActionProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const isDragWhenClick = useRef(false);
   const { id, maxEnd, minStart, end, start, selected, flexible = true, movable = true, effectId } = action;
-  const { editorData, setScaleCount } = useTimelineEditorStore();
+  const { editorData, setScaleCount } = useTimelineEditorStore(state => ({
+    editorData: state.editorData,
+    setScaleCount: state.setScaleCount
+  }));
   const { animationEngine } = useVXEngine();
   //Get the maximum/minimum pixel range
   const leftLimit = parserTimeToPixel(minStart || 0, {

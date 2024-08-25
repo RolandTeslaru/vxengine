@@ -38,7 +38,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     const interactable = useRef<Interactable>();
     const deltaX = useRef(0);
     const isAdsorption = useRef(false);
-    const { editAreaRef } = useTimelineEditorStore();
+    const { editAreaRef } = useTimelineEditorStore(state => ({
+      editAreaRef: state.editAreaRef
+    }));
     const { initAutoScroll, dealDragAutoScroll, dealResizeAutoScroll, stopAutoScroll } = useAutoScroll(editAreaRef);
 
     useEffect(() => {

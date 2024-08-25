@@ -8,12 +8,6 @@ export interface StoredObjectProps {
 
 export interface ObjectStoreStateProps {
     objects: Record<string, StoredObjectProps>
-    selectedObjectKeys: string[];
-    selectedObjects: StoredObjectProps[];
     addObject: (object: StoredObjectProps) => void;
-    selectObjects: (vxkeys: string[]) => void;
-    removeSelectedObjectUsingKeys: (vxkeys_to_remove: string[]) => void;
     removeObject: (vxkey: string) => void;
-    hoveredObject: StoredObjectProps | null;
-    setHoveredObject: (obj: StoredObjectProps) => void;
 }

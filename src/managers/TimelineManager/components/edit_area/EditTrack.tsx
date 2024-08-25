@@ -19,7 +19,11 @@ export type EditRowProps = CommonProp & {
 };
 
 export const EditTrack: FC<EditRowProps> = (props) => {
-  const { editAreaRef, scale, scaleWidth } = useTimelineEditorStore();
+  const { editAreaRef, scale, scaleWidth } = useTimelineEditorStore(state => ({
+    editAreaRef: state.editAreaRef,
+    scale: state.scale,
+    scaleWidth: state.scaleWidth
+  }));
   const startLeft = 12;
 
   const handleTime = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

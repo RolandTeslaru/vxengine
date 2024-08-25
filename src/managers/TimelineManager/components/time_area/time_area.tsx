@@ -19,7 +19,14 @@ export type TimeAreaProps = CommonProp & {
 
 /** Animation timeline component */
 export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollLeft, onClickTimeArea, getScaleRender }) => {
-  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft } = useTimelineEditorStore();
+  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft } = useTimelineEditorStore(state => ({
+    scaleCount: state.scaleCount,
+    setCursorTime: state.setCursorTime,
+    scaleSplitCount: state.scaleSplitCount, 
+    scaleWidth: state.scaleWidth,
+    scale: state.scale,
+    startLeft: state.startLeft
+  }));
   const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
   /** Whether to display subdivision scales */

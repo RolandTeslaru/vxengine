@@ -3,6 +3,7 @@ import { MIN_SCALE_COUNT, START_CURSOR_TIME } from 'vxengine/AnimationEngine/int
 import { useVXEngine } from 'vxengine/engine';
 import { IEditorData, IStaticProps, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { ScrollSync } from 'react-virtualized';
+import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 
 
@@ -34,7 +35,7 @@ export interface TimelineEditorStoreProps {
     editorRef: React.MutableRefObject<HTMLDivElement | null>
 }
 
-export const useTimelineEditorStore = create<TimelineEditorStoreProps>((set, get) => ({
+export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorData: [],
     scale: 1,
     scaleCount: MIN_SCALE_COUNT,

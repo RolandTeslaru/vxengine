@@ -14,9 +14,6 @@ import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store'
 // Propery of VEXR Labs
 // Under VXEngine
 
-// Actions and Effects:
-// 	•	Actions (TimelineAction): These represent individual events or changes that occur at specific times within the timeline (e.g., moving an object, changing a color).
-// 	•	Effects (TimelineEffect): These are the actual visual or data changes that occur when actions are triggered. Effects are mapped to actions via an effectId.
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
@@ -56,7 +53,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     })
 
     this._dealData(this.currentTimeline);
-    this.reRender();
+    this.reRender(({ force: true }));
   }
 
   setIsPlaying(value: boolean) {
@@ -72,7 +69,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     useVXTimelineStore.setState({ currentTimeline: selectedTimeline })
     this._applyAllKeyframes(this.currentTime);
-    this.reRender(this.currentTime);
+    this.reRender();
     this.setEditorData(selectedTimeline.objects);
   }
 
@@ -169,7 +166,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
   private _applyAllKeyframes(currentTime: number) {
-    console.log("AnimaionEngine: Applying all Keyframes on ", this.currentTimeline.objects.length, " objects")
     this.currentTimeline.objects.forEach(object => {
       object.tracks.forEach(track => {
         this._applyKeyframes(object.vxkey, track.propertyPath, track.keyframes, currentTime);
@@ -193,7 +189,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
     }
 
-    console.log("For Object ",object, " apply on ", propertyPath, " wit value ", interpolatedValue  )
     this._updateObjectProperty(object, propertyPath, interpolatedValue);
   }
 

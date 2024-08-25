@@ -4,12 +4,17 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
+import { useObjectManagerStore } from "./store";
 
 export const ObjectManagerDriver = () => {
 
-  const { selectObjects, selectedObjects, selectedObjectKeys } = useVXObjectStore();
-  const { transformMode } = useVXEngine();
-  const firstSelectedObject = useVXObjectStore().selectedObjects[0]?.ref.current
+  const { selectObjects, selectedObjects, selectedObjectKeys, transformMode } = useObjectManagerStore(state => ({
+    selectObjects: state.selectObjects,
+    selectedObjectKeys: state.selectedObjectKeys,
+    selectedObjects: state.selectedObjects,
+    transformMode: state.transformMode
+}));
+  const firstSelectedObject = useObjectManagerStore(state => state.selectedObjects[0]?.ref.current);
 
   return (
     <>
@@ -18,9 +23,8 @@ export const ObjectManagerDriver = () => {
       )}
       {selectedObjectKeys.length === 1 &&
         <TransformControls
-          object={selectedObjects[0].ref.current}
+          object={firstSelectedObject}
           mode={transformMode}
-
         />
       }
     </>
@@ -28,7 +32,7 @@ export const ObjectManagerDriver = () => {
 }
 
 const UiInterface = () => {
-  const firstSelectedObject = useVXObjectStore().selectedObjects[0]?.ref.current
+  const firstSelectedObject = useObjectManagerStore(state => state.selectedObjects[0]?.ref.current);
   const [objectPropsPanel, setObjectPropsPanel] = useState<HTMLElement | null>(null);
 
   const positionRefs = useRef<{ x: HTMLInputElement | null, y: HTMLInputElement | null, z: HTMLInputElement | null }>({ x: null, y: null, z: null });

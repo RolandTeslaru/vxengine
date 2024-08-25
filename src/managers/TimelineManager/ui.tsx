@@ -14,6 +14,8 @@ import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
 import { useVXObjectStore } from 'vxengine/store';
+import { useShallow } from 'zustand/react/shallow'
+import { shallow } from 'zustand/shallow';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -23,7 +25,12 @@ const TimelineEditorUI: React.FC<{
     visible: boolean,
     setVisible: React.Dispatch<React.SetStateAction<boolean>>
 }> = ({ visible, setVisible }) => {
-    const { setScale, setSnap, snap, scale } = useTimelineEditorStore();
+    const { setScale, setSnap, snap, scale } = useTimelineEditorStore(state => ({
+        setScale: state.setScale,
+        setSnap: state.setSnap,
+        snap: state.snap,
+        scale: state.scale
+    }), shallow);
 
     return (
         <>
@@ -70,15 +77,15 @@ const TimelineEditorUI: React.FC<{
                             <p className='text-xs'>Snap</p>
                             <Switch onClick={() => setSnap(!snap)} checked={snap} />
                         </div>
-                        {/* <div className='flex flex-row font-sans-menlo gap-2'>
-                            <p>Scale</p>
+                        <div className='flex flex-row font-sans-menlo gap-2'>
+                            <p>Counts</p>
                             <Slider
                                 defaultValue={[50]}
                                 max={100}
                                 step={1}
                                 className='w-52'
                             />
-                        </div> */}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -90,8 +97,12 @@ export default TimelineEditorUI
 
 
 export const TimelineTrackList = () => {
-    const { editorData } = useTimelineEditorStore();
-    const { objects } = useVXObjectStore();
+    const { editorData } = useTimelineEditorStore(state => ({
+        editorData: state.editorData
+    }), shallow);
+    const { objects } = useVXObjectStore(state => ({
+        objects: state.objects
+    }));
 
     // Helper function to group tracks by their parent keys
     const groupTracksByParent = (tracks: ITrack[]) => {
@@ -175,7 +186,9 @@ export const TimelineTrackList = () => {
 
 const ProgressionControls = () => {
     const { animationEngine } = useVXEngine();
-    const { isPlaying } = useVXTimelineStore()
+    const { isPlaying } = useVXTimelineStore(state => ({
+        isPlaying: state.isPlaying
+    }), shallow)
 
     //Start or pause
     const handlePlayOrPause = () => {
@@ -221,7 +234,7 @@ const ProgressionControls = () => {
 }
 
 const TimeRender = () => {
-    const { currentTime } = useVXTimelineStore();
+    const { currentTime } = useVXTimelineStore(state => ({ currentTime: state.currentTime }));
     const float = (parseInt((currentTime % 1) * 100 + '') + '').padStart(2, '0');
     const min = (parseInt(currentTime / 60 + '') + '').padStart(2, '0');
     const second = (parseInt((currentTime % 60) + '') + '').padStart(2, '0');
@@ -229,26 +242,29 @@ const TimeRender = () => {
 };
 
 export const TimelineSelect = () => {
-    const { timelines, currentTimeline } = useVXTimelineStore();
-    const { animationEngine } = useVXEngine();
+    const { currentTimeline, timelines } = useVXTimelineStore(state => ({ 
+        currentTimeline: state.currentTimeline,
+        timelines: state.timelines
+    }), shallow)
+    const { animationEngine } = useVXEngine()
 
     return (
-        <Select
-            defaultValue={currentTimeline.id}
-            onValueChange={(value) => {
-                animationEngine.setCurrentTimeline(value)
-            }}>
-            <SelectTrigger className="w-[180px] h-7 my-auto">
-                <SelectValue placeholder="Select a Timeline" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectGroup>
-                    {timelines.map((timeline, index) =>
-                        <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
-                    )}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
+            <Select
+                defaultValue={currentTimeline.id}
+                onValueChange={(value) => {
+                    animationEngine.setCurrentTimeline(value)
+                }}>
+                <SelectTrigger className="w-[180px] h-7 my-auto">
+                    <SelectValue placeholder="Select a Timeline" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        {timelines.map((timeline, index) =>
+                            <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
+                        )}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
     )
 }
 

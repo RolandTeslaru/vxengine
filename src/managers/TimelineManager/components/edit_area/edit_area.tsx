@@ -10,7 +10,7 @@ import { ITrack, IEditorData } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 
-export type EditAreaProps = {
+export type EditAreaProps = CommonProp & {
   scrollLeft: number;
   scrollTop: number;
   onScroll: (params: OnScrollParams) => void;
@@ -40,7 +40,12 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     onActionResizing,
   } = props;
 
-  const { editorData, cursorTime, scaleCount, editAreaRef } = useTimelineEditorStore();
+  const { editorData, cursorTime, scaleCount, editAreaRef } = useTimelineEditorStore(state => ({
+    editorData: state.editorData,
+    cursorTime: state.cursorTime,
+    scaleCount: state.scaleCount,
+    editAreaRef: state.editAreaRef
+  }));
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
   const gridRef = useRef<Grid>();
   const heightRef = useRef(-1);

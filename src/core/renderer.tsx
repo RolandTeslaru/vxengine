@@ -27,8 +27,13 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   const [dpr_state, setDpr_state] = useState(1.2)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
   const { animationEngine } = useVXEngine();
-  const { objects } = useVXObjectStore();
+  const { objects } = useVXObjectStore(state => ({
+    objects: state.objects
+  }));
 
+  // Because the animationEngine is initialized really early, 
+  // it cant apply the starter keyframes to the vxObjects present in the scene 
+  // because they aren't mounted.
   useEffect(() => {
     animationEngine.reRender({ force: true});
   }, [objects])
