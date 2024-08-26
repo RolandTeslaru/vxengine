@@ -15,7 +15,7 @@ import { context as FiberContext } from '@react-three/fiber';
 
 let VXEngineUtils;
 if (process.env.NODE_ENV === 'development') {
-  VXEngineUtils = require('../utils.tsx').default;
+  VXEngineUtils = require('../RendererUtils.tsx').default;
 }
 
 // VXEngineCoreRenderer

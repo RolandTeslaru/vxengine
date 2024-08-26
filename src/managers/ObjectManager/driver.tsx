@@ -4,32 +4,60 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
-import { useObjectManagerStore } from "./store";
+import { useObjectManagerStore, useObjectPropertyStore } from "./store";
+import { shallow } from "zustand/shallow";
 
 export const ObjectManagerDriver = () => {
 
-  const { selectObjects, selectedObjects, selectedObjectKeys, transformMode } = useObjectManagerStore(state => ({
-    selectObjects: state.selectObjects,
+  const { selectedObjectKeys, transformMode } = useObjectManagerStore(state => ({
     selectedObjectKeys: state.selectedObjectKeys,
-    selectedObjects: state.selectedObjects,
     transformMode: state.transformMode
-}));
-  const firstSelectedObject = useObjectManagerStore(state => state.selectedObjects[0]?.ref.current);
+}), shallow);
+  const firstSelectedObjectStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
+  const firstObjectSelected: THREE.Object3D = firstSelectedObjectStored?.ref.current
+  const updateProperty = useObjectPropertyStore(state => state.updateProperty, shallow)
+
+  const handleTransformChange = () => {
+    if (firstSelectedObjectStored && firstObjectSelected) {
+      const vxkey = firstSelectedObjectStored.vxkey;
+
+      if (firstObjectSelected.position) {
+        updateProperty(vxkey, 'position.x', firstObjectSelected.position.x);
+        updateProperty(vxkey, 'position.y', firstObjectSelected.position.y);
+        updateProperty(vxkey, 'position.z', firstObjectSelected.position.z);
+      }
+
+      if (firstObjectSelected.rotation) {
+        updateProperty(vxkey, 'rotation.x', firstObjectSelected.rotation.x);
+        updateProperty(vxkey, 'rotation.y', firstObjectSelected.rotation.y);
+        updateProperty(vxkey, 'rotation.z', firstObjectSelected.rotation.z);
+      }
+
+      if (firstObjectSelected.scale) {
+        updateProperty(vxkey, 'scale.x', firstObjectSelected.scale.x);
+        updateProperty(vxkey, 'scale.y', firstObjectSelected.scale.y);
+        updateProperty(vxkey, 'scale.z', firstObjectSelected.scale.z);
+      }
+    }
+  };
 
   return (
     <>
-      {process.env.NODE_ENV === 'development' && (
-        <UiInterface />
-      )}
       {selectedObjectKeys.length === 1 &&
         <TransformControls
-          object={firstSelectedObject}
+          object={firstObjectSelected}
           mode={transformMode}
+          onChange={handleTransformChange}
         />
       }
     </>
   )
 }
+
+
+
+
+// Deprecated method of displaying object properties to the ui
 
 const UiInterface = () => {
   const firstSelectedObject = useObjectManagerStore(state => state.selectedObjects[0]?.ref.current);

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { StoredObjectProps, ObjectStoreStateProps } from '../types/objectStore';
+import { shallow } from 'zustand/shallow';
+import { produce } from "immer"
 
 const addObject = (state: ObjectStoreStateProps, object: StoredObjectProps): ObjectStoreStateProps => ({
   ...state,
@@ -8,9 +10,6 @@ const addObject = (state: ObjectStoreStateProps, object: StoredObjectProps): Obj
     [object.vxkey]: object,
   },
 });
-
-
-
 
 const removeObject = (state: ObjectStoreStateProps, vxkey: string): ObjectStoreStateProps => {
   const newObjects = { ...state.objects };
@@ -21,18 +20,8 @@ const removeObject = (state: ObjectStoreStateProps, vxkey: string): ObjectStoreS
   };
 };
 
-const clearObjects = (state: ObjectStoreStateProps): ObjectStoreStateProps => ({
-  ...state,
-  objects: {},
-});
-
-const getObjectByKey = (state: ObjectStoreStateProps, vxkey: string): StoredObjectProps | undefined => {
-  return state.objects[vxkey];
-};
-
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
   objects: {},
   addObject: (object) => set((state) => addObject(state, object)),
-  removeObject: (vxkey) => set((state) => removeObject(state, vxkey)),
-  getObjectByKey: (vxkey) => getObjectByKey(get(), vxkey),
+  removeObject: (vxkey) => set((state) => removeObject(state, vxkey))
 }));

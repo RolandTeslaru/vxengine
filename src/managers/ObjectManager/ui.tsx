@@ -11,7 +11,7 @@ import { useVXObjectStore } from 'vxengine/store'
 import { StoredObjectProps } from 'vxengine/types/objectStore'
 import { useVXEngine } from 'vxengine/engine'
 import { Input } from 'vxengine/components/shadcn/input'
-import { useObjectManagerStore } from './store'
+import { useObjectManagerStore, useObjectPropertyStore } from './store'
 import { shallow } from 'zustand/shallow'
 
 export const ObjectManagerUI = () => {
@@ -79,9 +79,9 @@ export const ObjectList = () => {
     selectObjects: state.selectObjects,
     hoveredObject: state.hoveredObject
   }), shallow);
-  
+
   const [lastSelectedIndex, setLastSelectedIndex] = React.useState(null);
-  
+
   const handleObjectClick = (event, obj: StoredObjectProps, index: number) => {
     event.preventDefault();
 
@@ -134,7 +134,7 @@ export const ObjectList = () => {
           <p className='ml-auto text-xs'> objects</p>
         </div>
         <div className='flex flex-col'>
-          {Object.values(objects).map((obj: StoredObjectProps, index:number) => {
+          {Object.values(objects).map((obj: StoredObjectProps, index: number) => {
             const isSelected = selectedObjectKeys.includes(obj.vxkey);
             const isHovered = hoveredObject?.vxkey === obj.vxkey
             return (
@@ -166,7 +166,7 @@ export const ObjectTransformControls = () => {
     selectedObjects: state.selectedObjects,
     transformMode: state.transformMode,
     setTransformMode: state.setTransformMode
-  }));
+  }), shallow);
 
   return (
     <AnimatePresence>
@@ -183,7 +183,7 @@ export const ObjectTransformControls = () => {
             >
               <Move className='scale-90' />
             </button>
-            <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer " + ( transformMode === "rotate" && "!border-neutral-200 !bg-blue-600   ")}
+            <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer " + (transformMode === "rotate" && "!border-neutral-200 !bg-blue-600   ")}
               onClick={() => setTransformMode("rotate")}
             >
               <RefreshCcw className='scale-75' />
@@ -191,7 +191,7 @@ export const ObjectTransformControls = () => {
             <button className={"bg-neutral-950 border hover:bg-neutral-800 border-neutral-600 p-1 rounded-lg cursor-pointer " + (transformMode === "scale" && "!border-neutral-200 !bg-blue-600   ")}
               onClick={() => setTransformMode("scale")}
             >
-              <svg width="24" height="24" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.5 3.04999C11.7485 3.04999 11.95 3.25146 11.95 3.49999V7.49999C11.95 7.74852 11.7485 7.94999 11.5 7.94999C11.2515 7.94999 11.05 7.74852 11.05 7.49999V4.58639L4.58638 11.05H7.49999C7.74852 11.05 7.94999 11.2515 7.94999 11.5C7.94999 11.7485 7.74852 11.95 7.49999 11.95L3.49999 11.95C3.38064 11.95 3.26618 11.9026 3.18179 11.8182C3.0974 11.7338 3.04999 11.6193 3.04999 11.5L3.04999 7.49999C3.04999 7.25146 3.25146 7.04999 3.49999 7.04999C3.74852 7.04999 3.94999 7.25146 3.94999 7.49999L3.94999 10.4136L10.4136 3.94999L7.49999 3.94999C7.25146 3.94999 7.04999 3.74852 7.04999 3.49999C7.04999 3.25146 7.25146 3.04999 7.49999 3.04999L11.5 3.04999Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+              <svg width="24" height="24" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.5 3.04999C11.7485 3.04999 11.95 3.25146 11.95 3.49999V7.49999C11.95 7.74852 11.7485 7.94999 11.5 7.94999C11.2515 7.94999 11.05 7.74852 11.05 7.49999V4.58639L4.58638 11.05H7.49999C7.74852 11.05 7.94999 11.2515 7.94999 11.5C7.94999 11.7485 7.74852 11.95 7.49999 11.95L3.49999 11.95C3.38064 11.95 3.26618 11.9026 3.18179 11.8182C3.0974 11.7338 3.04999 11.6193 3.04999 11.5L3.04999 7.49999C3.04999 7.25146 3.25146 7.04999 3.49999 7.04999C3.74852 7.04999 3.94999 7.25146 3.94999 7.49999L3.94999 10.4136L10.4136 3.94999L7.49999 3.94999C7.25146 3.94999 7.04999 3.74852 7.04999 3.49999C7.04999 3.25146 7.25146 3.04999 7.49999 3.04999L11.5 3.04999Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
             </button>
 
           </div>
@@ -206,11 +206,7 @@ export const ObjectTransformControls = () => {
 
 export const ObjectProperties = () => {
 
-  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0])
-
-  useEffect(() => {
-
-  }, [firstObjectSelected])
+  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0], shallow)
 
   return (
     <div id="VXObjectManager_ObjectProperties" className='bg-neutral-950 z-20 h-fit transition-all ease-in-out duration-500 bg-opacity-70 rounded-2xl p-2'>
@@ -226,25 +222,30 @@ export const ObjectProperties = () => {
 }
 
 export const TransformProperties = () => {
-  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0]?.ref.current)
+  const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
+  const firstObjectSelected = firstObjectSelectedStored?.ref.current;
+  const updateProperty = useObjectPropertyStore((state) => state.updateProperty);
+  const { properties } = useObjectPropertyStore(state => ({ properties: state.properties }), shallow);
 
-  const handlePositionChange = (axis: 'x' | 'y' | 'z', value: string) => {
+  const handleTransformChange = (property, axis, value) => {
     if (firstObjectSelected) {
-      firstObjectSelected.position[axis] = parseFloat(value);
+      firstObjectSelected[property][axis] = parseFloat(value);
+      updateProperty(firstObjectSelectedStored.vxkey, `${property}.${axis}`, parseFloat(value));
     }
   };
 
-  const handleScaleChange = (axis: 'x' | 'y' | 'z', value: string) => {
-    if (firstObjectSelected) {
-      firstObjectSelected.scale[axis] = parseFloat(value);
-    }
+  const renderInputs = (property) => {
+    return ['x', 'y', 'z'].map((axis) => (
+      <Input
+        key={`${property}-${axis}`}
+        className={`${axis} text-xs`}
+        type="number"
+        value={properties[firstObjectSelectedStored.vxkey]?.[property]?.[axis] || firstObjectSelected[property][axis]}
+        onChange={(e) => handleTransformChange(property, axis, e.target.value)}
+      />
+    ));
   };
 
-  const handleRotationChange = (axis: 'x' | 'y' | 'z', value: string) => {
-    if (firstObjectSelected) {
-      firstObjectSelected.rotation[axis] = parseFloat(value);
-    }
-  };
   return (
     <AnimatePresence>
       {firstObjectSelected && (
@@ -256,83 +257,33 @@ export const TransformProperties = () => {
             exit={{ opacity: 0 }}
           >
             <p className='text-xs pt-2'>Transform</p>
+
             <div className='flex flex-row py-2'>
               <p className='text-xs'>Position</p>
               <div className='PositionProp flex flex-row max-w-36 ml-auto [&>*]:p-0.5 [&>*]:h-fit [&>*]:border-none  [&>*]:bg-neutral-800'>
-                <Input
-                  className="x text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.position.x}
-                  onChange={(e) => handlePositionChange('x', e.target.value)}
-                />
-                <Input
-                  className="y text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.position.y}
-                  onChange={(e) => handlePositionChange('y', e.target.value)}
-                />
-                <Input
-                  className="z text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.position.z}
-                  onChange={(e) => handlePositionChange('z', e.target.value)}
-                />
+                {renderInputs('position')}
               </div>
             </div>
+
             <div className='flex flex-row py-2'>
               <p className='text-xs'>Scale</p>
               <div className='ScaleProp flex flex-row max-w-36 ml-auto [&>*]:p-0.5 [&>*]:h-fit [&>*]:border-none  [&>*]:bg-neutral-800'>
-                <Input
-                  className="x text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.scale.x}
-                  onChange={(e) => handleScaleChange('x', e.target.value)}
-                />
-                <Input
-                  className="y text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.scale.y}
-                  onChange={(e) => handleScaleChange('y', e.target.value)}
-                />
-                <Input
-                  className="z text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.scale.z}
-                  onChange={(e) => handleScaleChange('z', e.target.value)}
-                />
+                {renderInputs('scale')}
               </div>
             </div>
+
             <div className='flex flex-row py-2'>
               <p className='text-xs'>Rotation</p>
               <div className='RotationProp flex flex-row max-w-36 ml-auto [&>*]:p-0.5 [&>*]:h-fit [&>*]:border-none  [&>*]:bg-neutral-800'>
-                <Input
-                  className="x text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.rotation.x}
-                  onChange={(e) => handleRotationChange('x', e.target.value)}
-                />
-                <Input
-                  className="y text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.rotation.y}
-                  onChange={(e) => handleRotationChange('y', e.target.value)}
-                />
-                <Input
-                  className="z text-xs"
-                  type="number"
-                  defaultValue={firstObjectSelected.rotation.z}
-                  onChange={(e) => handleRotationChange('z', e.target.value)}
-                />
+                {renderInputs('rotation')}
               </div>
             </div>
           </motion.div>
         </>
       )}
-
     </AnimatePresence>
-
-  )
-}
+  );
+};
 
 export const GeometryProperties = ({ geometry }: { geometry: THREE.BufferGeometry }) => {
 

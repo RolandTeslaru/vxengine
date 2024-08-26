@@ -10,10 +10,12 @@ import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
+import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
 
 // Propery of VEXR Labs
 // Under VXEngine
 
+const IS_DEV = process.env.NODE_ENG === 'development'
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
@@ -41,9 +43,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
 
     if (this.isPlaying) this.pause();
-    console.log('Current Timeline ', this.currentTimeline)
-    console.log("New editor Data ", newEditorData);
 
+    console.log("VXAnimationEngine: Setting new EditorData")
     this.currentTimeline.objects.forEach(object => {
       const updatedObject = newEditorData.find(ed => ed.vxkey === object.vxkey);
       if (updatedObject) {
@@ -56,15 +57,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender(({ force: true }));
   }
 
+
   setIsPlaying(value: boolean) {
     useVXTimelineStore.setState({ isPlaying: value })
   }
 
+
   setCurrentTimeline(timelineId: string) {
-    console.log("AnimationEngine: Setting currentTimeline")
+    console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
     const selectedTimeline = this.timelines.find(timeline => timeline.id === timelineId);
     if (!selectedTimeline) {
-      throw new Error(`Timeline with id ${timelineId} not found`);
+      throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
     }
 
     useVXTimelineStore.setState({ currentTimeline: selectedTimeline })
@@ -72,6 +75,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender();
     this.setEditorData(selectedTimeline.objects);
   }
+
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
     const result = isTick || this.trigger('beforeSetTime', { time, engine: this });
@@ -86,28 +90,31 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     return true;
   }
 
+
   loadTimelines(timelines: ITimeline[]) {
     useVXTimelineStore.setState({ timelines: timelines }) // update Zustand state
 
-    console.log("AnimationEngine: Loading timeline ", timelines[0])
+    console.log("VXAnimationEngine: Loading timelines ", timelines[0])
     if (timelines.length > 0) {
       this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
     }
   }
 
-  reRender(param: {
+
+  reRender(params: {
     time?: number, 
     force?: boolean
   } = {}) {
-    const { time, force } = param
+    const { time, force } = params
     if (this.isPlaying && force === false) return;
-    console.log("AnimationEngine: reRendering")
+    console.log("VXAnimationEngine: reRendering with params", params)
     if (time !== undefined)
       this._applyAllKeyframes(time);
     else
       this._applyAllKeyframes(this.currentTime)
   }
   
+
   play(param: {
     /** By default, it runs from beginning to end, with a priority greater than autoEnd. */
     toTime?: number;
@@ -121,14 +128,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setIsPlaying(true);
 
-    this.trigger('play', { engine: this });
-
     this._timerId = requestAnimationFrame((time: number) => {
       this._prev = time;
       this._tick({ now: time, autoEnd, to: toTime });
     });
-    return true;
   }
+
 
   pause() {
     if (this.isPlaying) {
@@ -138,10 +143,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     cancelAnimationFrame(this._timerId);
   }
 
-  initObject(object: StoredObjectProps){
-    const tracks =  this.currentTimeline.objects.filter((_obj) => _obj.vxkey === object.vxkey)
-    console.log("Init objet tracks", tracks)
-  }
+
+  // initObject(object: StoredObjectProps){
+  //   const tracks =  this.currentTimeline.objects.filter((_obj) => _obj.vxkey === object.vxkey)
+  //   console.log("Init objet tracks", tracks)
+  // }
+
 
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
     if (this.isPaused) return;
@@ -165,6 +172,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     });
   }
 
+
   private _applyAllKeyframes(currentTime: number) {
     this.currentTimeline.objects.forEach(object => {
       object.tracks.forEach(track => {
@@ -172,6 +180,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       })
     })
   }
+
 
   private _applyKeyframes(vxkey: string, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
     const object = useVXObjectStore.getState().objects[vxkey];
@@ -187,10 +196,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = keyframes[keyframes.length - 1].value;
     } else {
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
+      // This is used by the Object properties ui panel
+      // since its only used in the development server, we dont need it in production because it can slow down
+        useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
     }
-
     this._updateObjectProperty(object, propertyPath, interpolatedValue);
   }
+
 
   private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
     // Find the two keyframes between which the current time falls
@@ -224,9 +236,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     return startKeyframe.value; // Fallback if types don't match
   }
 
+
   private _interpolateNumber(start: number, end: number, progress: number): number {
     return start + (end - start) * progress;
   }
+
 
   private _interpolateVector3(start: THREE.Vector3, end: THREE.Vector3, progress: number): THREE.Vector3 {
     return new THREE.Vector3(
@@ -236,7 +250,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     );
   }
 
-  private _updateObjectProperty(object: StoredObjectProps, propertyPath: string, newValue: number | THREE.Vector3) {
+
+  private _updateObjectProperty(
+    object: StoredObjectProps, 
+    propertyPath: string, 
+    newValue: number | THREE.Vector3
+  ) {
     const propertyKeys = propertyPath.split('.');
     let target = object.ref.current;
 

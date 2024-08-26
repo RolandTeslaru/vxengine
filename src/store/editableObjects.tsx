@@ -8,14 +8,14 @@ import { StoredObjectProps } from '../types/objectStore';
 import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 
 const dev = (fn: () => void) => {
-    if(process.env.NODE_ENV === "development")
+    if (process.env.NODE_ENV === "development")
         fn;
 }
 
 const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
-    ({type, children, vxkey, ...props }, forwardedRef) => {
-        if(vxkey === undefined) {
-            throw new Error(`No vxkey was passed to name: ${type}` )
+    ({ type, children, vxkey, ...props }, forwardedRef) => {
+        if (vxkey === undefined) {
+            throw new Error(`No vxkey was passed to name: ${type}`)
         }
         const { addObject, removeObject } = useVXObjectStore(state => ({
             addObject: state.addObject,
@@ -55,9 +55,8 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
                 memoizedRemoveObject(vxkey);
             };
         }, [memoizedAddObject, memoizedRemoveObject]);
-        
+
         const handlePointerOver = () => {
-            console.log("VXStore: Hovering over object", objectSelf)
             setHoveredObject(objectSelf)
         }
         const handlePointerOut = () => {
@@ -72,14 +71,14 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
 
         const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
         const containsSupportedGeometries = useMemo(() => {
-            return object3DInnerChildren?.some(element => 
+            return object3DInnerChildren?.some(element =>
                 supportedGeometries.includes(element.type)
             )
         }, [children.props.children])
-        
+
 
         // console.log("Contains Suppoertd Geometrys", containsSupportedGeometries)
-    
+
         const modifiedChildren = isValidElement(children) ? (
             React.cloneElement(children, {
                 ref: ref as React.MutableRefObject<THREE.Object3D>,
@@ -88,19 +87,19 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
                 onClick: () => memoizedSelectObjects([vxkey]),
                 onPointerDown: (e) => e.stopPropagation(),
                 ...props,
-                
-            }, 
-            // Three Object 3d children 
-            <>
-                {children.props.children}
-                {/* Only show the outline if the object is hovered and its not selected ( because it will already have a bounding box for modifying the geometry) */}
-                <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
-                    <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
-                </Edges>
-                <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey) } renderOrder={1000} color="#949494">
-                </Edges>
-              
-            </>
+
+            },
+                // Three Object 3d children 
+                <>
+                    {children.props.children}
+                    {/* Only show the outline if the object is hovered and its not selected ( because it will already have a bounding box for modifying the geometry) */}
+                    <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
+                        <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
+                    </Edges>
+                    <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
+                    </Edges>
+
+                </>
             )
         ) : children;
 
@@ -109,7 +108,7 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
 );
 
 const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
-    const {children: meshChildren,...rest} = props;
+    const { children: meshChildren, ...rest } = props;
 
     return (
         <VXEditableWrapper type="mesh" ref={ref} {...rest}>
@@ -163,7 +162,7 @@ const EditablePoints = forwardRef<Points, EditablePointsProps>((props, ref) => {
 })
 
 const EditableGroup = forwardRef<Group, EditableGroupProps>((props, forwardedRef) => {
-    if(props.vxkey === undefined) {
+    if (props.vxkey === undefined) {
         throw new Error("<vx.group> wasn't provided a vxkey")
     }
     const { addObject, removeObject, selectObjects } = useVXObjectStore(state => ({
@@ -184,11 +183,9 @@ const EditableGroup = forwardRef<Group, EditableGroupProps>((props, forwardedRef
     const type = "group"
 
     useEffect(() => {
-        console.log('VXStore: Adding object', id);
         memoizedAddObject({ vxkey: props.vxkey, type: type, ref: ref, name: props.name || type });
 
         return () => {
-            console.log('Removing object', id);
             memoizedRemoveObject(id);
         };
     }, [memoizedAddObject, memoizedRemoveObject]);

@@ -12,14 +12,15 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 const VXEngineContext = createContext<EngineContextProps>({
-    onScreenTransform: false,
-    setOnScreenTransform: () => { },
     mountEngineUI: false,
     composer: { current: null },
     animationEngine: null
 })
 
 export const useVXEngine = () => useContext(VXEngineContext)
+
+
+
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
     children,
     mount = true,
@@ -32,7 +33,6 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
         setMountEngineUI(mount)
     }, [])
 
-    const [onScreenTransform, setOnScreenTransform] = useState(false);
     const [themeType, setThemeType] = useState('dark')
     const switchThemes = () => {
         setThemeType(last => (last === 'dark' ? 'light' : 'dark'))
@@ -47,7 +47,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
 
     return (
         <VXEngineContext.Provider value={{
-            onScreenTransform, setOnScreenTransform, mountEngineUI, composer,
+            mountEngineUI, composer,
             animationEngine
         }}>
             <ThemeProvider

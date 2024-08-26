@@ -24,7 +24,7 @@ export const handleSetCursor = (param: {
     let result = true;
     if (updateTime) {
         result = animationEngine.setCurrentTime(time);
-        animationEngine.reRender();
+        // animationEngine.reRender();
     }
     result && setCursorTime(time); // Use passed setCursorTime function
     return result;
