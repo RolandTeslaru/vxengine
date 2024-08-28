@@ -53,7 +53,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     })
 
-    this._dealData(this.currentTimeline);
+    // this._dealData(this.currentTimeline);
     this.reRender(({ force: true }));
   }
 
@@ -283,13 +283,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  /** Process data */
-  private _dealData(timeline: ITimeline) {
-    this._tracks = [];
-    timeline.objects.forEach(object => {
-      object.tracks.forEach(track => {
-        this._tracks.push(track);
-      })
-    })
-  }
+  // /** Process data */
+  // private _dealData(timeline: ITimeline) {
+  //   this._tracks = [];
+  //   timeline.objects.forEach(object => {
+  //     object.tracks.forEach(track => {
+  //       this._tracks.push(track);
+  //     })
+  //   })
+  // }
 }

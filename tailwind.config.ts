@@ -7,6 +7,11 @@ const config = {
   ],
   prefix: "",
   theme: {
+    typography: {
+      DEFAULT: {
+
+      }
+    },
     container: {
       center: true,
       padding: "2rem",
@@ -15,6 +20,9 @@ const config = {
       },
     },
     extend: {
+      fontSize: {
+        "xxs": '0.625rem', // 10px
+      },
       margin: {
         'containerDesktop': 'calc(3vh + 50px) calc(1vw + 70px) 3vh 1vw ',
         'containerMobile': 'calc(3vh + 50px) 1vw 3vh 1vw ',
@@ -22,16 +30,6 @@ const config = {
       },
       gridTemplateColumns: {
         '3upper': '1.05fr 1.9fr 1.05fr'
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'logs-img': "url('/images/LogPng.png')",
-        'code-img': "url('/images/code.png')",
-        'analytics-img': "url('/images/Analytics.png')",
-        "world-img": "url('/images/world.png)",
-        'vision-pro': "url('/images/VisionPro.img)",
-        'bmw': "url('/images/Bmw.img)"
       },
       fontFamily: {
         'sans-menlo': ['Sans Menlo', 'sans'], 
@@ -54,7 +52,11 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('tailwindcss-animate')
+  ],
+  
 } satisfies Config
 
 export default config

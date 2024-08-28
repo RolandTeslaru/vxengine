@@ -12,7 +12,6 @@ export interface ITimeline {
 
 export interface ITrack {
     propertyPath: string;
-    classNames?: string[];
     keyframes: IKeyframe[];
 }
 export interface IStaticProps {

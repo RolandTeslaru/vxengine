@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { TimelineVisualEditor } from './components/TimelinevisualEditor'
 import { cloneDeep } from 'lodash';
-import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward } from "@geist-ui/icons"
+import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
 import { AnimatePresence, motion } from "framer-motion"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from 'vxengine/components/shadcn/select';
 import { Slider } from 'vxengine/components/shadcn/slider';
@@ -9,13 +9,14 @@ import { Switch } from 'vxengine/components/shadcn/switch';
 import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { useVXEngine } from 'vxengine/engine';
-import { ITrack } from 'vxengine/AnimationEngine/types/track';
+import { IEditorData, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
 import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
+import { StoredObjectProps } from 'vxengine/types/objectStore';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -95,6 +96,144 @@ const TimelineEditorUI: React.FC<{
 
 export default TimelineEditorUI
 
+const tree = [{
+    name: "RedBox",
+    files: [
+        {
+            name: "material.thing1",
+            files: [
+                {
+                    name: "thing2",
+                    tracks: [
+                        {
+                            name: "value1",
+                            value: 1,
+                        },
+                        {
+                            name: "value2",
+                            value: 2,
+                        }
+                    ]
+                },
+                {
+                    name: "thing3.thing4",
+                    tracks: [
+                        {
+                            name: "value",
+                            value: 1
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            name: "position",
+            tracks: [
+                {
+                    name: "x",
+                    value: 1
+                },
+                {
+                    name: "y",
+                    value: 1
+                },
+                {
+                    name: "z",
+                    value: 1
+                }
+            ]
+        }
+    ]
+}]
+
+const getFileTree = (editorData: IEditorData[], objects) => {
+    const tree = editorData.map((objectData) => {
+        const { vxkey, tracks } = objectData;
+        if (objects[vxkey] === undefined) return;
+        const masterObjectName = objects[vxkey].name;
+
+        // Initialize the root node for the object
+        const rootNode = {
+            name: masterObjectName,
+            files: [],
+        };
+
+        // Helper function to group tracks by their parent keys
+        const groupTracksByParent = (tracks: ITrack[]) => {
+            const groupedTracks: Record<string, any> = {};
+
+            tracks.forEach((track) => {
+                const pathSegments = track.propertyPath.split('.');
+
+                let currentGroup = groupedTracks;
+
+                pathSegments.forEach((key, index) => {
+                    if (!currentGroup[key]) {
+                        currentGroup[key] = { children: {}, tracks: [] };
+                    }
+
+                    if (index === pathSegments.length - 1) {
+                        currentGroup[key].tracks.push({
+                            name: key,
+                            value: track,
+                        });
+                    } else {
+                        currentGroup = currentGroup[key].children;
+                    }
+                });
+            });
+
+            return groupedTracks;
+        };
+
+        // Convert the grouped tracks into the file tree format
+        const convertToFileTree = (groupedTracks: Record<string, any>) => {
+            return Object.entries(groupedTracks).map(([key, group]) => {
+                const node = {
+                    name: key,
+                    files: [],
+                };
+
+                if (group.tracks.length > 0) {
+                    node.files = group.tracks;
+                }
+
+                if (Object.keys(group.children).length > 0) {
+                    node.files.push(...convertToFileTree(group.children));
+                }
+
+                return node;
+            });
+        };
+
+        // Group tracks by their parent keys
+        const groupedTracks = groupTracksByParent(tracks);
+
+        // Convert grouped tracks into the final tree structure
+        rootNode.files = convertToFileTree(groupedTracks);
+
+        return rootNode;
+    });
+
+    return tree;
+};
+
+const KeyframeControl = () => {
+    return (
+      <div className='flex flex-row'>
+        <button className='hover:*:stroke-[5] hover:*:stroke-white' >
+          <ChevronLeft className=' w-3 h-3'/>
+        </button>
+        <button className='hover:*:stroke-[5] hover:*:stroke-white'  >
+          <Square className='rotate-45 w-2 h-2' />
+        </button>
+        <button className='hover:*:stroke-[5] hover:*:stroke-white' >
+          <ChevronRight className='w-3 h-3 ' />
+        </button>
+      </div>
+    )
+  }
+
 
 export const TimelineTrackList = () => {
     const { editorData } = useTimelineEditorStore(state => ({
@@ -103,6 +242,18 @@ export const TimelineTrackList = () => {
     const { objects } = useVXObjectStore(state => ({
         objects: state.objects
     }));
+
+    console.log("Editor Data ", editorData)
+
+    const [tree, setTree] = useState(getFileTree(editorData, objects));
+
+    useEffect(() => {
+        setTree(getFileTree(editorData, objects))
+    }, [objects])
+
+    useEffect(() => {
+        console.log('Final Tree ', tree)
+    }, [tree])
 
     // Helper function to group tracks by their parent keys
     const groupTracksByParent = (tracks: ITrack[]) => {
@@ -132,29 +283,36 @@ export const TimelineTrackList = () => {
     const renderGroupedTracks = (groupedTracks: Record<string, any>, depth = 1, shouldIndent = false) => {
         return Object.entries(groupedTracks).map(([key, group]) => {
             const hasChildren = group.children && Object.keys(group.children).length > 0;
-    
+
             // Determine if the group has multiple children
             const isColGroup = hasChildren && Object.keys(group.children).length > 1;
-    
+
             const isFinalGroup = hasChildren && Object.values(group.children).every(
                 (child: any) => child.track && (!child.children || Object.keys(child.children).length === 0)
             );
-    
-            // Determine if padding should be added based on sibling relationships
-            const shouldIndentChildren = isColGroup && !group.track && !isFinalGroup ;
 
-            // console.log(key, " isColGroup", isColGroup, " hasChildren", hasChildren, " shouldIndent", shouldIndentChildren);
-    
+            // Determine if padding should be added based on sibling relationships
+            const shouldIndentChildren = isColGroup && !group.track && !isFinalGroup;
+
+            const isValueTrack = group.track;
+
             return (
-                <div key={key} className={`${key} w-full flex ${isColGroup ? "flex-col" : "flex-row"}`} style={{paddingLeft: shouldIndent && 16}}>
+                <div
+                    key={key}
+                    className={`${key} w-full flex ${isColGroup ? "flex-col" : "flex-row"}`}
+                    style={{ paddingLeft: shouldIndent && 16 }}
+                >
+                    {/* Close button */}
+                    {/* <div>
+                        <ChevronRight />
+                    </div> */}
+            
                     <div className={`h-8 flex items-center`} style={{ marginLeft: group.track ? "auto" : undefined }}>
                         <p className={`${group.track ? 'text-neutral-500' : 'font-bold'} mr-2`}>
                             {key}
                         </p>
                         {group.track && (
-                            <div>
-                                <button>(key)</button>
-                            </div>
+                            <KeyframeControl/>
                         )}
                     </div>
                     {!group.track && hasChildren && renderGroupedTracks(group.children, depth + 1, shouldIndentChildren)}
@@ -164,7 +322,7 @@ export const TimelineTrackList = () => {
     };
 
     return (
-        <div className="bg-neutral-950 mr-2 mt-[34px] w-fit text-xs rounded-2xl py-2 px-4">
+        <div className="bg-neutral-950 mr-2 mt-[34px] w-fit text-xs rounded-2xl py-2 px-4 border border-neutral-800 border-opacity-70">
             {editorData?.map(({ vxkey, tracks }) => {
                 const object = objects[vxkey];
                 const groupedTracks = groupTracksByParent(tracks);
@@ -242,29 +400,29 @@ const TimeRender = () => {
 };
 
 export const TimelineSelect = () => {
-    const { currentTimeline, timelines } = useVXTimelineStore(state => ({ 
+    const { currentTimeline, timelines } = useVXTimelineStore(state => ({
         currentTimeline: state.currentTimeline,
         timelines: state.timelines
     }), shallow)
     const { animationEngine } = useVXEngine()
 
     return (
-            <Select
-                defaultValue={currentTimeline.id}
-                onValueChange={(value) => {
-                    animationEngine.setCurrentTimeline(value)
-                }}>
-                <SelectTrigger className="w-[180px] h-7 my-auto">
-                    <SelectValue placeholder="Select a Timeline" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        {timelines.map((timeline, index) =>
-                            <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
-                        )}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+        <Select
+            defaultValue={currentTimeline.id}
+            onValueChange={(value) => {
+                animationEngine.setCurrentTimeline(value)
+            }}>
+            <SelectTrigger className="w-[180px] h-7 my-auto">
+                <SelectValue placeholder="Select a Timeline" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectGroup>
+                    {timelines.map((timeline, index) =>
+                        <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
+                    )}
+                </SelectGroup>
+            </SelectContent>
+        </Select>
     )
 }
 
