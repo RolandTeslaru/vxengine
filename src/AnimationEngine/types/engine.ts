@@ -24,5 +24,6 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     setCurrentTimeline(timelineId: string): void;
     loadTimelines(timelines: ITimeline[]): void;
     setCurrentTime(time: number, isTick?: boolean): boolean;
-    setEditorData(newEditorData: [ {vxkey: string, tracks: ITrack[], staticProps: IStaticProps[]}]): void;
+    setEditorData(newEditorData: [ 
+      {vxkey: string, tracks: ITrack[], staticProps: IStaticProps[]}]): void;
   }

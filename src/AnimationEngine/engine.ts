@@ -1,3 +1,7 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 import { TimelineAction, TimelineRow } from './interface/action';
 import { TimelineEffect } from './interface/effect';
 import { Emitter } from './emitter';
@@ -6,14 +10,11 @@ import { StoredObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
 import { IEditorData, IKeyframe, IStaticProps, ITimeline, ITrack } from './types/track';
-import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
 import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
-
-// Propery of VEXR Labs
-// Under VXEngine
+import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 
 const IS_DEV = process.env.NODE_ENG === 'development'
 
@@ -28,12 +29,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     super(new Events());
   }
 
-  get timelines() { return useVXTimelineStore.getState().timelines; }
-  get isPlaying() { return useVXTimelineStore.getState().isPlaying; }
+  get timelines() { return useVXAnimationStore.getState().timelines; }
+  get isPlaying() { return useVXAnimationStore.getState().isPlaying; }
   get isPaused() { return !this.isPlaying; }
-  get currentTime() { return useVXTimelineStore.getState().currentTime; }
-  get currentTimeline() { return useVXTimelineStore.getState().currentTimeline }
-  get playRate() { return useVXTimelineStore.getState().playRate }
+  get currentTime() { return useVXAnimationStore.getState().currentTime; }
+  get currentTimeline() { return useVXAnimationStore.getState().currentTimeline }
+  get playRate() { return useVXAnimationStore.getState().playRate }
 
   // Setter functions for the states
 
@@ -59,7 +60,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   setIsPlaying(value: boolean) {
-    useVXTimelineStore.setState({ isPlaying: value })
+    useVXAnimationStore.setState({ isPlaying: value })
   }
 
 
@@ -70,7 +71,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
     }
 
-    useVXTimelineStore.setState({ currentTimeline: selectedTimeline })
+    useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
     this._applyAllKeyframes(this.currentTime);
     this.reRender();
     this.setEditorData(selectedTimeline.objects);
@@ -81,7 +82,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const result = isTick || this.trigger('beforeSetTime', { time, engine: this });
     if (!result) return false;
 
-    useVXTimelineStore.setState({ currentTime: time })
+    useVXAnimationStore.setState({ currentTime: time })
 
     this._applyAllKeyframes(time);
 
@@ -92,7 +93,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   loadTimelines(timelines: ITimeline[]) {
-    useVXTimelineStore.setState({ timelines: timelines }) // update Zustand state
+    useVXAnimationStore.setState({ timelines: timelines }) // update Zustand state
 
     console.log("VXAnimationEngine: Loading timelines ", timelines[0])
     if (timelines.length > 0) {

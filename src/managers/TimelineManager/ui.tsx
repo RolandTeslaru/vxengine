@@ -1,5 +1,8 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 import React, { useEffect, useRef, useState } from 'react'
-import { TimelineVisualEditor } from './components/TimelinevisualEditor'
 import { cloneDeep } from 'lodash';
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
 import { AnimatePresence, motion } from "framer-motion"
@@ -10,13 +13,16 @@ import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { useVXEngine } from 'vxengine/engine';
 import { IEditorData, ITrack } from 'vxengine/AnimationEngine/types/track';
-import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
 import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
 import { StoredObjectProps } from 'vxengine/types/objectStore';
+import { handleSetCursor } from './utils/handleSetCursor';
+import TrackVerticalList from './components/TrackVerticalList';
+import TimelineEditor from './components/TimelineEditor';
+import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -51,8 +57,8 @@ const TimelineEditorUI: React.FC<{
                 <ProgressionControls />
             </div>
             <div className='relative flex flex-row  overflow-hidden'>
-                <TimelineTrackList />
-                <TimelineVisualEditor />
+                <TrackVerticalList />
+                <TimelineEditor />
             </div>
             <AnimatePresence>
                 {visible && (
@@ -218,133 +224,10 @@ const getFileTree = (editorData: IEditorData[], objects) => {
     return tree;
 };
 
-const KeyframeControl = () => {
-    return (
-      <div className='flex flex-row'>
-        <button className='hover:*:stroke-[5] hover:*:stroke-white' >
-          <ChevronLeft className=' w-3 h-3'/>
-        </button>
-        <button className='hover:*:stroke-[5] hover:*:stroke-white'  >
-          <Square className='rotate-45 w-2 h-2' />
-        </button>
-        <button className='hover:*:stroke-[5] hover:*:stroke-white' >
-          <ChevronRight className='w-3 h-3 ' />
-        </button>
-      </div>
-    )
-  }
-
-
-export const TimelineTrackList = () => {
-    const { editorData } = useTimelineEditorStore(state => ({
-        editorData: state.editorData
-    }), shallow);
-    const { objects } = useVXObjectStore(state => ({
-        objects: state.objects
-    }));
-
-    console.log("Editor Data ", editorData)
-
-    const [tree, setTree] = useState(getFileTree(editorData, objects));
-
-    useEffect(() => {
-        setTree(getFileTree(editorData, objects))
-    }, [objects])
-
-    useEffect(() => {
-        console.log('Final Tree ', tree)
-    }, [tree])
-
-    // Helper function to group tracks by their parent keys
-    const groupTracksByParent = (tracks: ITrack[]) => {
-        const groupedTracks: Record<string, any> = {};
-
-        tracks.forEach((track) => {
-            const pathSegments = track.propertyPath.split('.');
-
-            let currentGroup = groupedTracks;
-
-            pathSegments.forEach((key, index) => {
-                if (!currentGroup[key]) {
-                    currentGroup[key] = { children: {}, track: null };
-                }
-
-                if (index === pathSegments.length - 1) {
-                    currentGroup[key].track = track;
-                } else {
-                    currentGroup = currentGroup[key].children;
-                }
-            });
-        });
-
-        return groupedTracks;
-    };
-
-    const renderGroupedTracks = (groupedTracks: Record<string, any>, depth = 1, shouldIndent = false) => {
-        return Object.entries(groupedTracks).map(([key, group]) => {
-            const hasChildren = group.children && Object.keys(group.children).length > 0;
-
-            // Determine if the group has multiple children
-            const isColGroup = hasChildren && Object.keys(group.children).length > 1;
-
-            const isFinalGroup = hasChildren && Object.values(group.children).every(
-                (child: any) => child.track && (!child.children || Object.keys(child.children).length === 0)
-            );
-
-            // Determine if padding should be added based on sibling relationships
-            const shouldIndentChildren = isColGroup && !group.track && !isFinalGroup;
-
-            const isValueTrack = group.track;
-
-            return (
-                <div
-                    key={key}
-                    className={`${key} w-full flex ${isColGroup ? "flex-col" : "flex-row"}`}
-                    style={{ paddingLeft: shouldIndent && 16 }}
-                >
-                    {/* Close button */}
-                    {/* <div>
-                        <ChevronRight />
-                    </div> */}
-            
-                    <div className={`h-8 flex items-center`} style={{ marginLeft: group.track ? "auto" : undefined }}>
-                        <p className={`${group.track ? 'text-neutral-500' : 'font-bold'} mr-2`}>
-                            {key}
-                        </p>
-                        {group.track && (
-                            <KeyframeControl/>
-                        )}
-                    </div>
-                    {!group.track && hasChildren && renderGroupedTracks(group.children, depth + 1, shouldIndentChildren)}
-                </div>
-            );
-        });
-    };
-
-    return (
-        <div className="bg-neutral-950 mr-2 mt-[34px] w-fit text-xs rounded-2xl py-2 px-4 border border-neutral-800 border-opacity-70">
-            {editorData?.map(({ vxkey, tracks }) => {
-                const object = objects[vxkey];
-                const groupedTracks = groupTracksByParent(tracks);
-
-                return (
-                    <div key={vxkey} className="flex flex-col ">
-                        <div className='h-8 bg-neutral-900 flex'>
-                            <p className="font-bold h-auto my-auto text-white">{object?.name}</p>
-                        </div>
-                        <div className="flex flex-col rounded-md">
-                            {renderGroupedTracks(groupedTracks, 0, true)}
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
 
 const ProgressionControls = () => {
     const { animationEngine } = useVXEngine();
-    const { isPlaying } = useVXTimelineStore(state => ({
+    const { isPlaying } = useVXAnimationStore(state => ({
         isPlaying: state.isPlaying
     }), shallow)
 
@@ -392,7 +275,7 @@ const ProgressionControls = () => {
 }
 
 const TimeRender = () => {
-    const { currentTime } = useVXTimelineStore(state => ({ currentTime: state.currentTime }));
+    const { currentTime } = useVXAnimationStore(state => ({ currentTime: state.currentTime }));
     const float = (parseInt((currentTime % 1) * 100 + '') + '').padStart(2, '0');
     const min = (parseInt(currentTime / 60 + '') + '').padStart(2, '0');
     const second = (parseInt((currentTime % 60) + '') + '').padStart(2, '0');
@@ -400,7 +283,7 @@ const TimeRender = () => {
 };
 
 export const TimelineSelect = () => {
-    const { currentTimeline, timelines } = useVXTimelineStore(state => ({
+    const { currentTimeline, timelines } = useVXAnimationStore(state => ({
         currentTimeline: state.currentTimeline,
         timelines: state.timelines
     }), shallow)

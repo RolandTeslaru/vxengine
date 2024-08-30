@@ -1,3 +1,7 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 import { create } from 'zustand';
 import { StoredObjectProps, } from '../types/objectStore';
 import { TimelineStoreStateProps } from '../types/timelineStore';
@@ -14,12 +18,7 @@ const getTimelineById = (timelines: ITimeline[], id: string): ITimeline | undefi
     return timelines.find((timeline) => timeline.id === id);
 }
 
-function createStoreWithShallowEquality(config) {
-    const store = create(config);
-    return (selector) => store(selector, shallow);
-  }
-
-export const useVXTimelineStore = createWithEqualityFn<TimelineStoreStateProps>((set, get) => ({
+export const useVXAnimationStore = createWithEqualityFn<TimelineStoreStateProps>((set, get) => ({
     timelines: [],
     addTimeline: (newTimeline: ITimeline) => set((state) => addTimeline(state, newTimeline)),
     currentTimeline: undefined,

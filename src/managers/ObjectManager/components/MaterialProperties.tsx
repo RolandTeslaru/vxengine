@@ -10,10 +10,6 @@ interface Props {
 
 const MaterialProperties: React.FC<Props> = ({ material }) => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
-    const firstObjectSelected = firstObjectSelectedStored?.ref.current;
-    const updateProperty = useObjectPropertyStore((state) => state.updateProperty);
-    const { properties } = useObjectPropertyStore(state => ({ properties: state.properties }), shallow);
-
 
     useEffect(() => {
         console.log("Material ", material)
@@ -21,7 +17,7 @@ const MaterialProperties: React.FC<Props> = ({ material }) => {
 
     return (
         <CollapsiblePanel
-            title="Material Properties"
+            title={material.type}
             defaultOpen={false}
         >
         

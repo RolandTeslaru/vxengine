@@ -1,3 +1,7 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 "use client"
 import React, { Suspense, useContext, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
@@ -24,7 +28,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   children,
   powerPreferences = 'high-performance'
 }) => {
-  const [dpr_state, setDpr_state] = useState(1.2)
+  const [dpr_state, setDpr_state] = useState(0.6)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
   const { animationEngine } = useVXEngine();
   const { objects } = useVXObjectStore(state => ({
@@ -50,7 +54,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         dpr={dpr_state}
         performance={{
           min: 0.1,
-          max: 1.0
+          max: 0.4
         }}
       >
         <PerformanceMonitor

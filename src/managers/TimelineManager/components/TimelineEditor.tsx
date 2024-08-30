@@ -1,24 +1,25 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollSync } from 'react-virtualized';
-import { IAnimationEngine, AnimationEngine } from 'vxengine/AnimationEngine/engine';
 import { checkProps } from '../utils/check_props';
 import { getScaleCountByRows, parserPixelToTime, parserTimeToPixel } from '../utils/deal_data';
 import { Cursor } from './cursor/cursor';
 import { EditArea } from './edit_area/edit_area';
 import './timeline.scss';
 import { TimeArea } from './time_area/time_area';
-import { TimelineEditor, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
+import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
 import { useVXEngine } from 'vxengine/engine';
-import { ITrack } from 'vxengine/AnimationEngine/types/track';
-import { useVXTimelineStore } from 'vxengine/store/TimelineStore';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from '../store';
 import { handleSetCursor } from '../utils/handleSetCursor';
 
 export const startLeft = 0;
 
-export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEditor>((props, ref) => {
+const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, ref) => {
   const checkedProps = checkProps(props);
   const { style } = props;
   let {
@@ -134,3 +135,6 @@ export const TimelineVisualEditor = React.forwardRef<TimelineState, TimelineEdit
     </div>
   );
 });
+
+
+export default TimelineEditor

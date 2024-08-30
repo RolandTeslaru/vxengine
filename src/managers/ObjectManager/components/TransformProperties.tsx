@@ -6,34 +6,20 @@ import PropInput from "vxengine/components/ui/PropInput";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
-    const firstObjectSelected = firstObjectSelectedStored?.ref.current;
-    const updateProperty = useObjectPropertyStore((state) => state.updateProperty);
-    const { properties } = useObjectPropertyStore(state => ({ properties: state.properties }), shallow);
-
-    const handleTransformChange = (property, axis, value) => {
-        if (firstObjectSelected) {
-            firstObjectSelected[property][axis] = parseFloat(value);
-            updateProperty(firstObjectSelectedStored.vxkey, `${property}.${axis}`, parseFloat(value));
-        }
-    };
-
 
     const renderInputs = (property) => {
         return ['x', 'y', 'z'].map((axis) => (
             <PropInput
                 key={`${property}-${axis}`}
                 type="number"
-                value={properties[firstObjectSelectedStored.vxkey]?.[property]?.[axis] || firstObjectSelected[property][axis]}
-                onChange={(e) => handleTransformChange(property, axis, e.target.value)}
+                propertyPath={`${property}.${axis}`}
                 horizontal={true}
             />
         ));
     };
 
-
-
     return (
-        firstObjectSelected && (
+        firstObjectSelectedStored?.ref.current && (
             <CollapsiblePanel
                 title="Transform"
             >

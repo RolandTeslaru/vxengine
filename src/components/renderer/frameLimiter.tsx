@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect } from "react";
 
-export const VXFrameLimiter = ({ maxFps = 60}) => {
+export const VXFrameLimiter = ({ maxFps = 30}) => {
     const set = useThree((state) => state.set);
     const get = useThree((state) => state.get);
     const advance = useThree((state) => state.advance);
