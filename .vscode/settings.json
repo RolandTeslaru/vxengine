@@ -5,6 +5,7 @@
         "vxengine",
         "vxkey",
         "vxkeys",
+        "vxobject",
         "Zustand"
     ]
 }

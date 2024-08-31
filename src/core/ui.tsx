@@ -7,6 +7,7 @@ import TimelineEditorUI, { TimelineTools } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
 import TimelineEditor from "../managers/TimelineManager/ui"
 import ObjectList from "vxengine/managers/ObjectManager/components/ObjectList"
+import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store"
 
 export const CoreUI = () => {
 
@@ -72,15 +73,42 @@ export const CoreUI = () => {
                 />
             </motion.div>
 
+            <TimelineEditorDebug />
+
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
-                href ="https://vexr-labs.com/"
+                href="https://vexr-labs.com/"
                 target="_blank"
             >
                 <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
                     VEXR<span className="font-thin">LABS</span>
                 </h1>
             </a>
+        </div>
+    )
+}
+
+
+const TimelineEditorDebug = () => {
+    const { editorData } = useTimelineEditorStore();
+    const editorDataString = JSON.stringify(editorData, null, 2)
+    return (
+        <div className="fixed backdrop-blur-sm top-[40%] left-[300px] text-sm bg-neutral-900 p-2 gap-2
+                            bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col">
+            <h1 className="text-center font-sans-menlo">EditorData state</h1>
+            <div>
+                <pre
+                    style={{
+                        padding: '10px',
+                        borderRadius: '5px',
+                        maxHeight: '400px',
+                        overflowY: 'scroll',
+                        whiteSpace: 'pre-wrap', // This makes sure the text wraps within the container
+                    }}
+                >
+                    {editorDataString}
+                </pre>
+            </div>
         </div>
     )
 }

@@ -3,15 +3,33 @@ import { Input, InputProps } from '../shadcn/input'
 import KeyframeControl from './KeyframeControl'
 import { useObjectManagerStore, useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store'
 import { getNestedProperty, setNestedProperty } from 'vxengine/utils/nestedProperty'
+import { shallow } from 'zustand/shallow'
 
 interface Props extends InputProps {
     propertyPath: string
     horizontal?: boolean
 }
 export const PropInput: React.FC<Props> = (props) => {
-    const { propertyPath, className, horizontal, ...restProps } = props
-    const vxkey = useObjectManagerStore(state => state.selectedObjects[0].vxkey);
-    const firstObjectSelectedStored = useObjectManagerStore(state => state.selectedObjects[0]);
+    const { propertyPath, className, horizontal, ...inputProps } = props
+    
+    return (
+        <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
+            <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
+                <KeyframeControl propertyPath={propertyPath} />
+            </div>
+            <ValueRenderer propertyPath={propertyPath} inputProps={inputProps}/>
+        </div>
+    )
+}
+
+interface ValueRendererProps {
+    propertyPath: string
+    inputProps: React.InputHTMLAttributes<HTMLInputElement>
+}
+
+const ValueRenderer: React.FC<ValueRendererProps> = ({propertyPath, inputProps}) => {
+    const vxkey = useObjectManagerStore(state => state.selectedObjects[0].vxkey, shallow);
+    const firstObjectSelectedStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
     const firstObjectSelected = firstObjectSelectedStored?.ref.current;
 
     const [value, setValue] = useState(
@@ -21,14 +39,11 @@ export const PropInput: React.FC<Props> = (props) => {
 
     useEffect(() => {
         const currentProperties = useObjectPropertyStore.getState().properties;
-
-        // Check if the property is tracked before subscribing
         const isPropertyTracked = getNestedProperty(currentProperties[vxkey], propertyPath) !== undefined;
 
         if (!isPropertyTracked) {
-            // Optionally, track the property here
-            console.log(`Property ${propertyPath} is not tracked. Skipping subscription.`);
-            return; // Exit early if the property isn't tracked
+            // console.log(`Property ${propertyPath} is not tracked. Skipping subscription.`);
+            return;
         }
 
         const unsubscribe = useObjectPropertyStore.subscribe((state, prevState) => {
@@ -54,17 +69,12 @@ export const PropInput: React.FC<Props> = (props) => {
     };
 
     return (
-        <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
-            <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
-                <KeyframeControl propertyPath={propertyPath} value={value} />
-            </div>
-            <Input
-                value={value}
-                onChange={handleChange}
-                className="h-fit border-none text-xs bg-neutral-800 p-0.5 max-w-10"
-                {...restProps}
-            />
-        </div>
+        <Input
+            value={value}
+            onChange={handleChange}
+            className="h-fit border-none text-xs bg-neutral-800 p-0.5 max-w-10"
+            {...inputProps}
+        />
     )
 }
 

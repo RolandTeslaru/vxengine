@@ -73,6 +73,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
     this._applyAllKeyframes(this.currentTime);
+    this._applyAllStaticProps();
     this.reRender();
     this.setEditorData(selectedTimeline.objects);
   }
@@ -109,10 +110,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const { time, force } = params
     if (this.isPlaying && force === false) return;
     console.log("VXAnimationEngine: reRendering with params", params)
-    if (time !== undefined)
-      this._applyAllKeyframes(time);
-    else
-      this._applyAllKeyframes(this.currentTime)
+    // if (time !== undefined)
+    //   this._applyAllKeyframes(time);
+    // else
+    //   this._applyAllKeyframes(this.currentTime)
   }
   
 
@@ -145,10 +146,26 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  // initObject(object: StoredObjectProps){
-  //   const tracks =  this.currentTimeline.objects.filter((_obj) => _obj.vxkey === object.vxkey)
-  //   console.log("Init objet tracks", tracks)
-  // }
+  // When called, it initializes the objects props 
+  // During the animationEngine initialization, the engine loads the first timeline, 
+  // but it cant apply all the keyframes and static props because the objects arent mounted at that point
+  initObjectOnMount(object: StoredObjectProps){
+    const objectInTimeline =  this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+    if(objectInTimeline.tracks){
+      objectInTimeline.tracks.forEach(track => {
+        const vxkey = object.vxkey;
+        const propertyPath = track.propertyPath
+        const keyframes = track.keyframes
+        
+        this._applyKeyframes(vxkey, propertyPath, keyframes, this.currentTime);
+      })
+    }
+    if(objectInTimeline.staticProps){
+      objectInTimeline.staticProps.map(staticProp => {
+        this._updateObjectProperty(object, staticProp.propertyPath, staticProp.value)
+      })
+    }
+  }
 
 
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
@@ -177,7 +194,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _applyAllKeyframes(currentTime: number) {
     this.currentTimeline.objects.forEach(object => {
       object.tracks.forEach(track => {
-        this._applyKeyframes(object.vxkey, track.propertyPath, track.keyframes, currentTime);
+        const vxkey = object.vxkey;
+        const propertyPath = track.propertyPath
+        const keyframes = track.keyframes
+        
+        this._applyKeyframes(vxkey, propertyPath, keyframes, currentTime);
       })
     })
   }
@@ -252,6 +273,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+  private _applyAllStaticProps(){
+    this,this.currentTimeline.objects.map(obj => {
+      const vxkey = obj.vxkey
+      const vxobject = useVXObjectStore.getState().objects[vxkey]
+
+      if(!vxobject) return
+
+      console.log("VXObject in apply all static props ", useVXObjectStore.getState().objects)
+      obj.staticProps.map(staticProp => {
+        this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
+      })
+    })
+  }
+
+
   private _updateObjectProperty(
     object: StoredObjectProps, 
     propertyPath: string, 
@@ -265,7 +301,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Navigate through the property path
     for (let i = 0; i < propertyKeys.length - 1; i++) {
       if (target[propertyKeys[i]] === undefined) {
-        return; // Exit if any part of the path is undefined
+        return; 
       }
       target = target[propertyKeys[i]];
     }

@@ -10,11 +10,15 @@ import { useVXObjectStore } from './ObjectStore';
 import { Edges } from '@react-three/drei';
 import { StoredObjectProps } from '../types/objectStore';
 import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
+import { useVXAnimationStore } from './AnimationStore';
+import { useVXEngine } from 'vxengine/engine';
 
 const dev = (fn: () => void) => {
     if (process.env.NODE_ENV === "development")
         fn;
 }
+
+const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
 
 const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
     ({ type, children, vxkey, ...props }, forwardedRef) => {
@@ -33,10 +37,14 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
             selectedObjectKeys: state.selectedObjectKeys
         }))
 
+        const { currentTimeline } = useVXAnimationStore(state => ({
+            currentTimeline: state.currentTimeline,
+        }));
+
+        const { animationEngine } = useVXEngine();
+
         // Create an internal ref in case forwardedRef is null
         const internalRef = useRef(null);
-
-        // Use forwardedRef if provided, otherwise fall back to internalRef
         const ref = forwardedRef || internalRef;
 
         // Memoize handlers to prevent unnecessary updates
@@ -54,6 +62,7 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
 
         useEffect(() => {
             memoizedAddObject(objectSelf);
+            animationEngine.initObjectOnMount(objectSelf)
 
             return () => {
                 memoizedRemoveObject(vxkey);
@@ -69,19 +78,11 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
 
         const object3DInnerChildren = children.props.children
 
-        // useEffect(() => {
-        //     console.log("VCEditable Objects childrem ", object3DInnerChildren)
-        // })
-
-        const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
         const containsSupportedGeometries = useMemo(() => {
             return object3DInnerChildren?.some(element =>
                 supportedGeometries.includes(element.type)
             )
         }, [children.props.children])
-
-
-        // console.log("Contains Suppoertd Geometrys", containsSupportedGeometries)
 
         const modifiedChildren = isValidElement(children) ? (
             React.cloneElement(children, {

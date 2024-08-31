@@ -35,6 +35,7 @@ export interface TimelineEditorStoreProps {
     changes: number
     addChange: () => void
     editorRef: React.MutableRefObject<HTMLDivElement | null>
+    cursorTimeRef: React.MutableRefObject<number>;
 
     createNewKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string, value: number) => void;
     moveToNextKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
@@ -47,6 +48,8 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         scale: 1,
         scaleCount: MIN_SCALE_COUNT,
         cursorTime: START_CURSOR_TIME,
+        cursorTimeRef: React.createRef<number>(),
+        
         width: Number.MAX_SAFE_INTEGER,
         scrollLeft: 0,
         scrollTop: 0,
@@ -63,13 +66,16 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
 
         setScale: (count) => set({ scale: count }),
         setScaleCount: (count) => set({ scaleCount: count }),
-        setCursorTime: (time) => set({ cursorTime: time }),
         setWidth: (width) => set({ width }),
         setScrollLeft: (scrollLeft) => set({ scrollLeft }),
         setScrollTop: (scrollTop) => set({ scrollTop }),
         setActiveTool: (tool) => set({ activeTool: tool }),
         setSnap: (value) => set({ snap: value }),
         addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
+        setCursorTime: (time: number) => {
+            get().cursorTimeRef.current = time; 
+            set({ cursorTime: time });
+        },
 
         findTrackByPropertyPath: (vxkey, propertyPath) => {
             const editorData = get().editorData;
