@@ -6,7 +6,7 @@ import { DragLines } from './drag_lines';
 import './edit_area.scss';
 import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack, IEditorData } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, IObjectEditorData } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 

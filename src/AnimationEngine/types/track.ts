@@ -27,7 +27,8 @@ export interface IKeyframe {
     handles?: [number, number, number, number]; 
 }
 
-export interface IEditorData {
+export interface IObjectEditorData {
     vxkey: string;
     tracks: ITrack[];
+    staticProps: IStaticProps[]
 }[]

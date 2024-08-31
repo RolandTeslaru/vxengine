@@ -50,7 +50,7 @@ const KeyframeControl: React.FC<KeyframeControlProps> = ({ propertyPath }) => {
   const { track } = useMemo(() => {
     const track = findTrackByPropertyPath(vxkey, propertyPath);
     return {track}
-  }, [currentTimeline])
+  }, [currentTimeline, editorData])
 
 
   return (
@@ -60,7 +60,9 @@ const KeyframeControl: React.FC<KeyframeControlProps> = ({ propertyPath }) => {
           <ChevronLeft className=' w-3 h-3' />
         </button>
       }
-      <button onClick={() => createNewKeyframe(
+      <button 
+        disabled={isOnKeyframe ? true : false}
+      onClick={() => createNewKeyframe(
         animationEngine, 
         vxkey, 
         propertyPath, 

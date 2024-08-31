@@ -1,16 +1,18 @@
 import { create } from 'zustand';
 import { MIN_SCALE_COUNT, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
 import { useVXEngine } from 'vxengine/engine';
-import { IEditorData, IKeyframe, IStaticProps, ITrack } from 'vxengine/AnimationEngine/types/track';
+import { IObjectEditorData, IKeyframe, IStaticProps, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { ScrollSync } from 'react-virtualized';
 import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
+import { useVXObjectStore } from 'vxengine/store';
+import { keyframes } from 'leva/dist/declarations/src/styles';
 
 
 export interface TimelineEditorStoreProps {
-    editorData: IEditorData[];
+    editorData: IObjectEditorData[];
     scale: number;
     setScale: (count: number) => void;
     cursorTime: number;
@@ -48,7 +50,12 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         scale: 1,
         scaleCount: MIN_SCALE_COUNT,
         cursorTime: START_CURSOR_TIME,
-        cursorTimeRef: React.createRef<number>(),
+        cursorTimeRef: (() => {
+            const ref = React.createRef<number>();
+            // @ts-expect-error
+            ref.current = 0; 
+            return ref;
+        })(),
         
         width: Number.MAX_SAFE_INTEGER,
         scrollLeft: 0,
@@ -84,35 +91,71 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         },
 
         createNewKeyframe: (animationEngine, vxkey, propertyPath, value) => {
-            const { editorData, cursorTime, addChange, findTrackByPropertyPath } = get();
+            console.log("TimelineEditor: Creating New keyframe for vxkey",vxkey, "  with propertyPath", propertyPath)
+            const { editorData, cursorTimeRef, addChange, findTrackByPropertyPath } = get();
             const objIndex = editorData.findIndex(data => data.vxkey === vxkey);
-        
-            if (objIndex !== -1) {
+            // Object exists in editor data
+            if(objIndex !== -1){
+                const object = editorData[objIndex]
                 let track = findTrackByPropertyPath(vxkey, propertyPath);
-        
+                
+                const isPropertyTracked = track === undefined ? false : true
+                const isPropertyStatic = !isPropertyTracked;
+                
                 const newKeyframe: IKeyframe = {
                     id: `keyframe-${Date.now()}`,
-                    time: cursorTime,
-                    value: value, 
-                };
-
-                if (!track) {
-                    track = {
-                        propertyPath,
-                        keyframes: [
-                            newKeyframe
-                        ]
-                    };
-                    editorData[objIndex].tracks.push(track);
+                    time: cursorTimeRef.current,
+                    value: value
                 }
-        
-                track.keyframes.push(newKeyframe);
-        
-                // Update the editor data with the new keyframe added
-                const updatedEditorData = [...editorData];
+
+                if(isPropertyTracked){  
+                    // Check if cursor is already on a keyframe
+                    const isCursorOnKeyframe = track.keyframes.some(kf => kf.time === cursorTimeRef.current);
+                    if(isCursorOnKeyframe)
+                        return;
+
+                    track.keyframes.push(newKeyframe);
+                }
+                if(isPropertyStatic){
+                    // Static Property will be deleted and a new track with the property path will be created
+                    // Remove static property from the staticProps array
+                    object.staticProps = object.staticProps.filter(prop => prop.propertyPath !== propertyPath);
+                    track = {
+                        propertyPath: propertyPath,
+                        keyframes: [newKeyframe]
+                    }
+                    object.tracks.push(track);
+                }
+                const updatedEditorData = [... editorData];
                 animationEngine.setEditorData(updatedEditorData);
                 addChange();
             }
+        
+            // if (objIndex !== -1) {
+        
+            //     const newKeyframe: IKeyframe = {
+            //         id: `keyframe-${Date.now()}`,
+            //         time: cursorTime,
+            //         value: value, 
+            //     };
+
+            //     if (!track) {
+            //         track = {
+            //             propertyPath,
+            //             keyframes: [
+            //                 newKeyframe
+            //             ]
+            //         };
+            //         editorData[objIndex].tracks.push(track);
+            //     }
+        
+            //     track.keyframes.push(newKeyframe);
+        
+            //     // Update the editor data with the new keyframe added
+            //     const updatedEditorData = [...editorData];
+            //     animationEngine.setEditorData(updatedEditorData);
+            //     addChange();
+            // }
         },
 
         moveToNextKeyframe: (animationEngine, vxkey, propertyPath) => {

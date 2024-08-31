@@ -1,4 +1,4 @@
-export interface StoredObjectProps {
+export interface vxObjectProps {
     type: string;
     name: string;
     // FIXME Three js Object ref
@@ -7,7 +7,7 @@ export interface StoredObjectProps {
 }
 
 export interface ObjectStoreStateProps {
-    objects: Record<string, StoredObjectProps>
-    addObject: (object: StoredObjectProps) => void;
+    objects: Record<string, vxObjectProps>
+    addObject: (object: vxObjectProps) => void;
     removeObject: (vxkey: string) => void;
 }

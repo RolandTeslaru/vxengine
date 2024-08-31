@@ -1,11 +1,11 @@
-import { StoredObjectProps } from "./objectStore";
+import { vxObjectProps } from "./objectStore";
 
 export interface ObjectEditorStoreProps {
     transformMode: "translate" | "rotate" | "scale";
     setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
-    selectedObjects: StoredObjectProps[];
+    selectedObjects: vxObjectProps[];
     selectedObjectKeys: string[];
     selectObjects: (vxkeys: string[]) => void;
-    hoveredObject: StoredObjectProps | null;
-    setHoveredObject: (obj: StoredObjectProps) => void;
+    hoveredObject: vxObjectProps | null;
+    setHoveredObject: (vxobject: vxObjectProps) => void;
 }

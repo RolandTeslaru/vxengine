@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import TimelineEditor from "../managers/TimelineManager/ui"
 import ObjectList from "vxengine/managers/ObjectManager/components/ObjectList"
 import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store"
+import { shallow } from "zustand/shallow"
 
 export const CoreUI = () => {
 
@@ -90,7 +91,7 @@ export const CoreUI = () => {
 
 
 const TimelineEditorDebug = () => {
-    const { editorData } = useTimelineEditorStore();
+    const { editorData } = useTimelineEditorStore(state => ({ editorData: state.editorData }), shallow);
     const editorDataString = JSON.stringify(editorData, null, 2)
     return (
         <div className="fixed backdrop-blur-sm top-[40%] left-[300px] text-sm bg-neutral-900 p-2 gap-2

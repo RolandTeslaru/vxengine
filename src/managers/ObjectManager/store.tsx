@@ -4,7 +4,7 @@
 
 import { useVXObjectStore } from 'vxengine/store';
 import { ObjectEditorStoreProps } from 'vxengine/types/objectEditorStore';
-import { StoredObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from 'vxengine/types/objectStore';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from "immer"
 import { ObjectPropertyStoreProps } from 'vxengine/types/objectPropertyStore';
@@ -29,9 +29,9 @@ export const useObjectManagerStore = createWithEqualityFn<ObjectEditorStoreProps
     selectedObjectKeys: [],
     selectObjects: (vxkeys) => set((state) => selectObjects(state, vxkeys)),
     hoveredObject: undefined,
-    setHoveredObject: (obj: StoredObjectProps) => set((state) => ({
+    setHoveredObject: (vxobject: vxObjectProps) => set((state) => ({
         ...state,
-        hoveredObject: obj,
+        hoveredObject: vxobject,
     })),
 }))
 

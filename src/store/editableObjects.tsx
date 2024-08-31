@@ -4,14 +4,15 @@
 
 import React, { forwardRef, useCallback, useEffect, useRef, isValidElement, useMemo, useState } from 'react';
 import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCamera, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D } from 'three';
-import { EditableMeshProps, EditableSpotLightProps, EditableLineSegmentsProps, EditableLineLoopProps, EditableAmbientLightProps, EditableDirectionalLightProps, EditableFogProps, EditableGroupProps, EditableHemisphereLightProps, EditableOrthographicCameraProps, EditablePerspectiveCameraProps, EditablePointLightProps, EditablePointsProps, VXEditableWrapperProps, } from "../types/editableObject";
-import { useFrame } from '@react-three/fiber';
+import { EditableMeshProps, EditableSpotLightProps, EditableLineSegmentsProps, EditableLineLoopProps, EditableAmbientLightProps, EditableDirectionalLightProps, EditableFogProps, EditableGroupProps, EditableHemisphereLightProps, EditableOrthographicCameraProps, EditablePerspectiveCameraProps, EditablePointLightProps, EditablePointsProps, } from "../types/editableObject";
+import { ReactThreeFiber, useFrame } from '@react-three/fiber';
 import { useVXObjectStore } from './ObjectStore';
 import { Edges } from '@react-three/drei';
-import { StoredObjectProps } from '../types/objectStore';
+import { vxObjectProps } from '../types/objectStore';
 import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 import { useVXAnimationStore } from './AnimationStore';
 import { useVXEngine } from 'vxengine/engine';
+import { shallow } from 'zustand/shallow';
 
 const dev = (fn: () => void) => {
     if (process.env.NODE_ENV === "development")
@@ -20,11 +21,19 @@ const dev = (fn: () => void) => {
 
 const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
 
-const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
+interface VXEditableWrapperProps<T extends Object3D> {
+    type: string;
+    vxkey: string;
+    name?: string;
+    children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
+}
+
+const VXEditableWrapper = forwardRef<Object3D, VXEditableWrapperProps<Object3D>>(
     ({ type, children, vxkey, ...props }, forwardedRef) => {
         if (vxkey === undefined) {
-            throw new Error(`No vxkey was passed to name: ${type}`)
+            throw new Error(`No vxkey was passed to: ${type}`)
         }
+
         const { addObject, removeObject } = useVXObjectStore(state => ({
             addObject: state.addObject,
             removeObject: state.removeObject,
@@ -35,25 +44,28 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
             setHoveredObject: state.setHoveredObject,
             hoveredObject: state.hoveredObject,
             selectedObjectKeys: state.selectedObjectKeys
-        }))
-
-        const { currentTimeline } = useVXAnimationStore(state => ({
-            currentTimeline: state.currentTimeline,
-        }));
+        }), shallow)
 
         const { animationEngine } = useVXEngine();
 
-        // Create an internal ref in case forwardedRef is null
-        const internalRef = useRef(null);
-        const ref = forwardedRef || internalRef;
+        const internalRef = useRef<THREE.Object3D | null>(null);
+        
+        useEffect(() => {
+            if (typeof forwardedRef === 'function') {
+                forwardedRef(internalRef.current);
+            } else if (forwardedRef) {
+                forwardedRef.current = internalRef.current;
+            }
+        }, [forwardedRef]);
+
+        const ref = internalRef;
 
         // Memoize handlers to prevent unnecessary updates
         const memoizedAddObject = useCallback(addObject, []);
         const memoizedRemoveObject = useCallback(removeObject, []);
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
-
-        const objectSelf: StoredObjectProps = {
+        const objectSelf: vxObjectProps = {
             type: type,
             ref: ref,
             vxkey: vxkey,
@@ -79,34 +91,33 @@ const VXEditableWrapper = forwardRef<unknown, VXEditableWrapperProps>(
         const object3DInnerChildren = children.props.children
 
         const containsSupportedGeometries = useMemo(() => {
-            return object3DInnerChildren?.some(element =>
-                supportedGeometries.includes(element.type)
-            )
-        }, [children.props.children])
+            if (Array.isArray(object3DInnerChildren)) {
+                return object3DInnerChildren.some((element) =>
+                    isValidElement(element) && supportedGeometries.includes(element.type as string)
+                );
+            } else if (isValidElement(object3DInnerChildren)) {
+                return supportedGeometries.includes(object3DInnerChildren.type as string);
+            }
+            return false;
+        }, [object3DInnerChildren]);
 
-        const modifiedChildren = isValidElement(children) ? (
-            React.cloneElement(children, {
-                ref: ref as React.MutableRefObject<THREE.Object3D>,
-                onPointerOver: handlePointerOver,
-                onPointerOut: handlePointerOut,
-                onClick: () => memoizedSelectObjects([vxkey]),
-                onPointerDown: (e) => e.stopPropagation(),
-                ...props,
-
-            },
-                // Three Object 3d children 
-                <>
-                    {children.props.children}
-                    {/* Only show the outline if the object is hovered and its not selected ( because it will already have a bounding box for modifying the geometry) */}
-                    <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
-                        <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
-                    </Edges>
-                    <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
-                    </Edges>
-
-                </>
-            )
-        ) : children;
+        const modifiedChildren = React.cloneElement(children, {
+            ref: ref as React.MutableRefObject<Object3D>, // Allow ref to be a generic Object3D type
+            onPointerOver: handlePointerOver,
+            onPointerOut: handlePointerOut,
+            onClick: () => memoizedSelectObjects([vxkey]),
+            onPointerDown: (e) => e.stopPropagation(),
+            ...props,
+        },
+            <>
+                {children.props.children}
+                <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
+                    <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
+                </Edges>
+                <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
+                </Edges>
+            </>
+        );
 
         return <>{modifiedChildren}</>;
     }
@@ -166,14 +177,13 @@ const EditablePoints = forwardRef<Points, EditablePointsProps>((props, ref) => {
     );
 })
 
-const EditableGroup = forwardRef<Group, EditableGroupProps>((props, forwardedRef) => {
+const EditableGroup = forwardRef<Object3D, VXEditableWrapperProps<THREE.Group>>((props, forwardedRef) => {
     if (props.vxkey === undefined) {
         throw new Error("<vx.group> wasn't provided a vxkey")
     }
-    const { addObject, removeObject, selectObjects } = useVXObjectStore(state => ({
+    const { addObject, removeObject } = useVXObjectStore(state => ({
         addObject: state.addObject,
         removeObject: state.removeObject,
-        selectObjects: state.selectObjects
     }));
     const id = useMemo(() => { return `group-${Math.random()}`; }, [])
 
@@ -188,6 +198,8 @@ const EditableGroup = forwardRef<Group, EditableGroupProps>((props, forwardedRef
     const type = "group"
 
     useEffect(() => {
+        // FIXME: idk
+        // @ts-expect-error
         memoizedAddObject({ vxkey: props.vxkey, type: type, ref: ref, name: props.name || type });
 
         return () => {

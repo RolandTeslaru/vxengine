@@ -3,15 +3,15 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import { create } from 'zustand';
-import { StoredObjectProps, ObjectStoreStateProps } from '../types/objectStore';
+import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
 import { shallow } from 'zustand/shallow';
 import { produce } from "immer"
 
-const addObject = (state: ObjectStoreStateProps, object: StoredObjectProps): ObjectStoreStateProps => ({
+const addObject = (state: ObjectStoreStateProps, vxobject: vxObjectProps): ObjectStoreStateProps => ({
   ...state,
   objects: {
     ...state.objects,
-    [object.vxkey]: object,
+    [vxobject.vxkey]: vxobject,
   },
 });
 

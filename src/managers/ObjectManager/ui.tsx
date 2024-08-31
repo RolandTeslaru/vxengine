@@ -5,6 +5,7 @@
 "use client"
 import { Toggle } from '@geist-ui/core'
 import React, { useEffect, useRef, useState } from 'react'
+import * as THREE from "three"
 import { createPortal } from 'react-dom'
 import { useFrame } from '@react-three/fiber'
 import { isEqual } from 'lodash'
@@ -12,7 +13,7 @@ import { ChevronRight, Move } from '@geist-ui/icons'
 import { RefreshCcw } from '@geist-ui/icons'
 import { motion, AnimatePresence } from "framer-motion"
 import { useVXObjectStore } from 'vxengine/store'
-import { StoredObjectProps } from 'vxengine/types/objectStore'
+import { vxObjectProps } from 'vxengine/types/objectStore'
 import { useVXEngine } from 'vxengine/engine'
 import { Input, InputProps } from 'vxengine/components/shadcn/input'
 import { useObjectManagerStore, useObjectPropertyStore } from './store'
@@ -124,16 +125,33 @@ export const ObjectTransformControls = () => {
 }
 
 export const ObjectProperties = () => {
+  const firstObjectSelected = useObjectManagerStore(
+    (state) => state.selectedObjects[0],
+    shallow
+  );
 
-  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0], shallow)
+  const material = firstObjectSelected?.ref?.current?.material;
+
+  let validMaterial: THREE.MeshBasicMaterial | THREE.MeshStandardMaterial | null = null;
+
+  if (material instanceof THREE.MeshBasicMaterial || material instanceof THREE.MeshStandardMaterial) {
+    validMaterial = material;
+  }
 
   return (
     <>
       <TransformProperties />
-      {firstObjectSelected?.ref?.current && firstObjectSelected.type === "mesh" && <>
-        <GeometryProperties geometry={(firstObjectSelected.ref.current as THREE.Mesh).geometry} />
-        <MaterialProperties material={(firstObjectSelected.ref.current as THREE.Mesh).material} />
-      </>}
+      {firstObjectSelected?.ref?.current &&
+        firstObjectSelected.type === "mesh" && (
+          <>
+            <GeometryProperties
+              geometry={firstObjectSelected.ref.current.geometry}
+            />
+            {validMaterial && (
+              <MaterialProperties material={validMaterial} />
+            )}
+          </>
+        )}
     </>
-  )
-}
+  );
+};

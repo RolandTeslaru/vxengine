@@ -6,10 +6,10 @@ import { TimelineAction, TimelineRow } from './interface/action';
 import { TimelineEffect } from './interface/effect';
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
-import { StoredObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
-import { IEditorData, IKeyframe, IStaticProps, ITimeline, ITrack } from './types/track';
+import { IObjectEditorData, IKeyframe, IStaticProps, ITimeline, ITrack } from './types/track';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
@@ -38,7 +38,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   // Setter functions for the states
 
-  setEditorData(newEditorData: IEditorData[]) {
+  setEditorData(newEditorData: IObjectEditorData[]) {
     useTimelineEditorStore.setState({ editorData: newEditorData });
     if (!this.currentTimeline)
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
@@ -54,7 +54,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     })
 
-    // this._dealData(this.currentTimeline);
     this.reRender(({ force: true }));
   }
 
@@ -94,7 +93,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   loadTimelines(timelines: ITimeline[]) {
-    useVXAnimationStore.setState({ timelines: timelines }) // update Zustand state
+    useVXAnimationStore.setState({ timelines: timelines });
 
     console.log("VXAnimationEngine: Loading timelines ", timelines[0])
     if (timelines.length > 0) {
@@ -108,12 +107,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     force?: boolean
   } = {}) {
     const { time, force } = params
-    if (this.isPlaying && force === false) return;
+    if (this.isPlaying && force === false) 
+      return;
     console.log("VXAnimationEngine: reRendering with params", params)
-    // if (time !== undefined)
-    //   this._applyAllKeyframes(time);
-    // else
-    //   this._applyAllKeyframes(this.currentTime)
+
+    this._applyAllStaticProps();
+    if (time !== undefined)
+      this._applyAllKeyframes(time);
+    else
+      this._applyAllKeyframes(this.currentTime)
   }
   
 
@@ -149,7 +151,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // When called, it initializes the objects props 
   // During the animationEngine initialization, the engine loads the first timeline, 
   // but it cant apply all the keyframes and static props because the objects arent mounted at that point
-  initObjectOnMount(object: StoredObjectProps){
+  initObjectOnMount(object: vxObjectProps){
     const objectInTimeline =  this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
     if(objectInTimeline.tracks){
       objectInTimeline.tracks.forEach(track => {
@@ -205,8 +207,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _applyKeyframes(vxkey: string, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
-    const object = useVXObjectStore.getState().objects[vxkey];
-    if (!object) return;
+    const vxobject = useVXObjectStore.getState().objects[vxkey];
+    if (!vxobject) return;
 
     let interpolatedValue: number | THREE.Vector3;
 
@@ -222,7 +224,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       // since its only used in the development server, we dont need it in production because it can slow down
         useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
     }
-    this._updateObjectProperty(object, propertyPath, interpolatedValue);
+    this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
   }
 
 
@@ -280,7 +282,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       if(!vxobject) return
 
-      console.log("VXObject in apply all static props ", useVXObjectStore.getState().objects)
       obj.staticProps.map(staticProp => {
         this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
       })
@@ -289,12 +290,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _updateObjectProperty(
-    object: StoredObjectProps, 
+    vxobject: vxObjectProps, 
     propertyPath: string, 
     newValue: number | THREE.Vector3
   ) {
     const propertyKeys = propertyPath.split('.');
-    let target = object.ref.current;
+    let target = vxobject.ref.current;
 
     if (target === undefined) return;
 
@@ -318,15 +319,4 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.pause();
     this.trigger('ended', { engine: this });
   }
-
-
-  // /** Process data */
-  // private _dealData(timeline: ITimeline) {
-  //   this._tracks = [];
-  //   timeline.objects.forEach(object => {
-  //     object.tracks.forEach(track => {
-  //       this._tracks.push(track);
-  //     })
-  //   })
-  // }
 }

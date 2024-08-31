@@ -12,13 +12,13 @@ import { Switch } from 'vxengine/components/shadcn/switch';
 import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { useVXEngine } from 'vxengine/engine';
-import { IEditorData, ITrack } from 'vxengine/AnimationEngine/types/track';
+import { IObjectEditorData, ITrack } from 'vxengine/AnimationEngine/types/track';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
 import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
-import { StoredObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from 'vxengine/types/objectStore';
 import { handleSetCursor } from './utils/handleSetCursor';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
@@ -102,128 +102,6 @@ const TimelineEditorUI: React.FC<{
 
 export default TimelineEditorUI
 
-const tree = [{
-    name: "RedBox",
-    files: [
-        {
-            name: "material.thing1",
-            files: [
-                {
-                    name: "thing2",
-                    tracks: [
-                        {
-                            name: "value1",
-                            value: 1,
-                        },
-                        {
-                            name: "value2",
-                            value: 2,
-                        }
-                    ]
-                },
-                {
-                    name: "thing3.thing4",
-                    tracks: [
-                        {
-                            name: "value",
-                            value: 1
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            name: "position",
-            tracks: [
-                {
-                    name: "x",
-                    value: 1
-                },
-                {
-                    name: "y",
-                    value: 1
-                },
-                {
-                    name: "z",
-                    value: 1
-                }
-            ]
-        }
-    ]
-}]
-
-const getFileTree = (editorData: IEditorData[], objects) => {
-    const tree = editorData.map((objectData) => {
-        const { vxkey, tracks } = objectData;
-        if (objects[vxkey] === undefined) return;
-        const masterObjectName = objects[vxkey].name;
-
-        // Initialize the root node for the object
-        const rootNode = {
-            name: masterObjectName,
-            files: [],
-        };
-
-        // Helper function to group tracks by their parent keys
-        const groupTracksByParent = (tracks: ITrack[]) => {
-            const groupedTracks: Record<string, any> = {};
-
-            tracks.forEach((track) => {
-                const pathSegments = track.propertyPath.split('.');
-
-                let currentGroup = groupedTracks;
-
-                pathSegments.forEach((key, index) => {
-                    if (!currentGroup[key]) {
-                        currentGroup[key] = { children: {}, tracks: [] };
-                    }
-
-                    if (index === pathSegments.length - 1) {
-                        currentGroup[key].tracks.push({
-                            name: key,
-                            value: track,
-                        });
-                    } else {
-                        currentGroup = currentGroup[key].children;
-                    }
-                });
-            });
-
-            return groupedTracks;
-        };
-
-        // Convert the grouped tracks into the file tree format
-        const convertToFileTree = (groupedTracks: Record<string, any>) => {
-            return Object.entries(groupedTracks).map(([key, group]) => {
-                const node = {
-                    name: key,
-                    files: [],
-                };
-
-                if (group.tracks.length > 0) {
-                    node.files = group.tracks;
-                }
-
-                if (Object.keys(group.children).length > 0) {
-                    node.files.push(...convertToFileTree(group.children));
-                }
-
-                return node;
-            });
-        };
-
-        // Group tracks by their parent keys
-        const groupedTracks = groupTracksByParent(tracks);
-
-        // Convert grouped tracks into the final tree structure
-        rootNode.files = convertToFileTree(groupedTracks);
-
-        return rootNode;
-    });
-
-    return tree;
-};
-
 
 const ProgressionControls = () => {
     const { animationEngine } = useVXEngine();
@@ -273,6 +151,7 @@ const ProgressionControls = () => {
         </div>
     )
 }
+
 
 const TimeRender = () => {
     const { currentTime } = useVXAnimationStore(state => ({ currentTime: state.currentTime }));
