@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Input, InputProps } from '../shadcn/input'
 import KeyframeControl from './KeyframeControl'
 import { useObjectManagerStore, useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store'
 import { getNestedProperty, setNestedProperty } from 'vxengine/utils/nestedProperty'
 import { shallow } from 'zustand/shallow'
+import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store'
+import { useVXAnimationStore } from 'vxengine/store/AnimationStore'
 
 interface Props extends InputProps {
     propertyPath: string
@@ -11,13 +13,51 @@ interface Props extends InputProps {
 }
 export const PropInput: React.FC<Props> = (props) => {
     const { propertyPath, className, horizontal, ...inputProps } = props
+
+    const [isOnKeyframe, setIsOnKeyframe] = useState(false);
     
+    const cursorTimeRef = useTimelineEditorStore(state => state.cursorTimeRef)
+    const findTrackByPropertyPath = useTimelineEditorStore(state => state.findTrackByPropertyPath)
+    const editorData = useTimelineEditorStore(state => state.editorData);
+
+    const vxkey = useObjectManagerStore(state => state.selectedObjects[0]?.vxkey, shallow);
+
+    const { track, isPropertyTracked } = useMemo(() => {
+        const track = findTrackByPropertyPath(vxkey, propertyPath);
+        const isPropertyTracked = track !== undefined;
+        return { track, isPropertyTracked };
+    }, [vxkey, editorData[vxkey]?.tracks]);
+
+    useEffect(() => {
+        const unsubscribe = useTimelineEditorStore.subscribe(() => checkIfOnKeyframe());
+        return () => unsubscribe();
+    }, [track?.keyframes]);
+
+    const checkIfOnKeyframe = () => {
+        if (track) {
+            const isKeyframePresent = track.keyframes.some(kf => kf.time === cursorTimeRef.current);
+            setIsOnKeyframe(isKeyframePresent);
+        }
+    };
+
+    useEffect(() => {
+        checkIfOnKeyframe()
+    }, [track?.keyframes])
+
     return (
         <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
             <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
-                <KeyframeControl propertyPath={propertyPath} />
+                <KeyframeControl 
+                    propertyPath={propertyPath} 
+                    isOnKeyframe={isOnKeyframe} 
+                    isPropertyTracked={isPropertyTracked}
+                />
             </div>
-            <ValueRenderer propertyPath={propertyPath} inputProps={inputProps}/>
+            <ValueRenderer 
+                propertyPath={propertyPath} 
+                inputProps={inputProps} 
+                isPropertyTracked={isPropertyTracked}
+            />
         </div>
     )
 }
@@ -25,12 +65,14 @@ export const PropInput: React.FC<Props> = (props) => {
 interface ValueRendererProps {
     propertyPath: string
     inputProps: React.InputHTMLAttributes<HTMLInputElement>
+    isPropertyTracked: boolean
 }
 
-const ValueRenderer: React.FC<ValueRendererProps> = ({propertyPath, inputProps}) => {
+const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps, isPropertyTracked }) => {
     const vxkey = useObjectManagerStore(state => state.selectedObjects[0].vxkey, shallow);
     const firstObjectSelectedStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
     const firstObjectSelected = firstObjectSelectedStored?.ref.current;
+    const editorData = useTimelineEditorStore(state => state.editorData, shallow);
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyStore.getState().properties[vxkey], propertyPath)
@@ -38,11 +80,9 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({propertyPath, inputProps})
     );
 
     useEffect(() => {
-        const currentProperties = useObjectPropertyStore.getState().properties;
-        const isPropertyTracked = getNestedProperty(currentProperties[vxkey], propertyPath) !== undefined;
-
         if (!isPropertyTracked) {
             // console.log(`Property ${propertyPath} is not tracked. Skipping subscription.`);
+            setValue(getNestedProperty(firstObjectSelected, propertyPath))
             return;
         }
 
@@ -56,12 +96,17 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({propertyPath, inputProps})
         });
 
         return () => unsubscribe();
-    }, [vxkey, propertyPath]);
+    }, [vxkey, propertyPath, isPropertyTracked]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
-        const currentProperties = useObjectPropertyStore.getState().properties;
-        const isPropertyTracked = getNestedProperty(currentProperties[vxkey], propertyPath) !== undefined;
+
+        // Handle static prop case
+        if(isPropertyTracked === false){
+            setNestedProperty(editorData[vxkey].staticProps, propertyPath, newValue)
+        }
+
+
 
         setNestedProperty(firstObjectSelected, propertyPath, newValue);
         useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, newValue);

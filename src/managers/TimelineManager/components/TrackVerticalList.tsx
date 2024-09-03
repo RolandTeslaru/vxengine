@@ -4,7 +4,7 @@
 
 import { ChevronLeft, Square, ChevronRight } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ITrack } from "vxengine/AnimationEngine/types/track";
+import { edObjectProps, ITrack } from "vxengine/AnimationEngine/types/track";
 import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
 import { shallow } from "zustand/shallow";
@@ -12,63 +12,37 @@ import { useTimelineEditorStore } from "../store";
 import { scale } from "../ui";
 import { handleSetCursor } from "../utils/handleSetCursor";
 
-const KeyframeControl = React.memo(({ track }: { track: ITrack }) => {
-    const setCursorTime = useTimelineEditorStore.getState().setCursorTime; 
+const KeyframeControl = React.memo(({ track, propertyPath, edObject }: { track: ITrack, propertyPath: string, edObject: edObjectProps }) => {
+    const { createNewKeyframe, moveToNextKeyframe, moveToPreviousKeyframe, cursorTimeRef } = useTimelineEditorStore(state => ({
+        createNewKeyframe: state.createNewKeyframe,
+        findTrackByPropertyPath: state.findTrackByPropertyPath,
+        moveToNextKeyframe: state.moveToNextKeyframe,
+        moveToPreviousKeyframe: state.moveToPreviousKeyframe,
+        cursorTimeRef: state.cursorTimeRef
+    }), shallow)
     const { animationEngine } = useVXEngine();
 
-    const cursorTimeRef = useRef(useTimelineEditorStore.getState().cursorTime); 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
-     
+
+    const checkIfOnKeyframe = () => {
+        if (track) {
+            const isKeyframePresent = track.keyframes.some(kf => kf.time === cursorTimeRef.current);
+            setIsOnKeyframe(isKeyframePresent);
+        }
+    };
+
     useEffect(() => {
-        const unsubscribe = useTimelineEditorStore.subscribe(
-            (state) => {
-                cursorTimeRef.current = state.cursorTime;
-                const keyframeExists = track.keyframes.some(kf => kf.time === state.cursorTime);
-                setIsOnKeyframe(keyframeExists);
-            },
-        );
-        return () => unsubscribe(); 
-    }, [track.keyframes]);
+        const unsubscribe = useTimelineEditorStore.subscribe(() => checkIfOnKeyframe());
+        return () => unsubscribe();
+    }, [track?.keyframes]);
 
-    const moveToNextKeyframe = useCallback(() => {
-        const nextKeyframe = track.keyframes.find(kf => kf.time > cursorTimeRef.current);
-        if (nextKeyframe) {
-            handleSetCursor({
-                time: nextKeyframe.time,
-                animationEngine,
-                scale,
-                setCursorTime
-            });
-        }
-    }, [track, animationEngine, scale, setCursorTime]);
-
-    const moveToPreviousKeyframe = useCallback(() => {
-        const prevKeyframe = [...track.keyframes].reverse().find(kf => kf.time < cursorTimeRef.current);
-        if (prevKeyframe) {
-            handleSetCursor({
-                time: prevKeyframe.time,
-                animationEngine,
-                scale,
-                setCursorTime
-            });
-        }
-    }, [track, animationEngine, scale, setCursorTime]);
-
-    const createNewKeyframe = useCallback(() => {
-        const newKeyframe = { id: `keyframe-${Date.now()}`, time: cursorTimeRef.current, value: 0 }; // Example structure
-        track.keyframes.push(newKeyframe);
-
-        handleSetCursor({
-            time: cursorTimeRef.current,
-            animationEngine,
-            scale,
-            setCursorTime
-        });
-    }, [track, animationEngine, scale, setCursorTime]);
+    useEffect(() => {
+        checkIfOnKeyframe()
+    }, [track?.keyframes])
 
     return (
         <div className='flex flex-row'>
-            <button onClick={moveToPreviousKeyframe} className='hover:*:stroke-[5] hover:*:stroke-white'>
+            <button onClick={() => moveToPreviousKeyframe(animationEngine, edObject.vxkey, propertyPath)} className='hover:*:stroke-[5] hover:*:stroke-white'>
                 <ChevronLeft className=' w-3 h-3' />
             </button>
             <button onClick={createNewKeyframe} className="hover:*:stroke-[5] hover:*:stroke-white ">
@@ -82,14 +56,8 @@ const KeyframeControl = React.memo(({ track }: { track: ITrack }) => {
 });
 
 const TrackVerticalList = () => {
-    const { editorData } = useTimelineEditorStore(state => ({
-        editorData: state.editorData
-    }), shallow);
-    const { objects } = useVXObjectStore(state => ({
-        objects: state.objects
-    }));
-
-    console.log("Editor Data ", editorData)
+    const editorData = useTimelineEditorStore(state => state.editorData)
+    const objects = useVXObjectStore(state => state.objects)
 
     // Helper function to group tracks by their parent keys
     const groupTracksByParent = (tracks: ITrack[]) => {
@@ -102,7 +70,7 @@ const TrackVerticalList = () => {
 
             pathSegments.forEach((key, index) => {
                 if (!currentGroup[key]) {
-                    currentGroup[key] = { children: {}, track: null };
+                    currentGroup[key] = { children: {}, track: null, index: index + 1};
                 }
 
                 if (index === pathSegments.length - 1) {
@@ -116,42 +84,60 @@ const TrackVerticalList = () => {
         return groupedTracks;
     };
 
-    const renderGroupedTracks = (groupedTracks: Record<string, any>, depth = 1, shouldIndent = false) => {
+    const renderGroupedTracks = (
+        groupedTracks: Record<string, any>,
+        edObject: edObjectProps,
+        depth = 1,
+        shouldIndent = false,
+        currentRowIndex,
+        prevRowIndex,
+    ) => {
         return Object.entries(groupedTracks).map(([key, group]) => {
             const hasChildren = group.children && Object.keys(group.children).length > 0;
-
-            // Determine if the group has multiple children
-            const isColGroup = hasChildren && Object.keys(group.children).length > 1;
+            const hasMultipleChildren = group.children && Object.keys(group.children).length > 1;
 
             const isFinalGroup = hasChildren && Object.values(group.children).every(
                 (child: any) => child.track && (!child.children || Object.keys(child.children).length === 0)
             );
 
             // Determine if padding should be added based on sibling relationships
-            const shouldIndentChildren = isColGroup && !group.track && !isFinalGroup;
+            const shouldIndentChildren = hasMultipleChildren && !group.track && !isFinalGroup;
 
-            const isValueTrack = group.track;
+            const isFinalValue = hasChildren
+
+            // Check if current group has children that are not just single tracks
+
+
+            // Update rowIndex if there are children
+            const nextRowIndex = hasMultipleChildren ? currentRowIndex + 1 : currentRowIndex;
+
+
+       
+            const isCollapsible = (currentRowIndex !== prevRowIndex) && isFinalValue
+            // console.log("Rendering key:", key, " hasChildren:", hasChildren, "currentRowIndex:", currentRowIndex)
 
             return (
                 <div
                     key={key}
-                    className={`${key} w-full flex ${isColGroup ? "flex-col" : "flex-row"}`}
+                    className={`${key} w-full flex ${hasMultipleChildren ? "flex-col" : "flex-row"}`}
                     style={{ paddingLeft: shouldIndent && 16 }}
                 >
-                    {/* Close button */}
-                    {/* <div>
-                        <ChevronRight />
-                    </div> */}
-
                     <div className={`h-8 flex items-center`} style={{ marginLeft: group.track ? "auto" : undefined }}>
+                        {/* Collapse Button Chvron */}
+
+                        {isCollapsible &&
+                            <div>
+                                <ChevronRight />
+                            </div>
+                        }
                         <p className={`${group.track ? 'text-neutral-500' : 'font-bold'} mr-2`}>
                             {key}
                         </p>
                         {group.track && (
-                            <KeyframeControl track={group.track}/>
+                            <KeyframeControl track={group.track} propertyPath={group.track.propertyPath} edObject={edObject} />
                         )}
                     </div>
-                    {!group.track && hasChildren && renderGroupedTracks(group.children, depth + 1, shouldIndentChildren)}
+                    {!group.track && hasChildren && renderGroupedTracks(group.children, edObject, depth + 1, shouldIndentChildren, nextRowIndex, currentRowIndex)}
                 </div>
             );
         });
@@ -159,9 +145,12 @@ const TrackVerticalList = () => {
 
     return (
         <div className="bg-neutral-950 mr-2 mt-[34px] w-fit text-xs rounded-2xl py-2 px-4 border border-neutral-800 border-opacity-70">
-            {editorData?.map(({ vxkey, tracks }) => {
+            {Object.values(editorData)?.map((edObject) => {
+                const { vxkey, tracks } = edObject;
                 const object = objects[vxkey];
                 const groupedTracks = groupTracksByParent(tracks);
+
+                console.log("Group TrackBy Parent ", groupedTracks)
 
                 return (
                     <div key={vxkey} className="flex flex-col ">
@@ -169,7 +158,7 @@ const TrackVerticalList = () => {
                             <p className="font-bold h-auto my-auto text-white">{object?.name}</p>
                         </div>
                         <div className="flex flex-col rounded-md">
-                            {renderGroupedTracks(groupedTracks, 0, true)}
+                            {renderGroupedTracks(groupedTracks, edObject, 0, true, 1, 0)}
                         </div>
                     </div>
                 );

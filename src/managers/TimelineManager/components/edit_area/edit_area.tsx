@@ -9,6 +9,7 @@ import { useDragLine } from './hooks/use_drag_line';
 import { ITrack, IObjectEditorData } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
+import { shallow } from 'zustand/shallow';
 
 export type EditAreaProps = CommonProp & {
   scrollLeft: number;
@@ -40,18 +41,17 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     onActionResizing,
   } = props;
 
-  const { editorData, cursorTime, scaleCount, editAreaRef } = useTimelineEditorStore(state => ({
+  const { editorData, scaleCount, editAreaRef } = useTimelineEditorStore(state => ({
     editorData: state.editorData,
-    cursorTime: state.cursorTime,
     scaleCount: state.scaleCount,
     editAreaRef: state.editAreaRef
-  }));
+  }), shallow);
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
   const gridRef = useRef<Grid>();
   const heightRef = useRef(-1);
 
   // Flatten the tracks
-  const flattenedTracks = editorData.flatMap((obj) => obj.tracks);
+  const flattenedTracks = Object.values(editorData).flatMap((obj) => obj.tracks);
 
   // ref data
   useImperativeHandle(ref, () => ({
@@ -69,7 +69,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
           row: data.row,
           editorData: flattenedTracks,
         });
-      const cursorLeft = parserTimeToPixel(cursorTime, { scaleWidth, scale, startLeft });
+      const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { scaleWidth, scale, startLeft });
       const assistPositions = defaultGetAssistPosition({
         editorData: flattenedTracks,
         assistActionIds,

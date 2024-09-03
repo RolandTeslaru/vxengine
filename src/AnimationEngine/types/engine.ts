@@ -1,6 +1,6 @@
 import { Emitter } from "../emitter";
 import { EventTypes } from "../events";
-import { IStaticProps, ITimeline, ITrack } from "./track";
+import { edObjectProps, IStaticProps, ITimeline, ITrack } from "./track";
 
 export interface IAnimationEngine extends Emitter<EventTypes> {
     readonly isPlaying: boolean;     
@@ -24,6 +24,6 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     setCurrentTimeline(timelineId: string): void;
     loadTimelines(timelines: ITimeline[]): void;
     setCurrentTime(time: number, isTick?: boolean): boolean;
-    setEditorData(newEditorData: [ 
-      {vxkey: string, tracks: ITrack[], staticProps: IStaticProps[]}]): void;
+    setEditorData(newEditorData: Record<string, edObjectProps> ): void;
+    updateCurrentTimeline(newEditorData: Record<string, edObjectProps>): void
   }

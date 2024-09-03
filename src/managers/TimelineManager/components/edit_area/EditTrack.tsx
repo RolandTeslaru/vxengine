@@ -7,6 +7,7 @@ import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { EditKeyframe } from './EditKeyframe';
 import { useTimelineEditorStore } from '../../store';
 import { prefix } from '../../utils/deal_class_prefix';
+import { shallow } from 'zustand/shallow';
 
 export type EditRowProps = CommonProp & {
   trackData?: ITrack;
@@ -23,7 +24,7 @@ export const EditTrack: FC<EditRowProps> = (props) => {
     editAreaRef: state.editAreaRef,
     scale: state.scale,
     scaleWidth: state.scaleWidth
-  }));
+  }), shallow );
   const startLeft = 12;
 
   const handleTime = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

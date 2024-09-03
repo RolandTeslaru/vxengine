@@ -3,11 +3,7 @@ import * as THREE from "three"
 export interface ITimeline {
     name: string;        
     id: string;          
-    objects: { 
-        vxkey: string;
-        tracks: ITrack[];
-        staticProps: IStaticProps[];
-    }[]
+    objects: edObjectProps[]
 }
 
 export interface ITrack {
@@ -27,8 +23,9 @@ export interface IKeyframe {
     handles?: [number, number, number, number]; 
 }
 
-export interface IObjectEditorData {
+// Editor Data Object
+export interface edObjectProps {
     vxkey: string;
     tracks: ITrack[];
     staticProps: IStaticProps[]
-}[]
+}

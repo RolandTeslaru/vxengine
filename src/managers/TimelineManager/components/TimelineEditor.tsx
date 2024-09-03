@@ -16,6 +16,7 @@ import { useVXEngine } from 'vxengine/engine';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from '../store';
 import { handleSetCursor } from '../utils/handleSetCursor';
+import { shallow } from 'zustand/shallow';
 
 export const startLeft = 0;
 
@@ -41,7 +42,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
     setWidth: state.setWidth,
     editAreaRef: state.editAreaRef,
     scrollSyncRef: state.scrollSyncRef
-  }));
+  }), shallow);
   const domRef = useRef<HTMLDivElement | null>();
   const autoScrollWhenPlay = useRef<boolean>(true);
 

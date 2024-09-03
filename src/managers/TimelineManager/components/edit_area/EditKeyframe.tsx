@@ -5,6 +5,7 @@ import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { useTimelineEditorStore } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
+import { shallow } from 'zustand/shallow';
 
 export type EditKeyframeProps = {
     track: ITrack;
@@ -19,13 +20,12 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     handleTime,
 }) => {
     const startLeft = 12;
-    const { animationEngine } = useVXEngine(); 
     const { scale, snap, scaleWidth, addChange } = useTimelineEditorStore(state => ({
         scale: state.scale,
         snap: state.snap,
         scaleWidth: state.scaleWidth,
         addChange: state.addChange
-    }));
+    }), shallow);
     const [left, setLeft] = useState(() => {
         return parserTimeToPixel(keyframe.time, { startLeft, scale, scaleWidth });
     });

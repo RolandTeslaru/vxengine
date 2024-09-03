@@ -6,6 +6,7 @@ import { InteractComp } from './interactable';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
 import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from 'vxengine/AnimationEngine/interface/const';
 import { useTimelineEditorStore } from '../../store';
+import { shallow } from 'zustand/shallow';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -40,7 +41,7 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     const isAdsorption = useRef(false);
     const { editAreaRef } = useTimelineEditorStore(state => ({
       editAreaRef: state.editAreaRef
-    }));
+    }), shallow);
     const { initAutoScroll, dealDragAutoScroll, dealResizeAutoScroll, stopAutoScroll } = useAutoScroll(editAreaRef);
 
     useEffect(() => {

@@ -7,6 +7,7 @@ import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { handleSetCursor } from '../../utils/handleSetCursor';
+import { shallow } from 'zustand/shallow';
 
 /** Animation timeline component parameters */
 export type TimeAreaProps = CommonProp & {
@@ -26,7 +27,7 @@ export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollL
     scaleWidth: state.scaleWidth,
     scale: state.scale,
     startLeft: state.startLeft
-  }));
+  }), shallow);
   const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
   /** Whether to display subdivision scales */

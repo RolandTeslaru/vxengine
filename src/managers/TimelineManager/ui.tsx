@@ -12,7 +12,6 @@ import { Switch } from 'vxengine/components/shadcn/switch';
 import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { useVXEngine } from 'vxengine/engine';
-import { IObjectEditorData, ITrack } from 'vxengine/AnimationEngine/types/track';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorStore } from './store';
 import { useVXObjectStore } from 'vxengine/store';
@@ -23,15 +22,14 @@ import { handleSetCursor } from './utils/handleSetCursor';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
+import { useVXUiStore } from 'vxengine/store/VXUIStore';
+import { Button } from 'vxengine/components/shadcn/Button';
 
 export const scaleWidth = 160;
 export const scale = 5;
 
 
-const TimelineEditorUI: React.FC<{
-    visible: boolean,
-    setVisible: React.Dispatch<React.SetStateAction<boolean>>
-}> = ({ visible, setVisible }) => {
+const TimelineEditorUI = () => {
     const { setScale, setSnap, snap, scale } = useTimelineEditorStore(state => ({
         setScale: state.setScale,
         setSnap: state.setSnap,
@@ -39,14 +37,22 @@ const TimelineEditorUI: React.FC<{
         scale: state.scale
     }), shallow);
 
+    const { open, setOpen } = useVXUiStore(state => ({ open: state.timelineEditorOpen, setOpen: state.setTimelineEditorOpen}))
+    const { setTimelineEditorAttached, timelineEditorAttached } = useVXUiStore(state => ({ 
+        setTimelineEditorAttached: state.setTimelineEditorAttached, 
+        timelineEditorAttached: state.timelineEditorAttached 
+    }), shallow)
+
     return (
         <>
-            <div className="flex flex-row gap-2 w-full min-w-[800px] pr-2 ">
-                <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
-                    onClick={() => setVisible(!visible)}
-                >
-                    <ChevronRight className={`${visible === true && " rotate-90 "}  scale-[90%] m-auto`} />
-                </button>
+            <div className={`flex flex-row gap-2 w-full min-w-[800px] ${timelineEditorAttached ? "pr-2" : "px-2"}`}>
+                {timelineEditorAttached &&
+                    <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
+                        onClick={() => setOpen(!open)}
+                    >
+                        <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
+                    </button>                
+                }
 
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
                     Timeline Editor
@@ -61,38 +67,43 @@ const TimelineEditorUI: React.FC<{
                 <TimelineEditor />
             </div>
             <AnimatePresence>
-                {visible && (
+                {open && (
                     <motion.div className='relative px-2 flex flex-row gap-2 font-sans-menlo'
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
                         <div className='flex flex-row gap-2'>
-                            <p className='text-xs'>Scale {scale}</p>
+                            <p className='text-xs h-auto my-auto'>Scale {scale}</p>
                             <Slider
                                 defaultValue={[scale]}
                                 max={10}
                                 step={0.5}
                                 min={0.0}
-                                className='w-52'
+                                className='w-24 my-auto'
                                 onValueChange={(value) => {
                                     setScale(value[0])
                                 }}
                             />
                         </div>
-                        <div className='flex flex-row gap-2'>
-                            <p className='text-xs'>Snap</p>
-                            <Switch onClick={() => setSnap(!snap)} checked={snap} />
-                        </div>
                         <div className='flex flex-row font-sans-menlo gap-2'>
-                            <p>Counts</p>
+                            <p className='text-xs h-auto my-auto'>Counts</p>
                             <Slider
                                 defaultValue={[50]}
                                 max={100}
                                 step={1}
-                                className='w-52'
+                                className='w-24 my-auto'
                             />
                         </div>
+                        <div className='flex flex-row gap-2'>
+                            <p className='text-xs h-auto my-auto'>Snap</p>
+                            <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto' />
+                        </div>
+                        <button className={"bg-neutral-950 border ml-auto text-xs px-2 py-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+                            onClick={() => setTimelineEditorAttached(!timelineEditorAttached)}
+                        >
+                            {timelineEditorAttached ? "Detach" : "Attach"}
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>

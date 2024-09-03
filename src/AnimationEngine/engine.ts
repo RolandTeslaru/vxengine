@@ -9,7 +9,7 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
-import { IObjectEditorData, IKeyframe, IStaticProps, ITimeline, ITrack } from './types/track';
+import { IKeyframe, IStaticProps, ITimeline, ITrack, edObjectProps } from './types/track';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
@@ -38,8 +38,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   // Setter functions for the states
 
-  setEditorData(newEditorData: IObjectEditorData[]) {
-    useTimelineEditorStore.setState({ editorData: newEditorData });
+
+  updateCurrentTimeline(newEditorData: Record<string, edObjectProps>) {
     if (!this.currentTimeline)
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
 
@@ -47,7 +47,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     console.log("VXAnimationEngine: Setting new EditorData")
     this.currentTimeline.objects.forEach(object => {
-      const updatedObject = newEditorData.find(ed => ed.vxkey === object.vxkey);
+      const updatedObject = newEditorData[object.vxkey];
       if (updatedObject) {
         // Update tracks based on the editor data
         object.tracks = updatedObject.tracks;
@@ -58,8 +58,26 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+  setEditorData(newEditorData: Record<string, edObjectProps>) {
+    useTimelineEditorStore.setState({ editorData: newEditorData });
+    
+    this.updateCurrentTimeline(newEditorData)
+  }
+
+
   setIsPlaying(value: boolean) {
     useVXAnimationStore.setState({ isPlaying: value })
+  }
+
+  convertToRecordStructure(arrayData: edObjectProps[]): Record<string, edObjectProps> {
+    return arrayData.reduce((acc, obj) => {
+      acc[obj.vxkey] = {
+        vxkey: obj.vxkey,
+        tracks: obj.tracks || [],
+        staticProps: obj.staticProps || [] // Assuming staticProps is optional and might not be present
+      };
+      return acc;
+    }, {} as Record<string, edObjectProps>);
   }
 
 
@@ -74,7 +92,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyAllKeyframes(this.currentTime);
     this._applyAllStaticProps();
     this.reRender();
-    this.setEditorData(selectedTimeline.objects);
+    
+    const editorDataArray = selectedTimeline.objects
+
+    const editorDataRecord = this.convertToRecordStructure(editorDataArray)
+    this.setEditorData(editorDataRecord)
+
   }
 
 
@@ -103,11 +126,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   reRender(params: {
-    time?: number, 
+    time?: number,
     force?: boolean
   } = {}) {
     const { time, force } = params
-    if (this.isPlaying && force === false) 
+    if (this.isPlaying && force === false)
       return;
     console.log("VXAnimationEngine: reRendering with params", params)
 
@@ -117,7 +140,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     else
       this._applyAllKeyframes(this.currentTime)
   }
-  
+
 
   play(param: {
     /** By default, it runs from beginning to end, with a priority greater than autoEnd. */
@@ -151,18 +174,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // When called, it initializes the objects props 
   // During the animationEngine initialization, the engine loads the first timeline, 
   // but it cant apply all the keyframes and static props because the objects arent mounted at that point
-  initObjectOnMount(object: vxObjectProps){
-    const objectInTimeline =  this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
-    if(objectInTimeline.tracks){
+  initObjectOnMount(object: vxObjectProps) {
+    const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+    if (objectInTimeline.tracks) {
       objectInTimeline.tracks.forEach(track => {
         const vxkey = object.vxkey;
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
-        
+
         this._applyKeyframes(vxkey, propertyPath, keyframes, this.currentTime);
       })
     }
-    if(objectInTimeline.staticProps){
+    if (objectInTimeline.staticProps) {
       objectInTimeline.staticProps.map(staticProp => {
         this._updateObjectProperty(object, staticProp.propertyPath, staticProp.value)
       })
@@ -199,7 +222,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const vxkey = object.vxkey;
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
-        
+
         this._applyKeyframes(vxkey, propertyPath, keyframes, currentTime);
       })
     })
@@ -222,7 +245,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
-        useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
+      useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
   }
@@ -275,12 +298,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  private _applyAllStaticProps(){
-    this,this.currentTimeline.objects.map(obj => {
+  private _applyAllStaticProps() {
+    this, this.currentTimeline.objects.map(obj => {
       const vxkey = obj.vxkey
       const vxobject = useVXObjectStore.getState().objects[vxkey]
 
-      if(!vxobject) return
+      if (!vxobject) return
 
       obj.staticProps.map(staticProp => {
         this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
@@ -290,8 +313,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _updateObjectProperty(
-    vxobject: vxObjectProps, 
-    propertyPath: string, 
+    vxobject: vxObjectProps,
+    propertyPath: string,
     newValue: number | THREE.Vector3
   ) {
     const propertyKeys = propertyPath.split('.');
@@ -302,7 +325,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Navigate through the property path
     for (let i = 0; i < propertyKeys.length - 1; i++) {
       if (target[propertyKeys[i]] === undefined) {
-        return; 
+        return;
       }
       target = target[propertyKeys[i]];
     }
