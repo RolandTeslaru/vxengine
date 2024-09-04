@@ -108,7 +108,7 @@ const TrackVerticalList = () => {
 
             pathSegments.forEach((key, index) => {
                 if (!currentGroup[key]) {
-                    currentGroup[key] = { children: {}, track: null, index: index + 1 };
+                    currentGroup[key] = { children: {}, track: null};
                 }
 
                 if (index === pathSegments.length - 1) {
@@ -165,9 +165,7 @@ const TrackVerticalList = () => {
                 collectKeyframes(group.children);
                 combinedTrack = { propertyPath: groupKey, keyframes: combinedKeyframes };
             }
-    
-            console.log("Rendering key:", key, " hasChildren:", hasChildren, "currentRowIndex:", group.rowIndex, " isFinalValue:", isFinalValue, " group:", group);
-    
+        
             return (
                 <div
                     key={groupKey}
@@ -205,8 +203,6 @@ const TrackVerticalList = () => {
                 const { vxkey, tracks } = edObject;
                 const object = objects[vxkey];
                 const groupedTracks = groupTracksByParent(tracks);
-
-                console.log("Group TrackBy Parent ", groupedTracks);
 
                 return (
                     <div key={vxkey} className="flex flex-col ">

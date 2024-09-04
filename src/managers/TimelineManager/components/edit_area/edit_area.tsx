@@ -1,5 +1,5 @@
 import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
-import { AutoSizer, Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
+import { Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
 import { DragLines } from './drag_lines';
@@ -10,11 +10,14 @@ import { ITrack, IObjectEditorData } from 'vxengine/AnimationEngine/types/track'
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 import { shallow } from 'zustand/shallow';
+import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from 'vxengine/AnimationEngine/interface/const';
+import { useVXUiStore } from 'vxengine/store/VXUIStore';
+import AutoSizer from '../AutoSizer';
 
-export type EditAreaProps = CommonProp & {
-  scrollLeft: number;
-  scrollTop: number;
-  onScroll: (params: OnScrollParams) => void;
+export type EditAreaProps = {
+  // scrollLeft: number;
+  // scrollTop: number;
+  // onScroll: (params: OnScrollParams) => void;
   deltaScrollLeft: (scrollLeft: number) => void;
 };
 
@@ -24,13 +27,6 @@ export interface EditAreaState {
 
 export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, ref) => {
   const {
-    rowHeight,
-    scaleWidth,
-    startLeft,
-    scrollLeft,
-    scrollTop,
-    hideCursor,
-    onScroll,
     dragLine,
     getAssistDragLineActionIds,
     onActionMoveEnd,
@@ -41,10 +37,16 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     onActionResizing,
   } = props;
 
-  const { editorData, scaleCount, editAreaRef } = useTimelineEditorStore(state => ({
+  const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
+
+  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft } = useTimelineEditorStore(state => ({
     editorData: state.editorData,
     scaleCount: state.scaleCount,
-    editAreaRef: state.editAreaRef
+    editAreaRef: state.editAreaRef,
+    scale: state.scale,
+    scrollLeft: state.scrollLeft,
+    scrollTop: state.scrollTop,
+    startLeft: state.startLeft,
   }), shallow);
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
   const gridRef = useRef<Grid>();
@@ -69,16 +71,16 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
           row: data.row,
           editorData: flattenedTracks,
         });
-      const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { scaleWidth, scale, startLeft });
+      const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { DEFAULT_SCALE_WIDTH, scale, startLeft });
       const assistPositions = defaultGetAssistPosition({
         editorData: flattenedTracks,
         assistActionIds,
         action: data.action,
         row: data.row,
         scale,
-        scaleWidth,
+        DEFAULT_SCALE_WIDTH,
         startLeft,
-        hideCursor,
+        hideCursor: false,
         cursorLeft,
       });
       initDragLine({ assistPositions });
@@ -90,7 +92,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       const movePositions = defaultGetMovePosition({
         ...data,
         startLeft,
-        scaleWidth,
+        DEFAULT_SCALE_WIDTH,
         scale,
       });
       updateDragLine({ movePositions });
@@ -106,7 +108,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
         style={{
           ...style,
           backgroundPositionX: `0, ${startLeft}px`,
-          backgroundSize: `${startLeft}px, ${scaleWidth}px`,
+          backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
         }}
         key={key}
         trackData={track}
@@ -142,21 +144,29 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
   useLayoutEffect(() => {
     gridRef.current?.scrollToPosition({ scrollTop, scrollLeft });
+    // console.log("Use effect scrollLeft ", scrollLeft);
   }, [scrollTop, scrollLeft]);
 
   useEffect(() => {
     gridRef.current.recomputeGridSize();
-  }, [editorData]);
+  }, [editorData, timelineEditorAttached]);
 
   return (
-    <div ref={editAreaRef} className={prefix('edit-area')}>
+    <div ref={editAreaRef} className={prefix('edit-area') + " w-full h-full"}>
+      <button onClick={() => { 
+        console.log("Recomputing Grid Size onClick"); 
+        console.log("EditAreaRef", editAreaRef.current as HTMLDivElement);
+        gridRef.current.recomputeGridSize()
+      }}>Recompute Grid</button>
       <AutoSizer>
         {({ width, height }) => {
+          console.log("Width, height ", width, height)
+          useTimelineEditorStore.setState({ clientHeight: height, clientWidth: width});
           // Get total height
           let totalHeight = 0;
           // Height list
-          const heights = flattenedTracks.map(() => rowHeight);
-          totalHeight = heights.length * rowHeight;
+          const heights = flattenedTracks.map(() => DEFAULT_ROW_HEIGHT);
+          totalHeight = heights.length * DEFAULT_ROW_HEIGHT;
 
           if (totalHeight < height) {
             heights.push(height - totalHeight);
@@ -176,14 +186,20 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
               rowCount={heights.length}
               ref={gridRef}
               cellRenderer={cellRenderer}
-              columnWidth={Math.max(scaleCount * scaleWidth + startLeft, width)}
+              columnWidth={Math.max(scaleCount * DEFAULT_SCALE_WIDTH + startLeft, width)}
               width={width}
               height={height}
-              rowHeight={({ index }) => heights[index] || rowHeight}
+              rowHeight={({ index }) => heights[index] || DEFAULT_ROW_HEIGHT}
               overscanRowCount={10}
               overscanColumnCount={0}
               onScroll={(param) => {
-                onScroll(param);
+                useTimelineEditorStore.setState({
+                  clientHeight: param.clientHeight,
+                  clientWidth: param.clientWidth,
+                  scrollTop: param.scrollTop,
+                  // scrollLeft: param.scrollLeft,
+                  scrollHeight: param.scrollHeight
+                })
               }}
             />
           );

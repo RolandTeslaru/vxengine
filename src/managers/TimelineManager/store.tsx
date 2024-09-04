@@ -26,12 +26,7 @@ export interface TimelineEditorStoreProps {
     setSnap: (value: boolean) => void;
     scaleCount: number;
     setScaleCount: (count: number) => void;
-    scrollLeft: number;
-    setScrollLeft: (scrollLeft: number) => void;
-    scrollTop: number;
-    setScrollTop: (scrollTop: number) => void;
     editAreaRef: React.MutableRefObject<HTMLDivElement | null>
-    scrollSyncRef: React.MutableRefObject<ScrollSync | null>
     scaleWidth: number
     scaleSplitCount: number
     startLeft: number
@@ -40,11 +35,20 @@ export interface TimelineEditorStoreProps {
     editorRef: React.MutableRefObject<HTMLDivElement | null>
     cursorTimeRef: React.MutableRefObject<number>;
 
+    scrollLeft: number;
+    setScrollLeft: (scrollLeft: number) => void;
+    scrollTop: number;
+    setScrollTop: (scrollTop: number) => void;
+    clientWidth: number;
+    clientHeight: number;
+    scrollHeight: number;
+
     createNewKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string, value: number) => void;
     moveToNextKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
     moveToPreviousKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
     findTrackByPropertyPath: (vxkey: string, propertyPath: string) => ITrack | undefined;
     updateEditorDataProperty: (vxkey: string, propertyPath: string, value: number) => void
+
 }
 
 export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
@@ -60,23 +64,28 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
     })(),
 
     width: Number.MAX_SAFE_INTEGER,
-    scrollLeft: 0,
-    scrollTop: 0,
+    
     activeTool: "mouse",
     snap: true,
     editAreaRef: React.createRef<HTMLDivElement>(),
-    scrollSyncRef: React.createRef<ScrollSync | null>(),
     scaleWidth: 160,
     scaleSplitCount: 10,
     startLeft: 20,
     changes: 0,
+
+    scrollLeft: 0,
+    scrollTop: 0,
+    clientHeight: 378,
+    clientWidth: 490,
+    scrollHeight: 270,
+    
     selectedKeyframes: [],
     editorRef: React.createRef<HTMLDivElement>(),
 
     setScale: (count) => set({ scale: count }),
     setScaleCount: (count) => set({ scaleCount: count }),
     setWidth: (width) => set({ width }),
-    setScrollLeft: (scrollLeft) => set({ scrollLeft }),
+    setScrollLeft: (value) => set({ scrollLeft: Math.max(value, 0)}),
     setScrollTop: (scrollTop) => set({ scrollTop }),
     setActiveTool: (tool) => set({ activeTool: tool }),
     setSnap: (value) => set({ snap: value }),

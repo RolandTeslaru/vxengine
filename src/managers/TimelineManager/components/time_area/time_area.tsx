@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef } from 'react';
-import { AutoSizer, Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
+import { Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
 import { prefix } from '../../utils/deal_class_prefix';
 import './time_area.scss';
 import { parserPixelToTime } from '../../utils/deal_data';
@@ -8,25 +8,20 @@ import { useTimelineEditorStore } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { handleSetCursor } from '../../utils/handleSetCursor';
 import { shallow } from 'zustand/shallow';
+import AutoSizer from '../AutoSizer';
 
-/** Animation timeline component parameters */
-export type TimeAreaProps = CommonProp & {
-  /** Left scroll distance */
-  scrollLeft: number;
-  /** Scroll callback, used for synchronous scrolling */
-  onScroll: (params: OnScrollParams) => void;
-  /** Set cursor position */
-};
+const maxScaleCount = 100;
 
 /** Animation timeline component */
-export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollLeft, onClickTimeArea, getScaleRender }) => {
-  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft } = useTimelineEditorStore(state => ({
+export const TimeArea = () => {
+  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft, scrollLeft } = useTimelineEditorStore(state => ({
     scaleCount: state.scaleCount,
     setCursorTime: state.setCursorTime,
     scaleSplitCount: state.scaleSplitCount, 
     scaleWidth: state.scaleWidth,
     scale: state.scale,
-    startLeft: state.startLeft
+    startLeft: state.startLeft,
+    scrollLeft: state.scrollLeft,
   }), shallow);
   const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
@@ -43,7 +38,7 @@ export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollL
       <div key={key} style={style} className={prefix(...classNames)}>
         {isShowScale &&
           <div className={prefix('time-unit-scale')}>
-            {getScaleRender ? getScaleRender(item) : item}
+            {item}
           </div>
         }
       </div>
@@ -87,15 +82,14 @@ export const TimeArea: FC<TimeAreaProps> = ({ maxScaleCount, hideCursor, scrollL
               <div
                 style={{ width, height }}
                 onClick={(e) => {
-                  if (hideCursor) return;
                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                   const position = e.clientX - rect.x;
                   const left = Math.max(position + scrollLeft, startLeft);
                   if (left > maxScaleCount * scaleWidth + startLeft - scrollLeft) return;
 
                   const time = parserPixelToTime(left, { startLeft, scale, scaleWidth });
-                  const result = onClickTimeArea && onClickTimeArea(time, e);
-                  if (result === false) return; //返回false时阻止设置时间
+                  // const result = onClickTimeArea && onClickTimeArea(time, e);
+                  // if (result === false) return; //返回false时阻止设置时间
                   handleSetCursor({ time, animationEngine, scale, setCursorTime })
                 }}
                 className={prefix('time-area-interact')}

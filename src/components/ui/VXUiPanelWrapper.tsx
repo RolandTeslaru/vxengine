@@ -54,6 +54,10 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
         if (externalWindow.current) {
             const extDocument = externalWindow.current.document;
             if (title) extDocument.title = title;
+            extDocument.body.style.width = '100vw';
+            extDocument.body.style.height = '100vh';
+            extDocument.body.style.margin = '0';  // Remove any margin that may interfere with sizing
+            extDocument.body.style.overflow = 'hidden'; // Prevent scrollbars from appearing
             extDocument.body.appendChild(containerRef.current);
 
             // Copy styles

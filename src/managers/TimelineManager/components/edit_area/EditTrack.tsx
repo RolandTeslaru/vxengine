@@ -16,7 +16,6 @@ export type EditRowProps = CommonProp & {
   /** Scroll distance from the left */
   scrollLeft: number;
   /** Set scroll left */
-  deltaScrollLeft: (scrollLeft: number) => void;
 };
 
 export const EditTrack: FC<EditRowProps> = (props) => {

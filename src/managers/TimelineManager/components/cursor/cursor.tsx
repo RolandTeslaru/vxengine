@@ -9,6 +9,7 @@ import { handleSetCursor } from '../../utils/handleSetCursor';
 import { useVXEngine } from 'vxengine/engine';
 import { useTimelineEditorStore } from '../../store';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
+import { shallow } from 'zustand/shallow';
 
 /** Animation timeline component parameters */
 export type CursorProps = CommonProp & {
@@ -27,7 +28,6 @@ export const Cursor: FC<CursorProps> = ({
   startLeft,
   scaleWidth,
   scale,
-  scrollLeft,
   deltaScrollLeft,
   onCursorDragStart,
   onCursorDrag,
@@ -36,13 +36,13 @@ export const Cursor: FC<CursorProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const draggingLeft = useRef<undefined | number>();
   const { animationEngine } = useVXEngine();
-  const { setCursorTime, cursorTime, width, editAreaRef, scrollSyncRef } = useTimelineEditorStore(state => ({
+  const { setCursorTime, cursorTime, width, editAreaRef, scrollLeft } = useTimelineEditorStore(state => ({
     setCursorTime: state.setCursorTime,
     cursorTime: state.cursorTime,
     width: state.width,
     editAreaRef: state.editAreaRef,
-    scrollSyncRef: state.scrollSyncRef
-  })); 
+    scrollLeft: state.scrollLeft
+  }), shallow); 
 
   const maxScaleCount = 100;
 
@@ -76,8 +76,6 @@ export const Cursor: FC<CursorProps> = ({
         draggingLeft.current = undefined;
       }}
       onDrag={({ left }, scroll = 0) => {
-        const scrollLeft = scrollSyncRef.current.state.scrollLeft;
-
         if (!scroll || scrollLeft === 0) {
           // 拖拽时，如果当前left < left min，将数值设置为 left min
           if (left < startLeft - scrollLeft) draggingLeft.current = startLeft - scrollLeft;

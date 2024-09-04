@@ -16,8 +16,16 @@
   &-edit-area {
     flex: 1 1 auto;
     margin-top: 10px;
-    overflow: hidden;
+    overflow: hidden; /* This might cause issues in detached windows */
     position: relative;
+
+    /* Ensure the edit-area div has a full width and height when detached */
+    &.detached {
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;  /* Consider changing this to auto */
+    }
+
     .ReactVirtualized__Grid {
       outline: none !important;
       overflow: overlay !important;
@@ -36,5 +44,5 @@
         border-radius: 16px;
       }  
     }
-  }
+}
 }
