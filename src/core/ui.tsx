@@ -44,7 +44,7 @@ export const CoreUI = () => {
 
             <TimelineEditor />
 
-            <TimelineEditorDebug />
+            {/* <TimelineEditorDebug /> */}
 
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
@@ -165,9 +165,9 @@ const TimelineEditor = () => {
             attachedState={timelineEditorAttached}
             setAttachedState={setTimelineEditorAttached}
         >
-            <motion.div className={`fixed h-[500px] backdrop-blur-sm  text-sm bg-neutral-900 
+            <motion.div className={`fixed h-[500px] backdrop-blur-sm  text-sm bg-neutral-900
                                     bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
-                                    ${timelineEditorAttached ? " bottom-5 right-6 " : " bottom-2 right-2"}
+                                    ${timelineEditorAttached ? " bottom-5 right-6 " : " !h-[calc(100%_-_20px)] top-2 right-2"}
                                     `}
                 id="VXEngineTimelinePanel"
                 style={{

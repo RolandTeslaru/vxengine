@@ -67,7 +67,7 @@ const TimelineEditorUI = () => {
             </div>
             <AnimatePresence>
                 {open && (
-                    <motion.div className='relative pl-2 flex flex-row gap-2 font-sans-menlo'
+                    <motion.div className='mt-auto relative pl-2 flex flex-row gap-2 font-sans-menlo'
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

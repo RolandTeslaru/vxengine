@@ -28,4 +28,5 @@ export interface edObjectProps {
     vxkey: string;
     tracks: ITrack[];
     staticProps: IStaticProps[]
+    rowIndex?: number;
 }

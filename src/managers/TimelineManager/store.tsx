@@ -10,6 +10,7 @@ import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
 import vx, { useVXObjectStore } from 'vxengine/store';
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
+import { PathGroup } from './types/data';
 
 
 export interface TimelineEditorStoreProps {
@@ -43,6 +44,9 @@ export interface TimelineEditorStoreProps {
     clientHeight: number;
     scrollHeight: number;
 
+    collapsedGroups: Record<string, boolean>;
+    setCollapsedGroups: (groupKey: string) => void;
+
     createNewKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string, value: number) => void;
     moveToNextKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
     moveToPreviousKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
@@ -50,6 +54,101 @@ export interface TimelineEditorStoreProps {
     updateEditorDataProperty: (vxkey: string, propertyPath: string, value: number) => void
 
 }
+
+const precomputeRowIndices = (
+    groupedTracks: Record<string, PathGroup>,
+    currentRowIndex = 1,
+    prevRowIndex = 0
+): number => {
+    Object.entries(groupedTracks).forEach(([key, group]) => {
+        const childrenAllKeys = Object.keys(group.children);
+        const isPath = group.children && childrenAllKeys.length > 0;
+        const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1)
+        const isTrack = !isPath && group.track;
+
+        group.prevRowIndex = prevRowIndex;
+        group.rowIndex = currentRowIndex;
+        // group.nextRowIndex = isNestedToPreviousPath ? 1 : currentRowIndex + 1;
+
+        if (isPath) {
+            if (isNestedToPreviousPath) {
+                group.nextRowIndex = prevRowIndex;
+            }
+            else {
+                currentRowIndex += 1;
+                group.nextRowIndex = currentRowIndex;
+            }
+            const childFinalIndex = precomputeRowIndices(group.children, currentRowIndex, group.rowIndex);
+            group.localFinalTrackIndex = childFinalIndex;
+            currentRowIndex = childFinalIndex + 1;
+        } else if (isTrack) {
+            group.nextRowIndex = currentRowIndex + 1;
+            group.localFinalTrackIndex = group.nextRowIndex - 1;
+            currentRowIndex = group.nextRowIndex;
+        }
+    });
+
+    const allKeys = Object.keys(groupedTracks);
+
+    return groupedTracks[allKeys[allKeys.length - 1]]?.localFinalTrackIndex || currentRowIndex;
+};
+
+const groupTracksByParent = (tracks: ITrack[], trackRowIndex: number) => {
+    const groupedTracks: Record<string, PathGroup> = {};
+
+    tracks.forEach((track) => {
+        const pathSegments = track.propertyPath.split('.');
+
+        let currentGroup = groupedTracks;
+
+        pathSegments.forEach((key, index) => {
+            if (!currentGroup[key]) {
+                currentGroup[key] = { children: {}, track: null };
+            }
+
+            if (index === pathSegments.length - 1) {
+                currentGroup[key].track = track;
+            } else {
+                currentGroup = currentGroup[key].children;
+            }
+        });
+    });
+    // Call precomputeRowIndices and return both grouped tracks and the final index
+    const finalIndex = precomputeRowIndices(groupedTracks, trackRowIndex);
+
+    return { groupedTracks, finalIndex };
+};
+
+export const updateEditorDataProperty = (
+    set: any,
+    vxkey: string,
+    propertyPath: string,
+    value: any
+  ) => {
+    set(
+      produce((state: TimelineEditorStoreProps) => {
+        if (!state.editorData[vxkey]) {
+          state.editorData[vxkey] = {
+            vxkey: vxkey,
+            tracks: [],
+            staticProps: [],
+          };
+        }
+  
+        const keys = propertyPath.split(".");
+        let target = state.editorData[vxkey];
+  
+        for (let i = 0; i < keys.length; i++) {
+          if (!target[keys[i]]) target[keys[i]] = {};
+          target = target[keys[i]];
+        }
+  
+        target[keys[keys.length - 1]] = value;
+      }),
+      false
+    );
+  };
+  
 
 export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorData: {},
@@ -95,30 +194,17 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         set({ cursorTime: time });
     },
 
+    collapsedGroups: {},
+    setCollapsedGroups: (groupKey: string) => {
+        set((state: TimelineEditorStoreProps) => {
+            const collapsedGroups = { ...state.collapsedGroups };
+            collapsedGroups[groupKey] = !collapsedGroups[groupKey];
+            return { collapsedGroups };
+        });
+    },
+
     updateEditorDataProperty: (vxkey, propertyPath, value) => {
-        set(
-            produce((state: TimelineEditorStoreProps) => {
-                if(!state.editorData[vxkey]){
-                    state.editorData[vxkey] = {
-                        vxkey: vxkey,
-                        tracks: [],
-                        staticProps: []
-                    };
-                }
-
-                const keys = propertyPath.split('.');
-                let target = state.editorData[vxkey];
-
-                for(let i = 0; i < keys.length; i++){
-                    if(!target[keys[i]])
-                        target[keys[i]] = {}
-                    target = target[keys[i]];
-                }
-
-                target[keys[keys.length - 1]] = value;
-            }),
-            false
-        )
+        updateEditorDataProperty(set, vxkey, propertyPath, value);
     },
 
     findTrackByPropertyPath: (vxkey, propertyPath) => {

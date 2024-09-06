@@ -160,7 +160,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       }}>Recompute Grid</button>
       <AutoSizer>
         {({ width, height }) => {
-          console.log("Width, height ", width, height)
+          // console.log("Width, height ", width, height)
           useTimelineEditorStore.setState({ clientHeight: height, clientWidth: width});
           // Get total height
           let totalHeight = 0;

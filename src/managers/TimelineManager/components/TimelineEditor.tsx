@@ -75,7 +75,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
   }, []);
 
   return (
-    <div ref={domRef} className={`min-h-[600px] h-[420px] bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden  `}>
+    <div ref={domRef} className={` h-full border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden  `}>
       <TimeArea />
       <EditArea
         {...checkedProps}
