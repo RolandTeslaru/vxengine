@@ -1,4 +1,4 @@
-import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef } from 'react';
 import { Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
@@ -6,13 +6,14 @@ import { DragLines } from './drag_lines';
 import './edit_area.scss';
 import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack, IObjectEditorData } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, IObjectEditorData, edObjectProps, PathGroup } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from 'vxengine/AnimationEngine/interface/const';
 import { useVXUiStore } from 'vxengine/store/VXUIStore';
 import AutoSizer from '../AutoSizer';
+import { ScrollArea } from 'vxengine/components/shadcn/scrollArea';
 
 export type EditAreaProps = {
   // scrollLeft: number;
@@ -39,7 +40,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
   const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
 
-  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft } = useTimelineEditorStore(state => ({
+  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft, trackListRef, collapsedGroups,groupedPaths } = useTimelineEditorStore(state => ({
     editorData: state.editorData,
     scaleCount: state.scaleCount,
     editAreaRef: state.editAreaRef,
@@ -47,13 +48,16 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     scrollLeft: state.scrollLeft,
     scrollTop: state.scrollTop,
     startLeft: state.startLeft,
+    trackListRef: state.trackListRef,
+    collapsedGroups: state.collapsedGroups,
+    groupedPaths: state.groupedPaths
   }), shallow);
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
   const gridRef = useRef<Grid>();
   const heightRef = useRef(-1);
 
   // Flatten the tracks
-  const flattenedTracks = Object.values(editorData).flatMap((obj) => obj.tracks);
+  // const flattenedTracks = Object.values(editorData).flatMap((obj) => obj.tracks);
 
   // ref data
   useImperativeHandle(ref, () => ({
@@ -62,30 +66,30 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     },
   }));
 
-  const handleInitDragLine = (data) => {
-    if (dragLine) {
-      const assistActionIds =
-        getAssistDragLineActionIds &&
-        getAssistDragLineActionIds({
-          action: data.action,
-          row: data.row,
-          editorData: flattenedTracks,
-        });
-      const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { DEFAULT_SCALE_WIDTH, scale, startLeft });
-      const assistPositions = defaultGetAssistPosition({
-        editorData: flattenedTracks,
-        assistActionIds,
-        action: data.action,
-        row: data.row,
-        scale,
-        DEFAULT_SCALE_WIDTH,
-        startLeft,
-        hideCursor: false,
-        cursorLeft,
-      });
-      initDragLine({ assistPositions });
-    }
-  };
+  // const handleInitDragLine = (data) => {
+  //   if (dragLine) {
+  //     const assistActionIds =
+  //       getAssistDragLineActionIds &&
+  //       getAssistDragLineActionIds({
+  //         action: data.action,
+  //         row: data.row,
+  //         editorData: flattenedTracks,
+  //       });
+  //     const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { DEFAULT_SCALE_WIDTH, scale, startLeft });
+  //     const assistPositions = defaultGetAssistPosition({
+  //       editorData: flattenedTracks,
+  //       assistActionIds,
+  //       action: data.action,
+  //       row: data.row,
+  //       scale,
+  //       DEFAULT_SCALE_WIDTH,
+  //       startLeft,
+  //       hideCursor: false,
+  //       cursorLeft,
+  //     });
+  //     initDragLine({ assistPositions });
+  //   }
+  // };
 
   const handleUpdateDragLine = (data) => {
     if (dragLine) {
@@ -99,47 +103,67 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     }
   };
 
-  /** Get the rendering content of each cell */
-  const cellRenderer: GridCellRenderer = ({ rowIndex, key, style }) => {
-    const track = flattenedTracks[rowIndex]; // Row data
-    return (
-      <EditTrack
-        {...props}
-        style={{
-          ...style,
-          backgroundPositionX: `0, ${startLeft}px`,
-          backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
-        }}
-        key={key}
-        trackData={track}
-        dragLineData={dragLineData}
-        onActionMoveStart={(data) => {
-          handleInitDragLine(data);
-          return onActionMoveStart && onActionMoveStart(data);
-        }}
-        onActionResizeStart={(data) => {
-          handleInitDragLine(data);
 
-          return onActionResizeStart && onActionResizeStart(data);
-        }}
-        onActionMoving={(data) => {
-          handleUpdateDragLine(data);
-          return onActionMoving && onActionMoving(data);
-        }}
-        onActionResizing={(data) => {
-          handleUpdateDragLine(data);
-          return onActionResizing && onActionResizing(data);
-        }}
-        onActionResizeEnd={(data) => {
-          disposeDragLine();
-          return onActionResizeEnd && onActionResizeEnd(data);
-        }}
-        onActionMoveEnd={(data) => {
-          disposeDragLine();
-          return onActionMoveEnd && onActionMoveEnd(data);
-        }}
-      />
-    );
+  const verticalRowList = useMemo(() => {
+    const allRows = [];
+
+    const fillRows = ({key, group}: {key: string, group: PathGroup}) => {
+      const { rowIndex, track } = group;
+      
+      console.log("row index" , rowIndex)
+      if (rowIndex !== undefined) {
+        // allRows.push(track || null)
+        allRows[rowIndex] = track || null;
+      }
+
+      Object.entries(group.children).forEach(([key, group]) => fillRows({key, group}));
+    };
+
+    Object.entries(groupedPaths).forEach(([key, group]) => fillRows({key, group}));
+
+    return allRows;
+  }, [editorData, collapsedGroups]);
+
+  const cellRenderer: GridCellRenderer = ({ rowIndex, key, style }) => {
+    const row = verticalRowList[rowIndex]; 
+
+    if (row) {
+      // Render the track if it exists
+      return (
+        <EditTrack
+          {...props}
+          style={{
+            ...style,
+            backgroundPositionX: `0, ${startLeft}px`,
+            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
+          }}
+          key={key}
+          trackData={row}  // Pass the track to EditTrack
+          dragLineData={dragLineData}
+          // onActionMoveStart={handleInitDragLine}
+          // onActionResizeStart={handleInitDragLine}
+          onActionMoving={handleUpdateDragLine}
+          onActionResizing={handleUpdateDragLine}
+          onActionResizeEnd={disposeDragLine}
+          onActionMoveEnd={disposeDragLine}
+        />
+      );
+    } else {
+      // Render an empty row
+      return (
+        <div
+          key={key}
+          style={{
+            ...style,
+            backgroundPositionX: `0, ${startLeft}px`,
+            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
+          }}
+          className='relative  py-4 border-y border-neutral-900 bg-black bg-opacity-60'
+        >
+          {/* Optionally add content for empty rows */}
+        </div>
+      );
+    }
   };
 
   useLayoutEffect(() => {
@@ -151,61 +175,70 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     gridRef.current.recomputeGridSize();
   }, [editorData, timelineEditorAttached]);
 
+  // Handle scroll events manually
+  // TODO: eleimante all the scroll states and change to refs
+  // const handleScroll = (e) => {
+  //   const scrollContainer = e.target;
+  //   const newScrollLeft = scrollContainer.scrollLeft;
+
+  //   console.log("Handle scroll on Edit are ", e.target.scrollTop )
+  //   trackListRef.current.scrollTop =  scrollContainer.scrollTop;
+    
+  //   // console.log("Handling new scrool ", newScrollLeft, newScrollTop, "  current scrollLeft ", useTimelineEditorStore.getState().scrollLeft, "  current scrollTop ", useTimelineEditorStore.getState().scrollTop);
+  //   if(newScrollLeft !== useTimelineEditorStore.getState().scrollLeft ) {
+  //     useTimelineEditorStore.setState({ scrollLeft: newScrollLeft });
+  //   }
+  // };
+
+  const handleOnScroll = (param) => {
+    trackListRef.current.scrollTop = param.scrollTop
+    useTimelineEditorStore.setState({
+      scrollLeft: param.scrollLeft,
+    })
+  }
+
   return (
-    <div ref={editAreaRef} className={prefix('edit-area') + " w-full h-full"}>
-      <button onClick={() => { 
-        console.log("Recomputing Grid Size onClick"); 
-        console.log("EditAreaRef", editAreaRef.current as HTMLDivElement);
-        gridRef.current.recomputeGridSize()
-      }}>Recompute Grid</button>
-      <AutoSizer>
-        {({ width, height }) => {
-          // console.log("Width, height ", width, height)
-          useTimelineEditorStore.setState({ clientHeight: height, clientWidth: width});
-          // Get total height
-          let totalHeight = 0;
-          // Height list
-          const heights = flattenedTracks.map(() => DEFAULT_ROW_HEIGHT);
-          totalHeight = heights.length * DEFAULT_ROW_HEIGHT;
 
-          if (totalHeight < height) {
-            heights.push(height - totalHeight);
-            if (heightRef.current !== height && heightRef.current >= 0) {
-              setTimeout(() =>
-                gridRef.current?.recomputeGridSize({
-                  rowIndex: heights.length - 1,
-                }),
-              );
+      <div ref={editAreaRef} className={prefix('edit-area') + " w-full h-full"}>
+        <AutoSizer>
+          {({ width, height }) => {
+            // console.log("Width, height ", width, height)
+            // Get total height
+            let totalClientHeight = 0;
+            // Height list
+            const heights = verticalRowList.map(() => DEFAULT_ROW_HEIGHT);
+            totalClientHeight = heights.length * DEFAULT_ROW_HEIGHT;
+
+            if (totalClientHeight < height) {
+              heights.push(height - totalClientHeight);
+              if (heightRef.current !== height && heightRef.current >= 0) {
+                setTimeout(() =>
+                  gridRef.current?.recomputeGridSize({
+                    rowIndex: heights.length - 1,
+                  }),
+                );
+              }
             }
-          }
-          heightRef.current = height;
+            heightRef.current = height;
 
-          return (
-            <Grid
-              columnCount={1}
-              rowCount={heights.length}
-              ref={gridRef}
-              cellRenderer={cellRenderer}
-              columnWidth={Math.max(scaleCount * DEFAULT_SCALE_WIDTH + startLeft, width)}
-              width={width}
-              height={height}
-              rowHeight={({ index }) => heights[index] || DEFAULT_ROW_HEIGHT}
-              overscanRowCount={10}
-              overscanColumnCount={0}
-              onScroll={(param) => {
-                useTimelineEditorStore.setState({
-                  clientHeight: param.clientHeight,
-                  clientWidth: param.clientWidth,
-                  scrollTop: param.scrollTop,
-                  // scrollLeft: param.scrollLeft,
-                  scrollHeight: param.scrollHeight
-                })
-              }}
-            />
-          );
-        }}
-      </AutoSizer>
-      {dragLine && <DragLines scrollLeft={scrollLeft} {...dragLineData} />}
-    </div>
+            return (
+              <Grid
+                columnCount={1}
+                rowCount={heights.length}
+                ref={gridRef}
+                cellRenderer={cellRenderer}
+                columnWidth={Math.max(scaleCount * DEFAULT_SCALE_WIDTH + startLeft, width)}
+                width={width}
+                height={height}
+                rowHeight={({ index }) => heights[index] || DEFAULT_ROW_HEIGHT}
+                overscanRowCount={10}
+                overscanColumnCount={0}
+                onScroll={handleOnScroll}
+              />
+            );
+          }}
+        </AutoSizer>
+        {dragLine && <DragLines scrollLeft={scrollLeft} {...dragLineData} />}
+      </div>
   );
 });

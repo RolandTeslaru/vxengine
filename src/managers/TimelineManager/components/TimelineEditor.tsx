@@ -55,6 +55,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
     if (autoScrollWhenPlay.current) {
       const autoScrollFrom = useTimelineEditorStore.getState().clientWidth * 70 / 100;
       const left = time * (DEFAULT_SCALE_WIDTH / scale) + startLeft - autoScrollFrom;
+      editAreaRef.current.scrollLeft = left;
       setScrollLeft(left);
     }
   })
@@ -75,13 +76,12 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
   }, []);
 
   return (
-    <div ref={domRef} className={` h-full border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl bg-opacity-80 w-full relative flex flex-col overflow-hidden  `}>
+    <div ref={domRef} className={`w-full h-full border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl relative flex flex-col overflow-hidden  `}>
       <TimeArea />
       <EditArea
         {...checkedProps}
         deltaScrollLeft={handleDeltaScrollLeft}
       />
-
       <Cursor
         {...checkedProps}
         deltaScrollLeft={handleDeltaScrollLeft}

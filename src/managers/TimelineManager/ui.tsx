@@ -23,6 +23,7 @@ import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 import { useVXUiStore } from 'vxengine/store/VXUIStore';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'vxengine/components/shadcn/Resizeable';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -44,7 +45,7 @@ const TimelineEditorUI = () => {
 
     return (
         <>
-            <div className={`flex flex-row gap-2 w-full min-w-[800px] ${timelineEditorAttached ? "pr-2" : "px-2"}`}>
+            <div className={`flex flex-row gap-2 w-full  ${timelineEditorAttached ? "pr-2" : "px-2"}`}>
                 {timelineEditorAttached &&
                     <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
                         onClick={() => setOpen(!open)}
@@ -61,10 +62,20 @@ const TimelineEditorUI = () => {
 
                 <ProgressionControls />
             </div>
-            <div className='relative flex flex-row  overflow-hidden'>
-                <TrackVerticalList />
-                <TimelineEditor />
-            </div>
+            <ResizablePanelGroup 
+                className='relative flex flex-row w-full flex-grow overflow-hidden'
+                direction='horizontal'
+            >
+                <ResizablePanel defaultSize={40}>
+                    <div className='h-full flex flex-col overflow-hidden'>
+                        <TrackVerticalList />
+                    </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle className='mx-1'/>
+                <ResizablePanel defaultSize={60}>
+                    <TimelineEditor />
+                </ResizablePanel>
+            </ResizablePanelGroup>
             <AnimatePresence>
                 {open && (
                     <motion.div className='mt-auto relative pl-2 flex flex-row gap-2 font-sans-menlo'

@@ -57,14 +57,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender(({ force: true }));
   }
 
-
-  setEditorData(newEditorData: Record<string, edObjectProps>) {
-    useTimelineEditorStore.setState({ editorData: newEditorData });
-    
-    this.updateCurrentTimeline(newEditorData)
-  }
-
-
   setIsPlaying(value: boolean) {
     useVXAnimationStore.setState({ isPlaying: value })
   }
@@ -74,7 +66,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       acc[obj.vxkey] = {
         vxkey: obj.vxkey,
         tracks: obj.tracks || [],
-        staticProps: obj.staticProps || [] // Assuming staticProps is optional and might not be present
+        staticProps: obj.staticProps || []
       };
       return acc;
     }, {} as Record<string, edObjectProps>);
@@ -93,10 +85,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyAllStaticProps();
     this.reRender();
     
-    const editorDataArray = selectedTimeline.objects
+    const rawObjects = selectedTimeline.objects
 
-    const editorDataRecord = this.convertToRecordStructure(editorDataArray)
-    this.setEditorData(editorDataRecord)
+    //  setEditorData
+    useTimelineEditorStore.getState().setEditorData(rawObjects)
 
   }
 
