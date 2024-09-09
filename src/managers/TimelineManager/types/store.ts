@@ -5,7 +5,6 @@ export interface TimelineEditorStoreProps {
     scale: number
     setScale: (count: number) => void
     cursorTime: number
-    setCursorTime: (time: number) => void
     width: number
     setWidth: (width: number) => void
     activeTool: string

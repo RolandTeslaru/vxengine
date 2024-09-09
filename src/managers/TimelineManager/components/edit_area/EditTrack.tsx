@@ -16,11 +16,12 @@ export type EditRowProps = CommonProp & {
   /** Scroll distance from the left */
   scrollLeft: number;
   /** Set scroll left */
+  editAreaRef: React.MutableRefObject<HTMLDivElement>;
 };
 
 export const EditTrack: FC<EditRowProps> = (props) => {
-  const { editAreaRef, scale, scaleWidth } = useTimelineEditorStore(state => ({
-    editAreaRef: state.editAreaRef,
+  const { editAreaRef } = props;
+  const {  scale, scaleWidth } = useTimelineEditorStore(state => ({
     scale: state.scale,
     scaleWidth: state.scaleWidth
   }), shallow );

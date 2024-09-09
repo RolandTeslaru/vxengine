@@ -222,15 +222,17 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
     scaleSplitCount: 10,
     startLeft: 20,
     changes: 0,
-
-    scrollLeft: 0,
-    scrollTop: 0,
+    
     clientHeight: 378,
     clientWidth: 490,
     scrollHeight: 270,
 
+
     selectedKeyframes: [],
     editorRef: React.createRef<HTMLDivElement>(),
+
+    scrollLeft: 0,
+    scrollTop: 0,
 
 
     setScale: (count) => set({ scale: count }),
@@ -309,6 +311,7 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
             value: value
         };
 
+
         set(state => {
             // Create a new copy of editorData
             const updatedEditorData = produce(state.editorData, draft => {
@@ -357,8 +360,8 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         addChange();
     },
     moveToNextKeyframe: (animationEngine, vxkey, propertyPath) => {
-        const { getTrack, cursorTime, setCursorTime, scale } = get();
-        const track = getTrack(vxkey, propertyPath);
+        const { findTrackByPropertyPath, cursorTime, setCursorTime, scale } = get();
+        const track = findTrackByPropertyPath(vxkey, propertyPath);
 
         if (track) {
             const nextKeyframe = track.keyframes.find(kf => kf.time > cursorTime);
@@ -367,15 +370,14 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
                     time: nextKeyframe.time,
                     animationEngine,
                     scale,
-                    setCursorTime,
                 });
             }
         }
     },
 
     moveToPreviousKeyframe: (animationEngine, vxkey, propertyPath) => {
-        const { getTrack, cursorTime, setCursorTime, scale } = get();
-        const track = getTrack(vxkey, propertyPath);
+        const { findTrackByPropertyPath, cursorTime, setCursorTime, scale } = get();
+        const track = findTrackByPropertyPath(vxkey, propertyPath);
 
         if (track) {
             const prevKeyframe = [...track.keyframes].reverse().find(kf => kf.time < cursorTime);
@@ -384,7 +386,6 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
                     time: prevKeyframe.time,
                     animationEngine,
                     scale,
-                    setCursorTime,
                 });
             }
         }

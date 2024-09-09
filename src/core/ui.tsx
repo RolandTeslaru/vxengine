@@ -43,11 +43,15 @@ export const CoreUI = () => {
             {/*  */}
 
 
+            
+
             <TimelineEditor />
 
             <FrequentStateVisualizer/>
 
             {/* <TimelineEditorDebug /> */}
+
+            <FrequentStateVisualizer/>
 
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
@@ -58,56 +62,6 @@ export const CoreUI = () => {
                     VEXR<span className="font-thin">LABS</span>
                 </h1>
             </a>
-        </div>
-    )
-}
-
-
-const CurrentTimeVisualizer = () => {
-    const currentTime = useVXAnimationStore(state => state.currentTime)
-    return (
-        <p>
-            {parseFloat(currentTime).toFixed(2)}
-        </p>
-    )
-}
-
-const CursorTimeVisualzier = () => {
-    const cursorTime = useTimelineEditorStore(state => state.cursorTime)
-    return (
-        <p>
-            {parseFloat(cursorTime).toFixed(2)}
-        </p>
-    )
-}
-
-const ScrollLeftVisualizer = () => {
-    const scrollLeft = useTimelineEditorStore(state => state.scrollLeft)
-    return (
-        <p>
-            {parseFloat(scrollLeft).toFixed(2)}
-        </p>
-    )
-}
-
-
-const FrequentStateVisualizer = () => {
-    return (
-        <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
-                            gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
-            <div className="flex flex-tow">
-                STATE_currentTime &nbsp;&nbsp;
-                 <CurrentTimeVisualizer />
-            </div>
-            <div className="flex flex-row">
-                STATE_cursorTime &nbsp;&nbsp;
-                 <CursorTimeVisualzier />
-            </div>
-          
-            <div className="flex flex-row">
-                STATE_scrollLeft &nbsp;&nbsp;
-                 <ScrollLeftVisualizer />
-            </div>
         </div>
     )
 }
@@ -179,6 +133,55 @@ const LeftPanel = () => {
 
 
         </VXUiPanelWrapper>
+    )
+}
+
+const CurrentTimeVisualizer = () => {
+    const currentTime = useVXAnimationStore(state => state.currentTime)
+    return (
+        <p>
+            {parseFloat(currentTime).toFixed(2)}
+        </p>
+    )
+}
+
+const CursorTimeVisualzier = () => {
+    const cursorTime = useTimelineEditorStore(state => state.cursorTime)
+    return (
+        <p>
+            {parseFloat(cursorTime).toFixed(2)}
+        </p>
+    )
+}
+
+const ScrollLeftVisualizer = () => {
+    const scrollLeft = useTimelineEditorStore(state => state.scrollLeft)
+    return (
+        <p>
+            {parseFloat(scrollLeft).toFixed(2)}
+        </p>
+    )
+}
+
+
+const FrequentStateVisualizer = () => {
+    return (
+        <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
+                            gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
+            <div className="flex flex-tow">
+                STATE_currentTime &nbsp;&nbsp;
+                 <CurrentTimeVisualizer />
+            </div>
+            <div className="flex flex-row">
+                STATE_cursorTime &nbsp;&nbsp;
+                 <CursorTimeVisualzier />
+            </div>
+          
+            <div className="flex flex-row">
+                STATE_scrollLeft &nbsp;&nbsp;
+                 <ScrollLeftVisualizer />
+            </div>
+        </div>
     )
 }
 

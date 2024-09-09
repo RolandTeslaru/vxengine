@@ -8,7 +8,9 @@
     "baseUrl": "src", 
     "paths": {
       "vxengine/*": ["*"],
-      "VXEngine/*": ["*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "declaration": true,
     "sourceMap": true,

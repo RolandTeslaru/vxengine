@@ -1,6 +1,7 @@
 import { IAnimationEngine } from "vxengine/AnimationEngine/types/engine";
 import { parserPixelToTime, parserTimeToPixel } from "./deal_data";
 import { DEFAULT_SCALE_WIDTH } from "vxengine/AnimationEngine/interface/const";
+import { useTimelineEditorStore } from "../store";
 
 export const handleSetCursor = (param: {
     left?: number;
@@ -8,11 +9,11 @@ export const handleSetCursor = (param: {
     updateTime?: boolean;
     animationEngine: IAnimationEngine;
     scale: number; // Add scale as a parameter
-    setCursorTime: (time: number) => void; // Pass setCursorTime function
 }) => {
-    let { left, time, updateTime = true, animationEngine, scale, setCursorTime } = param;
+    let { left, time, updateTime = true, animationEngine, scale } = param;
     if (typeof left === 'undefined' && typeof time === 'undefined') return;
 
+    console.log("Handling setting cursor ")
     const startLeft = 0;
     const scaleWidth = DEFAULT_SCALE_WIDTH;
 
@@ -26,6 +27,6 @@ export const handleSetCursor = (param: {
         result = animationEngine.setCurrentTime(time);
         // animationEngine.reRender();
     }
-    result && setCursorTime(time); // Use passed setCursorTime function
+    result && useTimelineEditorStore.setState({ cursorTime: time });
     return result;
 };
