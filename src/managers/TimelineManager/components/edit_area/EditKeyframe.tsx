@@ -14,7 +14,6 @@ export type EditKeyframeProps = {
 };
 
 export const EditKeyframe: FC<EditKeyframeProps> = ({
-    track,
     keyframe,
     rowHeight,
     handleTime,

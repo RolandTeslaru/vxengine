@@ -24,7 +24,6 @@ export const useVXAnimationStore = createWithEqualityFn<TimelineStoreStateProps>
     currentTimeline: undefined,
     getTimelineById: (id: string) => getTimelineById(get().timelines, id),
     isPlaying: false,
-    currentTime: 0,
     playRate: 1,
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),
 }))

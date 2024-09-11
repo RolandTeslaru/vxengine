@@ -8,12 +8,11 @@ export const handleSetCursor = (param: {
     time?: number;
     updateTime?: boolean;
     animationEngine: IAnimationEngine;
-    scale: number; // Add scale as a parameter
 }) => {
-    let { left, time, updateTime = true, animationEngine, scale } = param;
+    const scale = useTimelineEditorStore.getState().scale
+    let { left, time, updateTime = true, animationEngine } = param;
     if (typeof left === 'undefined' && typeof time === 'undefined') return;
 
-    console.log("Handling setting cursor ")
     const startLeft = 0;
     const scaleWidth = DEFAULT_SCALE_WIDTH;
 
@@ -26,7 +25,7 @@ export const handleSetCursor = (param: {
     if (updateTime) {
         result = animationEngine.setCurrentTime(time);
         // animationEngine.reRender();
+        useTimelineEditorStore.setState({ cursorTime: time });
     }
-    result && useTimelineEditorStore.setState({ cursorTime: time });
     return result;
 };

@@ -6,7 +6,6 @@ export interface TimelineStoreStateProps {
     currentTimeline: ITimeline;
     getTimelineById: (id: string) => ITimeline | undefined;
     isPlaying: boolean;
-    currentTime: number;
     playRate: number;
     setPlayRate: (rate: number) => void;
 }

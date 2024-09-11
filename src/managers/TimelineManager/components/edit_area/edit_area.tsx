@@ -6,7 +6,7 @@ import { DragLines } from './drag_lines';
 import './edit_area.scss';
 import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack, IObjectEditorData, edObjectProps, PathGroup } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, IObjectEditorData, edObjectProps, PathGroup, IKeyframe } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorStore } from '../../store';
 import { shallow } from 'zustand/shallow';
@@ -40,7 +40,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
   const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
 
-  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft, trackListRef, collapsedGroups,groupedPaths } = useTimelineEditorStore(state => ({
+  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft, trackListRef,groupedPaths } = useTimelineEditorStore(state => ({
     editorData: state.editorData,
     scaleCount: state.scaleCount,
     editAreaRef: state.editAreaRef,
@@ -49,7 +49,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     scrollTop: state.scrollTop,
     startLeft: state.startLeft,
     trackListRef: state.trackListRef,
-    collapsedGroups: state.collapsedGroups,
     groupedPaths: state.groupedPaths
   }), shallow);
   const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
@@ -105,15 +104,13 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
 
   const verticalRowList = useMemo(() => {
-    const allRows = [];
+    const allRows= [];
 
     const fillRows = ({key, group}: {key: string, group: PathGroup}) => {
-      const { rowIndex, track } = group;
+      const { rowIndex, trackKey } = group;
       
-      console.log("row index" , rowIndex)
       if (rowIndex !== undefined) {
-        // allRows.push(track || null)
-        allRows[rowIndex] = track || null;
+        allRows[rowIndex] = trackKey
       }
 
       Object.entries(group.children).forEach(([key, group]) => fillRows({key, group}));
@@ -122,12 +119,12 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     Object.entries(groupedPaths).forEach(([key, group]) => fillRows({key, group}));
 
     return allRows;
-  }, [editorData, collapsedGroups]);
+  }, [editorData]);
 
   const cellRenderer: GridCellRenderer = ({ rowIndex, key, style }) => {
-    const row = verticalRowList[rowIndex]; 
+    const track = verticalRowList[rowIndex]; 
 
-    if (row) {
+    if (track) {
       // Render the track if it exists
       return (
         <EditTrack
@@ -138,7 +135,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
             backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
           }}
           key={key}
-          trackData={row}  // Pass the track to EditTrack
+          trackKey={track}  // Pass the track to EditTrack
           dragLineData={dragLineData}
           // onActionMoveStart={handleInitDragLine}
           // onActionResizeStart={handleInitDragLine}

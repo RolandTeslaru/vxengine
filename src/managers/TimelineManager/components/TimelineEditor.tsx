@@ -48,7 +48,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
   // Process runner related data
   useAnimationEngineEvent(
     'timeUpdatedAutomatically',
-    ({ time }) => handleSetCursor({ time, animationEngine, scale, setCursorTime })
+    ({ time }) => handleSetCursor({ time, animationEngine })
   );
 
   useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {

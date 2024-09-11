@@ -71,7 +71,7 @@ export const Cursor: FC<CursorProps> = ({
       }}
       onDragEnd={() => {
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time, animationEngine, scale, setCursorTime })
+        handleSetCursor({ time, animationEngine })
         onCursorDragEnd && onCursorDragEnd(time);
         draggingLeft.current = undefined;
       }}
@@ -88,7 +88,7 @@ export const Cursor: FC<CursorProps> = ({
         }
         rowRnd.current.updateLeft(draggingLeft.current);
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time, animationEngine, scale, setCursorTime })
+        handleSetCursor({ time, animationEngine })
         onCursorDrag && onCursorDrag(time);
         return false;
       }}

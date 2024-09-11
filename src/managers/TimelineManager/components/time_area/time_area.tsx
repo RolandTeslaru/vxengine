@@ -90,7 +90,7 @@ export const TimeArea = () => {
                   const time = parserPixelToTime(left, { startLeft, scale, scaleWidth });
                   // const result = onClickTimeArea && onClickTimeArea(time, e);
                   // if (result === false) return; //返回false时阻止设置时间
-                  handleSetCursor({ time, animationEngine, scale, setCursorTime })
+                  handleSetCursor({ time, animationEngine })
                 }}
                 className={prefix('time-area-interact')}
               ></div>

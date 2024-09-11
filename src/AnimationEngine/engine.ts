@@ -9,7 +9,7 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, IStaticProps, ITimeline, ITrack, edObjectProps } from './types/track';
+import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
@@ -22,8 +22,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /** requestAnimationFrame timerId */
   private _timerId: number;
   private _prev: number;
-  private _next: number = 0;
-  private _tracks: ITrack[] = [];
+
+  private _currentTime: number = 0;
 
   constructor() {
     super(new Events());
@@ -32,46 +32,81 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   get timelines() { return useVXAnimationStore.getState().timelines; }
   get isPlaying() { return useVXAnimationStore.getState().isPlaying; }
   get isPaused() { return !this.isPlaying; }
-  get currentTime() { return useVXAnimationStore.getState().currentTime; }
   get currentTimeline() { return useVXAnimationStore.getState().currentTimeline }
   get playRate() { return useVXAnimationStore.getState().playRate }
 
-  // Setter functions for the states
+  // Refresh functions
+  // These are used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
 
-  updateCurrentTimeline(newEditorData: Record<string, edObjectProps>) {
+  refreshCurrentTimeline(
+    editorData: Record<string, edObjectProps>,
+    tracks: Record<string, ITrack>,
+    staticProps: Record<string, IStaticProps>,
+    keyframes: Record<string, IKeyframe>
+  ) {
     if (!this.currentTimeline)
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
-
+  
     if (this.isPlaying) this.pause();
-
-    console.log("VXAnimationEngine: Setting new EditorData")
-    this.currentTimeline.objects.forEach(object => {
-      const updatedObject = newEditorData[object.vxkey];
-      if (updatedObject) {
-        // Update tracks based on the editor data
-        object.tracks = updatedObject.tracks;
+  
+    console.log("VXAnimationEngine: Refreshing Current Timeline");
+  
+    // map containing the exist rawObjects in the currentTImeline
+    const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
+  
+    // Update / Add objects in the currentTimeline based on the editorData
+    Object.keys(editorData).forEach(vxkey => {
+      const edObject = editorData[vxkey];
+  
+      if (currentObjectsMap.has(vxkey)) {
+        // Refresh existing raw object
+        const rawObject = currentObjectsMap.get(vxkey);
+  
+        // Assign tracks to Object by converting from ITrack to RawTrackProps
+        rawObject.tracks = edObject.trackKeys.map(trackKey => {
+          const track = tracks[trackKey];
+          return {
+            propertyPath: track.propertyPath,
+            keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId]) 
+          } as RawTrackProps;
+        });
+  
+        // Assign staticProps
+        rawObject.staticProps = edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]);
+  
+      } else {
+        // Add new raw object to currentTimeline
+        const newRawObject: RawObjectProps = {
+          vxkey,
+          tracks: edObject.trackKeys.map(trackKey => {
+            const track = tracks[trackKey];
+            return {
+              propertyPath: track.propertyPath,
+              keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId]) // Resolved keyframes
+            } as RawTrackProps;
+          }),
+          staticProps: edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]),
+        };
+  
+        this.currentTimeline.objects.push(newRawObject);
       }
-    })
-
-    this.reRender(({ force: true }));
+    });
+  
+    // Remove rawObjects that are no longer in editorData
+    this.currentTimeline.objects = this.currentTimeline.objects.filter(rawObject => {
+      return editorData.hasOwnProperty(rawObject.vxkey);
+    });
+  
+    // Re-render the timeline
+    this.reRender({ force: true });
   }
+
+  // Setter functions
 
   setIsPlaying(value: boolean) {
     useVXAnimationStore.setState({ isPlaying: value })
   }
-
-  convertToRecordStructure(arrayData: edObjectProps[]): Record<string, edObjectProps> {
-    return arrayData.reduce((acc, obj) => {
-      acc[obj.vxkey] = {
-        vxkey: obj.vxkey,
-        tracks: obj.tracks || [],
-        staticProps: obj.staticProps || []
-      };
-      return acc;
-    }, {} as Record<string, edObjectProps>);
-  }
-
 
   setCurrentTimeline(timelineId: string) {
     console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
@@ -81,7 +116,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
-    this._applyAllKeyframes(this.currentTime);
+    this._applyAllKeyframes(this._currentTime);
     this._applyAllStaticProps();
     this.reRender();
     
@@ -97,7 +132,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const result = isTick || this.trigger('beforeSetTime', { time, engine: this });
     if (!result) return false;
 
-    useVXAnimationStore.setState({ currentTime: time })
+    this._currentTime = time
 
     this._applyAllKeyframes(time);
 
@@ -130,7 +165,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (time !== undefined)
       this._applyAllKeyframes(time);
     else
-      this._applyAllKeyframes(this.currentTime)
+      this._applyAllKeyframes(this._currentTime)
   }
 
 
@@ -142,8 +177,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }): boolean {
     const { toTime, autoEnd } = param;
 
-    const currentTime = this.currentTime;
-    if (this.isPlaying || (toTime && toTime <= currentTime)) return false;
+    if (this.isPlaying || (toTime && toTime <= this._currentTime)) return false;
 
     this.setIsPlaying(true);
 
@@ -174,7 +208,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
-        this._applyKeyframes(vxkey, propertyPath, keyframes, this.currentTime);
+        this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
       })
     }
     if (objectInTimeline.staticProps) {
@@ -189,7 +223,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (this.isPaused) return;
     const { now, autoEnd, to } = data;
 
-    let newCurrentTime = this.currentTime + (Math.min(1000, now - this._prev) / 1000) * this.playRate;
+    let newCurrentTime = this._currentTime + (Math.min(1000, now - this._prev) / 1000) * this.playRate;
     this._prev = now;
 
     if (to && to <= newCurrentTime) newCurrentTime = to;

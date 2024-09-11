@@ -1,8 +1,8 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { DragLineData } from './drag_lines';
 import './edit_row.scss';
-import { ITrack } from 'vxengine/AnimationEngine/types/track';
+import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { EditKeyframe } from './EditKeyframe';
 import { useTimelineEditorStore } from '../../store';
@@ -10,7 +10,7 @@ import { prefix } from '../../utils/deal_class_prefix';
 import { shallow } from 'zustand/shallow';
 
 export type EditRowProps = CommonProp & {
-  trackData?: ITrack;
+  trackKey: string
   style?: React.CSSProperties;
   dragLineData: DragLineData;
   /** Scroll distance from the left */
@@ -20,11 +20,12 @@ export type EditRowProps = CommonProp & {
 };
 
 export const EditTrack: FC<EditRowProps> = (props) => {
-  const { editAreaRef } = props;
-  const {  scale, scaleWidth } = useTimelineEditorStore(state => ({
+  const { editAreaRef, trackKey } = props;
+  const { scale, scaleWidth, track } = useTimelineEditorStore(state => ({
     scale: state.scale,
-    scaleWidth: state.scaleWidth
-  }), shallow );
+    scaleWidth: state.scaleWidth,
+    track: state.tracks[trackKey],  
+  }), shallow);
   const startLeft = 12;
 
   const handleTime = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -40,34 +41,39 @@ export const EditTrack: FC<EditRowProps> = (props) => {
     return time;
   };
 
+  const keyframesForTrack = React.useMemo(() => {
+    const kfs = useTimelineEditorStore.getState().getKeyframesForTrack(trackKey)
+    return kfs
+  }, [track?.keyframes])
+
   return (
     <div
       className='relative  py-4 border-y border-neutral-900'
       style={props.style}
-      onClick={(e) => {
-        if (props.trackData && props.onClickRow) {
-          const time = handleTime(e);
-          onClickRow(e, { row: props.trackData, time: time });
-        }
-      }}
-      onDoubleClick={(e) => {
-        if (props.trackData && props.onDoubleClickRow) {
-          const time = handleTime(e);
-          onDoubleClickRow(e, { row: props.trackData, time: time });
-        }
-      }}
-      onContextMenu={(e) => {
-        if (props.trackData && onContextMenuRow) {
-          const time = handleTime(e);
-          onContextMenuRow(e, { row: props.trackData, time: time });
-        }
-      }}
+      // onClick={(e) => {
+      //   if (props.trackData && props.onClickRow) {
+      //     const time = handleTime(e);
+      //     onClickRow(e, { row: props.trackData, time: time });
+      //   }
+      // }}
+      // onDoubleClick={(e) => {
+      //   if (props.trackData && props.onDoubleClickRow) {
+      //     const time = handleTime(e);
+      //     onDoubleClickRow(e, { row: props.trackData, time: time });
+      //   }
+      // }}
+      // onContextMenu={(e) => {
+      //   if (props.trackData && onContextMenuRow) {
+      //     const time = handleTime(e);
+      //     onContextMenuRow(e, { row: props.trackData, time: time });
+      //   }
+      // }}
     >
       {/* Render Lines Between Keyframes */}
-      {props.trackData?.keyframes.map((keyframe, index) => {
+      {keyframesForTrack.map((keyframe: IKeyframe, index: number) => {
         if (index === 0) return null;
 // 
-        const previousKeyframe = props.trackData.keyframes[index - 1];
+        const previousKeyframe = keyframesForTrack[index - 1];
         const startX = parserTimeToPixel(previousKeyframe.time, {
           startLeft,
           scale,
@@ -93,12 +99,11 @@ export const EditTrack: FC<EditRowProps> = (props) => {
       })}
 
       {/* Render Keyframes */}
-      {(props.trackData?.keyframes || []).map((keyframe, index) => (
+      {(keyframesForTrack || []).map((keyframe: IKeyframe, index) => (
         <EditKeyframe
           key={index}
           {...props}
           handleTime={handleTime}
-          track={props.trackData}
           keyframe={keyframe}
         />
       ))}

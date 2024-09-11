@@ -12,6 +12,7 @@ import ReactDOM from "react-dom"
 import { useVXUiStore } from "vxengine/store/VXUIStore"
 import VXUiPanelWrapper from "vxengine/components/ui/VXUiPanelWrapper"
 import { useVXAnimationStore } from "vxengine/store/AnimationStore"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "vxengine/components/shadcn/select"
 
 export const CoreUI = () => {
     return (
@@ -49,7 +50,7 @@ export const CoreUI = () => {
 
             <FrequentStateVisualizer/>
 
-            {/* <TimelineEditorDebug /> */}
+            <TimelineEditorDebug />
 
             <FrequentStateVisualizer/>
 
@@ -136,15 +137,6 @@ const LeftPanel = () => {
     )
 }
 
-const CurrentTimeVisualizer = () => {
-    const currentTime = useVXAnimationStore(state => state.currentTime)
-    return (
-        <p>
-            {parseFloat(currentTime).toFixed(2)}
-        </p>
-    )
-}
-
 const CursorTimeVisualzier = () => {
     const cursorTime = useTimelineEditorStore(state => state.cursorTime)
     return (
@@ -168,10 +160,6 @@ const FrequentStateVisualizer = () => {
     return (
         <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
                             gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
-            <div className="flex flex-tow">
-                STATE_currentTime &nbsp;&nbsp;
-                 <CurrentTimeVisualizer />
-            </div>
             <div className="flex flex-row">
                 STATE_cursorTime &nbsp;&nbsp;
                  <CursorTimeVisualzier />
@@ -188,18 +176,58 @@ const FrequentStateVisualizer = () => {
 
 const TimelineEditorDebug = () => {
     const editorData = useTimelineEditorStore(state => state.editorData);
-    const rawEditorDataString = JSON.stringify(editorData, null, 2)
+    const keyframes = useTimelineEditorStore(state => state.keyframes)
+    const tracks = useTimelineEditorStore(state => state.tracks)
+    const staticProps = useTimelineEditorStore(state => state.staticProps)
+
+    useEffect(() => {
+        console.log("STATIC PROPS requested rerendering ")
+    }, [staticProps])
+
+    const [activeData, setActiveData] = useState("editorData")
+
+    const rawDataString = React.useMemo(() => {
+        let data;
+        if (activeData === "editorData")
+            data = JSON.stringify(editorData, null, 2);
+        else if (activeData === "keyframes")
+            data = JSON.stringify(keyframes, null, 2);
+        else if (activeData === "tracks")
+            data = JSON.stringify(tracks, null, 2);
+        else if (activeData === "staticProps")
+            data = JSON.stringify(staticProps, null, 2);
+    
+        return data;
+    }, [activeData, editorData, keyframes, tracks, staticProps]); 
+
     const [ attachedState, setAttachedState ] = useState(true);
     return (
         <VXUiPanelWrapper
             title="VXEngine: TimelineEditorDebug"
-            windowClasses='width=717,height=450,left=200,top=200,resizable=0'
+            windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             attachedState={attachedState}
             setAttachedState={setAttachedState}
         >
             <div className={`fixed backdrop-blur-sm ${attachedState ? "top-[40%] left-[300px]": "top-1 left-1 "} text-sm bg-neutral-900 p-2 gap-2
                                 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}>
                 <h1 className="text-center font-sans-menlo">EditorData state</h1>
+                <Select
+                    defaultValue={activeData}
+                    onValueChange={(value) => {
+                        setActiveData(value)
+                    }}>
+                    <SelectTrigger className="w-[180px] h-7 my-auto">
+                        <SelectValue placeholder="Select a Timeline" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value={"editorData"} >editorData</SelectItem>
+                            <SelectItem value={"keyframes"} >keyframes</SelectItem>
+                            <SelectItem value={"tracks"} >tracks</SelectItem>
+                            <SelectItem value={"staticProps"} >staticProps</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
                 <div>
                     <pre
                         style={{
@@ -209,8 +237,9 @@ const TimelineEditorDebug = () => {
                             overflowY: 'scroll',
                             whiteSpace: 'pre-wrap', // This makes sure the text wraps within the container
                         }}
+                        className="text-xs"
                     >
-                        {rawEditorDataString}
+                        {rawDataString}
                     </pre>
                 </div>
                 <button className={"bg-transparent border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}

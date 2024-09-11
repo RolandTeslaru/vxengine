@@ -66,13 +66,13 @@ const TimelineEditorUI = () => {
                 className='relative flex flex-row w-full flex-grow overflow-hidden'
                 direction='horizontal'
             >
-                <ResizablePanel defaultSize={40}>
+                <ResizablePanel defaultSize={35}>
                     <div className='h-full flex flex-col overflow-hidden'>
                         <TrackVerticalList />
                     </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle className='mx-1'/>
-                <ResizablePanel defaultSize={60}>
+                <ResizablePanel defaultSize={65}>
                     <TimelineEditor />
                 </ResizablePanel>
             </ResizablePanelGroup>
@@ -179,10 +179,10 @@ const ProgressionControls = () => {
 
 
 const TimeRender = () => {
-    const currentTime = useVXAnimationStore(state => state.currentTime);
-    const float = (parseInt((currentTime % 1) * 100 + '') + '').padStart(2, '0');
-    const min = (parseInt(currentTime / 60 + '') + '').padStart(2, '0');
-    const second = (parseInt((currentTime % 60) + '') + '').padStart(2, '0');
+    const cursorTime = useTimelineEditorStore(state => state.cursorTime)
+    const float = (parseInt((cursorTime % 1) * 100 + '') + '').padStart(2, '0');
+    const min = (parseInt(cursorTime / 60 + '') + '').padStart(2, '0');
+    const second = (parseInt((cursorTime % 60) + '') + '').padStart(2, '0');
     return <>{`${min}:${second}.${float.replace('0.', '')}`}</>;
 };
 

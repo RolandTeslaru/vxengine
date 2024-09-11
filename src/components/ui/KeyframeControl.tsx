@@ -9,47 +9,89 @@ import { ITrack } from 'vxengine/AnimationEngine/types/track';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 
-interface KeyframeControlProps {
-  propertyPath: string;
-  isOnKeyframe: boolean
-  isPropertyTracked: boolean
+interface TimelineKeyframeControlProps {
+    trackKeys?: string[],
 }
 
-export const KeyframeControl: React.FC<KeyframeControlProps> = ({ propertyPath, isOnKeyframe, isPropertyTracked }) => {
-  const createNewKeyframe = useTimelineEditorStore(state => state.createNewKeyframe);
-  const moveToNextKeyframe = useTimelineEditorStore(state => state.moveToNextKeyframe);
-  const moveToPreviousKeyframe = useTimelineEditorStore(state => state.moveToPreviousKeyframe);
+const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKeys }) => {
+    const { createNewKeyframeOnTrack, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorStore(state => ({
+        createNewKeyframeOnTrack: state.createNewKeyframeOnTrack,
+        moveToNextKeyframe: state.moveToNextKeyframe,
+        moveToPreviousKeyframe: state.moveToPreviousKeyframe,
+        makePropertyTracked: state.makePropertyTracked
+    }), shallow)
+    const { animationEngine } = useVXEngine();
 
-  const vxkey = useObjectManagerStore(state => state.selectedObjects[0]?.vxkey, shallow);
+    const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
-  const { animationEngine } = useVXEngine();
+    const keyframesOnTrack = useTimelineEditorStore(
+        (state) => trackKeys.flatMap((trackKey) => state.getKeyframesForTrack(trackKey)),
+        shallow
+    );
 
-  return (
-    <div className='flex flex-row h-[12px]'>
-      {isPropertyTracked &&
-        <button onClick={() => moveToPreviousKeyframe(animationEngine, vxkey, propertyPath)} className='hover:*:stroke-[5] hover:*:stroke-white'>
-          <ChevronLeft className=' w-3 h-3' />
-        </button>
-      }
-      <button
-        disabled={isOnKeyframe ? true : false}
-        onClick={() => createNewKeyframe(
-          animationEngine,
-          vxkey,
-          propertyPath,
-          getNestedProperty(useObjectManagerStore.getState().selectedObjects[0].ref.current, propertyPath)
-        )}
-        className="hover:*:stroke-[5] hover:*:stroke-white "
-      >
-        <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />
-      </button>
-      {isPropertyTracked &&
-        <button onClick={() => moveToNextKeyframe(animationEngine, vxkey, propertyPath)} className='hover:*:stroke-[5] hover:*:stroke-white'>
-          <ChevronRight className='w-3 h-3 ' />
-        </button>
-      }
-    </div>
-  );
-}
+    const isPropertyTracked = useMemo(() => {
+        if (keyframesOnTrack.length > 0)
+            return true
+        else
+            return false
+    }, [keyframesOnTrack])
+
+    const checkIfOnKeyframe = () => {
+        if (trackKeys) {
+            const isCursorOnKeyframe = keyframesOnTrack.some(kf => kf.time === useTimelineEditorStore.getState().cursorTime);
+            setIsOnKeyframe(isCursorOnKeyframe);
+        }
+    };
+
+    useEffect(() => {
+        const unsubscribe = useTimelineEditorStore.subscribe(() => checkIfOnKeyframe());
+        return () => unsubscribe();
+    }, [trackKeys, keyframesOnTrack]);
+
+    useEffect(() => {
+        checkIfOnKeyframe()
+    }, [trackKeys, keyframesOnTrack])
+
+    const handleMiddleButton = () => {
+        if(isPropertyTracked === true){
+            createNewKeyframeOnTrack(animationEngine, trackKeys[0], 0)
+        }
+        else if ( isPropertyTracked === false && trackKeys.length === 1) {
+            // This is a singular static prop
+            const staticPropKey = trackKeys[0];
+            makePropertyTracked(animationEngine, staticPropKey)
+        }
+    }
+
+    return (
+        <div className='flex flex-row h-[12px]'>
+            {isPropertyTracked &&
+                <button
+                    onClick={() => moveToPreviousKeyframe(animationEngine, keyframesOnTrack)}
+                    className='hover:*:stroke-[5] hover:*:stroke-white'
+                >
+                    <ChevronLeft className=' w-3 h-3' />
+                </button>
+
+            }
+            <button
+                onClick={handleMiddleButton}
+                disabled={trackKeys.length > 1}
+                className="hover:*:stroke-[5] hover:*:stroke-white "
+            >
+                <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />
+            </button>
+            {isPropertyTracked &&
+                <button
+                    onClick={() => moveToNextKeyframe(animationEngine, keyframesOnTrack)}
+                    className='hover:*:stroke-[5] hover:*:stroke-white'
+                >
+                    <ChevronRight className='w-3 h-3 ' />
+                </button>
+
+            }
+        </div>
+    )
+});
 
 export default KeyframeControl;

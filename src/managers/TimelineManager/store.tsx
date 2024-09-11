@@ -10,19 +10,22 @@ import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
 import vx, { useVXObjectStore } from 'vxengine/store';
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
-import { computeGroupDataForEdObject, groupTracksByParent } from './utils/trackDataProcessing';
+import { computeGroupPathFromRawObject, computeGroupPaths, extractDatafromTrackKey } from './utils/trackDataProcessing';
+import { useObjectManagerStore } from '../ObjectManager/store';
+import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
 export interface TimelineEditorStoreProps {
+    // Records of data used in the editor
     editorData: Record<string, edObjectProps>;
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
     keyframes: Record<string, IKeyframe>
+
     groupedPaths: GroupedPaths
 
-
-
+    setCollapsedGroups: (groupKey: string) => void;
 
     scale: number;
     setScale: (count: number) => void;
@@ -44,7 +47,6 @@ export interface TimelineEditorStoreProps {
     changes: number
     addChange: () => void
     editorRef: React.MutableRefObject<HTMLDivElement | null>
-    cursorTimeRef: React.MutableRefObject<number>;
 
     scrollLeft: number;
 
@@ -56,70 +58,39 @@ export interface TimelineEditorStoreProps {
     clientHeight: number;
     scrollHeight: number;
 
-    collapsedGroups: Record<string, boolean>;
-    setCollapsedGroups: (groupKey: string) => void;
+    // Keyframe Controls
+    moveToNextKeyframe: (animationEngine: AnimationEngine, keyframes: IKeyframe[]) => void;
+    moveToPreviousKeyframe: (animationEngine: AnimationEngine, keyframes: IKeyframe[]) => void;
 
-    createNewKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string, value: number) => void;
-    moveToNextKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
-    moveToPreviousKeyframe: (animationEngine: AnimationEngine, vxkey: string, propertyPath: string) => void;
-    updateEditorDataProperty: (vxkey: string, propertyPath: string, value: number) => void
-
-
-    getTrack: (vxkey: string, propertyPath: string) => ITrack | undefined,
+    // Getter functions
+    getTrack: (trackKey: string) => ITrack | undefined,
     getStaticProp: (vxkey: string, propertyPath: string) => IStaticProps | undefined
     getKeyframe: (keyframeId: string) => IKeyframe | undefined
-    getKeyframesForTrack: (vxkey: string, propertyPath: string) => IKeyframe[] | [],
+
     getTracksForObject: (vxkey: string) => ITrack[] | [],
     getStaticPropsForObject: (vxkey: string) => IStaticProps[] | [],
+    getKeyframesForTrack: (trackKey: string) => IKeyframe[] | [],
+
+    addKeyframeToTrack: (state: TimelineEditorStoreProps, keyframeKey: string, trackKey: string) => void
+    
+    // Maker functions
+    createNewKeyframeOnTrack: (animationEngine: AnimationEngine, trackKey: string, value: number) => void;
+    makePropertyTracked: (animationEngine: AnimationEngine, staticPropKey: string) => void
+    makePropertyStatic: (animationEngine: AnimationEngine, trackKey: string) => void
 }
 
-type SetState<T> = (partial: T | Partial<T> | ((state: T) => T | Partial<T>), replace?: boolean) => void;
-
-export const updateEditorDataProperty = (
-    set: SetState<TimelineEditorStoreProps>,
-    vxkey: string,
-    propertyPath: string,
-    value: any
-) => {
-    set(
-        produce((state: TimelineEditorStoreProps) => {
-            if (!state.editorData[vxkey]) {
-                state.editorData[vxkey] = {
-                    vxkey: vxkey,
-                    tracks: [],
-                    staticProps: [],
-                };
-            }
-
-            const keys = propertyPath.split(".");
-            let target = state.editorData[vxkey];
-
-            for (let i = 0; i < keys.length; i++) {
-                if (!target[keys[i]]) target[keys[i]] = {};
-                target = target[keys[i]];
-            }
-
-            target[keys[keys.length - 1]] = value;
-        }),
-        false
-    );
-};
-
-function convertToNormalizedStructure(
+function processRawData(
     rawObjects: RawObjectProps[]
 ) {
-    const editorData: Record<string, { vxkey: string; trackIds: string[]; staticPropIds: string[] }> = {};
+    const editorData: Record<string, { vxkey: string; trackKeys: string[]; staticPropKeys: string[] }> = {};
     const tracks: Record<string, ITrack> = {};
     const staticProps: Record<string, IStaticProps> = {};
-    const groupedPaths: Record<string, PathGroup> = {};
     const keyframes: Record<string, IKeyframe> = {};
-
-    let rowIndex = 0;
 
     // Generate Editor Data Record
     rawObjects.forEach((rawObj) => {
-        const trackIds: string[] = [];
-        const staticPropIds: string[] = [];
+        const trackKeys: string[] = [];
+        const staticPropKeys: string[] = [];
 
         // Generate Track Record for rawObj
         rawObj.tracks.forEach((track) => {
@@ -146,14 +117,14 @@ function convertToNormalizedStructure(
                 propertyPath: track.propertyPath,
                 vxkey: rawObj.vxkey,
             };
-            trackIds.push(trackKey);
+            trackKeys.push(trackKey);
             tracks[trackKey] = newTrack;
         });
 
         // Generate StaticProp Record for rawObj
         rawObj.staticProps.forEach((prop) => {
-            const staticPropKey = `${rawObj.vxkey}.static.${prop.propertyPath}`;
-            staticPropIds.push(staticPropKey);
+            const staticPropKey = `${rawObj.vxkey}.${prop.propertyPath}`;
+            staticPropKeys.push(staticPropKey);
 
             const newStaticProp: IStaticProps = {
                 vxkey: rawObj.vxkey,
@@ -165,14 +136,11 @@ function convertToNormalizedStructure(
 
         editorData[rawObj.vxkey] = {
             vxkey: rawObj.vxkey,
-            trackIds: trackIds,
-            staticPropIds: staticPropIds,
+            trackKeys: trackKeys,
+            staticPropKeys: staticPropKeys,
         };
-
-        const { groupedPaths: objGroupedPaths, newIndex } = computeGroupDataForEdObject(rawObj, rowIndex);
-        rowIndex = newIndex;
-        groupedPaths[rawObj.vxkey] = objGroupedPaths;
     });
+    const groupedPaths = computeGroupPaths(editorData)
 
     return { editorData, tracks, staticProps, groupedPaths, keyframes };
 }
@@ -185,33 +153,44 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
     groupedPaths: {},
     keyframes: {},
 
+    setCollapsedGroups: (groupKey: string) => {
+        set(produce((state: TimelineEditorStoreProps) => {
+            const pathSegments = groupKey.split('/');
+            let currentGroup: GroupedPaths | PathGroup = state.groupedPaths;
+
+            // Bypass the root because currently currentGroup is of type GroupedPath
+            const rootPath = pathSegments[0]
+            // currentGroup is now PathGroup
+            currentGroup = currentGroup[rootPath] as PathGroup;
+
+            pathSegments.shift()
+            pathSegments.forEach((segment) => {
+                if(currentGroup.children[segment]){
+                    currentGroup = currentGroup.children[segment]
+                }
+            });
+    
+            if (currentGroup) {
+                currentGroup.isCollapsed = !currentGroup.isCollapsed;
+            }
+    
+        }), false); 
+    },
+
     setEditorData: (rawObjects: RawObjectProps[]) => {
-        const { editorData, tracks, staticProps, groupedPaths } = convertToNormalizedStructure(rawObjects);
+        const { editorData, tracks, staticProps, groupedPaths, keyframes } = processRawData(rawObjects);
         set({
             editorData,
             tracks,
             staticProps,
-            groupedPaths
+            groupedPaths,
+            keyframes
         });
     },
-
-    setGroupedPaths: (tracks, rowIndex) => {
-        const { groupedPaths, finalIndex } = groupTracksByParent(tracks, rowIndex);
-
-        set({ groupedPaths });
-    },
-
 
     scale: 1,
     scaleCount: MIN_SCALE_COUNT,
     cursorTime: START_CURSOR_TIME,
-    cursorTimeRef: (() => {
-        const ref = React.createRef<number>();
-        // @ts-expect-error
-        ref.current = 0;
-        return ref;
-    })(),
-
     width: Number.MAX_SAFE_INTEGER,
 
     activeTool: "mouse",
@@ -244,151 +223,216 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
     setSnap: (value) => set({ snap: value }),
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
     setCursorTime: (time: number) => {
-        get().cursorTimeRef.current = time;
         set({ cursorTime: time });
-    },
-
-    collapsedGroups: {},
-    setCollapsedGroups: (groupKey: string) => {
-        set(produce((state: TimelineEditorStoreProps) => {
-            state.collapsedGroups[groupKey] = !state.collapsedGroups[groupKey];
-        }), false);
-    },
-
-    updateEditorDataProperty: (vxkey, propertyPath, value) => {
-        updateEditorDataProperty(set, vxkey, propertyPath, value);
     },
 
     // Getter functions
 
-    getTrack: (vxkey, propertyPath) => {
-        const trackKey = `${vxkey}.${propertyPath}`
-        return useTimelineEditorStore.getState().tracks[trackKey];
-    },
-
-    getStaticProp: (vxkey, propertyPath) => {
-        const staticPropKey = `${vxkey}.static.${propertyPath}`;
-        return useTimelineEditorStore.getState().staticProps[staticPropKey];
-    },
-
-    getKeyframe: (keyframeId) => {
-        return useTimelineEditorStore.getState().keyframes[keyframeId];
-    },
-
-    getKeyframesForTrack: (vxkey, propertyPath) => {
-        const trackKey = `${vxkey}.${propertyPath}`;
-        const track = useTimelineEditorStore.getState().tracks[trackKey];
-        if (track) {
-            return track.keyframes.map((id: string) => useTimelineEditorStore.getState().keyframes[id]);
-        }
-        return [];
-    },
-
+    getTrack: (trackKey) => { return get().tracks[trackKey];},
+    getStaticProp: (staticPropKey) => { return get().staticProps[staticPropKey];},
+    getKeyframe: (keyframeId) => { return get().keyframes[keyframeId]; },
+    
     getTracksForObject: (vxkey) => {
-        const object = useTimelineEditorStore.getState().editorData[vxkey];
+        const object = get().editorData[vxkey];
         if (object) {
-            return object.trackIds.map((trackKey: string) => useTimelineEditorStore.getState().tracks[trackId]);
+            return object.trackKeys.map((trackKey: string) => get().tracks[trackKey]);
         }
         return [];
     },
-
     getStaticPropsForObject: (vxkey: string) => {
-        const object = useTimelineEditorStore.getState().editorData[vxkey];
+        const object = get().editorData[vxkey];
         if (object) {
-            return object.staticPropIds.map((staticPropKey: string) => useTimelineEditorStore.getState().staticProps[staticPropId]);
+            return object.staticPropKeys.map((staticPropKey: string) => get().staticProps[staticPropKey]);
+        }
+        return [];
+    },
+    getKeyframesForTrack: (trackKey) => {
+        const track = get().tracks[trackKey];
+        if (track) {
+            return track.keyframes.map((id: string) => get().keyframes[id]);
         }
         return [];
     },
 
-    createNewKeyframe: (animationEngine, vxkey, propertyPath, value) => {
-        console.log("TimelineEditor: Creating New keyframe for vxkey", vxkey, " with propertyPath", propertyPath);
+    addKeyframeToTrack: (state: TimelineEditorStoreProps, keyframeKey: string, trackKey: string ) => {
+        console.log("Adding keyframe to track ", keyframeKey);
+        const track = state.tracks[trackKey];
+    
+        if(track) {
+            track.keyframes.push(keyframeKey); 
+        } else {
+            console.error(`Track with key "${trackKey}" not found.`);
+        }
+    },
 
-        const { cursorTimeRef, addChange, getTrack } = get();
+    createNewKeyframeOnTrack: (animationEngine, trackKey, value) => {
+        const { addChange, getTrack, addKeyframeToTrack, getKeyframesForTrack } = get();
+        const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey)
+
+        const keyframeId = `keyframe-${Date.now()}-${Math.random()}`
 
         const newKeyframe: IKeyframe = {
-            id: `keyframe-${Date.now()}`,
-            time: cursorTimeRef.current,
-            value: value
+            id: keyframeId,
+            time: get().cursorTime,
+            value: value,
+            handles: [0,0,0,0],
+            vxkey: vxkey,
+            propertyPath: propertyPath
         };
 
+        const keyframes = getKeyframesForTrack(trackKey)
 
-        set(state => {
-            // Create a new copy of editorData
-            const updatedEditorData = produce(state.editorData, draft => {
-                const edObject = draft[vxkey];
-                let track = getTrack(vxkey, propertyPath);
+        // Add the new keyframe to the keyframe Record
+        
+        set(produce((state: TimelineEditorStoreProps) => {
+            state.keyframes[keyframeId] = newKeyframe;
+            let track = getTrack(trackKey)
 
-                const isPropertyTracked = track !== undefined;
-                const isPropertyStatic = !isPropertyTracked;
-
-                if (isPropertyTracked) {
-                    // Check if the track object or keyframes array is frozen or sealed
-                    if (Object.isFrozen(track) || Object.isSealed(track)) {
-                        track = {
-                            ...track,
-                            keyframes: [...track.keyframes], // Shallow copy to make the array mutable
-                        };
-
-                        // Update the draft with the new, mutable track
-                        draft[vxkey].tracks = draft[vxkey].tracks.map(t =>
-                            t.propertyPath === propertyPath ? track : t
-                        );
-                    }
-
-                    const isCursorOnKeyframe = track.keyframes.some(kf => kf.time === cursorTimeRef.current);
-                    if (!isCursorOnKeyframe) {
-                        track.keyframes.push(newKeyframe); // This is where the error occurs
-                    }
-                } else if (isPropertyStatic) {
-                    edObject.staticProps = edObject.staticProps.filter(prop => prop.propertyPath !== propertyPath);
-                    track = {
-                        propertyPath: propertyPath,
-                        keyframes: [newKeyframe]
-                    };
-                    edObject.tracks.push(track);
+            const isPropertyTracked = !!track;
+        
+            if(isPropertyTracked) {
+                // Check if the cursor is on a keyframe that already exists
+                const isCursorOnKeyframe = keyframes.some(kf => kf.time === get().cursorTime)
+                if(isCursorOnKeyframe === false) {
+                    addKeyframeToTrack(state, keyframeId, trackKey);
                 }
-            });
+            } 
+        }))
 
-            animationEngine.updateCurrentTimeline(updatedEditorData);
-
-            return {
-                ...state,
-                editorData: updatedEditorData
-            };
-        });
+        // Refresh Raw Data and ReRender
+        animationEngine.refreshCurrentTimeline(
+            get().editorData,
+            get().tracks,
+            get().staticProps,
+            get().keyframes
+        )
 
         addChange();
     },
-    moveToNextKeyframe: (animationEngine, vxkey, propertyPath) => {
-        const { findTrackByPropertyPath, cursorTime, setCursorTime, scale } = get();
-        const track = findTrackByPropertyPath(vxkey, propertyPath);
 
-        if (track) {
-            const nextKeyframe = track.keyframes.find(kf => kf.time > cursorTime);
-            if (nextKeyframe) {
-                handleSetCursor({
-                    time: nextKeyframe.time,
-                    animationEngine,
-                    scale,
-                });
+    makePropertyTracked: (animationEngine, staticPropKey ) => {
+        const { vxkey, propertyPath } = extractDatafromTrackKey(staticPropKey);
+        set(produce((state: TimelineEditorStoreProps) => {
+            const edObject = state.editorData[vxkey];
+
+            const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
+            const staticProp = staticPropsForObject.find(prop => prop.propertyPath === propertyPath)
+
+            let value;
+            // Check if the property is in the staticProp Records or else get the ref value from the VXObjectStore
+            if(staticProp)
+                value = staticProp.value
+            else{
+                value = getNestedProperty(useVXObjectStore.getState().objects[vxkey].ref.current, propertyPath)
             }
-        }
+            
+            // Remove the staticProp Key from the edObject staticPropKeys string array
+            const filteredStaticPropsForObject = staticPropsForObject.filter(prop => prop.propertyPath !== propertyPath);
+            edObject.staticPropKeys = filteredStaticPropsForObject.map(prop => `${vxkey}.${prop.propertyPath}`);
+            
+            delete state.staticProps[staticPropKey];
+
+            // Handle Keyframe
+            const keyframeId = `keyframe-${Date.now()}-${Math.random()}`
+            const newKeyframe: IKeyframe = {
+                id: keyframeId,
+                time: get().cursorTime,
+                value: value,
+                handles: [0,0,0,0],
+                vxkey: vxkey,
+                propertyPath: propertyPath
+            };
+            state.keyframes[keyframeId] = newKeyframe
+
+            // Handle Track 
+            const trackKey = staticPropKey;
+            const newTrack: ITrack = {
+                vxkey: vxkey,
+                propertyPath: propertyPath,
+                keyframes: [newKeyframe.id]
+            }
+            state.tracks[trackKey] = newTrack;
+            edObject.trackKeys.push(trackKey)
+
+            // Recompute grouped Paths for Visual 
+            state.groupedPaths = computeGroupPaths(state.editorData)
+        }))
+
+        // Refresh Raw Data and ReRender
+        animationEngine.refreshCurrentTimeline(
+            get().editorData,
+            get().tracks,
+            get().staticProps,
+            get().keyframes
+        )
     },
 
-    moveToPreviousKeyframe: (animationEngine, vxkey, propertyPath) => {
-        const { findTrackByPropertyPath, cursorTime, setCursorTime, scale } = get();
-        const track = findTrackByPropertyPath(vxkey, propertyPath);
+    makePropertyStatic: (animationEngine, trackKey) => {
+        const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey);
+        set(produce((state: TimelineEditorStoreProps) => {
+            const edObject = state.editorData[vxkey];
 
-        if (track) {
-            const prevKeyframe = [...track.keyframes].reverse().find(kf => kf.time < cursorTime);
-            if (prevKeyframe) {
-                handleSetCursor({
-                    time: prevKeyframe.time,
-                    animationEngine,
-                    scale,
-                });
+            const tracksForObject = state.getTracksForObject(vxkey); // this will be filtered
+            const vxObject = useVXObjectStore.getState().objects[vxkey]
+            const value = getNestedProperty(vxObject.ref.current, propertyPath)
+
+            // Remove the track Key from the edObject trackKetys string array
+            const filteredTracksForObject = tracksForObject.filter(track => track.propertyPath !== track.propertyPath)
+            edObject.trackKeys = filteredTracksForObject.map(track => `${vxkey}.${track.propertyPath}`)
+
+            delete state.tracks[trackKey];
+
+            // Handle StaticProp
+            const staticPropKey = trackKey;
+            const newStaticProp: IStaticProps = {
+                vxkey: vxkey,
+                propertyPath: propertyPath,
+                value: value
             }
+            state.staticProps[staticPropKey] = newStaticProp;
+            edObject.staticPropKeys.push(staticPropKey)
+
+            // Recompute grouped Paths for Visual 
+            state.groupedPaths = computeGroupPaths(state.editorData)
+        }))
+
+        // Refresh Raw Data and ReRender
+        animationEngine.refreshCurrentTimeline(
+            get().editorData,
+            get().tracks,
+            get().staticProps,
+            get().keyframes
+        )
+    },
+
+    moveToNextKeyframe: (animationEngine, keyframes) => {
+        const { cursorTime } = get();
+    
+        const sortedKeyframes = [...keyframes].sort((a, b) => a.time - b.time);
+    
+        const nextKeyframe = sortedKeyframes.find(kf => kf.time > cursorTime);
+    
+        if (nextKeyframe) {
+            handleSetCursor({
+                time: nextKeyframe.time,
+                animationEngine,
+            });
         }
     },
+    
+    moveToPreviousKeyframe: (animationEngine, keyframes) => {
+        const { cursorTime } = get();
+    
+        const sortedKeyframes = [...keyframes].sort((a, b) => a.time - b.time);
+    
+        const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < cursorTime);
+    
+        if (prevKeyframe) {
+            handleSetCursor({
+                time: prevKeyframe.time,
+                animationEngine,
+            });
+        }
+    }
 })
 );

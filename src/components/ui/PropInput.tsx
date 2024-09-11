@@ -13,50 +13,22 @@ interface Props extends InputProps {
 }
 export const PropInput: React.FC<Props> = (props) => {
     const { propertyPath, className, horizontal, ...inputProps } = props
-
-    const [isOnKeyframe, setIsOnKeyframe] = useState(false);
-    
-    const cursorTimeRef = useTimelineEditorStore(state => state.cursorTimeRef)
-    const findTrackByPropertyPath = useTimelineEditorStore(state => state.findTrackByPropertyPath)
-    const editorData = useTimelineEditorStore(state => state.editorData);
-
     const vxkey = useObjectManagerStore(state => state.selectedObjects[0]?.vxkey, shallow);
-
-    const { track, isPropertyTracked } = useMemo(() => {
-        const track = findTrackByPropertyPath(vxkey, propertyPath);
-        const isPropertyTracked = track !== undefined;
-        return { track, isPropertyTracked };
-    }, [vxkey, editorData[vxkey]?.tracks]);
-
-    useEffect(() => {
-        const unsubscribe = useTimelineEditorStore.subscribe(() => checkIfOnKeyframe());
-        return () => unsubscribe();
-    }, [track?.keyframes]);
-
-    const checkIfOnKeyframe = () => {
-        if (track) {
-            const isKeyframePresent = track.keyframes.some(kf => kf.time === cursorTimeRef.current);
-            setIsOnKeyframe(isKeyframePresent);
-        }
-    };
-
-    useEffect(() => {
-        checkIfOnKeyframe()
-    }, [track?.keyframes])
+    const trackKey = vxkey + "." + propertyPath
+    
+    const track = useTimelineEditorStore(state => state.getTrack(trackKey))
 
     return (
         <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
             <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
                 <KeyframeControl 
-                    propertyPath={propertyPath} 
-                    isOnKeyframe={isOnKeyframe} 
-                    isPropertyTracked={isPropertyTracked}
+                    trackKeys={[trackKey]}
                 />
             </div>
             <ValueRenderer 
                 propertyPath={propertyPath} 
                 inputProps={inputProps} 
-                isPropertyTracked={isPropertyTracked}
+                isPropertyTracked={!!track}
             />
         </div>
     )

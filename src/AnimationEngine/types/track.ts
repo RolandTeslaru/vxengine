@@ -3,7 +3,7 @@ import * as THREE from "three"
 export interface ITimeline {
     name: string;        
     id: string;          
-    objects: edObjectProps[]
+    objects: RawObjectProps[]
 }
 
 export interface ITrack {
@@ -27,18 +27,18 @@ export interface IKeyframe {
 }
 export interface PathGroup {
     children: Record<string, PathGroup>;
-    track?: RawTrackProps | null 
+    trackKey?: string | null
     rowIndex?: number;
     prevRowIndex?: number;
     nextRowIndex?: number;
     localFinalTrackIndex?: number;
-    // isCollapsed: boolean
+    isCollapsed: boolean
 }
 // Editor Data Object
 export interface edObjectProps {
     vxkey: string;
-    trackIds: string[],
-    staticPropIds: string[]
+    trackKeys: string[],
+    staticPropKeys: string[]
 }
 
 export interface RawObjectProps {
