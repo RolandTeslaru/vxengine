@@ -57,12 +57,12 @@ const ObjectList = () => {
                 )}
                 <p className='ml-auto text-xs'> objects</p>
             </div>
-            <div className='flex flex-col pt-2'>
+            <div className='flex flex-col pt-2 gap-2'>
                 {Object.values(objects).map((vxobject: vxObjectProps, index: number) => {
                     const isSelected = selectedObjectKeys.includes(vxobject.vxkey);
                     const isHovered = hoveredObject?.vxkey === vxobject.vxkey
                     return (
-                        <div key={index} className={'h-9 my-1 border flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer ' +
+                        <div key={index} className={'h-9 border flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer ' +
                             `${isHovered && " !bg-blue-800 !border-blue-600"} ${isSelected && " !bg-blue-600 !border-neutral-200"} `}
                             onClick={(event) => handleObjectClick(event, vxobject, index)}
                             onMouseDown={(event) => event.preventDefault()}

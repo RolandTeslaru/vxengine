@@ -72,16 +72,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps,
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
-
-        // Handle static prop case
-        if(isPropertyTracked === false){
-            setNestedProperty(editorData[vxkey].staticProps, propertyPath, newValue)
-        }
-
-
-
-        setNestedProperty(firstObjectSelected, propertyPath, newValue);
-        useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, newValue);
+        useTimelineEditorStore.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
         setValue(newValue);
     };
 

@@ -23,7 +23,6 @@ export const TimeArea = () => {
     startLeft: state.startLeft,
     scrollLeft: state.scrollLeft,
   }), shallow);
-  const { animationEngine } = useVXEngine();
   const gridRef = useRef<Grid>();
   /** Whether to display subdivision scales */
   const showUnit = scaleSplitCount > 0;
@@ -90,7 +89,7 @@ export const TimeArea = () => {
                   const time = parserPixelToTime(left, { startLeft, scale, scaleWidth });
                   // const result = onClickTimeArea && onClickTimeArea(time, e);
                   // if (result === false) return; //返回false时阻止设置时间
-                  handleSetCursor({ time, animationEngine })
+                  handleSetCursor({ time })
                 }}
                 className={prefix('time-area-interact')}
               ></div>

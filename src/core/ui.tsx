@@ -13,6 +13,7 @@ import { useVXUiStore } from "vxengine/store/VXUIStore"
 import VXUiPanelWrapper from "vxengine/components/ui/VXUiPanelWrapper"
 import { useVXAnimationStore } from "vxengine/store/AnimationStore"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "vxengine/components/shadcn/select"
+import { useObjectPropertyStore } from "vxengine/managers/ObjectManager/store"
 
 export const CoreUI = () => {
     return (
@@ -174,33 +175,138 @@ const FrequentStateVisualizer = () => {
 }
 
 
-const TimelineEditorDebug = () => {
+const EditorDataComponent = () => {
     const editorData = useTimelineEditorStore(state => state.editorData);
-    const keyframes = useTimelineEditorStore(state => state.keyframes)
-    const tracks = useTimelineEditorStore(state => state.tracks)
-    const staticProps = useTimelineEditorStore(state => state.staticProps)
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(editorData, null, 2)}
+        </pre>
+    );
+};
 
-    useEffect(() => {
-        console.log("STATIC PROPS requested rerendering ")
-    }, [staticProps])
+const KeyframesComponent = () => {
+    const keyframes = useTimelineEditorStore(state => state.keyframes);
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(keyframes, null, 2)}
+        </pre>
+    );
+};
 
-    const [activeData, setActiveData] = useState("editorData")
+const TracksComponent = () => {
+    const tracks = useTimelineEditorStore(state => state.tracks);
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(tracks, null, 2)}
+        </pre>
+    );
+};
 
-    const rawDataString = React.useMemo(() => {
-        let data;
-        if (activeData === "editorData")
-            data = JSON.stringify(editorData, null, 2);
-        else if (activeData === "keyframes")
-            data = JSON.stringify(keyframes, null, 2);
-        else if (activeData === "tracks")
-            data = JSON.stringify(tracks, null, 2);
-        else if (activeData === "staticProps")
-            data = JSON.stringify(staticProps, null, 2);
-    
-        return data;
-    }, [activeData, editorData, keyframes, tracks, staticProps]); 
+const StaticPropsComponent = () => {
+    const staticProps = useTimelineEditorStore(state => state.staticProps);
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(staticProps, null, 2)}
+        </pre>
+    );
+};
 
-    const [ attachedState, setAttachedState ] = useState(true);
+const CurrentTimelineComponent = () => {
+    const currentTimeline = useVXAnimationStore(state => state.currentTimeline);
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(currentTimeline, null, 2)}
+        </pre>
+    );
+};
+
+const PropertiesStoreComponent = () => {
+    const propertiesStore = useObjectPropertyStore(state => state.properties);
+    return (
+        <pre
+            style={{
+                padding: '10px',
+                borderRadius: '5px',
+                maxHeight: '400px',
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(propertiesStore, null, 2)}
+        </pre>
+    );
+};
+
+const TimelineEditorDebug = () => {
+    const [activeData, setActiveData] = useState("editorData");
+    const [attachedState, setAttachedState] = useState(true);
+
+    // Conditionally render the correct mini component
+    const renderActiveComponent = () => {
+        switch (activeData) {
+            case "editorData":
+                return <EditorDataComponent />;
+            case "keyframes":
+                return <KeyframesComponent />;
+            case "tracks":
+                return <TracksComponent />;
+            case "staticProps":
+                return <StaticPropsComponent />;
+            case "currentTimeline":
+                return <CurrentTimelineComponent />;
+            case "propertiesStore":
+                return <PropertiesStoreComponent />;
+            default:
+                return null;
+        }
+    };
+
     return (
         <VXUiPanelWrapper
             title="VXEngine: TimelineEditorDebug"
@@ -209,7 +315,9 @@ const TimelineEditorDebug = () => {
             setAttachedState={setAttachedState}
         >
             <div className={`fixed backdrop-blur-sm ${attachedState ? "top-[40%] left-[300px]": "top-1 left-1 "} text-sm bg-neutral-900 p-2 gap-2
-                                bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}>
+                                bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}
+                style={{minWidth: "500px"}}
+                                >
                 <h1 className="text-center font-sans-menlo">EditorData state</h1>
                 <Select
                     defaultValue={activeData}
@@ -225,23 +333,12 @@ const TimelineEditorDebug = () => {
                             <SelectItem value={"keyframes"} >keyframes</SelectItem>
                             <SelectItem value={"tracks"} >tracks</SelectItem>
                             <SelectItem value={"staticProps"} >staticProps</SelectItem>
+                            <SelectItem value={"currentTimeline"} >currentTimeline</SelectItem>
+                            <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
-                <div>
-                    <pre
-                        style={{
-                            padding: '10px',
-                            borderRadius: '5px',
-                            maxHeight: '400px',
-                            overflowY: 'scroll',
-                            whiteSpace: 'pre-wrap', // This makes sure the text wraps within the container
-                        }}
-                        className="text-xs"
-                    >
-                        {rawDataString}
-                    </pre>
-                </div>
+                <div>{renderActiveComponent()}</div>
                 <button className={"bg-transparent border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                         onClick={() => setAttachedState(!attachedState)}
                     >

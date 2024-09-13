@@ -39,7 +39,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   // it cant apply the starter keyframes to the vxObjects present in the scene 
   // because they aren't mounted.
   useEffect(() => {
-    animationEngine.reRender({ force: true});
+    animationEngine.reRender({ force: true, cause: "objects added"});
   }, [objects])
 
   return (

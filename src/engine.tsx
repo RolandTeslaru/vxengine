@@ -7,6 +7,7 @@ import { EngineContextProps, VXEngineProviderProps } from './types/engine'
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
 import { AnimationEngine } from "vxengine/AnimationEngine/engine"
+import { useTimelineEditorStore } from './managers/TimelineManager/store'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>
@@ -41,6 +42,8 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
     const animationEngine = useMemo(() => {
         const engine = new AnimationEngine();
         engine.loadTimelines(animations_json)
+
+        useTimelineEditorStore.getState().animationEngineRef.current = engine
         return engine
     }, [])
 

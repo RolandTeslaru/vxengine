@@ -89,7 +89,7 @@ const TrackVerticalList = () => {
                         <p className={`flex !flex-row ${isTrack ? 'text-neutral-500' : ' '} mr-2`}>
                             {key}
                             {/* Debug Row index */}
-                            <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span>
+                            {/* <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span> */}
                         </p>
                         {/* Render KeyframeControl for collapsed groups */}
                         {/* TODO: Implement a keyframe controller for collapsed tracks  */}

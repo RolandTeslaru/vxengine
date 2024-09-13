@@ -7,11 +7,16 @@ export const handleSetCursor = (param: {
     left?: number;
     time?: number;
     updateTime?: boolean;
-    animationEngine: IAnimationEngine;
 }) => {
     const scale = useTimelineEditorStore.getState().scale
-    let { left, time, updateTime = true, animationEngine } = param;
+    let { left, time, updateTime = true } = param;
+
+    const animationEngine = useTimelineEditorStore.getState().animationEngineRef.current
+    if(!animationEngine)
+        return
+    
     if (typeof left === 'undefined' && typeof time === 'undefined') return;
+
 
     const startLeft = 0;
     const scaleWidth = DEFAULT_SCALE_WIDTH;

@@ -34,23 +34,11 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     }, [keyframe.time, startLeft, scaleWidth, scale]);
 
     // Handle dragging event
-    const handleDragEnd = (data: { left: number }) => {
-        const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth });
-        keyframe.time = newTime
-        addChange();
-        console.log("New time ", keyframe.time)
-        // Update keyframe time here using the new time
-        // This could involve updating the zustand store or the track directly
-        // Example:
-        // keyframe.time = newTime;
-        // Update the editor data in your store accordingly
-    };
 
-    // idk
-    // const handleDrag = (data: { left: number }) => {
-    //     const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth });
-    //     animationEngine.reRender({ time: newTime});
-    // }
+    const handleOnDrag = (data: { left: number}) => {
+        const newTime = parserPixelToTime(data.left, {startLeft, scale, scaleWidth})
+        useTimelineEditorStore.getState().setKeyframeTime(keyframe.id, newTime);
+    }
 
     return (
         <RowDnd
@@ -64,8 +52,8 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                 left: 0, // Adjust according to the timeline's start
                 right: scaleWidth * 1000 // Adjust according to the timeline's end
             }}
-            onDragEnd={handleDragEnd}
-            // onDrag={handleDrag}
+            onDragEnd={handleOnDrag}
+            onDrag={handleOnDrag}
         >
             <div
                 className="absolute h-2 w-[11px] fill-white hover:fill-blue-600"

@@ -14,13 +14,12 @@ interface TimelineKeyframeControlProps {
 }
 
 const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKeys }) => {
-    const { createNewKeyframeOnTrack, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorStore(state => ({
-        createNewKeyframeOnTrack: state.createNewKeyframeOnTrack,
+    const { createKeyframe, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorStore(state => ({
+        createKeyframe: state.createKeyframe,
         moveToNextKeyframe: state.moveToNextKeyframe,
         moveToPreviousKeyframe: state.moveToPreviousKeyframe,
         makePropertyTracked: state.makePropertyTracked
     }), shallow)
-    const { animationEngine } = useVXEngine();
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
@@ -54,12 +53,12 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){
-            createNewKeyframeOnTrack(animationEngine, trackKeys[0], 0)
+            createKeyframe(trackKeys[0], 0)
         }
         else if ( isPropertyTracked === false && trackKeys.length === 1) {
             // This is a singular static prop
             const staticPropKey = trackKeys[0];
-            makePropertyTracked(animationEngine, staticPropKey)
+            makePropertyTracked(staticPropKey)
         }
     }
 
@@ -67,7 +66,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
         <div className='flex flex-row h-[12px]'>
             {isPropertyTracked &&
                 <button
-                    onClick={() => moveToPreviousKeyframe(animationEngine, keyframesOnTrack)}
+                    onClick={() => moveToPreviousKeyframe(keyframesOnTrack)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                 >
                     <ChevronLeft className=' w-3 h-3' />
@@ -83,7 +82,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
             </button>
             {isPropertyTracked &&
                 <button
-                    onClick={() => moveToNextKeyframe(animationEngine, keyframesOnTrack)}
+                    onClick={() => moveToNextKeyframe(keyframesOnTrack)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                 >
                     <ChevronRight className='w-3 h-3 ' />

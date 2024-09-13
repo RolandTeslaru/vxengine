@@ -23,7 +23,6 @@ export const startLeft = 0;
 const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, ref) => {
   const checkedProps = checkProps(props);
 
-  const { animationEngine } = useVXEngine();
   const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollLeft, setScrollLeft, } = useTimelineEditorStore(state => ({
     scale: state.scale,
     setCursorTime: state.setCursorTime,
@@ -48,7 +47,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
   // Process runner related data
   useAnimationEngineEvent(
     'timeUpdatedAutomatically',
-    ({ time }) => handleSetCursor({ time, animationEngine })
+    ({ time }) => handleSetCursor({ time })
   );
 
   useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {

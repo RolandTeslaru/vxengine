@@ -6,6 +6,7 @@ import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
 import { useObjectManagerStore, useObjectPropertyStore } from "./store";
 import { shallow } from "zustand/shallow";
+import { useTimelineEditorStore } from "../TimelineManager/store";
 
 export const ObjectManagerDriver = () => {
 
@@ -15,28 +16,30 @@ export const ObjectManagerDriver = () => {
 }), shallow);
   const firstSelectedObjectStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
   const firstObjectSelected: THREE.Object3D = firstSelectedObjectStored?.ref.current
-  const updateProperty = useObjectPropertyStore(state => state.updateProperty, shallow)
+  const handlePropertyValueChange = useTimelineEditorStore(state => state.handlePropertyValueChange)
+  
+
 
   const handleTransformChange = () => {
     if (firstSelectedObjectStored && firstObjectSelected) {
       const vxkey = firstSelectedObjectStored.vxkey;
 
       if (firstObjectSelected.position) {
-        updateProperty(vxkey, 'position.x', firstObjectSelected.position.x);
-        updateProperty(vxkey, 'position.y', firstObjectSelected.position.y);
-        updateProperty(vxkey, 'position.z', firstObjectSelected.position.z);
+        handlePropertyValueChange(vxkey, 'position.x', firstObjectSelected.position.x, false);
+        handlePropertyValueChange(vxkey, 'position.y', firstObjectSelected.position.y, false);
+        handlePropertyValueChange(vxkey, 'position.z', firstObjectSelected.position.z, false);
       }
 
       if (firstObjectSelected.rotation) {
-        updateProperty(vxkey, 'rotation.x', firstObjectSelected.rotation.x);
-        updateProperty(vxkey, 'rotation.y', firstObjectSelected.rotation.y);
-        updateProperty(vxkey, 'rotation.z', firstObjectSelected.rotation.z);
+        handlePropertyValueChange(vxkey, 'rotation.x', firstObjectSelected.rotation.x, false);
+        handlePropertyValueChange(vxkey, 'rotation.y', firstObjectSelected.rotation.y, false);
+        handlePropertyValueChange(vxkey, 'rotation.z', firstObjectSelected.rotation.z, false);
       }
 
       if (firstObjectSelected.scale) {
-        updateProperty(vxkey, 'scale.x', firstObjectSelected.scale.x);
-        updateProperty(vxkey, 'scale.y', firstObjectSelected.scale.y);
-        updateProperty(vxkey, 'scale.z', firstObjectSelected.scale.z);
+        handlePropertyValueChange(vxkey, 'scale.x', firstObjectSelected.scale.x, false);
+        handlePropertyValueChange(vxkey, 'scale.y', firstObjectSelected.scale.y, false);
+        handlePropertyValueChange(vxkey, 'scale.z', firstObjectSelected.scale.z, false);
       }
     }
   };

@@ -18,7 +18,6 @@ import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
 import { vxObjectProps } from 'vxengine/types/objectStore';
-import { handleSetCursor } from './utils/handleSetCursor';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
@@ -37,21 +36,22 @@ const TimelineEditorUI = () => {
         scale: state.scale
     }), shallow);
 
-    const { open, setOpen } = useVXUiStore(state => ({ open: state.timelineEditorOpen, setOpen: state.setTimelineEditorOpen}))
-    const { setTimelineEditorAttached, timelineEditorAttached } = useVXUiStore(state => ({ 
-        setTimelineEditorAttached: state.setTimelineEditorAttached, 
-        timelineEditorAttached: state.timelineEditorAttached 
+    const { open, setOpen } = useVXUiStore(state => ({ open: state.timelineEditorOpen, setOpen: state.setTimelineEditorOpen }))
+    const { setTimelineEditorAttached, timelineEditorAttached } = useVXUiStore(state => ({
+        setTimelineEditorAttached: state.setTimelineEditorAttached,
+        timelineEditorAttached: state.timelineEditorAttached
     }), shallow)
 
     return (
         <>
+            {/*  H E A D E R */}
             <div className={`flex flex-row gap-2 w-full  ${timelineEditorAttached ? "pr-2" : "px-2"}`}>
                 {timelineEditorAttached &&
                     <button className={" h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
                         onClick={() => setOpen(!open)}
                     >
                         <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
-                    </button>                
+                    </button>
                 }
 
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
@@ -62,7 +62,9 @@ const TimelineEditorUI = () => {
 
                 <ProgressionControls />
             </div>
-            <ResizablePanelGroup 
+
+            {/* M A I N  */}
+            <ResizablePanelGroup
                 className='relative flex flex-row w-full flex-grow overflow-hidden'
                 direction='horizontal'
             >
@@ -71,11 +73,13 @@ const TimelineEditorUI = () => {
                         <TrackVerticalList />
                     </div>
                 </ResizablePanel>
-                <ResizableHandle withHandle className='mx-1'/>
+                <ResizableHandle withHandle className='mx-1' />
                 <ResizablePanel defaultSize={65}>
                     <TimelineEditor />
                 </ResizablePanel>
             </ResizablePanelGroup>
+
+            {/* F O O T E R */}
             <AnimatePresence>
                 {open && (
                     <motion.div className='mt-auto relative pl-2 flex flex-row gap-2 font-sans-menlo'
@@ -112,10 +116,10 @@ const TimelineEditorUI = () => {
                         <button className={"bg-transparent bg-opacity-70 border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                             onClick={() => setTimelineEditorAttached(!timelineEditorAttached)}
                         >
-                            {timelineEditorAttached 
+                            {timelineEditorAttached
                                 ? <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 13C12.5523 13 13 12.5523 13 12V3C13 2.44771 12.5523 2 12 2H3C2.44771 2 2 2.44771 2 3V6.5C2 6.77614 2.22386 7 2.5 7C2.77614 7 3 6.77614 3 6.5V3H12V12H8.5C8.22386 12 8 12.2239 8 12.5C8 12.7761 8.22386 13 8.5 13H12ZM9 6.5C9 6.5001 9 6.50021 9 6.50031V6.50035V9.5C9 9.77614 8.77614 10 8.5 10C8.22386 10 8 9.77614 8 9.5V7.70711L2.85355 12.8536C2.65829 13.0488 2.34171 13.0488 2.14645 12.8536C1.95118 12.6583 1.95118 12.3417 2.14645 12.1464L7.29289 7H5.5C5.22386 7 5 6.77614 5 6.5C5 6.22386 5.22386 6 5.5 6H8.5C8.56779 6 8.63244 6.01349 8.69139 6.03794C8.74949 6.06198 8.80398 6.09744 8.85143 6.14433C8.94251 6.23434 8.9992 6.35909 8.99999 6.49708L8.99999 6.49738" fill="currentColor"></path></svg>
                                 : <svg className='rotate-180' width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 13C12.5523 13 13 12.5523 13 12V3C13 2.44771 12.5523 2 12 2H3C2.44771 2 2 2.44771 2 3V6.5C2 6.77614 2.22386 7 2.5 7C2.77614 7 3 6.77614 3 6.5V3H12V12H8.5C8.22386 12 8 12.2239 8 12.5C8 12.7761 8.22386 13 8.5 13H12ZM9 6.5C9 6.5001 9 6.50021 9 6.50031V6.50035V9.5C9 9.77614 8.77614 10 8.5 10C8.22386 10 8 9.77614 8 9.5V7.70711L2.85355 12.8536C2.65829 13.0488 2.34171 13.0488 2.14645 12.8536C1.95118 12.6583 1.95118 12.3417 2.14645 12.1464L7.29289 7H5.5C5.22386 7 5 6.77614 5 6.5C5 6.22386 5.22386 6 5.5 6H8.5C8.56779 6 8.63244 6.01349 8.69139 6.03794C8.74949 6.06198 8.80398 6.09744 8.85143 6.14433C8.94251 6.23434 8.9992 6.35909 8.99999 6.49708L8.99999 6.49738" fill="currentColor"></path></svg>
-                            
+
                             }
                         </button>
                     </motion.div>

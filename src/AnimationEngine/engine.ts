@@ -38,43 +38,42 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // Refresh functions
   // These are used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
-
-  refreshCurrentTimeline(
-    editorData: Record<string, edObjectProps>,
-    tracks: Record<string, ITrack>,
-    staticProps: Record<string, IStaticProps>,
-    keyframes: Record<string, IKeyframe>
-  ) {
+  refreshCurrentTimeline() {
     if (!this.currentTimeline)
       throw new Error("VXAnimationEngine: No timeline is currently loaded.");
-  
-    if (this.isPlaying) this.pause();
-  
+
+    const editorData = useTimelineEditorStore.getState().editorData
+    const tracks = useTimelineEditorStore.getState().tracks
+    const staticProps = useTimelineEditorStore.getState().staticProps
+    const keyframes = useTimelineEditorStore.getState().keyframes
+
+    // if (this.isPlaying) this.pause();
+
     console.log("VXAnimationEngine: Refreshing Current Timeline");
-  
-    // map containing the exist rawObjects in the currentTImeline
+
+    // map containing the existing rawObjects in the currentTImeline
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
-  
+
     // Update / Add objects in the currentTimeline based on the editorData
     Object.keys(editorData).forEach(vxkey => {
       const edObject = editorData[vxkey];
-  
+
       if (currentObjectsMap.has(vxkey)) {
         // Refresh existing raw object
         const rawObject = currentObjectsMap.get(vxkey);
-  
+
         // Assign tracks to Object by converting from ITrack to RawTrackProps
         rawObject.tracks = edObject.trackKeys.map(trackKey => {
           const track = tracks[trackKey];
           return {
             propertyPath: track.propertyPath,
-            keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId]) 
+            keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId])
           } as RawTrackProps;
         });
-  
+
         // Assign staticProps
         rawObject.staticProps = edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]);
-  
+
       } else {
         // Add new raw object to currentTimeline
         const newRawObject: RawObjectProps = {
@@ -88,25 +87,106 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           }),
           staticProps: edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]),
         };
-  
+
         this.currentTimeline.objects.push(newRawObject);
       }
     });
-  
+
     // Remove rawObjects that are no longer in editorData
     this.currentTimeline.objects = this.currentTimeline.objects.filter(rawObject => {
       return editorData.hasOwnProperty(rawObject.vxkey);
     });
-  
+
     // Re-render the timeline
-    this.reRender({ force: true });
+    this.reRender({ force: true, cause: "refresh currentTimeline" });
+  }
+
+  refreshKeyframe(
+    trackKey: string,
+    action: 'create' | 'remove' | 'update',
+    keyframeKey: string,
+    reRender = true
+  ) {
+    const edKeyframe = useTimelineEditorStore.getState().keyframes[keyframeKey];
+
+    console.log("VXAnimationEngine: Refreshing keyframe")
+
+    this.currentTimeline.objects.forEach((object) => {
+      object.tracks.forEach((track) => {
+        if (track.propertyPath === trackKey) {
+          switch (action) {
+            case 'create':
+              // Add keyframe if it's not already in the track
+              track.keyframes.push(edKeyframe);
+              console.log(`Refresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
+              break;
+
+            case 'remove':
+              // Remove keyframe
+              track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
+              console.log(`Refresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
+              break;
+
+            case 'update':
+              // Update keyframe if it exists
+              track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
+              console.log(`Refresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
+              break;
+
+            default:
+              console.error('Invalid action type');
+          }
+        }
+      });
+    });
+
+    if (reRender)
+      this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
+  }
+
+  refreshStaticProp(
+    action: 'create' | 'remove' | 'update',
+    staticPropKey: string,
+    reRender = true,
+  ) {
+    const staticProp = useTimelineEditorStore.getState().staticProps[staticPropKey];
+
+    console.log("VXAnimationEngine: Refreshing static prop")
+
+    this.currentTimeline.objects.forEach((rawObject) => {
+      switch (action) {
+        case 'create':
+          const propExists = rawObject.staticProps.some(
+            (prop) => prop.propertyPath === staticProp.propertyPath
+          );
+
+          if (!propExists) {
+            rawObject.staticProps.push(staticProp);
+          }
+          break;
+        case 'update':
+          rawObject.staticProps = rawObject.staticProps.map((prop) => {
+            if (prop.propertyPath === staticProp.propertyPath)
+              return staticProp
+            else
+              return prop;
+          })
+          break;
+        case 'remove':
+          rawObject.staticProps = rawObject.staticProps
+            .map((prop) => (prop.propertyPath === staticProp.propertyPath ? null : prop))
+            .filter(Boolean); 
+      }
+    });
+
+    if (reRender)
+      this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
   }
 
   // Setter functions
 
-  setIsPlaying(value: boolean) {
-    useVXAnimationStore.setState({ isPlaying: value })
-  }
+  setIsPlaying(value: boolean) { useVXAnimationStore.setState({ isPlaying: value }) }
+
 
   setCurrentTimeline(timelineId: string) {
     console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
@@ -116,15 +196,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
-    this._applyAllKeyframes(this._currentTime);
-    this._applyAllStaticProps();
-    this.reRender();
-    
+
+    this.reRender({ time: this._currentTime, force: true });
+
     const rawObjects = selectedTimeline.objects
 
-    //  setEditorData
+    //  Initialize the Editor Data
     useTimelineEditorStore.getState().setEditorData(rawObjects)
-
   }
 
 
@@ -154,12 +232,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   reRender(params: {
     time?: number,
-    force?: boolean
+    force?: boolean,
+    cause?: string
   } = {}) {
-    const { time, force } = params
+    const { time, force, cause } = params
     if (this.isPlaying && force === false)
       return;
-    console.log("VXAnimationEngine: reRendering with params", params)
+    console.log("VXAnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
     if (time !== undefined)
@@ -170,9 +249,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   play(param: {
-    /** By default, it runs from beginning to end, with a priority greater than autoEnd. */
     toTime?: number;
-    /** Whether to automatically end after playing */
     autoEnd?: boolean;
   }): boolean {
     const { toTime, autoEnd } = param;

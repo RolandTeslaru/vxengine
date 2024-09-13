@@ -35,7 +35,6 @@ export const Cursor: FC<CursorProps> = ({
 }) => {
   const rowRnd = useRef<RowRndApi>();
   const draggingLeft = useRef<undefined | number>();
-  const { animationEngine } = useVXEngine();
   const { setCursorTime, cursorTime, width, editAreaRef, scrollLeft } = useTimelineEditorStore(state => ({
     setCursorTime: state.setCursorTime,
     cursorTime: state.cursorTime,
@@ -71,7 +70,7 @@ export const Cursor: FC<CursorProps> = ({
       }}
       onDragEnd={() => {
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time, animationEngine })
+        handleSetCursor({ time })
         onCursorDragEnd && onCursorDragEnd(time);
         draggingLeft.current = undefined;
       }}
@@ -88,7 +87,7 @@ export const Cursor: FC<CursorProps> = ({
         }
         rowRnd.current.updateLeft(draggingLeft.current);
         const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time, animationEngine })
+        handleSetCursor({ time })
         onCursorDrag && onCursorDrag(time);
         return false;
       }}

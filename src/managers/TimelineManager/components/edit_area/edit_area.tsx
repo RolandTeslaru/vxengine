@@ -129,6 +129,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       return (
         <EditTrack
           {...props}
+          editAreaRef={editAreaRef}
           style={{
             ...style,
             backgroundPositionX: `0, ${startLeft}px`,
@@ -188,6 +189,8 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
   // };
 
   const handleOnScroll = (param) => {
+    if(!trackListRef.current) return
+    
     trackListRef.current.scrollTop = param.scrollTop
     useTimelineEditorStore.setState({
       scrollLeft: param.scrollLeft,
