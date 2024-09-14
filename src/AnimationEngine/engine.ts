@@ -15,8 +15,12 @@ import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
 import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
+import { extractDatafromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
 
 const IS_DEV = process.env.NODE_ENG === 'development'
+
+const DEBUG_REFRESHER = false;
+const DEBUG_RERENDER = false;
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
@@ -39,9 +43,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // These are used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
   refreshCurrentTimeline() {
-    if (!this.currentTimeline)
-      throw new Error("VXAnimationEngine: No timeline is currently loaded.");
-
+    if (!this.currentTimeline && DEBUG_REFRESHER){
+      console.log("VXAnimationEngine Refresher: No timeline is currently loaded.");
+      return
+    }
     const editorData = useTimelineEditorStore.getState().editorData
     const tracks = useTimelineEditorStore.getState().tracks
     const staticProps = useTimelineEditorStore.getState().staticProps
@@ -49,7 +54,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // if (this.isPlaying) this.pause();
 
-    console.log("VXAnimationEngine: Refreshing Current Timeline");
+    if(DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
 
     // map containing the existing rawObjects in the currentTImeline
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
@@ -65,9 +70,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         // Assign tracks to Object by converting from ITrack to RawTrackProps
         rawObject.tracks = edObject.trackKeys.map(trackKey => {
           const track = tracks[trackKey];
+  
+          const sortedKeyframes = track.keyframes
+            .map(keyframeId => keyframes[keyframeId])
+            .sort((a, b) => a.time - b.time);
+  
           return {
             propertyPath: track.propertyPath,
-            keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId])
+            keyframes: sortedKeyframes // Sorted keyframes by time
           } as RawTrackProps;
         });
 
@@ -108,29 +118,32 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender = true
   ) {
     const edKeyframe = useTimelineEditorStore.getState().keyframes[keyframeKey];
+    const {vxkey, propertyPath } = extractDatafromTrackKey(trackKey);
 
-    console.log("VXAnimationEngine: Refreshing keyframe")
+    if(DEBUG_REFRESHER)
+      console.log("VXAnimationEngine: Refreshing keyframe on trackKey:", trackKey)
 
     this.currentTimeline.objects.forEach((object) => {
       object.tracks.forEach((track) => {
-        if (track.propertyPath === trackKey) {
+        if (track.propertyPath === propertyPath) {
           switch (action) {
             case 'create':
-              // Add keyframe if it's not already in the track
               track.keyframes.push(edKeyframe);
-              console.log(`Refresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
+              track.keyframes.sort((a, b) => a.time - b.time);
+              if(DEBUG_REFRESHER)
+                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
               break;
 
             case 'remove':
-              // Remove keyframe
               track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
-              console.log(`Refresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
+              if(DEBUG_REFRESHER)
+                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
               break;
 
             case 'update':
-              // Update keyframe if it exists
               track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
-              console.log(`Refresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
+              if(DEBUG_REFRESHER)
+                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
               break;
 
             default:
@@ -151,7 +164,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   ) {
     const staticProp = useTimelineEditorStore.getState().staticProps[staticPropKey];
 
-    console.log("VXAnimationEngine: Refreshing static prop")
+    if(DEBUG_REFRESHER)
+      console.log("VXAnimationEngine: Refreshing static prop")
 
     this.currentTimeline.objects.forEach((rawObject) => {
       switch (action) {
@@ -238,7 +252,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const { time, force, cause } = params
     if (this.isPlaying && force === false)
       return;
-    console.log("VXAnimationEngine: rerendering", " cause: ", cause)
+
+    if(DEBUG_RERENDER)
+      console.log("VXAnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
     if (time !== undefined)

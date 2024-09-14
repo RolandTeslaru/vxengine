@@ -7,57 +7,89 @@ import { useVXObjectStore } from "vxengine/store";
 import { useObjectManagerStore, useObjectPropertyStore } from "./store";
 import { shallow } from "zustand/shallow";
 import { useTimelineEditorStore } from "../TimelineManager/store";
+import * as THREE from "three"
+
 
 export const ObjectManagerDriver = () => {
+  const { selectedObjectKeys, transformMode } = useObjectManagerStore(
+    (state) => ({
+      selectedObjectKeys: state.selectedObjectKeys,
+      transformMode: state.transformMode,
+    }),
+    shallow
+  );
 
-  const { selectedObjectKeys, transformMode } = useObjectManagerStore(state => ({
-    selectedObjectKeys: state.selectedObjectKeys,
-    transformMode: state.transformMode
-}), shallow);
-  const firstSelectedObjectStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
-  const firstObjectSelected: THREE.Object3D = firstSelectedObjectStored?.ref.current
-  const handlePropertyValueChange = useTimelineEditorStore(state => state.handlePropertyValueChange)
-  
+  const firstSelectedObjectStored = useObjectManagerStore(
+    (state) => state.selectedObjects[0],
+    shallow
+  );
+  const firstObjectSelected = firstSelectedObjectStored?.ref.current;
+  const handlePropertyValueChange = useTimelineEditorStore(
+    (state) => state.handlePropertyValueChange,
+    shallow
+  );
 
+  // Reference to the TransformControls instance
+  const transformControlsRef = useRef();
 
-  const handleTransformChange = () => {
-    if (firstSelectedObjectStored && firstObjectSelected) {
+  const handleTransformChange = (e) => {
+    const controls = e.target; // TransformControls instance
+    const axis = controls.axis; // 'X', 'Y', 'Z', 'XY', etc.
+
+    if (firstSelectedObjectStored && firstObjectSelected && axis) {
       const vxkey = firstSelectedObjectStored.vxkey;
 
-      if (firstObjectSelected.position) {
-        handlePropertyValueChange(vxkey, 'position.x', firstObjectSelected.position.x, false);
-        handlePropertyValueChange(vxkey, 'position.y', firstObjectSelected.position.y, false);
-        handlePropertyValueChange(vxkey, 'position.z', firstObjectSelected.position.z, false);
-      }
+      // Map axis letters to property names
+      const axisMap = {
+        X: 'x',
+        Y: 'y',
+        Z: 'z',
+      };
 
-      if (firstObjectSelected.rotation) {
-        handlePropertyValueChange(vxkey, 'rotation.x', firstObjectSelected.rotation.x, false);
-        handlePropertyValueChange(vxkey, 'rotation.y', firstObjectSelected.rotation.y, false);
-        handlePropertyValueChange(vxkey, 'rotation.z', firstObjectSelected.rotation.z, false);
-      }
+      // Determine which properties have changed based on the axis
+      const axes = axis.split('');
+      axes.forEach((axisLetter) => {
+        const propertyAxis = axisMap[axisLetter];
 
-      if (firstObjectSelected.scale) {
-        handlePropertyValueChange(vxkey, 'scale.x', firstObjectSelected.scale.x, false);
-        handlePropertyValueChange(vxkey, 'scale.y', firstObjectSelected.scale.y, false);
-        handlePropertyValueChange(vxkey, 'scale.z', firstObjectSelected.scale.z, false);
-      }
+        if (transformMode === 'translate' && propertyAxis) {
+          handlePropertyValueChange(
+            vxkey,
+            `position.${propertyAxis}`,
+            firstObjectSelected.position[propertyAxis],
+            false
+          );
+        } else if (transformMode === 'rotate' && propertyAxis) {
+          handlePropertyValueChange(
+            vxkey,
+            `rotation.${propertyAxis}`,
+            firstObjectSelected.rotation[propertyAxis],
+            false
+          );
+        } else if (transformMode === 'scale' && propertyAxis) {
+          handlePropertyValueChange(
+            vxkey,
+            `scale.${propertyAxis}`,
+            firstObjectSelected.scale[propertyAxis],
+            false
+          );
+        }
+      });
     }
   };
 
   return (
     <>
-      {selectedObjectKeys.length === 1 &&
+      {selectedObjectKeys.length === 1 && firstObjectSelected && (
         <TransformControls
+          ref={transformControlsRef}
           object={firstObjectSelected}
           mode={transformMode}
-          onChange={handleTransformChange}
+          onObjectChange={handleTransformChange}
         />
-      }
+      )}
     </>
-  )
-}
-
-
+  );
+};
 
 
 // Deprecated method of displaying object properties to the ui

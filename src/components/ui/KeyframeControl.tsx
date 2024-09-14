@@ -53,7 +53,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){
-            createKeyframe(trackKeys[0], 0)
+            createKeyframe(trackKeys[0]) // auto sets the value to the ref property path of the object
         }
         else if ( isPropertyTracked === false && trackKeys.length === 1) {
             // This is a singular static prop

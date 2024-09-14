@@ -11,10 +11,6 @@ interface Props {
 const MaterialProperties: React.FC<Props> = ({ material }) => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
 
-    useEffect(() => {
-        console.log("Material ", material)
-    }, [])
-
     return (
         <CollapsiblePanel
             title={material.type}

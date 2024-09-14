@@ -79,7 +79,7 @@ export interface TimelineEditorStoreProps {
     makePropertyTracked: (staticPropKey: string, reRender?: boolean) => void
     makePropertyStatic: (trackKey: string, reRender?: boolean) => void
     // Keyframe functions
-    createKeyframe: (trackKey: string, value: number, reRender?: boolean) => void;
+    createKeyframe: (trackKey: string, value?: number, reRender?: boolean) => void;
     removeKeyframe: (trackKey: string, keyframeKey: string, reRender?: boolean) => void;
     setKeyframeTime: (keyframeKey: string, newTime: number, reRender?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, newValue: number, reRender?: boolean) => void;
@@ -320,6 +320,10 @@ export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStorePr
         const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey)
 
         const keyframeId = `keyframe-${Date.now()}`
+
+        if(!value){
+            value = getNestedProperty( useVXObjectStore.getState().objects[vxkey].ref.current, propertyPath)
+        }
 
         const newKeyframe: IKeyframe = {
             id: keyframeId,

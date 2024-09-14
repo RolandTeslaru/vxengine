@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 interface VXUiPanelWrapperProps {
@@ -9,11 +9,12 @@ interface VXUiPanelWrapperProps {
     setAttachedState: (value: boolean) => void;
 }
 
-const VXUiPanelWrapper: React.FC<VXUiPanelWrapperProps> = (props) => {
+const VXUiPanelWrapper: React.FC<VXUiPanelWrapperProps> = React.memo((props) => {
     const { children, title, windowClasses, attachedState, setAttachedState } = props;
-    const handleClose = () => {
+    
+    const handleClose = useCallback(() => {
         setAttachedState(true);
-    };
+    }, [setAttachedState]);
 
     return (
         <>
@@ -28,7 +29,7 @@ const VXUiPanelWrapper: React.FC<VXUiPanelWrapperProps> = (props) => {
             )}
         </>
     );
-};
+});
 
 interface DetachableWindowProps {
     children: React.ReactNode;
@@ -39,14 +40,8 @@ interface DetachableWindowProps {
 
 const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     const { children, onClose, windowClasses, title } = props;
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
     const externalWindow = useRef<Window | null>(null);
-
-    if (typeof window === 'undefined') return null;
-
-    if (!containerRef.current) {
-        containerRef.current = document.createElement('div');
-    }
 
     useEffect(() => {
         externalWindow.current = window.open('', '', windowClasses);
@@ -56,8 +51,8 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
             if (title) extDocument.title = title;
             extDocument.body.style.width = '100vw';
             extDocument.body.style.height = '100vh';
-            extDocument.body.style.margin = '0';  // Remove any margin that may interfere with sizing
-            extDocument.body.style.overflow = 'hidden'; // Prevent scrollbars from appearing
+            extDocument.body.style.margin = '0';
+            extDocument.body.style.overflow = 'hidden';
             extDocument.body.appendChild(containerRef.current);
 
             // Copy styles
@@ -76,7 +71,7 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
             curWindow.removeEventListener('beforeunload', onClose);
             curWindow.close();
         };
-    }, [onClose, title, windowClasses]);
+    }, [onClose, title, windowClasses]); // Dependencies should remain stable
 
     return ReactDOM.createPortal(children, containerRef.current);
 };
