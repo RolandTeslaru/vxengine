@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { parserActionsToPositions, parserTimeToTransform } from "../../../utils/deal_data";
 import { DragLineData } from "../drag_lines";
-import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store";
+import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
 import { TimelineAction, TimelineRow } from "vxengine/AnimationEngine/interface/action";
 
 export function useDragLine() {
@@ -19,7 +19,7 @@ export function useDragLine() {
     cursorLeft: number;
   }) => {
     const { assistActionIds, action, row, scale, scaleWidth, startLeft, cursorLeft, hideCursor } = data;
-    const { editorData } = useTimelineEditorStore(state => ({
+    const { editorData } = useTimelineEditorAPI(state => ({
       editorData: state.editorData
     }))
     const otherActions: TimelineAction[] = [];

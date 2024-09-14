@@ -4,7 +4,7 @@ import KeyframeControl from './KeyframeControl'
 import { useObjectManagerStore, useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store'
 import { getNestedProperty, setNestedProperty } from 'vxengine/utils/nestedProperty'
 import { shallow } from 'zustand/shallow'
-import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store'
+import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store'
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore'
 
 interface Props extends InputProps {
@@ -16,7 +16,7 @@ export const PropInput: React.FC<Props> = (props) => {
     const vxkey = useObjectManagerStore(state => state.selectedObjects[0]?.vxkey, shallow);
     const trackKey = vxkey + "." + propertyPath
     
-    const track = useTimelineEditorStore(state => state.getTrack(trackKey))
+    const track = useTimelineEditorAPI(state => state.getTrack(trackKey))
 
     return (
         <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
@@ -44,7 +44,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps,
     const vxkey = useObjectManagerStore(state => state.selectedObjects[0].vxkey, shallow);
     const firstObjectSelectedStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
     const firstObjectSelected = firstObjectSelectedStored?.ref.current;
-    const editorData = useTimelineEditorStore(state => state.editorData, shallow);
+    const editorData = useTimelineEditorAPI(state => state.editorData, shallow);
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyStore.getState().properties[vxkey], propertyPath)
@@ -72,7 +72,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps,
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
-        useTimelineEditorStore.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
         setValue(newValue);
     };
 

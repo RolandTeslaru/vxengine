@@ -14,7 +14,7 @@ import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from 'v
 import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
 import { useVXEngine } from 'vxengine/engine';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
-import { useTimelineEditorStore } from '../store';
+import { useTimelineEditorAPI } from '../store';
 import { handleSetCursor } from '../utils/handleSetCursor';
 import { shallow } from 'zustand/shallow';
 
@@ -23,7 +23,7 @@ export const startLeft = 0;
 const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, ref) => {
   const checkedProps = checkProps(props);
 
-  const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollLeft, setScrollLeft, } = useTimelineEditorStore(state => ({
+  const { scale, setCursorTime, scaleCount, width, setWidth, editAreaRef, scrollLeft, setScrollLeft, } = useTimelineEditorAPI(state => ({
     scale: state.scale,
     setCursorTime: state.setCursorTime,
     scaleCount: state.scaleCount,
@@ -41,7 +41,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
     // Disable automatic scrolling when the maximum distance is exceeded
     const data = scrollLeft + delta;
     if (data > scaleCount * (DEFAULT_SCALE_WIDTH - 1) + startLeft - width) return;
-    setScrollLeft(useTimelineEditorStore.getState().scrollLeft + delta)
+    setScrollLeft(useTimelineEditorAPI.getState().scrollLeft + delta)
   };
 
   // Process runner related data
@@ -52,7 +52,7 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
 
   useAnimationEngineEvent('timeUpdatedAutomatically', ({ time }) => {
     if (autoScrollWhenPlay.current) {
-      const autoScrollFrom = useTimelineEditorStore.getState().clientWidth * 70 / 100;
+      const autoScrollFrom = useTimelineEditorAPI.getState().clientWidth * 70 / 100;
       const left = time * (DEFAULT_SCALE_WIDTH / scale) + startLeft - autoScrollFrom;
       editAreaRef.current.scrollLeft = left;
       setScrollLeft(left);

@@ -4,7 +4,7 @@
 
 "use client"
 import React, { Suspense, useContext, useEffect, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, extend } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
 import { Bloom } from '@react-three/postprocessing'
@@ -16,6 +16,18 @@ import dynamic from 'next/dynamic'
 import { useVXEngine } from 'vxengine/engine'
 import vx, { useVXObjectStore } from 'vxengine/store'
 import { context as FiberContext } from '@react-three/fiber';
+import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
+
+extend({ MeshLineGeometry, MeshLineMaterial })
+
+import { Object3DNode, MaterialNode } from '@react-three/fiber'
+
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    meshLineGeometry: Object3DNode<MeshLineGeometry, typeof MeshLineGeometry>
+    meshLineMaterial: MaterialNode<MeshLineMaterial, typeof MeshLineMaterial>
+  }
+}
 
 let VXEngineUtils;
 if (process.env.NODE_ENV === 'development') {

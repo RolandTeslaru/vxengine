@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
-import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
+import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
 import { useVXEngine } from 'vxengine/engine';
 import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 import { shallow } from 'zustand/shallow';
@@ -14,7 +14,7 @@ interface TimelineKeyframeControlProps {
 }
 
 const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKeys }) => {
-    const { createKeyframe, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorStore(state => ({
+    const { createKeyframe, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorAPI(state => ({
         createKeyframe: state.createKeyframe,
         moveToNextKeyframe: state.moveToNextKeyframe,
         moveToPreviousKeyframe: state.moveToPreviousKeyframe,
@@ -23,7 +23,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
-    const keyframesOnTrack = useTimelineEditorStore(
+    const keyframesOnTrack = useTimelineEditorAPI(
         (state) => trackKeys.flatMap((trackKey) => state.getKeyframesForTrack(trackKey)),
         shallow
     );
@@ -37,13 +37,13 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const checkIfOnKeyframe = () => {
         if (trackKeys) {
-            const isCursorOnKeyframe = keyframesOnTrack.some(kf => kf.time === useTimelineEditorStore.getState().cursorTime);
+            const isCursorOnKeyframe = keyframesOnTrack.some(kf => kf.time === useTimelineEditorAPI.getState().cursorTime);
             setIsOnKeyframe(isCursorOnKeyframe);
         }
     };
 
     useEffect(() => {
-        const unsubscribe = useTimelineEditorStore.subscribe(() => checkIfOnKeyframe());
+        const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
         return () => unsubscribe();
     }, [trackKeys, keyframesOnTrack]);
 

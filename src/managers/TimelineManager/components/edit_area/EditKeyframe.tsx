@@ -3,7 +3,7 @@ import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
-import { useTimelineEditorStore } from '../../store';
+import { useTimelineEditorAPI } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { shallow } from 'zustand/shallow';
 
@@ -19,7 +19,7 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     handleTime,
 }) => {
     const startLeft = 12;
-    const { scale, snap, scaleWidth, addChange } = useTimelineEditorStore(state => ({
+    const { scale, snap, scaleWidth, addChange } = useTimelineEditorAPI(state => ({
         scale: state.scale,
         snap: state.snap,
         scaleWidth: state.scaleWidth,
@@ -37,7 +37,7 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
 
     const handleOnDrag = (data: { left: number}) => {
         const newTime = parserPixelToTime(data.left, {startLeft, scale, scaleWidth})
-        useTimelineEditorStore.getState().setKeyframeTime(keyframe.id, newTime);
+        useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
     }
 
     return (

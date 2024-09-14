@@ -5,7 +5,7 @@ import './edit_row.scss';
 import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { EditKeyframe } from './EditKeyframe';
-import { useTimelineEditorStore } from '../../store';
+import { useTimelineEditorAPI } from '../../store';
 import { prefix } from '../../utils/deal_class_prefix';
 import { shallow } from 'zustand/shallow';
 
@@ -21,7 +21,7 @@ export type EditRowProps = CommonProp & {
 
 export const EditTrack: FC<EditRowProps> = (props) => {
   const { editAreaRef, trackKey } = props;
-  const { scale, scaleWidth, track } = useTimelineEditorStore(state => ({
+  const { scale, scaleWidth, track } = useTimelineEditorAPI(state => ({
     scale: state.scale,
     scaleWidth: state.scaleWidth,
     track: state.tracks[trackKey],  
@@ -42,7 +42,7 @@ export const EditTrack: FC<EditRowProps> = (props) => {
   };
 
   const keyframesForTrack = React.useMemo(() => {
-    const kfs = useTimelineEditorStore.getState().getKeyframesForTrack(trackKey)
+    const kfs = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey)
     return kfs
   }, [track?.keyframes])
 

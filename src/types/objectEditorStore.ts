@@ -8,4 +8,5 @@ export interface ObjectEditorStoreProps {
     selectObjects: (vxkeys: string[]) => void;
     hoveredObject: vxObjectProps | null;
     setHoveredObject: (vxobject: vxObjectProps) => void;
+    
 }

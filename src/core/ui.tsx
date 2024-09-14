@@ -6,7 +6,7 @@ import { MenubarUI } from "../components/ui/MenubarUI"
 import TimelineEditorUI, { TimelineTools } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
 import ObjectList from "vxengine/managers/ObjectManager/components/ObjectList"
-import { useTimelineEditorStore } from "vxengine/managers/TimelineManager/store"
+import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store"
 import { shallow } from "zustand/shallow"
 import ReactDOM from "react-dom"
 import { useVXUiStore } from "vxengine/store/VXUIStore"
@@ -14,6 +14,8 @@ import VXUiPanelWrapper from "vxengine/components/ui/VXUiPanelWrapper"
 import { useVXAnimationStore } from "vxengine/store/AnimationStore"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "vxengine/components/shadcn/select"
 import { useObjectPropertyStore } from "vxengine/managers/ObjectManager/store"
+import { useVXObjectStore } from "vxengine/store"
+import * as THREE from "three"
 
 export const CoreUI = () => {
     return (
@@ -139,7 +141,7 @@ const LeftPanel = () => {
 }
 
 const CursorTimeVisualzier = () => {
-    const cursorTime = useTimelineEditorStore(state => state.cursorTime)
+    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
     return (
         <p>
             {parseFloat(cursorTime).toFixed(2)}
@@ -148,7 +150,7 @@ const CursorTimeVisualzier = () => {
 }
 
 const ScrollLeftVisualizer = () => {
-    const scrollLeft = useTimelineEditorStore(state => state.scrollLeft)
+    const scrollLeft = useTimelineEditorAPI(state => state.scrollLeft)
     return (
         <p>
             {parseFloat(scrollLeft).toFixed(2)}
@@ -176,7 +178,7 @@ const FrequentStateVisualizer = () => {
 
 
 const EditorDataComponent = () => {
-    const editorData = useTimelineEditorStore(state => state.editorData);
+    const editorData = useTimelineEditorAPI(state => state.editorData);
     return (
         <pre
             style={{
@@ -190,7 +192,7 @@ const EditorDataComponent = () => {
 };
 
 const KeyframesComponent = () => {
-    const keyframes = useTimelineEditorStore(state => state.keyframes);
+    const keyframes = useTimelineEditorAPI(state => state.keyframes);
     return (
         <pre
             style={{
@@ -204,7 +206,7 @@ const KeyframesComponent = () => {
 };
 
 const TracksComponent = () => {
-    const tracks = useTimelineEditorStore(state => state.tracks);
+    const tracks = useTimelineEditorAPI(state => state.tracks);
     return (
         <pre
             style={{
@@ -219,7 +221,7 @@ const TracksComponent = () => {
 };
 
 const StaticPropsComponent = () => {
-    const staticProps = useTimelineEditorStore(state => state.staticProps);
+    const staticProps = useTimelineEditorAPI(state => state.staticProps);
     return (
         <pre
             style={{
@@ -261,6 +263,33 @@ const PropertiesStoreComponent = () => {
     );
 };
 
+const replacer = (key, value) => {
+    if (key === 'ref') {
+        return '[ref omitted]';
+    }
+    return value;
+};
+
+const VxobjectsComponent = () => {
+    const vxobjects = useVXObjectStore(state => state.objects);
+
+    if (!vxobjects) {
+        return <div>No data available</div>;
+    }
+
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(vxobjects, replacer, 2)}
+        </pre>
+    );
+};
+
 const TimelineEditorDebug = () => {
     const [activeData, setActiveData] = useState("editorData");
     const [attachedState, setAttachedState] = useState(true);
@@ -280,6 +309,8 @@ const TimelineEditorDebug = () => {
                 return <CurrentTimelineComponent />;
             case "propertiesStore":
                 return <PropertiesStoreComponent />;
+            case "vxobjects":
+                return <VxobjectsComponent />;
             default:
                 return null;
         }
@@ -316,6 +347,7 @@ const TimelineEditorDebug = () => {
                                 <SelectItem value={"staticProps"} >staticProps</SelectItem>
                                 <SelectItem value={"currentTimeline"} >currentTimeline</SelectItem>
                                 <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
+                                <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

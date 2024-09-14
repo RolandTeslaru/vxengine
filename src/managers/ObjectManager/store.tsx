@@ -53,7 +53,7 @@ export const useObjectPropertyStore = createWithEqualityFn<ObjectPropertyStorePr
                 }
 
                 target[keys[keys.length - 1]] = value;
-            }), 
+            }),
             false
         );
     },

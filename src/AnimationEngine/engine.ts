@@ -12,7 +12,7 @@ import * as THREE from "three"
 import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
-import { useTimelineEditorStore } from 'vxengine/managers/TimelineManager/store';
+import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
 import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
 import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 import { extractDatafromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
@@ -47,10 +47,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log("VXAnimationEngine Refresher: No timeline is currently loaded.");
       return
     }
-    const editorData = useTimelineEditorStore.getState().editorData
-    const tracks = useTimelineEditorStore.getState().tracks
-    const staticProps = useTimelineEditorStore.getState().staticProps
-    const keyframes = useTimelineEditorStore.getState().keyframes
+    const editorData = useTimelineEditorAPI.getState().editorData
+    const tracks = useTimelineEditorAPI.getState().tracks
+    const staticProps = useTimelineEditorAPI.getState().staticProps
+    const keyframes = useTimelineEditorAPI.getState().keyframes
 
     // if (this.isPlaying) this.pause();
 
@@ -117,7 +117,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     keyframeKey: string,
     reRender = true
   ) {
-    const edKeyframe = useTimelineEditorStore.getState().keyframes[keyframeKey];
+    const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
     const {vxkey, propertyPath } = extractDatafromTrackKey(trackKey);
 
     if(DEBUG_REFRESHER)
@@ -142,6 +142,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
             case 'update':
               track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
+              track.keyframes.sort((a, b) => a.time - b.time);
               if(DEBUG_REFRESHER)
                 console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
               break;
@@ -162,7 +163,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     staticPropKey: string,
     reRender = true,
   ) {
-    const staticProp = useTimelineEditorStore.getState().staticProps[staticPropKey];
+    const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
 
     if(DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing static prop")
@@ -216,7 +217,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const rawObjects = selectedTimeline.objects
 
     //  Initialize the Editor Data
-    useTimelineEditorStore.getState().setEditorData(rawObjects)
+    useTimelineEditorAPI.getState().setEditorData(rawObjects)
   }
 
 

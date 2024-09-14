@@ -8,7 +8,7 @@ import { edObjectProps, IKeyframe, ITrack, PathGroup } from "vxengine/AnimationE
 import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
 import { shallow } from "zustand/shallow";
-import { useTimelineEditorStore } from "../store";
+import { useTimelineEditorAPI } from "../store";
 import { scale } from "../ui";
 import { handleSetCursor } from "../utils/handleSetCursor";
 import { vxObjectProps } from "vxengine/types/objectStore";
@@ -16,7 +16,7 @@ import { ScrollArea } from "vxengine/components/shadcn/scrollArea";
 import KeyframeControl from "vxengine/components/ui/KeyframeControl";
 
 const TrackVerticalList = () => {
-    const { setCollapsedGroups, groupedPaths, trackListRef } = useTimelineEditorStore(state => ({
+    const { setCollapsedGroups, groupedPaths, trackListRef } = useTimelineEditorAPI(state => ({
         setCollapsedGroups: state.setCollapsedGroups,
         groupedPaths: state.groupedPaths,
         trackListRef: state.trackListRef
@@ -117,7 +117,7 @@ const TrackVerticalList = () => {
     };
 
     const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        useTimelineEditorStore.setState({ scrollTop: e.currentTarget.scrollTop})
+        useTimelineEditorAPI.setState({ scrollTop: e.currentTarget.scrollTop})
     }
 
     return (

@@ -4,7 +4,7 @@ import { prefix } from '../../utils/deal_class_prefix';
 import './time_area.scss';
 import { parserPixelToTime } from '../../utils/deal_data';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { useTimelineEditorStore } from '../../store';
+import { useTimelineEditorAPI } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { handleSetCursor } from '../../utils/handleSetCursor';
 import { shallow } from 'zustand/shallow';
@@ -14,7 +14,7 @@ const maxScaleCount = 100;
 
 /** Animation timeline component */
 export const TimeArea = () => {
-  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft, scrollLeft } = useTimelineEditorStore(state => ({
+  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft, scrollLeft } = useTimelineEditorAPI(state => ({
     scaleCount: state.scaleCount,
     setCursorTime: state.setCursorTime,
     scaleSplitCount: state.scaleSplitCount, 

@@ -27,5 +27,27 @@ const removeObject = (state: ObjectStoreStateProps, vxkey: string): ObjectStoreS
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
   objects: {},
   addObject: (object) => set((state) => addObject(state, object)),
-  removeObject: (vxkey) => set((state) => removeObject(state, vxkey))
+  removeObject: (vxkey) => set((state) => removeObject(state, vxkey)),
+  setObjectSetting: (vxkey: string, settingKey: string, settingValue: boolean) => {
+    set(produce((state: ObjectStoreStateProps) => {
+      const object = state.objects[vxkey]
+
+      if (!object.settings) {
+        object.settings = {}; 
+      }
+      
+      object.settings[settingKey] = settingValue
+    }))
+  },
+  toggleObjectSetting: (vxkey: string, settingKey: string) => {
+    set(produce((state: ObjectStoreStateProps) => {
+      const object = state.objects[vxkey]
+
+      if (!object.settings) {
+        object.settings = {}; 
+      }
+      
+      object.settings[settingKey] = !object.settings[settingKey]
+    }))
+  }
 }));

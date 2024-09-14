@@ -166,7 +166,7 @@ function processRawData(
 
 
 
-export const useTimelineEditorStore = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
+export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorData: {},
     tracks: {},
     staticProps: {},

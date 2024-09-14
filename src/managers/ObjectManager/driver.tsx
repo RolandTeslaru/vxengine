@@ -6,7 +6,7 @@ import { useVXEngine } from "vxengine/engine";
 import { useVXObjectStore } from "vxengine/store";
 import { useObjectManagerStore, useObjectPropertyStore } from "./store";
 import { shallow } from "zustand/shallow";
-import { useTimelineEditorStore } from "../TimelineManager/store";
+import { useTimelineEditorAPI } from "../TimelineManager/store";
 import * as THREE from "three"
 
 
@@ -24,7 +24,7 @@ export const ObjectManagerDriver = () => {
     shallow
   );
   const firstObjectSelected = firstSelectedObjectStored?.ref.current;
-  const handlePropertyValueChange = useTimelineEditorStore(
+  const handlePropertyValueChange = useTimelineEditorAPI(
     (state) => state.handlePropertyValueChange,
     shallow
   );

@@ -8,7 +8,7 @@ import './edit_action.scss';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { TimelineAction, TimelineRow } from 'vxengine/AnimationEngine/interface/action';
 import { DEFAULT_MOVE_GRID, DEFAULT_ADSORPTION_DISTANCE } from 'vxengine/AnimationEngine/interface/const';
-import { useTimelineEditorStore } from '../../store';
+import { useTimelineEditorAPI } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { handleSetScaleCount } from '../../utils/handleSetScaleCount';
@@ -56,7 +56,7 @@ export const EditAction: FC<EditActionProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const isDragWhenClick = useRef(false);
   const { id, maxEnd, minStart, end, start, selected, flexible = true, movable = true, effectId } = action;
-  const { editorData, setScaleCount } = useTimelineEditorStore(state => ({
+  const { editorData, setScaleCount } = useTimelineEditorAPI(state => ({
     editorData: state.editorData,
     setScaleCount: state.setScaleCount
   }));

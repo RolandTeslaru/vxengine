@@ -13,7 +13,7 @@ import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
 import { useVXEngine } from 'vxengine/engine';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
-import { useTimelineEditorStore } from './store';
+import { useTimelineEditorAPI } from './store';
 import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
@@ -29,7 +29,7 @@ export const scale = 5;
 
 
 const TimelineEditorUI = () => {
-    const { setScale, setSnap, snap, scale } = useTimelineEditorStore(state => ({
+    const { setScale, setSnap, snap, scale } = useTimelineEditorAPI(state => ({
         setScale: state.setScale,
         setSnap: state.setSnap,
         snap: state.snap,
@@ -183,7 +183,7 @@ const ProgressionControls = () => {
 
 
 const TimeRender = () => {
-    const cursorTime = useTimelineEditorStore(state => state.cursorTime)
+    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
     const float = (parseInt((cursorTime % 1) * 100 + '') + '').padStart(2, '0');
     const min = (parseInt(cursorTime / 60 + '') + '').padStart(2, '0');
     const second = (parseInt((cursorTime % 60) + '') + '').padStart(2, '0');

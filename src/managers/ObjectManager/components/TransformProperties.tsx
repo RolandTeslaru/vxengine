@@ -4,6 +4,7 @@ import { shallow } from "zustand/shallow";
 import CollapsiblePanel from "vxengine/components/ui/CollapsiblePanel";
 import PropInput from "vxengine/components/ui/PropInput";
 import { Switch } from "vxengine/components/shadcn/switch";
+import { useVXObjectStore } from "vxengine/store";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
@@ -53,7 +54,11 @@ export const TransformProperties = () => {
 
                     <div className="flex flex-row mb-1">
                         <p>Show postion path</p>
-                        <Switch  checked={false} className='ml-auto my-auto' />
+                        <Switch 
+                            onClick={() => useVXObjectStore.getState().toggleObjectSetting(firstObjectSelectedStored.vxkey, "showPositionPath" )}
+                            value={useVXObjectStore.getState().objects[firstObjectSelectedStored.vxkey].settings["showPositionPath"]}
+                            className='ml-auto my-auto' 
+                        />
                     </div>
                 </div>
             </CollapsiblePanel>

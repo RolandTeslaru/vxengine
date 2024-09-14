@@ -8,7 +8,7 @@ import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
 import { ITrack, IObjectEditorData, edObjectProps, PathGroup, IKeyframe } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { useTimelineEditorStore } from '../../store';
+import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from 'vxengine/AnimationEngine/interface/const';
 import { useVXUiStore } from 'vxengine/store/VXUIStore';
@@ -40,7 +40,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
   const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
 
-  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft, trackListRef,groupedPaths } = useTimelineEditorStore(state => ({
+  const { editorData, scaleCount, editAreaRef, scale, scrollLeft, scrollTop, startLeft, trackListRef,groupedPaths } = useTimelineEditorAPI(state => ({
     editorData: state.editorData,
     scaleCount: state.scaleCount,
     editAreaRef: state.editAreaRef,
@@ -74,7 +74,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
   //         row: data.row,
   //         editorData: flattenedTracks,
   //       });
-  //     const cursorLeft = parserTimeToPixel(useTimelineEditorStore.getState().cursorTime, { DEFAULT_SCALE_WIDTH, scale, startLeft });
+  //     const cursorLeft = parserTimeToPixel(useTimelineEditorAPI.getState().cursorTime, { DEFAULT_SCALE_WIDTH, scale, startLeft });
   //     const assistPositions = defaultGetAssistPosition({
   //       editorData: flattenedTracks,
   //       assistActionIds,
@@ -182,9 +182,9 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
   //   console.log("Handle scroll on Edit are ", e.target.scrollTop )
   //   trackListRef.current.scrollTop =  scrollContainer.scrollTop;
     
-  //   // console.log("Handling new scrool ", newScrollLeft, newScrollTop, "  current scrollLeft ", useTimelineEditorStore.getState().scrollLeft, "  current scrollTop ", useTimelineEditorStore.getState().scrollTop);
-  //   if(newScrollLeft !== useTimelineEditorStore.getState().scrollLeft ) {
-  //     useTimelineEditorStore.setState({ scrollLeft: newScrollLeft });
+  //   // console.log("Handling new scrool ", newScrollLeft, newScrollTop, "  current scrollLeft ", useTimelineEditorAPI.getState().scrollLeft, "  current scrollTop ", useTimelineEditorAPI.getState().scrollTop);
+  //   if(newScrollLeft !== useTimelineEditorAPI.getState().scrollLeft ) {
+  //     useTimelineEditorAPI.setState({ scrollLeft: newScrollLeft });
   //   }
   // };
 
@@ -192,7 +192,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     if(!trackListRef.current) return
     
     trackListRef.current.scrollTop = param.scrollTop
-    useTimelineEditorStore.setState({
+    useTimelineEditorAPI.setState({
       scrollLeft: param.scrollLeft,
     })
   }

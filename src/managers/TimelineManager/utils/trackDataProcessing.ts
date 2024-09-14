@@ -1,5 +1,5 @@
 import { edObjectProps, ITrack, PathGroup, RawObjectProps, RawTrackProps } from "vxengine/AnimationEngine/types/track";
-import { useTimelineEditorStore } from "../store";
+import { useTimelineEditorAPI } from "../store";
 
 export const precomputeRowIndices = (
     groupedPaths: Record<string, PathGroup>,
@@ -15,7 +15,7 @@ export const precomputeRowIndices = (
         group.prevRowIndex = prevRowIndex;
         group.rowIndex = currentRowIndex;
         // group.nextRowIndex = isNestedToPreviousPath ? 1 : currentRowIndex + 1;
-        // const isCollapsed = useTimelineEditorStore.getState().collapsedGroups[groupKey] || false;
+        // const isCollapsed = useTimelineEditorAPI.getState().collapsedGroups[groupKey] || false;
 
 
         if (isPath) {

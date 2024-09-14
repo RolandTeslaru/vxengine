@@ -13,6 +13,10 @@ import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 import { useVXAnimationStore } from './AnimationStore';
 import { useVXEngine } from 'vxengine/engine';
 import { shallow } from 'zustand/shallow';
+import { extend } from '@react-three/fiber'
+import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
+
+extend({ MeshLineGeometry, MeshLineMaterial })
 
 const dev = (fn: () => void) => {
     if (process.env.NODE_ENV === "development")
@@ -31,25 +35,24 @@ interface VXEditableWrapperProps<T extends Object3D> {
 const VXEditableWrapper = forwardRef<Object3D, VXEditableWrapperProps<Object3D>>(
     ({ type, children, vxkey, ...props }, forwardedRef) => {
         if (vxkey === undefined) {
-            throw new Error(`No vxkey was passed to: ${type}`)
+            throw new Error(`No vxkey was passed to: ${type}`);
         }
 
-        const { addObject, removeObject } = useVXObjectStore(state => ({
-            addObject: state.addObject,
-            removeObject: state.removeObject,
-        }));
+        const addObject = useVXObjectStore(state => state.addObject)
+        const removeObject = useVXObjectStore(state => state.removeObject)
 
         const { selectObjects, setHoveredObject, hoveredObject, selectedObjectKeys } = useObjectManagerStore(state => ({
             selectObjects: state.selectObjects,
             setHoveredObject: state.setHoveredObject,
             hoveredObject: state.hoveredObject,
             selectedObjectKeys: state.selectedObjectKeys
-        }), shallow)
+        }), shallow);
 
         const { animationEngine } = useVXEngine();
 
         const internalRef = useRef<THREE.Object3D | null>(null);
-        
+        const [showPositionPath, setShowPositionPath ] = useState(false);
+
         useEffect(() => {
             if (typeof forwardedRef === 'function') {
                 forwardedRef(internalRef.current);
@@ -60,21 +63,25 @@ const VXEditableWrapper = forwardRef<Object3D, VXEditableWrapperProps<Object3D>>
 
         const ref = internalRef;
 
+        // Fetch the latest object from the store
+        const vxObject = useVXObjectStore(state => state.objects[vxkey])
+
         // Memoize handlers to prevent unnecessary updates
         const memoizedAddObject = useCallback(addObject, []);
         const memoizedRemoveObject = useCallback(removeObject, []);
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
-        const objectSelf: vxObjectProps = {
-            type: type,
-            ref: ref,
-            vxkey: vxkey,
-            name: props.name || type,
-        }
-
         useEffect(() => {
-            memoizedAddObject(objectSelf);
-            animationEngine.initObjectOnMount(objectSelf)
+            const newVXObject = {
+                type: type,
+                ref: ref,
+                vxkey: vxkey,
+                name: props.name || type,
+                settings: { showPositionPath: false }, // Default settings
+            };
+
+            memoizedAddObject(newVXObject);
+            animationEngine.initObjectOnMount(newVXObject);
 
             return () => {
                 memoizedRemoveObject(vxkey);
@@ -82,13 +89,13 @@ const VXEditableWrapper = forwardRef<Object3D, VXEditableWrapperProps<Object3D>>
         }, [memoizedAddObject, memoizedRemoveObject]);
 
         const handlePointerOver = () => {
-            setHoveredObject(objectSelf)
-        }
+            setHoveredObject(vxObject);
+        };
         const handlePointerOut = () => {
             setHoveredObject(null);
-        }
+        };
 
-        const object3DInnerChildren = children.props.children
+        const object3DInnerChildren = children.props.children;
 
         const containsSupportedGeometries = useMemo(() => {
             if (Array.isArray(object3DInnerChildren)) {
@@ -116,6 +123,15 @@ const VXEditableWrapper = forwardRef<Object3D, VXEditableWrapperProps<Object3D>>
                 </Edges>
                 <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
                 </Edges>
+
+                {/* Render the mesh line if showPositionPath setting is true */}
+                
+                <mesh 
+                    visible={vxObject?.settings.showPositionPath}
+                >
+                    <meshLineGeometry points={[0, 0, 0, 1, 0, 0]} />
+                    <meshLineMaterial lineWidth={1} color="hotpink" />
+                </mesh>
             </>
         );
 
