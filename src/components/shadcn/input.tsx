@@ -1,6 +1,6 @@
 import * as React from "react"
  
-import { cn } from "../../lib/utils"
+import { cn } from "vxengine/utils/shadcn"
  
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}

@@ -10,12 +10,12 @@ import { vxObjectProps } from 'vxengine/types/objectStore';
 
 import * as THREE from "three"
 import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
-import { useVXObjectStore } from 'vxengine/store/ObjectStore';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
 import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
-import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 import { extractDatafromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
+import { useVXAnimationStore } from './AnimationStore';
+import { useVXObjectStore } from 'vxengine/vxobject';
 
 const IS_DEV = process.env.NODE_ENG === 'development'
 
@@ -56,7 +56,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if(DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
 
-    // map containing the existing rawObjects in the currentTImeline
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
 
     // Update / Add objects in the currentTimeline based on the editorData
@@ -302,7 +301,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
-        this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
+        this._applyKeyframes(object, propertyPath, keyframes, this._currentTime);
       })
     }
     if (objectInTimeline.staticProps) {
@@ -337,20 +336,23 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _applyAllKeyframes(currentTime: number) {
+    const objectsStoreState = useVXObjectStore.getState();
     this.currentTimeline.objects.forEach(object => {
+      const vxkey = object.vxkey;
+      const vxobject = objectsStoreState.objects[vxkey];
+      if(!vxobject) return
+
       object.tracks.forEach(track => {
-        const vxkey = object.vxkey;
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
-        this._applyKeyframes(vxkey, propertyPath, keyframes, currentTime);
+        this._applyKeyframes(vxobject, propertyPath, keyframes, currentTime);
       })
     })
   }
 
 
-  private _applyKeyframes(vxkey: string, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
-    const vxobject = useVXObjectStore.getState().objects[vxkey];
+  private _applyKeyframes(vxobject: vxObjectProps, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
     if (!vxobject) return;
 
     let interpolatedValue: number | THREE.Vector3;
@@ -365,7 +367,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
-      useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
+      useObjectPropertyStore.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
   }
@@ -393,28 +395,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const duration = endKeyframe.time - startKeyframe.time;
     const progress = (currentTime - startKeyframe.time) / duration;
 
-    // Interpolate the value based on the progress
-    if (typeof startKeyframe.value === 'number' && typeof endKeyframe.value === 'number') {
-      return this._interpolateNumber(startKeyframe.value, endKeyframe.value, progress);
-    } else if (startKeyframe.value instanceof THREE.Vector3 && endKeyframe.value instanceof THREE.Vector3) {
-      return this._interpolateVector3(startKeyframe.value, endKeyframe.value, progress);
-    }
-
-    return startKeyframe.value; // Fallback if types don't match
+    return this._interpolateNumber(startKeyframe.value, endKeyframe.value, progress);
   }
 
 
   private _interpolateNumber(start: number, end: number, progress: number): number {
     return start + (end - start) * progress;
-  }
-
-
-  private _interpolateVector3(start: THREE.Vector3, end: THREE.Vector3, progress: number): THREE.Vector3 {
-    return new THREE.Vector3(
-      start.x + (end.x - start.x) * progress,
-      start.y + (end.y - start.y) * progress,
-      start.z + (end.z - start.z) * progress
-    );
   }
 
 

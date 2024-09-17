@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { ChevronRight } from "@geist-ui/icons";
 import CollapsiblePanel from "vxengine/components/ui/CollapsiblePanel";
 import { useObjectManagerStore, useObjectPropertyStore } from "../store";
-import KeyframeControl from "vxengine/components/ui/KeyframeControl";
 import PropInput from "vxengine/components/ui/PropInput";
 import { shallow } from "zustand/shallow";
 

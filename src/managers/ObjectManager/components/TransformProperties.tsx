@@ -4,7 +4,7 @@ import { shallow } from "zustand/shallow";
 import CollapsiblePanel from "vxengine/components/ui/CollapsiblePanel";
 import PropInput from "vxengine/components/ui/PropInput";
 import { Switch } from "vxengine/components/shadcn/switch";
-import { useVXObjectStore } from "vxengine/store";
+import { useVXObjectStore } from "vxengine/vxobject";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);

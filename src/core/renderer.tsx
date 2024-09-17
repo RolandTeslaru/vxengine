@@ -14,13 +14,13 @@ import { ObjectManagerDriver as VXObjectManagerDriver } from '../managers/Object
 import { RendererCoreProps } from '../types/core'
 import dynamic from 'next/dynamic'
 import { useVXEngine } from 'vxengine/engine'
-import vx, { useVXObjectStore } from 'vxengine/store'
 import { context as FiberContext } from '@react-three/fiber';
 import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
+import { useVXObjectStore } from 'vxengine/vxobject'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
@@ -31,7 +31,7 @@ declare module '@react-three/fiber' {
 
 let VXEngineUtils;
 if (process.env.NODE_ENV === 'development') {
-  VXEngineUtils = require('../RendererUtils.tsx').default;
+  VXEngineUtils = require('../utils/rendererUtils.tsx').default;
 }
 
 // VXEngineCoreRenderer

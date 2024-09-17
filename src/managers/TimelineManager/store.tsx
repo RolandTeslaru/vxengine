@@ -7,7 +7,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
-import vx, { useVXObjectStore } from 'vxengine/store';
+import { useVXObjectStore } from "vxengine/vxobject";
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
 import { computeGroupPathFromRawObject, computeGroupPaths, extractDatafromTrackKey } from './utils/trackDataProcessing';
@@ -269,6 +269,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         return [];
     },
     getKeyframesForTrack: (trackKey) => {
+        // console.log("Getting keyframe for track", trackKey)
         const track = get().tracks[trackKey];
         if (track) {
             return track.keyframes.map((id: string) => get().keyframes[id]);
@@ -473,6 +474,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
     },
     setKeyframeValue: (keyframeKey, newValue, reRender = true) => {
+        console.log("TimelineEditorAPI: Setting", keyframeKey, " to value:", newValue)
         set(produce((state: TimelineEditorStoreProps) => {
             state.keyframes[keyframeKey].value = newValue;
         }))
@@ -508,7 +510,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         if(!animationEngine)
             return
 
-        animationEngine.refreshStaticProp("create", staticPropKey)
+        animationEngine.refreshStaticProp("create", staticPropKey, reRender)
     },
 
     removeStaticProp: (staticPropKey: string) => {

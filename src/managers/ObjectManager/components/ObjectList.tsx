@@ -1,9 +1,9 @@
 import React from 'react'
 import CollapsiblePanel from 'vxengine/components/ui/CollapsiblePanel'
-import { useVXObjectStore } from 'vxengine/store';
 import { useObjectManagerStore } from '../store';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 import { shallow } from 'zustand/shallow';
+import { useVXObjectStore } from 'vxengine/vxobject';
 
 const ObjectList = () => {
     const { objects } = useVXObjectStore();

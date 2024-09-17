@@ -14,15 +14,14 @@ import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEn
 import { useVXEngine } from 'vxengine/engine';
 import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorAPI } from './store';
-import { useVXObjectStore } from 'vxengine/store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
-import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
-import { useVXUiStore } from 'vxengine/store/VXUIStore';
+import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'vxengine/components/shadcn/Resizeable';
+import { useVXAnimationStore } from 'vxengine/AnimationEngine/AnimationStore';
 
 export const scaleWidth = 160;
 export const scale = 5;

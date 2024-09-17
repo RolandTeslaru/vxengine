@@ -6,12 +6,12 @@ import { DragLines } from './drag_lines';
 import './edit_area.scss';
 import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack, IObjectEditorData, edObjectProps, PathGroup, IKeyframe } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, edObjectProps, PathGroup, IKeyframe } from 'vxengine/AnimationEngine/types/track';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from 'vxengine/AnimationEngine/interface/const';
-import { useVXUiStore } from 'vxengine/store/VXUIStore';
+import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
 import AutoSizer from '../AutoSizer';
 import { ScrollArea } from 'vxengine/components/shadcn/scrollArea';
 

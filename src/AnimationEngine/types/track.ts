@@ -22,7 +22,7 @@ export interface IKeyframe {
     vxkey: string,
     propertyPath: string,
     time: number; 
-    value: number | THREE.Vector3; 
+    value: number;
     handles?: [number, number, number, number]; 
 }
 export interface PathGroup {

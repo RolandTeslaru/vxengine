@@ -5,7 +5,6 @@ import { useObjectManagerStore, useObjectPropertyStore } from 'vxengine/managers
 import { getNestedProperty, setNestedProperty } from 'vxengine/utils/nestedProperty'
 import { shallow } from 'zustand/shallow'
 import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store'
-import { useVXAnimationStore } from 'vxengine/store/AnimationStore'
 
 interface Props extends InputProps {
     propertyPath: string
@@ -22,7 +21,7 @@ export const PropInput: React.FC<Props> = (props) => {
         <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
             <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
                 <KeyframeControl 
-                    trackKeys={[trackKey]}
+                    trackKey={trackKey}
                 />
             </div>
             <ValueRenderer 

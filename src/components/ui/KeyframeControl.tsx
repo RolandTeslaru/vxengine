@@ -6,27 +6,24 @@ import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
 import { shallow } from 'zustand/shallow';
 import { handleSetCursor } from 'vxengine/managers/TimelineManager/utils/handleSetCursor';
 import { ITrack } from 'vxengine/AnimationEngine/types/track';
-import { useVXAnimationStore } from 'vxengine/store/AnimationStore';
 import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 
 interface TimelineKeyframeControlProps {
-    trackKeys?: string[],
+    trackKey?: string,
 }
 
-const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKeys }) => {
-    const { createKeyframe, moveToNextKeyframe, moveToPreviousKeyframe, makePropertyTracked } = useTimelineEditorAPI(state => ({
-        createKeyframe: state.createKeyframe,
-        moveToNextKeyframe: state.moveToNextKeyframe,
-        moveToPreviousKeyframe: state.moveToPreviousKeyframe,
-        makePropertyTracked: state.makePropertyTracked
-    }), shallow)
+const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKey }) => {
+    const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe)
+    const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
+    const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
+    const makePropertyTracked = useTimelineEditorAPI(state => state.makePropertyTracked)
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
+    const keyframeKeysForTrack = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
 
-    const keyframesOnTrack = useTimelineEditorAPI(
-        (state) => trackKeys.flatMap((trackKey) => state.getKeyframesForTrack(trackKey)),
-        shallow
-    );
+    const keyframesOnTrack = useMemo(() => {
+        return useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey);
+    }, [trackKey, keyframeKeysForTrack]);
 
     const isPropertyTracked = useMemo(() => {
         if (keyframesOnTrack.length > 0)
@@ -36,7 +33,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
     }, [keyframesOnTrack])
 
     const checkIfOnKeyframe = () => {
-        if (trackKeys) {
+        if (trackKey) {
             const isCursorOnKeyframe = keyframesOnTrack.some(kf => kf.time === useTimelineEditorAPI.getState().cursorTime);
             setIsOnKeyframe(isCursorOnKeyframe);
         }
@@ -45,19 +42,19 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
     useEffect(() => {
         const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
         return () => unsubscribe();
-    }, [trackKeys, keyframesOnTrack]);
+    }, [trackKey, keyframesOnTrack]);
 
     useEffect(() => {
         checkIfOnKeyframe()
-    }, [trackKeys, keyframesOnTrack])
+    }, [trackKey, keyframesOnTrack])
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){
-            createKeyframe(trackKeys[0]) // auto sets the value to the ref property path of the object
+            createKeyframe(trackKey) // auto sets the value to the ref property path of the object
         }
-        else if ( isPropertyTracked === false && trackKeys.length === 1) {
+        else if ( isPropertyTracked === false) {
             // This is a singular static prop
-            const staticPropKey = trackKeys[0];
+            const staticPropKey = trackKey;
             makePropertyTracked(staticPropKey)
         }
     }
@@ -75,7 +72,6 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
             }
             <button
                 onClick={handleMiddleButton}
-                disabled={trackKeys.length > 1}
                 className="hover:*:stroke-[5] hover:*:stroke-white "
             >
                 <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />

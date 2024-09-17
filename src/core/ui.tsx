@@ -8,14 +8,13 @@ import { motion } from "framer-motion"
 import ObjectList from "vxengine/managers/ObjectManager/components/ObjectList"
 import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store"
 import { shallow } from "zustand/shallow"
-import ReactDOM from "react-dom"
-import { useVXUiStore } from "vxengine/store/VXUIStore"
 import VXUiPanelWrapper from "vxengine/components/ui/VXUiPanelWrapper"
-import { useVXAnimationStore } from "vxengine/store/AnimationStore"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "vxengine/components/shadcn/select"
 import { useObjectPropertyStore } from "vxengine/managers/ObjectManager/store"
-import { useVXObjectStore } from "vxengine/store"
 import * as THREE from "three"
+import { useVXAnimationStore } from "vxengine/AnimationEngine/AnimationStore"
+import { useVXObjectStore } from "vxengine/vxobject"
+import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
 
 export const CoreUI = () => {
     return (
@@ -144,7 +143,7 @@ const CursorTimeVisualzier = () => {
     const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
     return (
         <p>
-            {parseFloat(cursorTime).toFixed(2)}
+            {cursorTime.toFixed(2)}
         </p>
     )
 }
@@ -153,7 +152,7 @@ const ScrollLeftVisualizer = () => {
     const scrollLeft = useTimelineEditorAPI(state => state.scrollLeft)
     return (
         <p>
-            {parseFloat(scrollLeft).toFixed(2)}
+            {scrollLeft.toFixed(2)}
         </p>
     )
 }

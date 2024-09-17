@@ -6,8 +6,7 @@ import { ChevronLeft, Square, ChevronRight, ChevronDown } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { edObjectProps, IKeyframe, ITrack, PathGroup } from "vxengine/AnimationEngine/types/track";
 import { useVXEngine } from "vxengine/engine";
-import { useVXObjectStore } from "vxengine/store";
-import { shallow } from "zustand/shallow";
+import { useVXObjectStore } from "vxengine/vxobject";import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../store";
 import { scale } from "../ui";
 import { handleSetCursor } from "../utils/handleSetCursor";
@@ -97,7 +96,7 @@ const TrackVerticalList = () => {
 
                         {isTrack && !isCollapsed && (
                             <KeyframeControl
-                                trackKeys={[group.trackKey]}
+                                trackKey={group.trackKey}
                                 // track={group.track}
                                 // propertyPath={group.track.propertyPath}
                                 // edObject={edObject}

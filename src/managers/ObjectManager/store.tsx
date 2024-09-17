@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import { useVXObjectStore } from 'vxengine/store';
+import { useVXObjectStore } from "vxengine/vxobject";
 import { ObjectEditorStoreProps } from 'vxengine/types/objectEditorStore';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 import { createWithEqualityFn } from 'zustand/traditional';
@@ -16,6 +16,7 @@ const selectObjects = (state: ObjectEditorStoreProps, vxkeys: string[]): ObjectE
         ...state,
         selectedObjectKeys: vxkeys,
         selectedObjects,
+        selectedUtilityObject: undefined
     };
 };
 
@@ -33,6 +34,20 @@ export const useObjectManagerStore = createWithEqualityFn<ObjectEditorStoreProps
         ...state,
         hoveredObject: vxobject,
     })),
+    selectedUtilityObject: undefined,
+    setSelectedUtilityObject: (utilObject, type, keyframeKeys) => {
+        set({
+            selectedUtilityObject: {
+                utilObject,
+                type,
+                keyframeKeys
+            }
+        });
+    },
+    utilityTransformAxis: ['X', 'Y', 'Z'],
+    setUtilityTransformAxis: (axis: string[]) => set({
+        utilityTransformAxis: axis
+    })
 }))
 
 export const useObjectPropertyStore = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({

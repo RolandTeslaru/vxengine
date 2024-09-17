@@ -1,2 +1,2 @@
 export { VXEngineProvider } from "./engine"
-export * from "./store"
+export { vx } from "./vxobject"
