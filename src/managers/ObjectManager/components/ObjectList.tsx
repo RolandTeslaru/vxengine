@@ -6,12 +6,11 @@ import { shallow } from 'zustand/shallow';
 import { useVXObjectStore } from 'vxengine/vxobject';
 
 const ObjectList = () => {
-    const { objects } = useVXObjectStore();
-    const { selectedObjectKeys, selectObjects, hoveredObject } = useObjectManagerStore(state => ({
-        selectedObjectKeys: state.selectedObjectKeys,
-        selectObjects: state.selectObjects,
-        hoveredObject: state.hoveredObject
-    }), shallow);
+    const objects = useVXObjectStore(state => state.objects)
+    
+    const selectedObjectKeys = useObjectManagerStore(state => state.selectedObjectKeys)
+    const selectObjects = useObjectManagerStore(state => state.selectObjects)
+    const hoveredObject = useObjectManagerStore(state => state.hoveredObject)
 
     const [lastSelectedIndex, setLastSelectedIndex] = React.useState(null);
 

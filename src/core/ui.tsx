@@ -10,7 +10,7 @@ import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store"
 import { shallow } from "zustand/shallow"
 import VXUiPanelWrapper from "vxengine/components/ui/VXUiPanelWrapper"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "vxengine/components/shadcn/select"
-import { useObjectPropertyStore } from "vxengine/managers/ObjectManager/store"
+import { useObjectManagerStore, useObjectPropertyStore } from "vxengine/managers/ObjectManager/store"
 import * as THREE from "three"
 import { useVXAnimationStore } from "vxengine/AnimationEngine/AnimationStore"
 import { useVXObjectStore } from "vxengine/vxobject"
@@ -262,11 +262,27 @@ const PropertiesStoreComponent = () => {
     );
 };
 
+
 const replacer = (key, value) => {
     if (key === 'ref') {
         return '[ref omitted]';
     }
     return value;
+};
+
+const UtilityNodesComponent = () => {
+    const utilityNodes = useObjectManagerStore(state => state.utilityNodes);
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(utilityNodes, replacer, 2)}
+        </pre>
+    );
 };
 
 const VxobjectsComponent = () => {
@@ -310,6 +326,8 @@ const TimelineEditorDebug = () => {
                 return <PropertiesStoreComponent />;
             case "vxobjects":
                 return <VxobjectsComponent />;
+            case "utilityNodes":
+                return <UtilityNodesComponent />;
             default:
                 return null;
         }
@@ -347,6 +365,7 @@ const TimelineEditorDebug = () => {
                                 <SelectItem value={"currentTimeline"} >currentTimeline</SelectItem>
                                 <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
                                 <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
+                                <SelectItem value={"utilityNodes"} >utilityNodes</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

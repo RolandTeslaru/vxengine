@@ -84,18 +84,18 @@ export const ObjectManagerDriver = () => {
     return 'x';
   };
 
-  const selectedUtilityObject = useObjectManagerStore(state => state.selectedUtilityObject, shallow)
-
+  const selectedUtilityNodeKey = useObjectManagerStore(state => state.selectedUtilityNodeKey)
+  const selectedUtilityNode = useObjectManagerStore(state => state.utilityNodes[selectedUtilityNodeKey])
   const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
   const handleUtilityObjectChange = () => {
     
-    if (selectedUtilityObject?.type === "keyframeNode") {
-      const { keyframeKeys, utilObject } = selectedUtilityObject;
+    if (selectedUtilityNode?.type === "keyframe") {
+      const { data, ref } = selectedUtilityNode;
 
-      keyframeKeys.forEach((keyframeKey) => {
+      data?.keyframeKeys?.forEach((keyframeKey) => {
         const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
-        const position = utilObject.position;
+        const position = ref.position;
         const axis = getKeyframeAxis(keyframe.propertyPath); 
         setKeyframeValue(keyframeKey, position[axis]);
       });
@@ -108,7 +108,7 @@ export const ObjectManagerDriver = () => {
   const utilityTransfromAxis = useObjectManagerStore(state => state.utilityTransformAxis)
 
   useEffect(() => {
-    if (!selectedUtilityObject || !utilityTrasnformControlsRef.current) return;
+    if (!selectedUtilityNode || !utilityTrasnformControlsRef.current) return;
     const controls = utilityTrasnformControlsRef.current as any;
   
     controls.showX = utilityTransfromAxis.includes('X');
@@ -116,12 +116,12 @@ export const ObjectManagerDriver = () => {
     controls.showZ = utilityTransfromAxis.includes('Z');
   
     controls.update();
-  }, [selectedUtilityObject]);
+  }, [selectedUtilityNode]);
 
   return (
     <>
       {/* Object Transform Controls */}
-      {firstObjectSelected && !selectedUtilityObject && (
+      {firstObjectSelected && !selectedUtilityNode && (
         <TransformControls
           ref={transformControlsRef}
           object={firstObjectSelected}
@@ -132,10 +132,10 @@ export const ObjectManagerDriver = () => {
 
       {/* Utility Nodes Transform Controls */}
 
-      {selectedUtilityObject && (
+      {selectedUtilityNode && (
         <TransformControls
           ref={utilityTrasnformControlsRef}
-          object={selectedUtilityObject.utilObject}
+          object={selectedUtilityNode.ref}
           mode="translate"
           onObjectChange={handleUtilityObjectChange}
           axis='Y'

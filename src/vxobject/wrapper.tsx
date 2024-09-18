@@ -13,6 +13,7 @@ import { vxObjectProps } from "vxengine/types/objectStore";
 import { Edges } from "@react-three/drei";
 import PositionPath from "./utils/positionPath";
 import { computeMorphedAttributes } from "three-stdlib";
+import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
 
 export interface VXEditableWrapperProps<T extends THREE.Object3D> {
     type: string;
@@ -32,10 +33,8 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const addObject = useVXObjectStore(state => state.addObject)
         const removeObject = useVXObjectStore(state => state.removeObject)
 
-        const { selectObjects, setHoveredObject } = useObjectManagerStore(state => ({
-            selectObjects: state.selectObjects,
-            setHoveredObject: state.setHoveredObject,
-        }), shallow);
+        const selectObjects = useObjectManagerStore(state => state.selectObjects)
+        const setHoveredObject = useObjectManagerStore(state => state.setHoveredObject)
 
         const { animationEngine } = useVXEngine();
 
@@ -68,6 +67,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
 
             memoizedAddObject(newVXObject);
             animationEngine.initObjectOnMount(newVXObject);
+            useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject)
 
             return () => {
                 memoizedRemoveObject(vxkey);

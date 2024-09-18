@@ -12,7 +12,6 @@ import { isEqual } from 'lodash'
 import { ChevronRight, Move } from '@geist-ui/icons'
 import { RefreshCcw } from '@geist-ui/icons'
 import { motion, AnimatePresence } from "framer-motion"
-import { useVXObjectStore } from 'vxengine/store'
 import { vxObjectProps } from 'vxengine/types/objectStore'
 import { useVXEngine } from 'vxengine/engine'
 import { Input, InputProps } from 'vxengine/components/shadcn/input'
@@ -80,7 +79,7 @@ export const ObjectManagerUI = () => {
   </>)
 }
 
-export const ObjectTransformControls = () => {
+export const ObjectTransformControls = React.memo(() => {
 
   const selectedObjects = useObjectManagerStore(state => state.selectedObjects)
   const transformMode = useObjectManagerStore(state => state.transformMode)
@@ -117,13 +116,10 @@ export const ObjectTransformControls = () => {
       )}
     </AnimatePresence>
   )
-}
+})
 
-export const ObjectProperties = () => {
-  const firstObjectSelected = useObjectManagerStore(
-    (state) => state.selectedObjects[0],
-    shallow
-  );
+export const ObjectProperties = React.memo(() => {
+  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0]);
 
   const material = firstObjectSelected?.ref?.current?.material;
 
@@ -135,9 +131,10 @@ export const ObjectProperties = () => {
 
   return (
     <>
-      <TransformProperties />
-      {firstObjectSelected?.ref?.current &&
-        firstObjectSelected.type === "mesh" && (
+      {firstObjectSelected?.ref?.current && <>
+        
+        <TransformProperties />
+        {firstObjectSelected.type === "mesh" && (
           <>
             <GeometryProperties
               geometry={firstObjectSelected.ref.current.geometry}
@@ -147,6 +144,9 @@ export const ObjectProperties = () => {
             )}
           </>
         )}
+
+      </>
+      }
     </>
   );
-};
+});

@@ -18,7 +18,7 @@ export const PropInput: React.FC<Props> = (props) => {
     const track = useTimelineEditorAPI(state => state.getTrack(trackKey))
 
     return (
-        <div className={`flex gap-1 ${horizontal ? "flex-col-reverse" : "flex-row"} ` + className}>
+        <div className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ` + className}>
             <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
                 <KeyframeControl 
                     trackKey={trackKey}

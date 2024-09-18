@@ -2,8 +2,6 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import { TimelineAction, TimelineRow } from './interface/action';
-import { TimelineEffect } from './interface/effect';
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
 import { vxObjectProps } from 'vxengine/types/objectStore';
@@ -22,6 +20,8 @@ const IS_DEV = process.env.NODE_ENG === 'development'
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
 
+export const ENGINE_PRECISION = 3;
+
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
   private _timerId: number;
@@ -39,8 +39,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   get currentTimeline() { return useVXAnimationStore.getState().currentTimeline }
   get playRate() { return useVXAnimationStore.getState().playRate }
 
+
   // Refresh functions
-  // These are used to synchronize the data strcture from the Timeline editor with animation engine data structure
+  // Used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
   refreshCurrentTimeline() {
     if (!this.currentTimeline && DEBUG_REFRESHER){
@@ -110,6 +111,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender({ force: true, cause: "refresh currentTimeline" });
   }
 
+
   refreshKeyframe(
     trackKey: string,
     action: 'create' | 'remove' | 'update',
@@ -156,6 +158,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
   }
+
 
   refreshStaticProp(
     action: 'create' | 'remove' | 'update',
@@ -294,7 +297,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // During the animationEngine initialization, the engine loads the first timeline, 
   // but it cant apply all the keyframes and static props because the objects arent mounted at that point
   initObjectOnMount(object: vxObjectProps) {
+    console.log("AnimationEngine: InitObjectOnMount", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+    if(!objectInTimeline) {
+      const newRawObject = {
+        vxkey: object.vxkey,
+        tracks: [],
+        staticProps: []
+      }
+      this.currentTimeline.objects.push(newRawObject)
+      return
+    }
+
     if (objectInTimeline.tracks) {
       objectInTimeline.tracks.forEach(track => {
         const vxkey = object.vxkey;
@@ -400,7 +414,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _interpolateNumber(start: number, end: number, progress: number): number {
-    return start + (end - start) * progress;
+    const value = start + (end - start) * progress;
+
+    return this.truncateToDecimals(value, ENGINE_PRECISION);
+  }
+  
+  private truncateToDecimals(num: number, decimals: number): number {
+    const factor = Math.pow(10, decimals);
+    return Math.trunc(num * factor) / factor;
   }
 
 

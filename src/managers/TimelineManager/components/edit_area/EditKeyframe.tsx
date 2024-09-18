@@ -11,12 +11,14 @@ export type EditKeyframeProps = {
     track: ITrack;
     keyframe: IKeyframe;
     handleTime: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => number;
+    globalKeyframeClickHandle: (event, keyframeKey) => void;
 };
 
 export const EditKeyframe: FC<EditKeyframeProps> = ({
     keyframe,
     rowHeight,
     handleTime,
+    globalKeyframeClickHandle
 }) => {
     const startLeft = 12;
     const { scale, snap, scaleWidth, addChange } = useTimelineEditorAPI(state => ({
@@ -29,16 +31,36 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
         return parserTimeToPixel(keyframe.time, { startLeft, scale, scaleWidth });
     });
 
+    const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
+
     useLayoutEffect(() => {
         setLeft(parserTimeToPixel(keyframe.time, { startLeft, scale, scaleWidth }));
     }, [keyframe.time, startLeft, scaleWidth, scale]);
 
     // Handle dragging event
 
-    const handleOnDrag = (data: { left: number}) => {
-        const newTime = parserPixelToTime(data.left, {startLeft, scale, scaleWidth})
+    const handleOnDrag = (data: { left: number, lastLeft: number }) => {
+        const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth })
         useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
+        // const selectedKeyframes = useTimelineEditorAPI.getState().selectedKeyframeKeys
+        // if(selectedKeyframeKeys.length == 1){
+        //     const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth })
+        //     useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
+        // }
+        // else if(selectedKeyframeKeys.length > 1){
+        //     const delta = data.left - data.lastLeft 
+        //     console.log("Dragging multiple keys  w delta", delta)
+        //     selectedKeyframeKeys.forEach(keyframeKey => {
+
+        //         const oldKeyframetime = useTimelineEditorAPI.getState().keyframes[keyframeKey].time
+        //         const parsedOldKeyframeTime = parserTimeToPixel(oldKeyframetime, { startLeft, scale, scaleWidth });
+        //         const newTime = parserPixelToTime(delta + parsedOldKeyframeTime, { startLeft, scale, scaleWidth });
+        //         console.log("oldTime ", oldKeyframetime, " vs new Time", newTime)
+        //         useTimelineEditorAPI.getState().setKeyframeTime(keyframeKey, newTime)
+        //     })
+        // }
     }
+
 
     return (
         <RowDnd
@@ -56,13 +78,16 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
             onDrag={handleOnDrag}
         >
             <div
-                className="absolute h-2 w-[11px] fill-white hover:fill-blue-600"
+                className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600 
+                    ${selectedKeyframeKeys.includes(keyframe.id) && "!fill-yellow-300"} `
+                }
                 style={{
                     left: `${left}px`,
                     top: `${rowHeight / 4}px`,
                 }}
                 onClick={(e) => {
                     const time = handleTime(e);
+                    globalKeyframeClickHandle(e, keyframe.id);
                     // Handle keyframe click event here
                 }}
                 onDoubleClick={(e) => {
@@ -74,9 +99,12 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                     // Handle keyframe context menu event here
                 }}
             >
-                {/* Diamond Shape for Keyframe */}
                 <svg viewBox="0 0 100 100">
-                    <polygon points="50,0 100,50 50,100 0,50" />
+                    <polygon
+                        points="50,0 100,50 50,100 0,50"
+                        stroke="black"        
+                        strokeWidth="5"      
+                    />
                 </svg>
             </div>
         </RowDnd>

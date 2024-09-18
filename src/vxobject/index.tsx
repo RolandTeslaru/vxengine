@@ -58,43 +58,13 @@ const EditablePoints = forwardRef<Points, EditablePointsProps>((props, ref) => {
     );
 })
 
-const EditableGroup = forwardRef<Object3D, VXEditableWrapperProps<THREE.Group>>((props, forwardedRef) => {
-    if (props.vxkey === undefined) {
-        throw new Error("<vx.group> wasn't provided a vxkey")
-    }
-    const { addObject, removeObject } = useVXObjectStore(state => ({
-        addObject: state.addObject,
-        removeObject: state.removeObject,
-    }));
-    const id = useMemo(() => { return `group-${Math.random()}`; }, [])
-
-    const internalRef = useRef(null);
-    const ref = forwardedRef || internalRef;
-
-
-    // Memoize handlers to prevent unnecessary updates
-    const memoizedAddObject = useCallback(addObject, []);
-    const memoizedRemoveObject = useCallback(removeObject, []);
-
-    const type = "group"
-
-    useEffect(() => {
-        // FIXME: idk
-        // @ts-expect-error
-        memoizedAddObject({ vxkey: props.vxkey, type: type, ref: ref, name: props.name || type });
-
-        return () => {
-            memoizedRemoveObject(id);
-        };
-    }, [memoizedAddObject, memoizedRemoveObject]);
-
+const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) => {
     return (
-        <group ref={ref} {...props} >
-            {props.children}
-            {/* <Edges lineWidth={3} visible={selectedObjectIds.includes(id)} scale={1.01} renderOrder={1000}>
-                <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
-            </Edges> */}
-        </group>
+        <VXEditableWrapper type="group" ref={ref} {...props}>
+            <group ref={ref} {...props} >
+                {props.children}
+            </group>
+        </VXEditableWrapper>
     );
 })
 

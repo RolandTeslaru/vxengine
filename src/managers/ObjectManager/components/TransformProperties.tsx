@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useObjectManagerStore, useObjectPropertyStore } from "../store";
 import { shallow } from "zustand/shallow";
 import CollapsiblePanel from "vxengine/components/ui/CollapsiblePanel";
@@ -8,6 +8,9 @@ import { useVXObjectStore } from "vxengine/vxobject";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
+    const vxkey = firstObjectSelectedStored.vxkey
+    const settings = useVXObjectStore(state => state.objects[vxkey].settings)
+    const toggleObjectSetting = useVXObjectStore(state => state.toggleObjectSetting)
 
     const renderInputs = (property) => {
         return ['x', 'y', 'z'].map((axis) => (
@@ -20,8 +23,11 @@ export const TransformProperties = () => {
         ));
     };
 
+    useEffect(() => {
+        console.log("TransformProperties first obejct", firstObjectSelectedStored, "  with settings ", settings)
+    }, [settings])
+
     return (
-        firstObjectSelectedStored?.ref.current && (
             <CollapsiblePanel
                 title="Transform"
             >
@@ -51,17 +57,20 @@ export const TransformProperties = () => {
                             {renderInputs('rotation')}
                         </div>
                     </div>
-
-                    <div className="flex flex-row mb-1">
-                        <p>Show postion path</p>
-                        <Switch 
-                            onClick={() => useVXObjectStore.getState().toggleObjectSetting(firstObjectSelectedStored.vxkey, "showPositionPath" )}
-                            value={useVXObjectStore.getState().objects[firstObjectSelectedStored.vxkey].settings["showPositionPath"]}
-                            className='ml-auto my-auto' 
-                        />
-                    </div>
+                    {settings && (
+                        "showPositionPath" in settings && (
+                            <div className="flex flex-row mb-1">
+                                <p>Show postion path</p>
+                                <Switch
+                                    onClick={() => toggleObjectSetting(vxkey, "showPositionPath")}
+                                    value={settings["showPositionPath"]}
+                                    checked={settings["showPositionPath"]}
+                                    className='ml-auto my-auto scale-[80%]'
+                                />
+                            </div>
+                        )
+                    )}
                 </div>
             </CollapsiblePanel>
-        )
     );
 };

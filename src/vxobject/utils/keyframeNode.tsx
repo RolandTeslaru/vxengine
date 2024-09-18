@@ -1,8 +1,10 @@
 import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRef } from "react";
 import { useObjectManagerStore } from "vxengine/managers/ObjectManager/store";
+import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
+import { UtilityNodeProps } from "vxengine/types/utilityNode";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];
@@ -14,13 +16,39 @@ export interface KeyframeNodeProps {
 
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, position, color = "yellow", size = 0.3 }) => {
     const ref = useRef<THREE.Mesh>(null);
-    const setSelectedUtilityObject = useObjectManagerStore(state => state.setSelectedUtilityObject);
+
+    const addUtilityNode = useObjectManagerStore(state => state.addUtilityNode);
+    const removeUtilityNode = useObjectManagerStore(state => state.removeUtilityNode);
+    const setSelectedUtilityNodeKey = useObjectManagerStore(state => state.setSelectedUtilityNodeKey);
     const setUtilityTransformAxis = useObjectManagerStore(state => state.setUtilityTransformAxis);
+    const selectedUtilityNodeKey = useObjectManagerStore(state => state.selectedUtilityNodeKey)
+    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
+    
+    const nodeKey = keyframeKeys.join('-');
+
+    useEffect(() => {
+        if(ref.current){
+            const node: UtilityNodeProps = {
+                type: "keyframe",
+                ref: ref.current,
+                data: {
+                    keyframeKeys
+                }
+            }
+            addUtilityNode(node, nodeKey)
+        }
+
+        return () => {
+            removeUtilityNode(nodeKey)
+        }
+    }, [keyframeKeys])
+
 
     const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
         if (!ref.current) return;
         setUtilityTransformAxis(axis);
-        setSelectedUtilityObject(ref.current, "keyframeNode", keyframeKeys);
+        setSelectedUtilityNodeKey(nodeKey);
+        setSelectedKeyframeKeys(keyframeKeys)
     };
 
     // Colors for each axis
@@ -35,14 +63,20 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             {/* Keyframe Node */}
             <mesh ref={ref} position={position} onClick={handleOnClick}>
                 <octahedronGeometry args={[size, 0]} />
-                <meshBasicMaterial color={color} wireframe />
+                <meshBasicMaterial color={selectedUtilityNodeKey === nodeKey ? "yellow" : color} wireframe />
             </mesh>
 
             {/* Axis Dots and Html */}
             <Html center position={position} style={{ pointerEvents: "none" }}>
-                <div className="flex flex-row">
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginLeft: 50, }}>
+                <div className="flex flex-row relative">
+                    {selectedUtilityNodeKey === nodeKey && (
+                        <div className="absolute -left-[100px] flex flex-col bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px] text-xs font-sans-menlo">
+                            <p>Keyframe Node</p>
+                        </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginLeft: 50, }}
+                        className="bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px]"
+                    >
                         {axis.map((oneAxis) => (
                             <div key={oneAxis} style={{
                                 width: "10px",
@@ -50,7 +84,6 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
                                 backgroundColor: axisColors[oneAxis],
                                 borderRadius: "50%",
                                 content: "",
-                                
                             }}>
                             </div>
                         ))}

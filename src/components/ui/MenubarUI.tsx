@@ -72,16 +72,11 @@ const EditButton = () => {
     )
 }
 
-const SelectButton = () => {
-    const { objects } = useVXObjectStore(state => ({
-        objects: state.objects
-    }))
-    const { selectObjects, selectedObjectKeys } = useObjectManagerStore(state => ({
-        selectObjects: state.selectObjects,
-        selectedObjectKeys: state.selectedObjectKeys,
-    }), shallow);
+const SelectButton = React.memo(() => {
+    const selectObjects = useObjectManagerStore(state => state.selectObjects)
+    const selectedObjectKeys = useObjectManagerStore(state => state.selectedObjectKeys)
 
-    const handleSelectAll = () => { selectObjects(Object.values(objects).map((object) => object.vxkey)) }
+    const handleSelectAll = () => { selectObjects(Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey)) }
     const handleSelectNone = () => { selectObjects([]) }
     const handleSelectInvert = () => {
         const newKeys = selectedObjectKeys.filter((vxkey) => !selectedObjectKeys.includes(vxkey))
@@ -99,7 +94,7 @@ const SelectButton = () => {
         </MenubarMenu>
     )
 }
-
+)
 const AddButton = () => {
     return (
         <MenubarMenu>
