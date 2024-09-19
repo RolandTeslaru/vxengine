@@ -19,7 +19,7 @@ export const DEFAULT_ADSORPTION_DISTANCE = 8;
 export const DEFAULT_ROW_HEIGHT = 32;
 
 /**Minimum number of scales */
-export const MIN_SCALE_COUNT = 20;
+export const MIN_SCALE_COUNT = 30;
 /**每次新增scale个数 */
 export const ADD_SCALE_COUNT = 5;
 

@@ -41,11 +41,7 @@ export function useDragLine() {
       });
     }
 
-    const positions = parserActionsToPositions(otherActions, {
-      startLeft,
-      scale,
-      scaleWidth,
-    });
+    const positions = parserActionsToPositions(otherActions, startLeft);
     if (!hideCursor) positions.push(cursorLeft);
 
     return positions;
@@ -54,7 +50,7 @@ export function useDragLine() {
   /** 获取当前移动标记 */
   const defaultGetMovePosition = (data: { start: number; end: number; dir?: "right" | "left"; startLeft: number; scale: number; scaleWidth: number }) => {
     const { start, end, dir, scale, scaleWidth, startLeft } = data;
-    const { left, width } = parserTimeToTransform({ start, end }, { startLeft, scaleWidth, scale });
+    const { left, width } = parserTimeToTransform({ start, end }, startLeft);
     if (!dir) return [left, left + width];
     return dir === "right" ? [left + width] : [left];
   };

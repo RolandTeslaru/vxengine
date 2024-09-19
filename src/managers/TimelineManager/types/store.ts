@@ -2,6 +2,7 @@ import { AnimationEngine } from "vxengine/AnimationEngine/engine";
 import { edObjectProps, IKeyframe, IStaticProps, ITrack, RawObjectProps } from "vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
+import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
 
 export interface KeyframesPositionDataProps { 
     left: number
@@ -32,14 +33,14 @@ export interface TimelineEditorStoreProps {
     setSnap: (value: boolean) => void;
     scaleCount: number;
     setScaleCount: (count: number) => void;
-    editAreaRef: React.MutableRefObject<HTMLDivElement | null>
-    trackListRef: React.MutableRefObject<HTMLDivElement | null>
+
+    cursorThumbRef: React.MutableRefObject<RowRndApi | null>
+    cursorLineRef: React.MutableRefObject<RowRndApi | null>
+
     scaleWidth: number
     scaleSplitCount: number
-    startLeft: number
     changes: number
     addChange: () => void
-    editorRef: React.MutableRefObject<HTMLDivElement | null>
 
     keyframesPositionData: Record<string, KeyframesPositionDataProps>
 

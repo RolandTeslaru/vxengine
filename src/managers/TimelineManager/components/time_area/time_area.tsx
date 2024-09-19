@@ -1,102 +1,101 @@
-import React, { FC, useEffect, useRef } from 'react';
-import { Grid, GridCellRenderer, OnScrollParams } from 'react-virtualized';
+import React, { useEffect, useRef } from 'react';
 import { prefix } from '../../utils/deal_class_prefix';
 import './time_area.scss';
 import { parserPixelToTime } from '../../utils/deal_data';
-import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
 import { useTimelineEditorAPI } from '../../store';
-import { useVXEngine } from 'vxengine/engine';
 import { handleSetCursor } from '../../utils/handleSetCursor';
 import { shallow } from 'zustand/shallow';
-import AutoSizer from '../AutoSizer';
+import { CursorThumb } from '../cursor/cursor';
 
 const maxScaleCount = 100;
 
 /** Animation timeline component */
-export const TimeArea = () => {
-  const { scaleCount, setCursorTime, scaleSplitCount, scaleWidth, scale, startLeft, scrollLeft } = useTimelineEditorAPI(state => ({
-    scaleCount: state.scaleCount,
-    setCursorTime: state.setCursorTime,
-    scaleSplitCount: state.scaleSplitCount, 
-    scaleWidth: state.scaleWidth,
-    scale: state.scale,
-    startLeft: state.startLeft,
-    scrollLeft: state.scrollLeft,
-  }), shallow);
-  const gridRef = useRef<Grid>();
+export const TimeArea = ({deltaScrollLeft}) => {
+  const {
+    scaleCount,
+    scaleSplitCount,
+    scaleWidth,
+    scale,
+  } = useTimelineEditorAPI(
+    (state) => ({
+      scaleCount: state.scaleCount,
+      scaleSplitCount: state.scaleSplitCount,
+      scaleWidth: state.scaleWidth,
+      scale: state.scale,
+    }),
+    shallow
+  );
+
   /** Whether to display subdivision scales */
   const showUnit = scaleSplitCount > 0;
+  const startLeft = 20;
 
-  /** Get the rendering content of each cell */
-  const cellRenderer: GridCellRenderer = ({ columnIndex, key, style }) => {
-    const isShowScale = showUnit ? columnIndex % scaleSplitCount === 0 : true;
-    const classNames = ['time-unit'];
-    if (isShowScale) classNames.push('time-unit-big');
-    const item = (showUnit ? columnIndex / scaleSplitCount : columnIndex) * scale;
-    return (
-      <div key={key} style={style} className={prefix(...classNames)}>
-        {isShowScale &&
-          <div className={prefix('time-unit-scale')}>
-            {item}
-          </div>
-        }
-      </div>
-    );
-  };
+  // Calculate the total width of the timeline
+  const timelineClientWidth = scaleCount * scaleWidth + startLeft;
 
-  useEffect(() => {
-    gridRef.current?.recomputeGridSize();
-  }, [scaleWidth, startLeft]);
+  const renderTimeUnits = () => {
+    const units = [];
+    const totalUnits = showUnit ? scaleCount * scaleSplitCount + 1 : scaleCount;
+    let left = 4;
 
-  /** Get column width*/
-  const getColumnWidth = (data: { index: number }) => {
-    switch (data.index) {
-      case 0:
-        return startLeft;
-      default:
-        return showUnit ? scaleWidth / scaleSplitCount : scaleWidth;
+    for (let columnIndex = 0; columnIndex < totalUnits; columnIndex++) {
+      const isShowScale = showUnit ? columnIndex % scaleSplitCount === 0 : true;
+      const classNames = ['time-unit'];
+      if (isShowScale) classNames.push('time-unit-big');
+      const item =
+        (showUnit ? columnIndex / scaleSplitCount : columnIndex) * scale;
+
+      const unitWidth = showUnit
+        ? scaleWidth / scaleSplitCount
+        : scaleWidth;
+
+      units.push(
+        <div
+          key={columnIndex}
+          style={{
+            position: 'absolute',
+            left: `${left}px`,
+            width: `${unitWidth}px`,
+          }}
+          className={prefix(...classNames)}
+        >
+          {isShowScale && (
+            <div className={prefix('time-unit-scale')}>{item}</div>
+          )}
+        </div>
+      );
+
+      left += unitWidth;
     }
+    return units;
   };
-  const estColumnWidth = getColumnWidth({ index: 1 });
-  return (
-    <div className={prefix('time-area')}>
-      <AutoSizer>
-        {({ width, height }) => {
-          return (
-            <>
-              <Grid
-                ref={gridRef}
-                columnCount={showUnit ? scaleCount * scaleSplitCount + 1 : scaleCount}
-                columnWidth={getColumnWidth}
-                estimatedColumnSize={estColumnWidth}
-                rowCount={1}
-                rowHeight={height}
-                width={width}
-                height={height}
-                overscanRowCount={0}
-                overscanColumnCount={10}
-                cellRenderer={cellRenderer}
-                scrollLeft={scrollLeft}
-              ></Grid>
-              <div
-                style={{ width, height }}
-                onClick={(e) => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  const position = e.clientX - rect.x;
-                  const left = Math.max(position + scrollLeft, startLeft);
-                  if (left > maxScaleCount * scaleWidth + startLeft - scrollLeft) return;
 
-                  const time = parserPixelToTime(left, { startLeft, scale, scaleWidth });
-                  // const result = onClickTimeArea && onClickTimeArea(time, e);
-                  // if (result === false) return; //返回false时阻止设置时间
-                  handleSetCursor({ time })
-                }}
-                className={prefix('time-area-interact')}
-              ></div>
-            </>
-          );
+
+  return (
+    <>
+      <div
+        style={{
+          width: `${timelineClientWidth}px`,
         }}
-      </AutoSizer>
-    </div>
+        className='sticky top-0  h-[32px] bg-neutral-950 z-10'
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const position = e.clientX - rect.x;
+
+          const scrollLeft = useTimelineEditorAPI.getState().scrollLeft
+          const left = Math.max(position + scrollLeft, startLeft);
+          if (left > maxScaleCount * scaleWidth + startLeft - scrollLeft)
+            return;
+
+          const time = parserPixelToTime(left, startLeft);
+          handleSetCursor({ time });
+        }}
+      >
+        <CursorThumb
+          deltaScrollLeft={deltaScrollLeft}
+        />
+        {renderTimeUnits()}
+      </div>  
+    </>
   );
 };

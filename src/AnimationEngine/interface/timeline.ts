@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react';
 import { OnScrollParams } from 'react-virtualized';
-import { IAnimationEngine } from '../engine';
 import { Emitter } from '../emitter';
 import { EventTypes } from '../events';
 import { TimelineAction, TimelineRow } from './action';
 import { TimelineEffect } from './effect';
 import { ITrack } from '../types/track';
+import { IAnimationEngine } from '../types/engine';
 export * from './action';
 export * from './effect';
 

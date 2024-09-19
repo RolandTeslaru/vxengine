@@ -16,6 +16,7 @@ import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from 'vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
+import { RowRndApi } from './components/row_rnd/row_rnd_interface';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -138,11 +139,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     activeTool: "mouse",
     snap: true,
-    editAreaRef: React.createRef<HTMLDivElement>(),
-    trackListRef: React.createRef<HTMLDivElement>(),
+
+    cursorThumbRef: null,
+    cursorLineRef: null,
+
     scaleWidth: 160,
     scaleSplitCount: 10,
-    startLeft: 20,
     changes: 0,
 
     clientHeight: 378,
@@ -151,15 +153,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     selectedKeyframes: [],
-    editorRef: React.createRef<HTMLDivElement>(),
-
     keyframesPositionData: {},
     
 
 
     scrollLeft: 0,
     scrollTop: 0,
-
 
     setScale: (count) => set({ scale: count }),
     setScaleCount: (count) => set({ scaleCount: count }),

@@ -5,29 +5,18 @@
 import { ChevronLeft, Square, ChevronRight, ChevronDown } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { edObjectProps, IKeyframe, ITrack, PathGroup } from "vxengine/AnimationEngine/types/track";
-import { useVXEngine } from "vxengine/engine";
-import { useVXObjectStore } from "vxengine/vxobject";import { shallow } from "zustand/shallow";
+import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../store";
-import { scale } from "../ui";
-import { handleSetCursor } from "../utils/handleSetCursor";
-import { vxObjectProps } from "vxengine/types/objectStore";
 import { ScrollArea } from "vxengine/components/shadcn/scrollArea";
 import KeyframeControl from "vxengine/components/ui/KeyframeControl";
+import { useRefStore } from "vxengine/utils/useRefStore";
 
 const TrackVerticalList = () => {
-    const { setCollapsedGroups, groupedPaths, trackListRef } = useTimelineEditorAPI(state => ({
+    const { setCollapsedGroups, groupedPaths } = useTimelineEditorAPI(state => ({
         setCollapsedGroups: state.setCollapsedGroups,
         groupedPaths: state.groupedPaths,
-        trackListRef: state.trackListRef
     }), shallow);
-
-    // console.log("STATE editorData: ", editorData)
-    // console.log("STATE tracks: ", tracks)
-
-    // console.log("STATE staticProps: ", staticProps)
-
-    // console.log("STATE groupedPaths: ", groupedPaths)
-
+    const trackListRef = useRefStore(state => state.trackListRef)
 
 
     const createCollapsedTracksList = (group: PathGroup) => {

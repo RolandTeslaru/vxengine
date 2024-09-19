@@ -22,6 +22,7 @@ import TimelineEditor from './components/TimelineEditor';
 import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'vxengine/components/shadcn/Resizeable';
 import { useVXAnimationStore } from 'vxengine/AnimationEngine/AnimationStore';
+import { Input } from 'vxengine/components/shadcn/input';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -41,6 +42,21 @@ const TimelineEditorUI = () => {
         timelineEditorAttached: state.timelineEditorAttached
     }), shallow)
 
+    const timelineLength = useVXAnimationStore(state => state.currentTimeline.length)
+
+    const handleLengthInputChange = (e) => {
+        const newValue = e.target.value;
+      
+        const currentTimeline = useVXAnimationStore.getState().currentTimeline;
+      
+        const newCurrentTimeline = {
+          ...currentTimeline,
+          length: newValue      
+        };
+      
+        useVXAnimationStore.setState({ currentTimeline: newCurrentTimeline });
+      };
+    
     return (
         <>
             {/*  H E A D E R */}
@@ -110,7 +126,15 @@ const TimelineEditorUI = () => {
                         </div>
                         <div className='flex flex-row gap-2'>
                             <p className='text-xs h-auto my-auto'>Snap</p>
-                            <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto' />
+                            <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto scale-75' />
+                        </div>
+                        <div className='flex flex-row h-fit text-xs gap-2'>
+                            <p className='h-auto my-auto'>length</p>
+                            <Input className='p-1 text-xs my-auto h-fit w-16'
+                                value={timelineLength}
+                                onChange={handleLengthInputChange}
+                                type='number'
+                            ></Input>
                         </div>
                         <button className={"bg-transparent bg-opacity-70 border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                             onClick={() => setTimelineEditorAttached(!timelineEditorAttached)}
@@ -121,6 +145,7 @@ const TimelineEditorUI = () => {
 
                             }
                         </button>
+                        
                     </motion.div>
                 )}
             </AnimatePresence>

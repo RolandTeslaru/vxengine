@@ -6,41 +6,45 @@ import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '../../store';
 import { useVXEngine } from 'vxengine/engine';
 import { shallow } from 'zustand/shallow';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from 'vxengine/components/shadcn/contextMenu';
 
 export type EditKeyframeProps = {
     track: ITrack;
     keyframe: IKeyframe;
     handleTime: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => number;
     globalKeyframeClickHandle: (event, keyframeKey) => void;
+    rowHeight: number
 };
 
 export const EditKeyframe: FC<EditKeyframeProps> = ({
     keyframe,
+    track,
     rowHeight,
     handleTime,
     globalKeyframeClickHandle
 }) => {
-    const startLeft = 12;
+    const startLeft = 12.5;
     const { scale, snap, scaleWidth, addChange } = useTimelineEditorAPI(state => ({
         scale: state.scale,
         snap: state.snap,
         scaleWidth: state.scaleWidth,
         addChange: state.addChange
     }), shallow);
+    const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
     const [left, setLeft] = useState(() => {
-        return parserTimeToPixel(keyframe.time, { startLeft, scale, scaleWidth });
+        return parserTimeToPixel(keyframe.time, startLeft);
     });
 
     const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
 
     useLayoutEffect(() => {
-        setLeft(parserTimeToPixel(keyframe.time, { startLeft, scale, scaleWidth }));
+        setLeft(parserTimeToPixel(keyframe.time, startLeft));
     }, [keyframe.time, startLeft, scaleWidth, scale]);
 
     // Handle dragging event
 
     const handleOnDrag = (data: { left: number, lastLeft: number }) => {
-        const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth })
+        const newTime = parserPixelToTime(data.left, startLeft)
         useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
         // const selectedKeyframes = useTimelineEditorAPI.getState().selectedKeyframeKeys
         // if(selectedKeyframeKeys.length == 1){
@@ -61,24 +65,24 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
         // }
     }
 
-
     return (
         <RowDnd
             left={left}
-            width={rowHeight / 2} // Keyframe width
+            width={rowHeight / 2} 
             start={startLeft}
-            grid={snap ? scaleWidth / 10 : 1} // Adjust grid size based on snapping
+            grid={snap ? scaleWidth / 10 : 1} 
             enableDragging={true}
-            enableResizing={false} // Disable resizing for keyframes
+            enableResizing={false} 
             bounds={{
-                left: 0, // Adjust according to the timeline's start
-                right: scaleWidth * 1000 // Adjust according to the timeline's end
+                left: 0, 
+                right: scaleWidth * 1000 
             }}
+            // @ts-expect-error
             onDragEnd={handleOnDrag}
             onDrag={handleOnDrag}
         >
             <div
-                className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600 
+                className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600
                     ${selectedKeyframeKeys.includes(keyframe.id) && "!fill-yellow-300"} `
                 }
                 style={{
@@ -99,13 +103,37 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                     // Handle keyframe context menu event here
                 }}
             >
-                <svg viewBox="0 0 100 100">
-                    <polygon
-                        points="50,0 100,50 50,100 0,50"
-                        stroke="black"        
-                        strokeWidth="5"      
-                    />
-                </svg>
+                <ContextMenu>
+                    <ContextMenuTrigger>
+                        <svg viewBox="0 0 100 100">
+                            <polygon
+                                points="50,0 100,50 50,100 0,50"
+                                stroke="black"
+                                strokeWidth="5"
+                            />
+                        </svg>
+
+
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                        <ContextMenuItem>
+                            <p className=''>
+                                Show Handles
+                            </p>
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                            onClick={() => {
+                                const trackKey = `${track.vxkey}.${track.propertyPath}`
+                                removeKeyframe(trackKey, keyframe.id, true)
+                            }}
+                        >
+                            <p className=' text-red-700'>
+                                Delete Keyframe
+                            </p>
+                        </ContextMenuItem>
+                    </ContextMenuContent>
+                </ContextMenu>
+
             </div>
         </RowDnd>
     );

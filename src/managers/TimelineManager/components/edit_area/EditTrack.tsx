@@ -8,6 +8,7 @@ import { EditKeyframe } from './EditKeyframe';
 import { useTimelineEditorAPI } from '../../store';
 import { prefix } from '../../utils/deal_class_prefix';
 import { shallow } from 'zustand/shallow';
+import { useRefStore } from 'vxengine/utils/useRefStore';
 
 export type EditRowProps = CommonProp & {
   trackKey: string
@@ -21,24 +22,21 @@ export type EditRowProps = CommonProp & {
 };
 
 export const EditTrack: FC<EditRowProps> = (props) => {
-  const { editAreaRef, trackKey, globalKeyframeClickHandle } = props;
+  const { trackKey, globalKeyframeClickHandle } = props;
   const { scale, scaleWidth, track } = useTimelineEditorAPI(state => ({
     scale: state.scale,
     scaleWidth: state.scaleWidth,
     track: state.tracks[trackKey],
   }), shallow);
   const startLeft = 22;
+  const editAreaRef = useRefStore(state => state.editAreaRef)
 
   const handleTime = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (editAreaRef.current) return;
     const rect = editAreaRef.current.getBoundingClientRect();
     const position = e.clientX - rect.x;
     const left = position + props.scrollLeft;
-    const time = parserPixelToTime(left, {
-      startLeft,
-      scale,
-      scaleWidth,
-    });
+    const time = parserPixelToTime(left, startLeft);
     return time;
   };
 
@@ -77,16 +75,8 @@ export const EditTrack: FC<EditRowProps> = (props) => {
         if (index === 0) return null;
         // 
         const previousKeyframe = keyframesForTrack[index - 1];
-        const startX = parserTimeToPixel(previousKeyframe.time, {
-          startLeft,
-          scale,
-          scaleWidth,
-        });
-        const endX = parserTimeToPixel(keyframe.time, {
-          startLeft,
-          scale,
-          scaleWidth,
-        });
+        const startX = parserTimeToPixel(previousKeyframe.time, startLeft);
+        const endX = parserTimeToPixel(keyframe.time, startLeft);
 
         const isSelected = selectedKeyframeKeys.includes(keyframe.id) && selectedKeyframeKeys.includes(previousKeyframe.id)
 
@@ -108,6 +98,7 @@ export const EditTrack: FC<EditRowProps> = (props) => {
       {(keyframesForTrack || []).map((keyframe: IKeyframe, index) => (
         <EditKeyframe
           key={index}
+          track={track}
           {...props}
           handleTime={handleTime}
           keyframe={keyframe}

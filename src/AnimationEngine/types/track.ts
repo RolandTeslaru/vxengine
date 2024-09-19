@@ -4,6 +4,7 @@ export interface ITimeline {
     name: string;        
     id: string;          
     objects: RawObjectProps[]
+    length: number
 }
 
 export interface ITrack {

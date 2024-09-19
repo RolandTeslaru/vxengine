@@ -18,7 +18,7 @@ import { useVXObjectStore } from 'vxengine/vxobject';
 const IS_DEV = process.env.NODE_ENG === 'development'
 
 const DEBUG_REFRESHER = false;
-const DEBUG_RERENDER = false;
+const DEBUG_RERENDER = true;
 
 export const ENGINE_PRECISION = 3;
 

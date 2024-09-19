@@ -1,29 +1,25 @@
 import { TimelineAction, TimelineRow } from "vxengine/AnimationEngine/interface/action";
 import { ADD_SCALE_COUNT } from "vxengine/AnimationEngine/interface/const";
+import { useTimelineEditorAPI } from "../store";
 
 /** 时间转像素 */
 export function parserTimeToPixel(
   data: number,
-  param: {
-    startLeft: number;
-    scale: number;
-    scaleWidth: number;
-  }
+  startLeft: number
 ) {
-  const { startLeft, scale, scaleWidth } = param;
+  const scale = useTimelineEditorAPI.getState().scale
+  const scaleWidth = useTimelineEditorAPI.getState().scaleWidth
   return startLeft + (data / scale) * scaleWidth;
 }
 
 /** 像素转时间 */
 export function parserPixelToTime(
   data: number,
-  param: {
-    startLeft: number;
-    scale: number;
-    scaleWidth: number;
-  }
+  startLeft: number
 ) {
-  const { startLeft, scale, scaleWidth } = param;
+  const scale = useTimelineEditorAPI.getState().scale
+  const scaleWidth = useTimelineEditorAPI.getState().scaleWidth
+
   return ((data - startLeft) / scaleWidth) * scale;
 }
 
@@ -32,16 +28,12 @@ export function parserTransformToTime(
   data: {
     left: number;
     width: number;
+    startLeft: number
   },
-  param: {
-    startLeft: number;
-    scale: number;
-    scaleWidth: number;
-  }
 ) {
-  const { left, width } = data;
-  const start = parserPixelToTime(left, param);
-  const end = parserPixelToTime(left + width, param);
+  const { left, width, startLeft } = data;
+  const start = parserPixelToTime(left, startLeft);
+  const end = parserPixelToTime(left + width, startLeft);
   return {
     start,
     end,
@@ -54,15 +46,11 @@ export function parserTimeToTransform(
     start: number;
     end: number;
   },
-  param: {
-    startLeft: number;
-    scale: number;
-    scaleWidth: number;
-  }
+  startLeft
 ) {
   const { start, end } = data;
-  const left = parserTimeToPixel(start, param);
-  const width = parserTimeToPixel(end, param) - left;
+  const left = parserTimeToPixel(start, startLeft);
+  const width = parserTimeToPixel(end, startLeft) - left;
   return {
     left,
     width,
@@ -98,16 +86,12 @@ export function getScaleCountByPixel(
 /** 获取动作全部时间的位置集合 */
 export function parserActionsToPositions(
   actions: TimelineAction[],
-  param: {
-    startLeft: number;
-    scale: number;
-    scaleWidth: number;
-  }
+  startLeft: number
 ) {
   const positions: number[] = [];
   actions.forEach((item) => {
-    positions.push(parserTimeToPixel(item.start, param));
-    positions.push(parserTimeToPixel(item.end, param));
+    positions.push(parserTimeToPixel(item.start, startLeft));
+    positions.push(parserTimeToPixel(item.end, startLeft));
   });
   return positions;
 }

@@ -1,106 +1,76 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { ScrollSync } from 'react-virtualized';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
-import { RowRndApi } from '../row_rnd/row_rnd_interface';
 import './cursor.scss';
-import { handleSetCursor } from '../../utils/handleSetCursor';
-import { useVXEngine } from 'vxengine/engine';
-import { useTimelineEditorAPI } from '../../store';
-import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { shallow } from 'zustand/shallow';
+import { useRefStore } from 'vxengine/utils/useRefStore';
+import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from './handlers';
+
 
 /** Animation timeline component parameters */
-export type CursorProps = CommonProp & {
-  /** Scroll distance from left */
-  scrollLeft: number;
-  /** Set cursor position */
-  setCursor: (param: { left?: number; time?: number }) => boolean;
-  /** Set scroll left */
+export type CursorProps = {
   deltaScrollLeft: (delta: number) => void;
-  /** Scroll synchronization ref (TODO: This data is used to temporarily solve the problem of out-of-synchronization when scrollLeft is dragged) */
-  scrollSync: React.MutableRefObject<ScrollSync>;
 };
 
-export const Cursor: FC<CursorProps> = ({
-  disableDrag,
-  startLeft,
-  scaleWidth,
-  scale,
+export const CursorLine: FC<CursorProps> = ({
   deltaScrollLeft,
-  onCursorDragStart,
-  onCursorDrag,
-  onCursorDragEnd,
 }) => {
-  const rowRnd = useRef<RowRndApi>();
-  const draggingLeft = useRef<undefined | number>();
-  const { setCursorTime, cursorTime, width, editAreaRef, scrollLeft } = useTimelineEditorAPI(state => ({
-    setCursorTime: state.setCursorTime,
-    cursorTime: state.cursorTime,
-    width: state.width,
-    editAreaRef: state.editAreaRef,
-    scrollLeft: state.scrollLeft
-  }), shallow); 
-
-  const maxScaleCount = 100;
-
-  useEffect(() => {
-    if (typeof draggingLeft.current === 'undefined') {
-      // 非dragging时，根据穿参更新cursor刻度
-      rowRnd.current.updateLeft(parserTimeToPixel(cursorTime, { startLeft, scaleWidth, scale }) - scrollLeft);
-    }
-  }, [cursorTime, startLeft, scaleWidth, scale, scrollLeft]);
+  const cursorLineRef = useRefStore(state => state.cursorLineRef)
+  const left = parserTimeToPixel(0, cursorStartLeft)
 
   return (
-    <RowDnd
-      start={startLeft}
-      ref={rowRnd}
-      bounds={{
-        left: 0,
-        right: Math.min(width, maxScaleCount * scaleWidth + startLeft - scrollLeft),
-      }}
-      deltaScrollLeft={deltaScrollLeft}
-      enableDragging={!disableDrag}
-      enableResizing={false}
-      onDragStart={() => {
-        onCursorDragStart && onCursorDragStart(cursorTime);
-        draggingLeft.current = parserTimeToPixel(cursorTime, { startLeft, scaleWidth, scale }) - scrollLeft;
-        rowRnd.current.updateLeft(draggingLeft.current);
-      }}
-      onDragEnd={() => {
-        const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time })
-        onCursorDragEnd && onCursorDragEnd(time);
-        draggingLeft.current = undefined;
-      }}
-      onDrag={({ left }, scroll = 0) => {
-        if (!scroll || scrollLeft === 0) {
-          // 拖拽时，如果当前left < left min，将数值设置为 left min
-          if (left < startLeft - scrollLeft) draggingLeft.current = startLeft - scrollLeft;
-          else draggingLeft.current = left;
-        } else {
-          // 自动滚动时，如果当前left < left min，将数值设置为 left min
-          if (draggingLeft.current < startLeft - scrollLeft - scroll) {
-            draggingLeft.current = startLeft - scrollLeft - scroll;
-          }
-        }
-        rowRnd.current.updateLeft(draggingLeft.current);
-        const time = parserPixelToTime(draggingLeft.current + scrollLeft, { startLeft, scale, scaleWidth });
-        handleSetCursor({ time })
-        onCursorDrag && onCursorDrag(time);
-        return false;
-      }}
-    >
-      <div className={prefix('cursor')}>
-        <svg className={prefix('cursor-top')} width="8" height="12" viewBox="0 0 8 12" fill="none">
-          <path
-            d="M0 1C0 0.447715 0.447715 0 1 0H7C7.55228 0 8 0.447715 8 1V9.38197C8 9.76074 7.786 10.107 7.44721 10.2764L4.44721 11.7764C4.16569 11.9172 3.83431 11.9172 3.55279 11.7764L0.552786 10.2764C0.214002 10.107 0 9.76074 0 9.38197V1Z"
-            fill="#5297FF"
-          />
-        </svg>
-        <div className={prefix('cursor-area')} />
-      </div>
-    </RowDnd>
+      <RowDnd
+        left={left}
+        start={cursorStartLeft}
+        ref={cursorLineRef}
+        deltaScrollLeft={deltaScrollLeft}
+        enableDragging={true}
+        enableResizing={false}
+        onDragStart={handleCursorOnDragStart}
+        onDragEnd={handleCursorOnDragEng}
+        onDrag={handleCursorOnDrag}
+      >
+        <div className={" absolute cursor-ew-resize box-border top-0 h-full border-x border-blue-500 z-[1]"}
+          style={{ transform: "translateX(-25%) scaleX(0.5)"}}
+        >
+          <div className={prefix('cursor-area')} />
+        </div>
+      </RowDnd>
   );
 };
+
+
+export const CursorThumb: FC<CursorProps> = ({
+  deltaScrollLeft,
+}) => {
+  const cursorThumbRef = useRefStore(state => state.cursorThumbRef)
+  const left = parserTimeToPixel(0, cursorStartLeft)
+
+  return (
+      <RowDnd
+        left={left}
+        start={cursorStartLeft}
+        ref={cursorThumbRef}
+        deltaScrollLeft={deltaScrollLeft}
+        enableDragging={true}
+        enableResizing={false}
+        onDragStart={handleCursorOnDragStart}
+        onDragEnd={handleCursorOnDragEng}
+        onDrag={handleCursorOnDrag}
+      >
+        <div className={" absolute cursor-ew-resize box-border bottom-0 h-[12px]  z-[1]"}
+          style={{ transform: "translateX(-25%) scaleX(0.5)"}}
+        >
+          <svg className={prefix('cursor-top')} width="8" height="12" viewBox="0 0 8 12" fill="none">
+            <path
+              d="M0 1C0 0.447715 0.447715 0 1 0H7C7.55228 0 8 0.447715 8 1V9.38197C8 9.76074 7.786 10.107 7.44721 10.2764L4.44721 11.7764C4.16569 11.9172 3.83431 11.9172 3.55279 11.7764L0.552786 10.2764C0.214002 10.107 0 9.76074 0 9.38197V1Z"
+              fill="#5297FF"
+            />
+          </svg>
+        </div>
+      </RowDnd>
+  );
+};
+
+
+
