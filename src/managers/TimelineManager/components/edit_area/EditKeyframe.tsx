@@ -1,4 +1,4 @@
-import React, { FC, useRef, useLayoutEffect, useState } from 'react';
+import React, { FC, useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
 import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
@@ -10,59 +10,57 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 
 export type EditKeyframeProps = {
     track: ITrack;
-    keyframe: IKeyframe;
-    handleTime: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => number;
+    keyframeKey: string;
     globalKeyframeClickHandle: (event, keyframeKey) => void;
     rowHeight: number
 };
 
 export const EditKeyframe: FC<EditKeyframeProps> = ({
-    keyframe,
+    keyframeKey,
     track,
     rowHeight,
-    handleTime,
     globalKeyframeClickHandle
 }) => {
-    const startLeft = 12.5;
-    const { scale, snap, scaleWidth, addChange } = useTimelineEditorAPI(state => ({
-        scale: state.scale,
-        snap: state.snap,
-        scaleWidth: state.scaleWidth,
-        addChange: state.addChange
-    }), shallow);
+    const keyframe = useTimelineEditorAPI(state => state.keyframes[keyframeKey])
+
     const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
+    const scale = useTimelineEditorAPI(state => state.scale)
+    const snap = useTimelineEditorAPI(state => state.snap)
+    const scaleWidth = useTimelineEditorAPI(state => state.scaleWidth)
+    const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
+    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
+    
+    const startLeft = 12.5;
     const [left, setLeft] = useState(() => {
         return parserTimeToPixel(keyframe.time, startLeft);
     });
 
-    const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
-
-    useLayoutEffect(() => {
+    useEffect(() => {
         setLeft(parserTimeToPixel(keyframe.time, startLeft));
     }, [keyframe.time, startLeft, scaleWidth, scale]);
 
+
     // Handle dragging event
-
     const handleOnDrag = (data: { left: number, lastLeft: number }) => {
-        const newTime = parserPixelToTime(data.left, startLeft)
-        useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
-        // const selectedKeyframes = useTimelineEditorAPI.getState().selectedKeyframeKeys
-        // if(selectedKeyframeKeys.length == 1){
-        //     const newTime = parserPixelToTime(data.left, { startLeft, scale, scaleWidth })
-        //     useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
-        // }
-        // else if(selectedKeyframeKeys.length > 1){
-        //     const delta = data.left - data.lastLeft 
-        //     console.log("Dragging multiple keys  w delta", delta)
-        //     selectedKeyframeKeys.forEach(keyframeKey => {
+        // Single Keyframe Drag
+        if(selectedKeyframeKeys.length == 1){
+            const newTime = parserPixelToTime(data.left, startLeft)
+            useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
+        }
+        // Multiple Keyframe Drag
+        else if(selectedKeyframeKeys.length > 1){
+            const lastTime = parserPixelToTime(data.lastLeft, startLeft)
+            const newTime = parserPixelToTime(data.left, startLeft)
+            const deltaTime = newTime - lastTime;
 
-        //         const oldKeyframetime = useTimelineEditorAPI.getState().keyframes[keyframeKey].time
-        //         const parsedOldKeyframeTime = parserTimeToPixel(oldKeyframetime, { startLeft, scale, scaleWidth });
-        //         const newTime = parserPixelToTime(delta + parsedOldKeyframeTime, { startLeft, scale, scaleWidth });
-        //         console.log("oldTime ", oldKeyframetime, " vs new Time", newTime)
-        //         useTimelineEditorAPI.getState().setKeyframeTime(keyframeKey, newTime)
-        //     })
-        // }
+            selectedKeyframeKeys.forEach(keyframeKey => {
+                const oldKeyframetime = useTimelineEditorAPI.getState().keyframes[keyframeKey].time
+                const newKeyframeTime = oldKeyframetime + deltaTime
+                if (newKeyframeTime !== null && newKeyframeTime !== undefined && !isNaN(newKeyframeTime)){
+                    useTimelineEditorAPI.getState().setKeyframeTime(keyframeKey, parseFloat(newKeyframeTime.toFixed(4)))
+                }
+            })
+        }
     }
 
     return (
@@ -90,17 +88,14 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                     top: `${rowHeight / 4}px`,
                 }}
                 onClick={(e) => {
-                    const time = handleTime(e);
                     globalKeyframeClickHandle(e, keyframe.id);
                     // Handle keyframe click event here
                 }}
                 onDoubleClick={(e) => {
-                    const time = handleTime(e);
                     // Handle keyframe double click event here
                 }}
                 onContextMenu={(e) => {
-                    const time = handleTime(e);
-                    // Handle keyframe context menu event here
+                    setSelectedKeyframeKeys([ keyframe.id ])
                 }}
             >
                 <ContextMenu>

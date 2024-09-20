@@ -49,17 +49,18 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       };
     }, []);
 
-    //#region [rgba(100,120,156,0.08)] 赋值相关api
     useImperativeHandle(ref, () => ({
       updateLeft: (left) => handleUpdateLeft(left || 0, false),
       updateWidth: (width) => handleUpdateWidth(width, false),
       getLeft: handleGetLeft,
       getWidth: handleGetWidth,
     }));
+
     useEffect(() => {
       const target = interactable.current.target as HTMLElement;
       handleUpdateWidth(typeof width === 'undefined' ? target.offsetWidth : width, false);
     }, [width]);
+
     useEffect(() => {
       handleUpdateLeft(left || 0, false);
     }, [left]);

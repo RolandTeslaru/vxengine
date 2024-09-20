@@ -22,7 +22,7 @@ export const InteractComp: FC<{
   }, [draggableOptions, resizableOptions]);
 
   useEffect(() => {
-    interactable.current && interactable.current.unset();
+    interactable.current && interactable.current.unset(); // Unset previous interactable if it exists
     interactable.current = interact(nodeRef.current);
     interactRef.current = interactable.current;
     setInteractions();
