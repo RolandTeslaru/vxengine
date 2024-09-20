@@ -15,6 +15,7 @@ import * as THREE from "three"
 import { useVXAnimationStore } from "vxengine/AnimationEngine/AnimationStore"
 import { useVXObjectStore } from "vxengine/vxobject"
 import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
+import TrackProperties from "vxengine/managers/TimelineManager/components/TrackProperties"
 
 export const CoreUI = () => {
     return (
@@ -120,6 +121,7 @@ const LeftPanel = () => {
                 id="VXEngineLeftPanel"
             >
                 <ObjectList />
+                <TrackProperties />
                 <div className="w-full mt-auto h-auto flex flex-row pl-2">
                     <button className={"bg-transparent border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                         onClick={() => setLeftPanelAttached(!leftPanelAttached)}

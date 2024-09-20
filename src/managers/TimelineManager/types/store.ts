@@ -57,6 +57,9 @@ export interface TimelineEditorStoreProps {
     selectedKeyframeKeys: string[];
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;
 
+    selectedTrackKeys: string[];
+    setSelectedTrackKeys: (trackKeys: string[]) => void;
+
     // Keyframe Controls
     moveToNextKeyframe: (keyframes: IKeyframe[]) => void;
     moveToPreviousKeyframe: (keyframes: IKeyframe[]) => void;
