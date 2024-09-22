@@ -23,7 +23,6 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     setCurrentTimeline(timelineId: string): void;
     loadTimelines(timelines: ITimeline[]): void;
     setCurrentTime(time: number, isTick?: boolean): boolean;
-    // setEditorData(edObjects: edObjectProps[] ): void;
     refreshCurrentTimeline(): void
     refreshKeyframe(
       trackKey: string, 

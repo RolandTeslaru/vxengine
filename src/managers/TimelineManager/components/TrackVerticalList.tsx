@@ -23,20 +23,20 @@ const TrackVerticalList = () => {
 
     }
 
-    const renderCollapsedKeyframeControl = ({edObject, group,}: {edObject: edObjectProps, group: PathGroup}) => {
-        let collapsedKeyframes: ITrack | null = null;
-        console.log("Attempting to render collapsed keyframe controls with group", group)
-        if(collapsedKeyframes){
-            return <>
-                <KeyframeControl
-                    track={collapsedKeyframes}
-                    propertyPath={collapsedKeyframes.propertyPath}
-                    edObject={edObject}
-                />
-            </>
-        } else 
-            return <></>
-    }
+    // const renderCollapsedKeyframeControl = ({edObject, group,}: {edObject: edObjectProps, group: PathGroup}) => {
+    //     let collapsedKeyframes: ITrack | null = null;
+    //     console.log("Attempting to render collapsed keyframe controls with group", group)
+    //     if(collapsedKeyframes){
+    //         return <>
+    //             <KeyframeControl
+    //                 track={collapsedKeyframes}
+    //                 propertyPath={collapsedKeyframes.propertyPath}
+    //                 edObject={edObject}
+    //             />
+    //         </>
+    //     } else 
+    //         return <></>
+    // }
 
     const renderGroupedPaths = (
         groupedPaths: Record<string, PathGroup>,

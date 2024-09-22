@@ -11,16 +11,16 @@ export const MenubarUI = () => {
     return (
         <>
             {/* Icon */}
-            <div className='h-full  w-[40px] flex '>
+            <div className='h-full  w-[40px] flex scale-75'>
                 <Image src={"/VXEngine/logo.png"} width={33} height={23}
                     alt="VXEngineLogo" className='w-[33px] h-[23px] my-auto' />
             </div>
             {/* Status */}
-            <div className='flex-row flex my-auto mx-4 text-nowrap'>
+            {/* <div className='flex-row flex my-auto mx-4 text-nowrap'>
                 <p className='font-sans-menlo text-sm'>
                     STATUS: SYS. READY
                 </p>
-            </div>
+            </div> */}
             {/* Items  */}
             <div className='my-auto-fit !text-white font-sans-menlo flex flex-row text-xs'>
                 <Menubar>
@@ -29,6 +29,7 @@ export const MenubarUI = () => {
                     <SelectButton />
                     <AddButton />
                     <ObjectButton />
+                    <SceneButton/>
                 </Menubar>
             </div>
 
@@ -126,6 +127,24 @@ const ObjectButton = () => {
     return (
         <MenubarMenu> 
             <MenubarTrigger><p className='font-sans-menlo'>Object</p></MenubarTrigger>
+            <MenubarContent>
+                <MenubarItem>
+                    New Tab <MenubarShortcut>⌘T</MenubarShortcut>
+                </MenubarItem>
+                <MenubarItem>New Window</MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem>Share</MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem>Print</MenubarItem>
+            </MenubarContent>
+        </MenubarMenu>
+    )
+}
+
+const SceneButton = () => {
+    return (
+        <MenubarMenu> 
+            <MenubarTrigger><p className='font-sans-menlo'>Scene</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>
                     New Tab <MenubarShortcut>⌘T</MenubarShortcut>

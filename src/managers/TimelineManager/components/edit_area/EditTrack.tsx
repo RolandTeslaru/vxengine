@@ -40,6 +40,7 @@ export const EditTrack: FC<EditRowProps> = (props) => {
         return <EditTrackSegment 
           firstKeyframeKey={firstKeyframeKey} 
           secondKeyframeKey={secondKeyframeKey}
+          trackKey={trackKey}
         />
       })}
 
@@ -59,16 +60,19 @@ export const EditTrack: FC<EditRowProps> = (props) => {
 
 
 
-const EditTrackSegment = ({ firstKeyframeKey, secondKeyframeKey }:
-  { firstKeyframeKey: string, secondKeyframeKey: string }
+const EditTrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey}:
+  { firstKeyframeKey: string, secondKeyframeKey: string, trackKey: string }
 ) => {
   const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey])
   const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[secondKeyframeKey])
-  const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
-
   const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
-  const isSelected = selectedKeyframeKeys.includes(firstKeyframe.id) && selectedKeyframeKeys.includes(secondKeyframe.id)
-  
+  const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
+  const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment) 
+  const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment)
+
+  const isSelectedFromKeyframes = selectedKeyframeKeys.includes(firstKeyframe.id) && selectedKeyframeKeys.includes(secondKeyframe.id)
+  const isSelectedFromTrackSegments = selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey && selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
+
   const startX = parserTimeToPixel(firstKeyframe.time, startLeft);
   const endX = parserTimeToPixel(secondKeyframe.time, startLeft);
   
@@ -89,6 +93,7 @@ const EditTrackSegment = ({ firstKeyframeKey, secondKeyframeKey }:
 
   const handleOnClick = () => {
     setSelectedKeyframeKeys([firstKeyframe.id, secondKeyframe.id])
+    setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
   }
 
   return (
@@ -100,7 +105,7 @@ const EditTrackSegment = ({ firstKeyframeKey, secondKeyframeKey }:
     >
       <div
         key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
-        className={`absolute bg-white h-[6px] flex ${isSelected && "bg-yellow-400"}`}
+        className={`absolute bg-white h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
         style={{
           top: `calc(50% - 3px)`,
         }}

@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
 import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
-import { useVXEngine } from 'vxengine/engine';
-import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store';
-import { shallow } from 'zustand/shallow';
-import { handleSetCursor } from 'vxengine/managers/TimelineManager/utils/handleSetCursor';
-import { ITrack } from 'vxengine/AnimationEngine/types/track';
-import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 
 interface TimelineKeyframeControlProps {
     trackKey?: string,

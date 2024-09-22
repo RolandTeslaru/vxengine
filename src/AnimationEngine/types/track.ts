@@ -1,5 +1,16 @@
 import * as THREE from "three"
 
+export interface VXVector2 {
+    x: number;
+    y: number;
+}
+
+export interface VXVector3 { 
+    x: number;
+    y: number;
+    z: number;
+}
+
 export interface ITimeline {
     name: string;        
     id: string;          
@@ -24,7 +35,10 @@ export interface IKeyframe {
     propertyPath: string,
     time: number; 
     value: number;
-    handles?: [number, number, number, number]; 
+    handles: {
+        in: VXVector2,
+        out: VXVector2,
+    }
 }
 export interface PathGroup {
     children: Record<string, PathGroup>;

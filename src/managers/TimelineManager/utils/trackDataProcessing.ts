@@ -43,7 +43,7 @@ export const precomputeRowIndices = (
 
 // The trackKeys array from an edObject looks like this "RedBox.material.thing1.thign2"
 // We need to remove the vxkey from the trackKey
-export const extractDatafromTrackKey = (trackKey: string) => {
+export const extractDataFromTrackKey = (trackKey: string) => {
     const firstDotIndex = trackKey.indexOf('.');
 
     if (firstDotIndex === -1) {
@@ -60,7 +60,7 @@ export const groupTracksByParent = (trackKeys: string[], trackRowIndex: number) 
     const groupedPaths: Record<string, PathGroup> = {};
 
     trackKeys.forEach((trackKey) => {
-        const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey)
+        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
         const pathSegments = propertyPath.split('.');
 
         let currentGroup = groupedPaths;

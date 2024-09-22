@@ -23,6 +23,7 @@ import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'vxengine/components/shadcn/Resizeable';
 import { useVXAnimationStore } from 'vxengine/AnimationEngine/AnimationStore';
 import { Input } from 'vxengine/components/shadcn/input';
+import ProgressionControls from './components/ProgressionControls';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -155,64 +156,6 @@ const TimelineEditorUI = () => {
 
 export default TimelineEditorUI
 
-
-const ProgressionControls = () => {
-    const { animationEngine } = useVXEngine();
-    const { isPlaying } = useVXAnimationStore(state => ({
-        isPlaying: state.isPlaying
-    }), shallow)
-
-    //Start or pause
-    const handlePlayOrPause = () => {
-        if (isPlaying)
-            animationEngine.pause();
-        else
-            animationEngine.play({ autoEnd: true });
-    };
-
-    const handleReset = () => { animationEngine.setCurrentTime(0, true) }
-
-    return (
-        <div className='flex flex-row gap-2 w-auto ml-auto'>
-            <p className="font-sans-menlo text-lg text-center h-auto my-auto mx-2">
-                <TimeRender />
-            </p>
-            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                onClick={handleReset}
-            >
-                <Square fill="white" className='scale-[65%] m-auto' />
-            </button>
-            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                onClick={handleReset}
-            >
-                <SkipBack fill="white" className='scale-[65%] m-auto' />
-            </button>
-            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                onClick={handlePlayOrPause}
-            >
-                {isPlaying ? (
-                    <PauseFill className='scale-[65%] m-auto' />
-                ) : (
-                    <PlayFill className='scale-[65%] m-auto' />
-                )}
-            </button>
-            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
-                onClick={handleReset}
-            >
-                <SkipForward fill="white" className='scale-[65%] m-auto' />
-            </button>
-        </div>
-    )
-}
-
-
-const TimeRender = () => {
-    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
-    const float = (parseInt((cursorTime % 1) * 100 + '') + '').padStart(2, '0');
-    const min = (parseInt(cursorTime / 60 + '') + '').padStart(2, '0');
-    const second = (parseInt((cursorTime % 60) + '') + '').padStart(2, '0');
-    return <>{`${min}:${second}.${float.replace('0.', '')}`}</>;
-};
 
 export const TimelineSelect = () => {
     const { currentTimeline, timelines } = useVXAnimationStore(state => ({

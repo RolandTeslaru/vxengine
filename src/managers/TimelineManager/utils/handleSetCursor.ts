@@ -13,7 +13,7 @@ export const handleSetCursor = (param: {
     const cursorThumbRef = useRefStore.getState().cursorThumbRef
     const cursorLineRef = useRefStore.getState().cursorLineRef
 
-    console.log("Handling set cursor with params with rerender ", rerender)
+    // console.log("Handling set cursor with params with rerender ", rerender)
 
     const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
     if(!animationEngine)
@@ -34,7 +34,7 @@ export const handleSetCursor = (param: {
     cursorLineRef.current.updateLeft(parserTimeToPixel(time, startLeft) );
 
     if (rerender) {
-        animationEngine.setCurrentTime(time);
-        animationEngine.reRender({ cause: "handleSetCursor"})
+        animationEngine.setCurrentTime(time, true);
+        animationEngine.reRender({ cause: "handleSetCursor", force: true });
     }
 };

@@ -11,7 +11,7 @@ import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackPro
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
 import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
-import { extractDatafromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
+import { extractDataFromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useVXAnimationStore } from './AnimationStore';
 import { useVXObjectStore } from 'vxengine/vxobject';
 
@@ -119,7 +119,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender = true
   ) {
     const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
-    const {vxkey, propertyPath } = extractDatafromTrackKey(trackKey);
+    const {vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
     if(DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing keyframe on trackKey:", trackKey)
@@ -366,7 +366,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  private _applyKeyframes(vxobject: vxObjectProps, propertyPath: string, keyframes: IKeyframe[], currentTime: number) {
+  private _applyKeyframes(
+    vxobject: vxObjectProps, 
+    propertyPath: string, 
+    keyframes: IKeyframe[], 
+    currentTime: number
+  ) {
     if (!vxobject) return;
 
     let interpolatedValue: number | THREE.Vector3;
@@ -381,6 +386,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
+      // TODO: make this optional when in production
       useObjectPropertyStore.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
@@ -388,7 +394,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
-    // Find the two keyframes between which the current time falls
     let startKeyframe: IKeyframe | undefined;
     let endKeyframe: IKeyframe | undefined;
 
@@ -400,24 +405,53 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     }
 
-    // If currentTime < first keyframe or  currentTime > last keyframe
-    //  ==> return the closest keyframe value 
+    // If currentTime < first keyframe or currentTime > last keyframe, return closest keyframe value
     if (!startKeyframe || !endKeyframe) {
-      return keyframes.length > 0 ? keyframes[0].value : 0;
+      return keyframes.length > 0 ? keyframes[0].value as number : 0;
     }
 
     const duration = endKeyframe.time - startKeyframe.time;
     const progress = (currentTime - startKeyframe.time) / duration;
 
-    return this._interpolateNumber(startKeyframe.value, endKeyframe.value, progress);
+    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
+
+    // Truncate the result to ensure precision
+    return this.truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
   }
 
 
-  private _interpolateNumber(start: number, end: number, progress: number): number {
-    const value = start + (end - start) * progress;
+  private _interpolateNumber(
+    startKeyframe: IKeyframe,
+    endKeyframe: IKeyframe,
+    progress: number
+  ): number {
+    const startValue = startKeyframe.value as number;
+    const endValue = endKeyframe.value as number;
 
-    return this.truncateToDecimals(value, ENGINE_PRECISION);
+    // Handles default to linear if not provided
+    const startHandle = startKeyframe.handles?.out || { x: 1, y: 1 };
+    const endHandle = endKeyframe.handles?.in || { x: 0, y: 0 };
+
+    return this._cubicBezier(
+      startValue,
+      startValue + startHandle.y * (endValue - startValue), // Control point based on handle "out"
+      endValue + endHandle.y * (startValue - endValue),     // Control point based on handle "in"
+      endValue,
+      progress
+    );
   }
+
+  
+  private _cubicBezier(p0: number, p1: number, p2: number, p3: number, t: number): number {
+    const u = 1 - t;
+    return (
+      u ** 3 * p0 +
+      3 * u ** 2 * t * p1 +
+      3 * u * t ** 2 * p2 +
+      t ** 3 * p3
+    );
+  }
+
   
   private truncateToDecimals(num: number, decimals: number): number {
     const factor = Math.pow(10, decimals);

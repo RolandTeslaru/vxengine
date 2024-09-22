@@ -1,5 +1,5 @@
 import { AnimationEngine } from "vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, IStaticProps, ITrack, RawObjectProps } from "vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, IStaticProps, ITrack, RawObjectProps, VXVector2 } from "vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
 import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
@@ -57,8 +57,12 @@ export interface TimelineEditorStoreProps {
     selectedKeyframeKeys: string[];
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;
 
-    selectedTrackKeys: string[];
-    setSelectedTrackKeys: (trackKeys: string[]) => void;
+    selectedTrackSegment: {
+        firstKeyframeKey: string,
+        secondKeyframeKey: string,
+        trackKey: string,
+    };
+    setSelectedTrackSegment: (firstKeyframeKey: string, secondKeyframeKey: string, trackKey) => void;
 
     // Keyframe Controls
     moveToNextKeyframe: (keyframes: IKeyframe[]) => void;
@@ -83,6 +87,7 @@ export interface TimelineEditorStoreProps {
     removeKeyframe: (trackKey: string, keyframeKey: string, reRender?: boolean) => void;
     setKeyframeTime: (keyframeKey: string, newTime: number, reRender?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, newValue: number, reRender?: boolean) => void;
+    setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: VXVector2, outHandle: VXVector2, reRender?: boolean) => void;
     // StaticProp function
     createStaticProp: (vxkey: string, propertyPath: string, value: number, reRender?: boolean) => void;
 

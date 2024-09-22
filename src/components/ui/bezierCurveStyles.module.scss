@@ -6,25 +6,24 @@ $color-endhandle: #64B5FF;
 
 $color-row: #f2f2f2;
 $color-outerarea: #fafafa;
-$color-axisline: black;
-$color-curveline: black;
+$color-axisline: white;
+$color-curveline: white;
 $color-handleline: #969696;
 
 :export {
   colorHandleLine: $color-handleline;
   colorCurveLine: $color-curveline;
   colorRow: $color-row;
-  colorBackground: $color-light;
+  colorBackground: $color-dark;
   colorDark: $color-dark;
 }
 
 .rootContainer {
-  padding: 8px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  background: #FAFAFA;
+  margin: auto;
 }
 
 .wrap {
@@ -32,12 +31,6 @@ $color-handleline: #969696;
   width: 100%;
   height: 100%;
 
-  .bg {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      background: $color-outerarea;
-  }
 }
 
 .plane {
@@ -68,7 +61,7 @@ $color-handleline: #969696;
   transition: box-shadow 100ms ease-out;
   pointer-events: none;
   cursor: default;
-  background-color: $color-dark;
+  background-color: white;
 }
 
 .handle {

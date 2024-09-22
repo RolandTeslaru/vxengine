@@ -10,7 +10,7 @@ import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
 import { useVXObjectStore } from "vxengine/vxobject";
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
-import { computeGroupPathFromRawObject, computeGroupPaths, extractDatafromTrackKey } from './utils/trackDataProcessing';
+import { computeGroupPathFromRawObject, computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { useObjectManagerStore, useObjectPropertyStore } from '../ObjectManager/store';
 import { getNestedProperty } from 'vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
@@ -41,7 +41,7 @@ function processRawData(
 
             // Generate Keyframe Record for rawObj
             track.keyframes.forEach((kf) => {
-                const keyframeId = kf.id || `keyframe-${Date.now()}-${Math.random()}`;
+                const keyframeId = kf.id || `keyframe-${Date.now()}`;
                 const newKeyframe: IKeyframe = {
                     id: keyframeId,
                     vxkey: rawObj.vxkey,
@@ -154,7 +154,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     selectedKeyframes: [],
     keyframesPositionData: {},
-    
+
 
 
     scrollLeft: 0,
@@ -175,6 +175,15 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     selectedKeyframeKeys: [],
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
         state.selectedKeyframeKeys = keyframeKeys
+    })),
+
+    selectedTrackSegment: undefined,
+    setSelectedTrackSegment : (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorStoreProps) => {
+        state.selectedTrackSegment = {
+            firstKeyframeKey: firstKeyframeKey,
+            secondKeyframeKey :secondKeyframeKey,
+            trackKey: trackKey
+        }
     })),
 
     // Getter functions
@@ -263,7 +272,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     createKeyframe: (trackKey, value, reRender = true) => {
         const { addChange, getTrack, addKeyframeToTrack, getKeyframesForTrack } = get();
-        const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey)
+        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
 
         const keyframeId = `keyframe-${Date.now()}`
 
@@ -275,9 +284,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             id: keyframeId,
             time: get().cursorTime,
             value: value,
-            handles: [0, 0, 0, 0],
             vxkey: vxkey,
-            propertyPath: propertyPath
+            propertyPath: propertyPath,
+            handles: {
+                in: { x:0, y:0},
+                out: { x:1, y:1 }
+            },
         };
 
         const keyframes = getKeyframesForTrack(trackKey)
@@ -318,7 +330,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     makePropertyTracked: (staticPropKey, reRender) => {
-        const { vxkey, propertyPath } = extractDatafromTrackKey(staticPropKey);
+        const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
         const vxObjects = useVXObjectStore.getState().objects;
         set(produce((state: TimelineEditorStoreProps) => {
             const edObject = state.editorData[vxkey];
@@ -343,9 +355,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 id: keyframeId,
                 time: get().cursorTime,
                 value: value,
-                handles: [0, 0, 0, 0],
                 vxkey: vxkey,
-                propertyPath: propertyPath
+                propertyPath: propertyPath,
+                handles: {
+                    in: { x:0, y:0},
+                    out: { x:1, y:1 }
+                },
             };
             state.keyframes[keyframeId] = newKeyframe
 
@@ -369,8 +384,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.refreshCurrentTimeline()
     },
 
+
     makePropertyStatic: (trackKey, reRender) => {
-        const { vxkey, propertyPath } = extractDatafromTrackKey(trackKey);
+        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         set(produce((state: TimelineEditorStoreProps) => {
             const edObject = state.editorData[vxkey];
 
@@ -404,6 +420,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.refreshCurrentTimeline()
     },
 
+
     setKeyframeTime: (keyframeKey: string, newTime: number, reRender = true) => {
         set(produce((state: TimelineEditorStoreProps) => {
             state.keyframes[keyframeKey].time = newTime;
@@ -418,6 +435,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
     },
+
+
     setKeyframeValue: (keyframeKey, newValue, reRender = true) => {
         // console.log("TimelineEditorAPI: Setting", keyframeKey, " to value:", newValue)
         set(produce((state: TimelineEditorStoreProps) => {
@@ -426,6 +445,23 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         const keyframe = get().keyframes[keyframeKey]
         const trackKey = `${keyframe.vxkey}.${keyframe.propertyPath}`;
+
+        // Refresh Keyframe
+        const animationEngine = get().animationEngineRef.current
+        if (!animationEngine)
+            return
+
+        animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
+    },
+
+
+    setKeyframeHandles: (keyframeKey, trackKey, inHandle, outHandle, reRender = true) => {
+        set(produce((state: TimelineEditorStoreProps) => {
+            state.keyframes[keyframeKey].handles = {
+                in: inHandle,
+                out: outHandle
+            }
+        }))
 
         // Refresh Keyframe
         const animationEngine = get().animationEngineRef.current
@@ -460,7 +496,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     removeStaticProp: (staticPropKey: string) => {
         // console.log("Removing static Prop with key", staticPropKey)
-        const { vxkey, propertyPath } = extractDatafromTrackKey(staticPropKey)
+        const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
         set(produce((state: TimelineEditorStoreProps) => {
             // Delete from Record
             delete state.staticProps[staticPropKey]

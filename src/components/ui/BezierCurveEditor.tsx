@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./bezierCurveStyles.module.scss"
+import bezierEditorBg from "./bezierEditorBg.png";
 import classNames from "classnames";
 
 const defaultStateValue = {
@@ -31,7 +32,6 @@ const BezierCurveEditor = ({
   endHandleActiveClassName,
   value,
   onChange,
-  background
 }) => {
   const [state, setState] = useState({
     ...defaultStateValue,
@@ -207,37 +207,11 @@ const BezierCurveEditor = ({
         width: `${width}px`,
         height: `${height}px`,
         borderRadius: `${borderRadiusContainer}px`,
-        background: `${outerAreaColor}`
       }}
     >
       <div className={styles.wrap}>
-        <div
-          className={styles.bg}
-          style={{
-            left: `${strokeWidth}px`,
-            width: `${width - strokeWidth}px`,
-            backgroundColor: outerAreaColor
-          }}
-        />
-        <div
-          className={styles.plane}
-          style={{
-            top: `-8px`,
-            left: `-8px`,
-            width: `${width + 16}px`,
-            height: `${height + 16}px`,
-            borderLeft: `0px solid ${axisColor}`,
-            borderBottom: `0px solid ${axisColor}`
-          }}
-        >
-          {background && (
-            <img
-              className={styles.imageBackground}
-              src={background}
-              alt="bezier-editor-bg"
-            />
-          )}
-        </div>
+ 
+     
         <svg
           className={styles.curve}
           fill="none"
