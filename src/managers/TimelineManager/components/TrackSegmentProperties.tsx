@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import BezierCurveEditor from 'vxengine/components/ui/BezierCurveEditor'
 import CollapsiblePanel from 'vxengine/components/ui/CollapsiblePanel'
 import { useTimelineEditorAPI } from '../store'
+import { Input } from 'vxengine/components/shadcn/input'
 
 const TrackSegmentProperties = React.memo(() => {
     const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
@@ -9,10 +10,11 @@ const TrackSegmentProperties = React.memo(() => {
     return (
         <CollapsiblePanel
             title="Track Segment Props."
+            className='gap-2'
         >
             {selectedTrackSegment
                 ? <TrackSegmentEditor />
-                : <p className='font-sans-menlo text-xs'>Select a track segment</p>
+                : <p className='font-sans-menlo text-center' style={{ fontSize: "10px"}}>Select a track segment</p>
             }
         </CollapsiblePanel>
     )
@@ -26,33 +28,52 @@ const TrackSegmentEditor = () => {
     const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.firstKeyframeKey])
     const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.secondKeyframeKey])
 
-    const graphInHandles = firstKeyframe?.handles?.out || { x: 1, y: 1 };
-    const graphOutHandles = secondKeyframe?.handles?.in || { x: 0, y: 0 };
+    const defaultHandleRight = { x: 0.7, y: 0.7 };  // top right thing
+    const defaultHandleLeft = { x: 0.3, y: 0.3 };   // bottom left thing
 
-
+    const firstKeyframeOutHandle = firstKeyframe?.handles?.out || defaultHandleLeft
+    const firstKeyframeInHandle = firstKeyframe?.handles?.in || defaultHandleRight
+    const secondKeyframeInHandle = secondKeyframe?.handles?.in || defaultHandleRight
+    const secondKeyframeOutHandle = secondKeyframe?.handles?.out || defaultHandleLeft
 
     const handleOnCurveChange = (value: [number, number, number, number]) => {
-        const [inHandleX, inHandleY, outHandleX, outHandleY] = value;
+        let [outHandleX, outHandleY, inHandleX, inHandleY] = value;
 
-        // Set updated handles for the first and second keyframe
+        const truncateToTwoDecimals = (num: number) => {
+            return Math.round(num * 100) / 100;
+        };
+
+        outHandleX = truncateToTwoDecimals(outHandleX);
+        outHandleY = truncateToTwoDecimals(outHandleY);
+        inHandleX = truncateToTwoDecimals(inHandleX);
+        inHandleY = truncateToTwoDecimals(inHandleY);
+
+        // update first keyframe
         setKeyframeHandles(
             selectedTrackSegment?.firstKeyframeKey,
-            selectedTrackSegment?.trackKey, // Ensure trackKey is passed here
-            firstKeyframe.handles.in, // Keep the existing out-handle for the first keyframe
-            { x: inHandleX, y: inHandleY }, // In-handle for the first keyframe
-            false // Avoid immediate re-render
+            selectedTrackSegment?.trackKey,
+            secondKeyframeInHandle,
+            { x: outHandleX, y: outHandleY },
+            false
         );
 
+        // update second keyframe
         setKeyframeHandles(
             selectedTrackSegment?.secondKeyframeKey,
-            selectedTrackSegment?.trackKey, // Ensure trackKey is passed here
-            { x: outHandleX, y: outHandleY }, // Out-handle for the second keyframe
-            secondKeyframe.handles.out, // Keep the existing in-handle for the second keyframe
-            true // Trigger re-render after updating the second keyframe
+            selectedTrackSegment?.trackKey,
+            { x: inHandleX, y: inHandleY },
+            firstKeyframeOutHandle,
+            true
         );
     };
 
-    return (
+
+    useEffect(() => {
+        console.log("Track keyyframe   firstKeyframe:", firstKeyframe, " secondKeyframe:", secondKeyframe)
+    }, [selectedTrackSegment])
+
+
+    return <>
         <div className='border border-neutral-800 py-2 rounded-lg'>
             <BezierCurveEditor
                 size={180}
@@ -64,11 +85,78 @@ const TrackSegmentEditor = () => {
                 outerAreaColor={"#fafafa"}
                 onChange={handleOnCurveChange}
                 value={[
-                    graphInHandles.x, graphInHandles.y,
-                    graphOutHandles.x, graphOutHandles.y
+                    firstKeyframeOutHandle.x, firstKeyframeOutHandle.y,
+                    secondKeyframeInHandle.x, secondKeyframeInHandle.y
                 ]}
             />
         </div>
-    )
+        <div className='mt-2 flex flex-row mx-2'>
+            <div className='flex flex-row gap-2'>
+                <Input
+                    className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-7"
+                    max={1}
+                    min={0}
+                    value={firstKeyframeOutHandle.x}
+                    onChange={(e: any) => {
+                        setKeyframeHandles(
+                            selectedTrackSegment?.firstKeyframeKey,
+                            selectedTrackSegment?.trackKey,
+                            { x: firstKeyframeInHandle.x, y: firstKeyframeInHandle.y },
+                            { x: e.target.value, y: firstKeyframeOutHandle.y },
+                            true
+                        )
+                    }}
+                />
+                <Input
+                    className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-7"
+                    max={1}
+                    min={0}
+                    value={firstKeyframeOutHandle.y}
+                    onChange={(e: any) => {
+                        setKeyframeHandles(
+                            selectedTrackSegment?.firstKeyframeKey,
+                            selectedTrackSegment?.trackKey,
+                            { x: firstKeyframeInHandle.x, y: firstKeyframeInHandle.y },
+                            { x: firstKeyframeOutHandle.x, y: e.target.value },
+                            true
+                        )
+                    }}
+                />
+            </div>
+            <div className='flex flex-row gap-2 ml-auto'>
+                <Input
+                    className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-7"
+                    max={1}
+                    min={0}
+                    value={secondKeyframeInHandle.x}
+                    onChange={(e: any) => {
+                        setKeyframeHandles(
+                            selectedTrackSegment?.secondKeyframeKey,
+                            selectedTrackSegment?.trackKey,
+                            { x: e.target.value, y: secondKeyframeInHandle.y },
+                            { x: secondKeyframeOutHandle.x, y: secondKeyframeOutHandle.y },
+                            true
+                        )
+                    }}
+                />
+                <Input
+                    className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-7"
+                    max={1}
+                    min={0}
+                    value={secondKeyframeInHandle.y}
+                    onChange={(e: any) => {
+                        setKeyframeHandles(
+                            selectedTrackSegment?.secondKeyframeKey,
+                            selectedTrackSegment?.trackKey,
+                            { x: secondKeyframeInHandle.x, y: e.target.value },
+                            { x: secondKeyframeOutHandle.x, y: secondKeyframeOutHandle.y },
+                            true
+                        )
+                    }}
+                />
+            </div>
+        </div>
+    </>
+
 }
 

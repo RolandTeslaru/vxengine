@@ -38,6 +38,14 @@ const BezierCurveEditor = ({
     value: value || defaultStateValue.value
   });
 
+  // Synchronize internal State when prop 'value' changes dakdos 
+  useEffect(() => {
+    setState((prevState) => ({
+      ...prevState,
+      value
+    }))
+  }, [value])
+
   const width = size;
   const height = width;
   const startCoordinate = [0, height];

@@ -49,12 +49,12 @@ const ObjectList = () => {
         >
             <div className='text-xs flex flex-row text-neutral-400'>
                 {selectedObjectKeys.length === 1 && (
-                    <p className='text-xs text-neutral-400' >{selectedObjectKeys.length} object selected</p>
+                    <p className='text-xs text-neutral-400' style={{fontSize: "10px"}} >{selectedObjectKeys.length} object selected</p>
                 )}
                 {selectedObjectKeys.length > 1 && (
-                    <p className='text-xs  text-neutral-400' >{selectedObjectKeys.length} objects selected</p>
+                    <p className='text-xs  text-neutral-400' style={{fontSize: "10px"}}>{selectedObjectKeys.length} objects selected</p>
                 )}
-                <p className='ml-auto text-xs'> objects</p>
+                <p className='ml-auto text-xs' style={{fontSize: "10px"}}> objects</p>
             </div>
             <div className='flex flex-col pt-2 gap-2'>
                 {Object.values(objects).map((vxobject: vxObjectProps, index: number) => {
@@ -70,7 +70,9 @@ const ObjectList = () => {
                                 {vxobject.name}
                             </p>
                             <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
-                                `${isSelected && "!text-neutral-400"}`}>
+                                `${isSelected && "!text-neutral-400"}`}
+                                style={{fontSize: "11px"}}
+                            >
                                 {vxobject.type}
                             </p>
                         </div>

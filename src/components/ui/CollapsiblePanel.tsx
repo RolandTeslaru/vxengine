@@ -29,7 +29,8 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
                 <p className='text-center text-xs font-sans-menlo py-1'>{title}</p>
             </div>
             {open && (
-                <motion.div className='text-xs border-t flex flex-col py-2 border-neutral-700 bg-none transition-all text-neutral-400'
+                <motion.div className='text-xs border-t flex flex-col py-2 bg-none transition-all text-neutral-400'
+                    style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1"}}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

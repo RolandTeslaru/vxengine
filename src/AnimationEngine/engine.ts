@@ -429,8 +429,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const endValue = endKeyframe.value as number;
 
     // Handles default to linear if not provided
-    const startHandle = startKeyframe.handles?.out || { x: 1, y: 1 };
-    const endHandle = endKeyframe.handles?.in || { x: 0, y: 0 };
+    const startHandle = startKeyframe.handles.out 
+    const endHandle = endKeyframe.handles.in 
 
     return this._cubicBezier(
       startValue,

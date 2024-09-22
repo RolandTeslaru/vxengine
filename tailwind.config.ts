@@ -21,7 +21,7 @@ const config = {
     },
     extend: {
       fontSize: {
-        "xxs": '0.625rem', // 10px
+        "xss": '8px', // 10px
       },
       margin: {
         'containerDesktop': 'calc(3vh + 50px) calc(1vw + 70px) 3vh 1vw ',
