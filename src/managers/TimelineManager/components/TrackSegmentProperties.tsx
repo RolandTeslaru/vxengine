@@ -28,8 +28,8 @@ const TrackSegmentEditor = () => {
     const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.firstKeyframeKey])
     const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.secondKeyframeKey])
 
-    const defaultHandleRight = { x: 0.7, y: 0.7 };  // top right thing
     const defaultHandleLeft = { x: 0.3, y: 0.3 };   // bottom left thing
+    const defaultHandleRight = { x: 0.7, y: 0.7 };  // top right thing
 
     const firstKeyframeOutHandle = firstKeyframe?.handles?.out || defaultHandleLeft
     const firstKeyframeInHandle = firstKeyframe?.handles?.in || defaultHandleRight

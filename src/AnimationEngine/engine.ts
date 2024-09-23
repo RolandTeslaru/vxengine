@@ -1,3 +1,4 @@
+'use client'
 // VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
@@ -14,7 +15,8 @@ import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
 import { extractDataFromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useVXAnimationStore } from './AnimationStore';
 import { useVXObjectStore } from 'vxengine/vxobject';
-
+import Stats from 'stats.js';
+import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 const IS_DEV = process.env.NODE_ENG === 'development'
 
 const DEBUG_REFRESHER = false;
@@ -44,7 +46,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // Used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
   refreshCurrentTimeline() {
-    if (!this.currentTimeline && DEBUG_REFRESHER){
+    if (!this.currentTimeline && DEBUG_REFRESHER) {
       console.log("VXAnimationEngine Refresher: No timeline is currently loaded.");
       return
     }
@@ -55,7 +57,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // if (this.isPlaying) this.pause();
 
-    if(DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
+    if (DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
 
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
 
@@ -70,11 +72,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         // Assign tracks to Object by converting from ITrack to RawTrackProps
         rawObject.tracks = edObject.trackKeys.map(trackKey => {
           const track = tracks[trackKey];
-  
+
           const sortedKeyframes = track.keyframes
             .map(keyframeId => keyframes[keyframeId])
             .sort((a, b) => a.time - b.time);
-  
+
           return {
             propertyPath: track.propertyPath,
             keyframes: sortedKeyframes // Sorted keyframes by time
@@ -119,9 +121,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender = true
   ) {
     const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
-    const {vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-    if(DEBUG_REFRESHER)
+    if (DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing keyframe on trackKey:", trackKey)
 
     this.currentTimeline.objects.forEach((object) => {
@@ -131,20 +133,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
             case 'create':
               track.keyframes.push(edKeyframe);
               track.keyframes.sort((a, b) => a.time - b.time);
-              if(DEBUG_REFRESHER)
+              if (DEBUG_REFRESHER)
                 console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
               break;
 
             case 'remove':
               track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
-              if(DEBUG_REFRESHER)
+              if (DEBUG_REFRESHER)
                 console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
               break;
 
             case 'update':
               track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
               track.keyframes.sort((a, b) => a.time - b.time);
-              if(DEBUG_REFRESHER)
+              if (DEBUG_REFRESHER)
                 console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
               break;
 
@@ -167,7 +169,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   ) {
     const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
 
-    if(DEBUG_REFRESHER)
+    if (DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing static prop")
 
     this.currentTimeline.objects.forEach((rawObject) => {
@@ -192,7 +194,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         case 'remove':
           rawObject.staticProps = rawObject.staticProps
             .map((prop) => (prop.propertyPath === staticProp.propertyPath ? null : prop))
-            .filter(Boolean); 
+            .filter(Boolean);
       }
     });
 
@@ -256,7 +258,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (this.isPlaying && force === false)
       return;
 
-    if(DEBUG_RERENDER)
+    if (DEBUG_RERENDER)
       console.log("VXAnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
@@ -299,7 +301,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   initObjectOnMount(object: vxObjectProps) {
     console.log("AnimationEngine: InitObjectOnMount", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
-    if(!objectInTimeline) {
+    if (!objectInTimeline) {
       const newRawObject = {
         vxkey: object.vxkey,
         tracks: [],
@@ -343,6 +345,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._end();
 
     if (this.isPaused) return;
+
     this._timerId = requestAnimationFrame((time) => {
       this._tick({ now: time, autoEnd, to });
     });
@@ -354,7 +357,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.currentTimeline.objects.forEach(object => {
       const vxkey = object.vxkey;
       const vxobject = objectsStoreState.objects[vxkey];
-      if(!vxobject) return
+      if (!vxobject) return
 
       object.tracks.forEach(track => {
         const propertyPath = track.propertyPath
@@ -367,9 +370,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _applyKeyframes(
-    vxobject: vxObjectProps, 
-    propertyPath: string, 
-    keyframes: IKeyframe[], 
+    vxobject: vxObjectProps,
+    propertyPath: string,
+    keyframes: IKeyframe[],
     currentTime: number
   ) {
     if (!vxobject) return;
@@ -419,7 +422,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     return this.truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
   }
 
-
   private _interpolateNumber(
     startKeyframe: IKeyframe,
     endKeyframe: IKeyframe,
@@ -428,31 +430,41 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const startValue = startKeyframe.value as number;
     const endValue = endKeyframe.value as number;
 
-    // Handles default to linear if not provided
-    const startHandle = startKeyframe.handles.out 
-    const endHandle = endKeyframe.handles.in 
+    // Retrieve handles from keyframes or use defaults
+    const startHandle = startKeyframe.handles.out || { x: 0.3, y: 0.3 };
+    const endHandle = endKeyframe.handles.in || { x: 0.7, y: 0.7 };
 
-    return this._cubicBezier(
-      startValue,
-      startValue + startHandle.y * (endValue - startValue), // Control point based on handle "out"
-      endValue + endHandle.y * (startValue - endValue),     // Control point based on handle "in"
-      endValue,
-      progress
-    );
+    // Control points in (x, y)
+    const p0 = { x: 0, y: startValue };
+    const p1 = {
+      x: startHandle.x,
+      y: startValue + startHandle.y * (endValue - startValue),
+    };
+    const p2 = {
+      x: endHandle.x,
+      y: startValue + endHandle.y * (endValue - startValue),
+    };
+    const p3 = { x: 1, y: endValue };
+
+    // Special case for linear interpolation
+    if (
+      startHandle.x === 0.3 && startHandle.y === 0.3 &&
+      endHandle.x === 0.7&& endHandle.y === 0.7
+    ) {
+      return startValue + (endValue - startValue) * progress;
+    }
+
+    // Solve for t given progress (which is x)
+    const x = progress;
+    const t = solveCubicBezierT(p0.x, p1.x, p2.x, p3.x, x);
+
+    // Compute y(t)
+    const y = cubicBezier(p0.y, p1.y, p2.y, p3.y, t);
+
+    return y;
   }
 
-  
-  private _cubicBezier(p0: number, p1: number, p2: number, p3: number, t: number): number {
-    const u = 1 - t;
-    return (
-      u ** 3 * p0 +
-      3 * u ** 2 * t * p1 +
-      3 * u * t ** 2 * p2 +
-      t ** 3 * p3
-    );
-  }
 
-  
   private truncateToDecimals(num: number, decimals: number): number {
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;

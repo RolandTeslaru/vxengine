@@ -55,8 +55,6 @@ export const CoreUI = () => {
 
             <TimelineEditorDebug />
 
-            <FrequentStateVisualizer />
-
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
                 href="https://vexr-labs.com/"

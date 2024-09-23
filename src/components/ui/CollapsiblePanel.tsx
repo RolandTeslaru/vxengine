@@ -1,6 +1,8 @@
 import { ChevronRight } from '@geist-ui/icons'
 import { motion } from "framer-motion";
 import React, { useState } from 'react'
+// @ts-expect-error
+import s from "./collapsiblePanel.module.scss"
 
 interface Props {
     title: string,
@@ -14,9 +16,11 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`bg-neutral-950 overflow-hidden z-20 w-full h-fit transition-all ease-in-out duration-500 
-                            rounded-2xl p-2 pt-0 pb-0 border border-neutral-800 border-opacity-70 ${open === false && "!h-[40px]"} ` +
-            className }
+        <div className={` z-20 w-full h-fit relative !transform-gpu
+                            rounded-2xl p-2 pt-0 pb-0 ${open === false && "!h-[40px]"} ` + s.gradient_border_mask + " " +
+            className  }
+            style={{background: "linear-gradient(130deg, rgba(20,20,20,1) 0%, rgba(10,10,10,1) 50%)",
+            }}
             // style={{ boxShadow: "0px 0px 5px 3px rgba(0,0,0, 0.6)" }}
         >
             {/* Title */}
