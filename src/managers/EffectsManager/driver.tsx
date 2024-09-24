@@ -23,7 +23,7 @@ import {
 } from 'postprocessing'
 import { isWebGL2Available } from 'three-stdlib'
 import * as THREE from "three"
-import { useVXEngine } from "vxengine/engine"
+import { useVXEngine } from "@vxengine/engine"
 
 import { EffectComposerProps } from "../../types/effectComposer"
 

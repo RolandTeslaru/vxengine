@@ -1,8 +1,8 @@
-import { IAnimationEngine } from "vxengine/AnimationEngine/types/engine";
+import { IAnimationEngine } from "@vxengine/AnimationEngine/types/engine";
 import { parserPixelToTime, parserTimeToPixel } from "./deal_data";
-import { DEFAULT_SCALE_WIDTH } from "vxengine/AnimationEngine/interface/const";
+import { DEFAULT_SCALE_WIDTH } from "@vxengine/AnimationEngine/interface/const";
 import { useTimelineEditorAPI } from "../store";
-import { useRefStore } from "vxengine/utils/useRefStore";
+import { useRefStore } from "@vxengine/utils/useRefStore";
 
 export const handleSetCursor = (param: {
     left?: number;

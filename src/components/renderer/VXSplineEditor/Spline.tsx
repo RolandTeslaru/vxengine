@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import splinePointsData from "@/SplinePositions.json";
+import splinePointsData from "@vxengine/SplinePositions.json";
 import { Html } from '@react-three/drei';
 
 const ARC_SEGMENTS = 200;

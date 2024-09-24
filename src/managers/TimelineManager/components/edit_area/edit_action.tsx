@@ -5,12 +5,12 @@ import { RowDnd } from '../row_rnd/row_rnd';
 import { RndDragCallback, RndDragEndCallback, RndDragStartCallback, RndResizeCallback, RndResizeEndCallback, RndResizeStartCallback, RowRndApi } from '../row_rnd/row_rnd_interface';
 import { DragLineData } from './drag_lines';
 import './edit_action.scss';
-import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { TimelineAction, TimelineRow } from 'vxengine/AnimationEngine/interface/action';
-import { DEFAULT_MOVE_GRID, DEFAULT_ADSORPTION_DISTANCE } from 'vxengine/AnimationEngine/interface/const';
+import { CommonProp } from '@vxengine/AnimationEngine/interface/common_prop';
+import { TimelineAction, TimelineRow } from '@vxengine/AnimationEngine/interface/action';
+import { DEFAULT_MOVE_GRID, DEFAULT_ADSORPTION_DISTANCE } from '@vxengine/AnimationEngine/interface/const';
 import { useTimelineEditorAPI } from '../../store';
-import { useVXEngine } from 'vxengine/engine';
-import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
+import { useVXEngine } from '@vxengine/engine';
+import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { handleSetScaleCount } from '../../utils/handleSetScaleCount';
 
 

@@ -5,18 +5,20 @@
 
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
-import { vxObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/types/objectStore';
 
 import * as THREE from "three"
 import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
-import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
-import { useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store';
-import { extractDataFromTrackKey } from 'vxengine/managers/TimelineManager/utils/trackDataProcessing';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { useObjectPropertyStore } from '@vxengine/managers/ObjectManager/store';
+import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useVXAnimationStore } from './AnimationStore';
-import { useVXObjectStore } from 'vxengine/vxobject';
+import { useVXObjectStore } from '@vxengine/vxobject';
 import Stats from 'stats.js';
 import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
+import { loadWasmModule } from '@vxengine/utils/wasmLoader';
+// import { cubicBezier as wasmCubicBezier, solveCubicBezierT as wasmSolveCubicBezierT } from "../../build/release"
 const IS_DEV = process.env.NODE_ENG === 'development'
 
 const DEBUG_REFRESHER = false;
@@ -28,11 +30,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /** requestAnimationFrame timerId */
   private _timerId: number;
   private _prev: number;
+  private _wasmInstance: WebAssembly.Instance | null = null;
+  private _wasmReady: Promise<void>
+  private _isWasmInitialized: boolean = false
 
   private _currentTime: number = 0;
 
   constructor() {
     super(new Events());
+    this._wasmReady = this._initializeWasm()
   }
 
   get timelines() { return useVXAnimationStore.getState().timelines; }
@@ -327,6 +333,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
   }
 
+  private async _initializeWasm(): Promise<void> {
+    try {
+      this._wasmInstance = await loadWasmModule();
+      this._isWasmInitialized = true;
+      // Perform any additional setup that requires wasmInstance
+    } catch (error) {
+      console.error('Error initializing WebAssembly module:', error);
+      // Handle the error appropriately
+    }
+  }
+
 
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
     if (this.isPaused) return;
@@ -414,12 +431,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     const duration = endKeyframe.time - startKeyframe.time;
-    const progress = (currentTime - startKeyframe.time) / duration;
+    const progress = truncateToDecimals((currentTime - startKeyframe.time) / duration, ENGINE_PRECISION + 1)
 
     const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
 
     // Truncate the result to ensure precision
-    return this.truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
+    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
   }
 
   private _interpolateNumber(
@@ -430,44 +447,61 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const startValue = startKeyframe.value as number;
     const endValue = endKeyframe.value as number;
 
-    // Retrieve handles from keyframes or use defaults
-    const startHandle = startKeyframe.handles.out || { x: 0.3, y: 0.3 };
-    const endHandle = endKeyframe.handles.in || { x: 0.7, y: 0.7 };
+    const startHandleX = startKeyframe.handles.out.x || 0.3
+    const startHandleY = startKeyframe.handles.out.y || 0.3
 
-    // Control points in (x, y)
-    const p0 = { x: 0, y: startValue };
-    const p1 = {
-      x: startHandle.x,
-      y: startValue + startHandle.y * (endValue - startValue),
-    };
-    const p2 = {
-      x: endHandle.x,
-      y: startValue + endHandle.y * (endValue - startValue),
-    };
-    const p3 = { x: 1, y: endValue };
+    const endHandleX = endKeyframe.handles.in.x || 0.7
+    const endHandleY = endKeyframe.handles.in.y || 0.7
 
-    // Special case for linear interpolation
-    if (
-      startHandle.x === 0.3 && startHandle.y === 0.3 &&
-      endHandle.x === 0.7&& endHandle.y === 0.7
+    // Use WebAssembly calculations
+    if (this._isWasmInitialized) {
+      const wasmInterpolateNumber = this._wasmInstance.exports.interpolateNumber as (
+        startValue: number, 
+        endValue: number, 
+        startHandleX: number, 
+        startHandleY: number,
+        endHandleX: number,
+        endHandleY: number,
+        progress: number
+      ) => number
+
+      const WASM_interpolatedValue = wasmInterpolateNumber(
+        startValue,
+        endValue,
+        startHandleX,
+        startHandleY,
+        endHandleX,
+        endHandleY,
+        progress
+      )
+      // console.log("WASM Interpolated Value", WASM_interpolatedValue)
+      
+      return WASM_interpolatedValue;
+    }
+
+    // console.log("VXAnimationEngine: using fallback javascript calculation")
+    const p0: { x: number, y: number } = { x: 0, y: startValue };
+    const p1: { x: number, y: number } = {
+      x: startHandleX,
+      y: startValue + startHandleY * (endValue - startValue),
+    };
+    const p2: { x: number, y: number } = {
+      x: endHandleX,
+      y: startValue + endHandleY * (endValue - startValue),
+    };
+    const p3: { x: number, y: number } = { x: 1, y: endValue };
+
+    if ( // Special case for linear interpolation
+      startHandleX === 0.3 && startHandleY === 0.3 &&
+      endHandleX === 0.7 && endHandleY === 0.7
     ) {
       return startValue + (endValue - startValue) * progress;
     }
 
-    // Solve for t given progress (which is x)
-    const x = progress;
-    const t = solveCubicBezierT(p0.x, p1.x, p2.x, p3.x, x);
+    const t = solveCubicBezierT(p0.x, p1.x, p2.x, p3.x, progress);
+    const JS_interpolatedValue = cubicBezier(p0.y, p1.y, p2.y, p3.y, t);
 
-    // Compute y(t)
-    const y = cubicBezier(p0.y, p1.y, p2.y, p3.y, t);
-
-    return y;
-  }
-
-
-  private truncateToDecimals(num: number, decimals: number): number {
-    const factor = Math.pow(10, decimals);
-    return Math.trunc(num * factor) / factor;
+    return JS_interpolatedValue;
   }
 
 
@@ -515,4 +549,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.pause();
     this.trigger('ended', { engine: this });
   }
+}
+
+
+function truncateToDecimals(num: number, decimals: number): number {
+  const factor = Math.pow(10, decimals);
+  return Math.trunc(num * factor) / factor;
 }

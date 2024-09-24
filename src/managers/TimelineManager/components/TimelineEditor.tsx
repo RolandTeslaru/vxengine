@@ -7,13 +7,13 @@ import { checkProps } from '../utils/check_props';
 import { EditArea } from './edit_area/edit_area';
 import './timeline.scss';
 import { TimeArea } from './time_area/time_area';
-import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
-import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
-import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
+import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
+import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
+import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorAPI } from '../store';
 import { handleSetCursor } from '../utils/handleSetCursor';
 import { shallow } from 'zustand/shallow';
-import { useRefStore } from 'vxengine/utils/useRefStore';
+import { useRefStore } from '@vxengine/utils/useRefStore';
 
 export const startLeft = 0;
 

@@ -1,5 +1,5 @@
 import { EffectComposer } from "three-stdlib";
-import { AnimationEngine } from "vxengine/AnimationEngine/engine";
+import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
 
 export interface EngineContextProps {
     mountEngineUI: boolean

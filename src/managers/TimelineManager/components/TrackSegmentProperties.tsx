@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
-import BezierCurveEditor from 'vxengine/components/ui/BezierCurveEditor'
-import CollapsiblePanel from 'vxengine/components/ui/CollapsiblePanel'
+import BezierCurveEditor from '@vxengine/components/ui/BezierCurveEditor'
+import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useTimelineEditorAPI } from '../store'
-import { Input } from 'vxengine/components/shadcn/input'
+import { Input } from '@vxengine/components/shadcn/input'
 
 const TrackSegmentProperties = React.memo(() => {
     const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)

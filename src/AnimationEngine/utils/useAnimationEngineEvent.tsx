@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useVXEngine } from 'vxengine/engine';
+import { useVXEngine } from '@vxengine/engine';
 import { EventTypes } from '../events';
 
 function useAnimationEngineEvent(

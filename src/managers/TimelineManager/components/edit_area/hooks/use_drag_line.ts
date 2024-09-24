@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { parserActionsToPositions, parserTimeToTransform } from "../../../utils/deal_data";
 import { DragLineData } from "../drag_lines";
-import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
-import { TimelineAction, TimelineRow } from "vxengine/AnimationEngine/interface/action";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { TimelineAction, TimelineRow } from "@vxengine/AnimationEngine/interface/action";
 
 export function useDragLine() {
   const [dragLineData, setDragLineData] = useState<DragLineData>({ isMoving: false, movePositions: [], assistPositions: [] });

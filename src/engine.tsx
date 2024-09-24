@@ -6,8 +6,9 @@ import { EffectComposer } from 'three-stdlib'
 import { EngineContextProps, VXEngineProviderProps } from './types/engine'
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
-import { AnimationEngine } from "vxengine/AnimationEngine/engine"
+import { AnimationEngine } from "@vxengine/AnimationEngine/engine"
 import { useTimelineEditorAPI } from './managers/TimelineManager/store'
+import { loadWasmModule } from './utils/wasmLoader'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>

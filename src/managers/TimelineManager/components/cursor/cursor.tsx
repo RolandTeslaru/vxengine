@@ -3,7 +3,7 @@ import { prefix } from '../../utils/deal_class_prefix';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
 import './cursor.scss';
-import { useRefStore } from 'vxengine/utils/useRefStore';
+import { useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from './handlers';
 
 

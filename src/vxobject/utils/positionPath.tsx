@@ -2,9 +2,9 @@ import { ThreeEvent, useFrame } from "@react-three/fiber";
 import React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"
-import { IKeyframe } from "vxengine/AnimationEngine/types/track";
-import { useObjectManagerStore } from "vxengine/managers/ObjectManager/store";
-import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
+import { IKeyframe } from "@vxengine/AnimationEngine/types/track";
+import { useObjectManagerStore } from "@vxengine/managers/ObjectManager/store";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { shallow } from "zustand/shallow";
 import KeyframeNode from "./keyframeNode";
 

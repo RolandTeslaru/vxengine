@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Input, InputProps } from '../shadcn/input'
 import KeyframeControl from './KeyframeControl'
-import { useObjectManagerStore, useObjectPropertyStore } from 'vxengine/managers/ObjectManager/store'
-import { getNestedProperty, setNestedProperty } from 'vxengine/utils/nestedProperty'
+import { useObjectManagerStore, useObjectPropertyStore } from '@vxengine/managers/ObjectManager/store'
+import { getNestedProperty, setNestedProperty } from '@vxengine/utils/nestedProperty'
 import { shallow } from 'zustand/shallow'
-import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store'
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 
 interface Props extends InputProps {
     propertyPath: string

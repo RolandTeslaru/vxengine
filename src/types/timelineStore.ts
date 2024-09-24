@@ -1,4 +1,4 @@
-import { ITimeline } from "vxengine/AnimationEngine/types/track";
+import { ITimeline } from "@vxengine/AnimationEngine/types/track";
 
 export interface TimelineStoreStateProps {
     timelines: ITimeline[];

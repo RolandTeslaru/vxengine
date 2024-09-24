@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
-import { useTimelineEditorAPI } from 'vxengine/managers/TimelineManager/store';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 
 interface TimelineKeyframeControlProps {
     trackKey?: string,

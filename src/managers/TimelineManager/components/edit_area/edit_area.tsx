@@ -2,13 +2,13 @@ import React, { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef
 import './edit_area.scss';
 import { EditTrack } from './EditTrack';
 import { useDragLine } from './hooks/use_drag_line';
-import { ITrack, edObjectProps, PathGroup, IKeyframe } from 'vxengine/AnimationEngine/types/track';
+import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
-import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from 'vxengine/AnimationEngine/interface/const';
-import { useVXAnimationStore } from 'vxengine/AnimationEngine/AnimationStore';
+import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
+import { useVXAnimationStore } from '@vxengine/AnimationEngine/AnimationStore';
 import { CursorLine } from '../cursor/cursor';
-import { useRefStore } from 'vxengine/utils/useRefStore';
+import { useRefStore } from '@vxengine/utils/useRefStore';
 
 export type EditAreaProps = {
   deltaScrollLeft: (scrollLeft: number) => void;

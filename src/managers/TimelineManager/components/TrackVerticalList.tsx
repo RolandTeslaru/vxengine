@@ -4,12 +4,12 @@
 
 import { ChevronLeft, Square, ChevronRight, ChevronDown } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { edObjectProps, IKeyframe, ITrack, PathGroup } from "vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, ITrack, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../store";
-import { ScrollArea } from "vxengine/components/shadcn/scrollArea";
-import KeyframeControl from "vxengine/components/ui/KeyframeControl";
-import { useRefStore } from "vxengine/utils/useRefStore";
+import { ScrollArea } from "@vxengine/components/shadcn/scrollArea";
+import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
+import { useRefStore } from "@vxengine/utils/useRefStore";
 
 const TrackVerticalList = () => {
     const { setCollapsedGroups, groupedPaths } = useTimelineEditorAPI(state => ({

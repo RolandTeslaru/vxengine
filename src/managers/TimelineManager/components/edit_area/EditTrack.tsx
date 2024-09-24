@@ -2,13 +2,13 @@ import React, { FC, useEffect } from 'react';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { DragLineData } from './drag_lines';
 import './edit_row.scss';
-import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
-import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
+import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
+import { CommonProp } from '@vxengine/AnimationEngine/interface/common_prop';
 import { EditKeyframe } from './EditKeyframe';
 import { useTimelineEditorAPI } from '../../store';
 import { prefix } from '../../utils/deal_class_prefix';
 import { shallow } from 'zustand/shallow';
-import { useRefStore } from 'vxengine/utils/useRefStore';
+import { useRefStore } from '@vxengine/utils/useRefStore';
 import { RowDnd } from '../row_rnd/row_rnd';
 
 export type EditRowProps = CommonProp & {
@@ -41,6 +41,7 @@ export const EditTrack: FC<EditRowProps> = (props) => {
           firstKeyframeKey={firstKeyframeKey} 
           secondKeyframeKey={secondKeyframeKey}
           trackKey={trackKey}
+          key={index}
         />
       })}
 

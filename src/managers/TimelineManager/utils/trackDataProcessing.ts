@@ -1,4 +1,4 @@
-import { edObjectProps, ITrack, PathGroup, RawObjectProps, RawTrackProps } from "vxengine/AnimationEngine/types/track";
+import { edObjectProps, ITrack, PathGroup, RawObjectProps, RawTrackProps } from "@vxengine/AnimationEngine/types/track";
 import { useTimelineEditorAPI } from "../store";
 
 export const precomputeRowIndices = (

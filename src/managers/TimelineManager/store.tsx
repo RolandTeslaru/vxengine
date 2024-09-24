@@ -1,20 +1,20 @@
 import { create } from 'zustand';
-import { MIN_SCALE_COUNT, START_CURSOR_TIME } from 'vxengine/AnimationEngine/interface/const';
-import { useVXEngine } from 'vxengine/engine';
-import { IKeyframe, IStaticProps, ITrack, PathGroup, RawObjectProps, edObjectProps } from 'vxengine/AnimationEngine/types/track';
+import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
+import { useVXEngine } from '@vxengine/engine';
+import { IKeyframe, IStaticProps, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { ScrollSync } from 'react-virtualized';
 import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
-import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
-import { useVXObjectStore } from "vxengine/vxobject";
+import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
+import { useVXObjectStore } from "@vxengine/vxobject";
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
 import { computeGroupPathFromRawObject, computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { useObjectManagerStore, useObjectPropertyStore } from '../ObjectManager/store';
-import { getNestedProperty } from 'vxengine/utils/nestedProperty';
+import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
-import { vxObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { RowRndApi } from './components/row_rnd/row_rnd_interface';
 

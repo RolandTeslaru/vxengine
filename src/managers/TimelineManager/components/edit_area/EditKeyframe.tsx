@@ -1,12 +1,12 @@
 import React, { FC, useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { RowDnd } from '../row_rnd/row_rnd';
-import { CommonProp } from 'vxengine/AnimationEngine/interface/common_prop';
-import { IKeyframe, ITrack } from 'vxengine/AnimationEngine/types/track';
+import { CommonProp } from '@vxengine/AnimationEngine/interface/common_prop';
+import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '../../store';
-import { useVXEngine } from 'vxengine/engine';
+import { useVXEngine } from '@vxengine/engine';
 import { shallow } from 'zustand/shallow';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from 'vxengine/components/shadcn/contextMenu';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 
 export type EditKeyframeProps = {
     track: ITrack;

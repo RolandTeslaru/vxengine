@@ -6,23 +6,23 @@ import React, { useEffect, useRef, useState } from 'react'
 import { cloneDeep } from 'lodash';
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
 import { AnimatePresence, motion } from "framer-motion"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from 'vxengine/components/shadcn/select';
-import { Slider } from 'vxengine/components/shadcn/slider';
-import { Switch } from 'vxengine/components/shadcn/switch';
-import { TimelineEffect } from 'vxengine/AnimationEngine/interface/effect';
-import { TimelineAction, TimelineRow, TimelineState } from 'vxengine/AnimationEngine/interface/timeline';
-import { useVXEngine } from 'vxengine/engine';
-import useAnimationEngineEvent from 'vxengine/AnimationEngine/utils/useAnimationEngineEvent';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
+import { Slider } from '@vxengine/components/shadcn/slider';
+import { Switch } from '@vxengine/components/shadcn/switch';
+import { TimelineEffect } from '@vxengine/AnimationEngine/interface/effect';
+import { TimelineAction, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
+import { useVXEngine } from '@vxengine/engine';
+import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorAPI } from './store';
 import { useShallow } from 'zustand/react/shallow'
 import { shallow } from 'zustand/shallow';
-import { vxObjectProps } from 'vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/types/objectStore';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
-import { useVXUiStore } from "vxengine/components/ui/VXUIStore"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from 'vxengine/components/shadcn/Resizeable';
-import { useVXAnimationStore } from 'vxengine/AnimationEngine/AnimationStore';
-import { Input } from 'vxengine/components/shadcn/input';
+import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@vxengine/components/shadcn/Resizeable';
+import { useVXAnimationStore } from '@vxengine/AnimationEngine/AnimationStore';
+import { Input } from '@vxengine/components/shadcn/input';
 import ProgressionControls from './components/ProgressionControls';
 
 export const scaleWidth = 160;

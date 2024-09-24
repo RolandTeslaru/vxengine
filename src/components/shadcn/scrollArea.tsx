@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-import { cn } from "vxengine/utils/shadcn"
+import { cn } from "@vxengine/utils"
+
 
 interface ScrollAreaProps
   extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {

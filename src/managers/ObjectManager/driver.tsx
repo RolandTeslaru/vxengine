@@ -2,7 +2,7 @@ import { TransformControls, useCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { useVXEngine } from "vxengine/engine";
+import { useVXEngine } from "@vxengine/engine";
 import { useObjectManagerStore, useObjectPropertyStore } from "./store";
 import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../TimelineManager/store";

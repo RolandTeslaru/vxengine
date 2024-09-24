@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 import { vxObjectProps, } from '../types/objectStore';
 import { TimelineStoreStateProps } from '../types/timelineStore';
-import { ITimeline } from 'vxengine/AnimationEngine/types/track';
+import { ITimeline } from '@vxengine/AnimationEngine/types/track';
 import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 

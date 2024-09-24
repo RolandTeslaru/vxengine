@@ -2,9 +2,9 @@ import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import React, { useEffect } from "react";
 import { useRef } from "react";
-import { useObjectManagerStore } from "vxengine/managers/ObjectManager/store";
-import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
-import { UtilityNodeProps } from "vxengine/types/utilityNode";
+import { useObjectManagerStore } from "@vxengine/managers/ObjectManager/store";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { UtilityNodeProps } from "@vxengine/types/utilityNode";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];

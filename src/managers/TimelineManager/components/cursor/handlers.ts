@@ -1,4 +1,4 @@
-import { useRefStore } from "vxengine/utils/useRefStore"
+import { useRefStore } from "@vxengine/utils/useRefStore"
 import { useTimelineEditorAPI } from "../../store"
 import { parserPixelToTime, parserTimeToPixel } from "../../utils/deal_data"
 import { handleSetCursor } from "../../utils/handleSetCursor"

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, isValidElement, useMemo, useStat
 import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCamera, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D } from 'three';
 import { EditableMeshProps, EditableSpotLightProps, EditableLineSegmentsProps, EditableLineLoopProps, EditableAmbientLightProps, EditableDirectionalLightProps, EditableFogProps, EditableGroupProps, EditableHemisphereLightProps, EditableOrthographicCameraProps, EditablePerspectiveCameraProps, EditablePointLightProps, EditablePointsProps, } from "../types/editableObject";
 import VXEditableWrapper, { VXEditableWrapperProps } from './wrapper';
-import { useVXObjectStore } from "vxengine/vxobject";
+import { useVXObjectStore } from "@vxengine/vxobject";
 
 const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, ...rest } = props;

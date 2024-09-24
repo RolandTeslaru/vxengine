@@ -1,5 +1,5 @@
-import { TimelineAction, TimelineRow } from "vxengine/AnimationEngine/interface/action";
-import { ADD_SCALE_COUNT } from "vxengine/AnimationEngine/interface/const";
+import { TimelineAction, TimelineRow } from "@vxengine/AnimationEngine/interface/action";
+import { ADD_SCALE_COUNT } from "@vxengine/AnimationEngine/interface/const";
 import { useTimelineEditorAPI } from "../store";
 
 /** 时间转像素 */

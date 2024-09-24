@@ -5,9 +5,9 @@
 import React from 'react'
 import { CameraControls } from '@react-three/drei/core/CameraControls'
 import { OrbitControls } from '@react-three/drei'
-import { Ground, VXFrameLimiter } from 'vxengine/components/renderer'
-import { GizmoHelper } from 'vxengine/components/renderer/gizmoHelper'
-import { GizmoViewport } from 'vxengine/components/renderer/gizmoViewport'
+import { Ground, VXFrameLimiter } from '@vxengine/components/renderer'
+import { GizmoHelper } from '@vxengine/components/renderer/gizmoHelper'
+import { GizmoViewport } from '@vxengine/components/renderer/gizmoViewport'
 
 const VXEngineUtils = () => {
   return (
@@ -21,5 +21,4 @@ const VXEngineUtils = () => {
     </>
   )
 }
-
 export default VXEngineUtils

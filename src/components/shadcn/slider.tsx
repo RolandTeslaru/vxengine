@@ -3,7 +3,8 @@
 import * as React from "react"
 import * as SliderPrimitive from "@radix-ui/react-slider"
 
-import { cn } from "vxengine/utils/shadcn"
+import { cn } from "@vxengine/utils"
+
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,

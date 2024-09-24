@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AnimationEngine } from 'vxengine/AnimationEngine/engine';
+import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { EffectComposer } from 'three-stdlib';
 
 interface VXEngineStoreState {

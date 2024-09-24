@@ -13,14 +13,14 @@ import { EffectsManagerDriver as VXEffectsManagerDriver } from '../managers/Effe
 import { ObjectManagerDriver as VXObjectManagerDriver } from '../managers/ObjectManager'
 import { RendererCoreProps } from '../types/core'
 import dynamic from 'next/dynamic'
-import { useVXEngine } from 'vxengine/engine'
+import { useVXEngine } from '@vxengine/engine'
 import { context as FiberContext } from '@react-three/fiber';
 import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
-import { useVXObjectStore } from 'vxengine/vxobject'
+import { useVXObjectStore } from '@vxengine/vxobject'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
@@ -52,7 +52,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   // because they aren't mounted.
   useEffect(() => {
     animationEngine.reRender({ force: true, cause: "objects added"});
-  }, [objects])
+  }, [objects, animationEngine])
 
   return (
     <>

@@ -2,9 +2,9 @@ import React, { forwardRef, ElementRef, ComponentPropsWithoutRef } from 'react'
 import Image from "next/image"
 import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../shadcn/menubar'
 import { } from '@radix-ui/react-menubar'
-import { useObjectManagerStore } from 'vxengine/managers/ObjectManager/store'
+import { useObjectManagerStore } from '@vxengine/managers/ObjectManager/store'
 import { shallow } from 'zustand/shallow'
-import { useVXObjectStore } from 'vxengine/vxobject'
+import { useVXObjectStore } from '@vxengine/vxobject'
 
 export const MenubarUI = () => {
 

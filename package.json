@@ -8,7 +8,10 @@
     "dev": "tsc --watch",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "test": "jest",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "asbuild:debug": "asc assembly/index.ts --target debug",
+    "asbuild:release": "asc assembly/index.ts --target release",
+    "asbuild": "npm run asbuild:debug && npm run asbuild:release"
   },
   "peerDependencies": {
     "@emailjs/browser": "^3.12.1",
@@ -91,6 +94,14 @@
     "raw-loader": "^4.0.2",
     "style-loader": "^4.0.0",
     "tailwindcss": "^3.4.9",
-    "typescript": "latest"
+    "typescript": "latest",
+    "assemblyscript": "^0.27.29"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./build/release.js",
+      "types": "./build/release.d.ts"
+    }
   }
 }

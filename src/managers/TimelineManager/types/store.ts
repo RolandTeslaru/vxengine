@@ -1,6 +1,6 @@
-import { AnimationEngine } from "vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, IStaticProps, ITrack, RawObjectProps, VXVector2 } from "vxengine/AnimationEngine/types/track";
-import { vxObjectProps } from "vxengine/types/objectStore";
+import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
+import { edObjectProps, IKeyframe, IStaticProps, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
+import { vxObjectProps } from "@vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
 import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
 

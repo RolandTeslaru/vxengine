@@ -4,16 +4,16 @@
 
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, isValidElement, useMemo, useState } from 'react';
-import { useVXObjectStore } from "vxengine/vxobject";
-import { useObjectManagerStore } from "vxengine/managers/ObjectManager/store";
+import { useVXObjectStore } from "@vxengine/vxobject";
+import { useObjectManagerStore } from "@vxengine/managers/ObjectManager/store";
 import { shallow } from "zustand/shallow";
-import { useVXEngine } from "vxengine/engine";
+import { useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, useFrame } from '@react-three/fiber';
-import { vxObjectProps } from "vxengine/types/objectStore";
+import { vxObjectProps } from "@vxengine/types/objectStore";
 import { Edges } from "@react-three/drei";
 import PositionPath from "./utils/positionPath";
 import { computeMorphedAttributes } from "three-stdlib";
-import { useTimelineEditorAPI } from "vxengine/managers/TimelineManager/store";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 
 export interface VXEditableWrapperProps<T extends THREE.Object3D> {
     type: string;

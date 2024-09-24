@@ -4,10 +4,10 @@ import React, { ReactElement, useEffect, useImperativeHandle, useRef } from 'rea
 import { useAutoScroll } from './hooks/useAutoScroll';
 import { InteractComp } from './interactable';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
-import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from 'vxengine/AnimationEngine/interface/const';
+import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from '@vxengine/AnimationEngine/interface/const';
 import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
-import { useRefStore } from 'vxengine/utils/useRefStore';
+import { useRefStore } from '@vxengine/utils/useRefStore';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
