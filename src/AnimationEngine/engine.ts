@@ -215,7 +215,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   setCurrentTimeline(timelineId: string) {
     console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
-    const selectedTimeline = this.timelines.find(timeline => timeline.id === timelineId);
+    const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
     if (!selectedTimeline) {
       throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
     }
@@ -224,10 +224,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.reRender({ time: this._currentTime, force: true });
 
-    const rawObjects = selectedTimeline.objects
-
     //  Initialize the Editor Data
-    useTimelineEditorAPI.getState().setEditorData(rawObjects)
+    useTimelineEditorAPI.getState().setEditorData(selectedTimeline)
   }
 
 

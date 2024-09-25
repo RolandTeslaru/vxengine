@@ -57,12 +57,14 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
         useEffect(() => {
-            const newVXObject = {
+            const newVXObject: vxObjectProps = {
                 type: type,
                 ref: ref,
                 vxkey: vxkey,
                 name: props.name || type,
-                settings: { showPositionPath: false }, // Default settings
+                additionalSettings: { 
+                    showPositionPath: false,
+                }
             };
 
             memoizedAddObject(newVXObject);
@@ -140,7 +142,7 @@ const VxObjectEditorUtils: React.FC<ObjectEditorUtils> = React.memo(({ vxObject,
             <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
             </Edges>
 
-            {vxObject.settings["showPositionPath"] &&
+            {vxObject.additionalSettings["showPositionPath"] &&
                 <PositionPath vxkey={vxkey}/>
             }
         </>

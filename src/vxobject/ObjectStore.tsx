@@ -28,26 +28,26 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
   objects: {},
   addObject: (object) => set((state) => addObject(state, object)),
   removeObject: (vxkey) => set((state) => removeObject(state, vxkey)),
-  setObjectSetting: (vxkey: string, settingKey: string, settingValue: boolean) => {
+  setAdditionalSetting: (vxkey: string, settingKey: string, settingValue: boolean) => {
     set(produce((state: ObjectStoreStateProps) => {
       const object = state.objects[vxkey]
 
-      if (!object.settings) {
-        object.settings = {}; 
+      if (!object.additionalSettings) {
+        object.additionalSettings = {}; 
       }
       
-      object.settings[settingKey] = settingValue
+      object.additionalSettings[settingKey] = settingValue
     }))
   },
-  toggleObjectSetting: (vxkey: string, settingKey: string) => {
+  toggleAdditionalSetting: (vxkey: string, settingKey: string) => {
     set(produce((state: ObjectStoreStateProps) => {
       const object = state.objects[vxkey]
 
-      if (!object.settings) {
-        object.settings = {}; 
+      if (!object.additionalSettings) {
+        object.additionalSettings = {}; 
       }
       
-      object.settings[settingKey] = !object.settings[settingKey]
+      object.additionalSettings[settingKey] = !object.additionalSettings[settingKey]
     }))
   }
 }));

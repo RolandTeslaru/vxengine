@@ -42,17 +42,17 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
 }) => {
   const [dpr_state, setDpr_state] = useState(0.6)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
-  const { animationEngine } = useVXEngine();
-  const { objects } = useVXObjectStore(state => ({
-    objects: state.objects
-  }));
+  // const { animationEngine } = useVXEngine();
+  // const { objects } = useVXObjectStore(state => state.objects)
+
+  // idk why I added this  
 
   // Because the animationEngine is initialized really early, 
   // it cant apply the starter keyframes to the vxObjects present in the scene 
   // because they aren't mounted.
-  useEffect(() => {
-    animationEngine.reRender({ force: true, cause: "objects added"});
-  }, [objects, animationEngine])
+  // useEffect(() => {
+  //   animationEngine.reRender({ force: true, cause: "objects added"});
+  // }, [Object.keys(objects ? objects : {}), animationEngine])
 
   return (
     <>
@@ -72,17 +72,15 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         <PerformanceMonitor
           onChange={({ factor }) => setDpr_state(round(0.2 + 1.1 * factor, 1))}
         >
-          <Suspense fallback={null}>
               <color attach="background" args={['black']} />
               {process.env.NODE_ENV === 'development' && (
                 VXEngineUtils && <VXEngineUtils/>
               )}
               <VXEffectsManagerDriver>
-                <Bloom mipmapBlur={true} intensity={0} kernelSize={5}  />
+                <Bloom mipmapBlur={true} intensity={3} kernelSize={5}  />
               </VXEffectsManagerDriver>
               <VXObjectManagerDriver/>
               {children}
-          </Suspense>
         </PerformanceMonitor>
       </Canvas>
     </>

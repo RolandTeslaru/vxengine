@@ -4,13 +4,17 @@ export interface vxObjectProps {
     // FIXME Three js Object ref
     ref: React.MutableRefObject<any>;
     vxkey: string
-    settings?: Record<string, any>
+    additionalSettings?: additionalSettingsProps
+}
+
+export interface additionalSettingsProps{
+    showPositionPath?: boolean
 }
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>
     addObject: (object: vxObjectProps) => void;
     removeObject: (vxkey: string) => void;
-    setObjectSetting: (vxkey: string, settingKey: string, value: any) => void; 
-    toggleObjectSetting: (vxkey: string, settingKey: string) => void; 
+    setAdditionalSetting: (vxkey: string, additionalSettingKey: string, value: any) => void; 
+    toggleAdditionalSetting: (vxkey: string, additionalSettingKey: string) => void; 
 }

@@ -285,6 +285,36 @@ const UtilityNodesComponent = () => {
     );
 };
 
+const SettingsComponent = () => {
+    const settings = useTimelineEditorAPI(state => state.settings);
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(settings, null, 2)}
+        </pre>
+    )
+}
+
+const SplinesComponent = () => {
+    const splines = useTimelineEditorAPI(state => state.splines);
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(splines, null, 2)}
+        </pre>
+    )
+}
+
 const VxobjectsComponent = () => {
     const vxobjects = useVXObjectStore(state => state.objects);
 
@@ -328,6 +358,10 @@ const TimelineEditorDebug = () => {
                 return <VxobjectsComponent />;
             case "utilityNodes":
                 return <UtilityNodesComponent />;
+            case "settings": 
+                return <SettingsComponent/>
+            case "splines": 
+                return <SplinesComponent/>;
             default:
                 return null;
         }
@@ -366,6 +400,8 @@ const TimelineEditorDebug = () => {
                                 <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
                                 <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
                                 <SelectItem value={"utilityNodes"} >utilityNodes</SelectItem>
+                                <SelectItem value={"settings"} >settings</SelectItem>
+                                <SelectItem value={"splines"} >splines</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

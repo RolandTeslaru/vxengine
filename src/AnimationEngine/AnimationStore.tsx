@@ -8,6 +8,7 @@ import { TimelineStoreStateProps } from '../types/timelineStore';
 import { ITimeline } from '@vxengine/AnimationEngine/types/track';
 import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
+import { produce } from 'immer';
 
 const addTimeline = (state: TimelineStoreStateProps, newTimeline: ITimeline) => ({
     ...state,
@@ -26,6 +27,8 @@ export const useVXAnimationStore = createWithEqualityFn<TimelineStoreStateProps>
     isPlaying: false,
     playRate: 1,
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),
+
+    
 }))
 
 // if a setter function is not present then it means that state needs be changed thru the AnimationEngine

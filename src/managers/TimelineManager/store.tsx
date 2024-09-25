@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import { useVXEngine } from '@vxengine/engine';
-import { IKeyframe, IStaticProps, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
+import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { ScrollSync } from 'react-virtualized';
 import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
@@ -15,19 +15,21 @@ import { useObjectManagerStore, useObjectPropertyStore } from '../ObjectManager/
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from '@vxengine/types/objectStore';
-import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
+import { EditorObjectProps, SettingsProps, TimelineEditorStoreProps } from './types/store';
 import { RowRndApi } from './components/row_rnd/row_rnd_interface';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
 
 function processRawData(
-    rawObjects: RawObjectProps[]
+    timeline: ITimeline
 ) {
     const editorData: Record<string, EditorObjectProps> = {};
     const tracks: Record<string, ITrack> = {};
     const staticProps: Record<string, IStaticProps> = {};
     const keyframes: Record<string, IKeyframe> = {};
+    
+    const { objects: rawObjects, splines, settings  } = timeline
 
     // Generate Editor Data Record
     rawObjects.forEach((rawObj) => {
@@ -84,7 +86,7 @@ function processRawData(
     });
     const groupedPaths = computeGroupPaths(editorData)
 
-    return { editorData, tracks, staticProps, groupedPaths, keyframes };
+    return { editorData, tracks, staticProps, groupedPaths, keyframes, settings, splines };
 }
 
 
@@ -94,6 +96,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     staticProps: {},
     groupedPaths: {},
     keyframes: {},
+    splines: {},
+    settings: {},
 
     animationEngineRef: React.createRef<AnimationEngine>(),
 
@@ -121,14 +125,16 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }), false);
     },
 
-    setEditorData: (rawObjects: RawObjectProps[]) => {
-        const { editorData, tracks, staticProps, groupedPaths, keyframes } = processRawData(rawObjects);
+    setEditorData: (timeline: ITimeline) => {
+        const { editorData, tracks, staticProps, groupedPaths, keyframes, settings, splines } = processRawData(timeline);
         set({
             editorData,
             tracks,
             staticProps,
             groupedPaths,
-            keyframes
+            keyframes,
+            settings, 
+            splines
         });
     },
 
@@ -178,10 +184,10 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     })),
 
     selectedTrackSegment: undefined,
-    setSelectedTrackSegment : (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorStoreProps) => {
+    setSelectedTrackSegment: (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorStoreProps) => {
         state.selectedTrackSegment = {
             firstKeyframeKey: firstKeyframeKey,
-            secondKeyframeKey :secondKeyframeKey,
+            secondKeyframeKey: secondKeyframeKey,
             trackKey: trackKey
         }
     })),
@@ -287,8 +293,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             vxkey: vxkey,
             propertyPath: propertyPath,
             handles: {
-                in: { x:0, y:0},
-                out: { x:1, y:1 }
+                in: { x: 0, y: 0 },
+                out: { x: 1, y: 1 }
             },
         };
 
@@ -358,8 +364,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 vxkey: vxkey,
                 propertyPath: propertyPath,
                 handles: {
-                    in: { x:0, y:0},
-                    out: { x:1, y:1 }
+                    in: { x: 0, y: 0 },
+                    out: { x: 1, y: 1 }
                 },
             };
             state.keyframes[keyframeId] = newKeyframe
@@ -559,7 +565,19 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }
 
         useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, newValue);
-    }
+    },
+
+    setSetting: (vxkey, settingKey, settingValue) => {
+        set(produce((state: TimelineEditorStoreProps) => {
+            state.settings[vxkey][settingKey] = settingValue
+        }))
+    },
+    toggleSetting: (vxkey, settingKey) => {
+        set(produce((state: TimelineEditorStoreProps) => {
+            state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
+        }))
+    },
+
 
 })
 );

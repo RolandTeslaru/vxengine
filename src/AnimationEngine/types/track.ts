@@ -1,4 +1,4 @@
-import * as THREE from "three"
+
 
 export interface VXVector2 {
     x: number;
@@ -15,6 +15,8 @@ export interface ITimeline {
     name: string;        
     id: string;          
     objects: RawObjectProps[]
+    splines: Record<string, ISpline>
+    settings: Record<string, ISettings>
     length: number
 }
 
@@ -29,6 +31,12 @@ export interface IStaticProps {
     value: number;
 }
 
+export interface ISettings{
+    useSplinePath?: boolean;
+    positionSplineKey?: string
+}
+
+
 export interface IKeyframe {
     id: string
     vxkey: string,
@@ -40,6 +48,23 @@ export interface IKeyframe {
         out: VXVector2,
     }
 }
+
+export interface ISpline {
+    splineKey: string;
+    vxkey: string;
+    nodes: ISplineNode[];
+    // keyframeNodes: ISplineKeyframeNode[];
+}
+
+export interface ISplineNode {
+    position: VXVector3;
+}
+
+export interface ISplineKeyframeNode {
+    percentage: number;
+    keyframeKey: string;
+}
+
 export interface PathGroup {
     children: Record<string, PathGroup>;
     trackKey?: string | null
@@ -60,6 +85,7 @@ export interface RawObjectProps {
     vxkey: string,
     tracks: RawTrackProps[]
     staticProps: IStaticProps[]
+    positionSplineKey?: string
 }
 
 export interface RawTrackProps {
@@ -71,3 +97,4 @@ export interface RawStaticPropProps {
     value: number;
     propertyPath: string,
 }
+
