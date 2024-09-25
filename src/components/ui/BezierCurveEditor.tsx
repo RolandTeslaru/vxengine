@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styles from "./bezierCurveStyles.module.scss"
-import bezierEditorBg from "./bezierEditorBg.png";
 import classNames from "classnames";
+import { create } from "zustand"
 
 const defaultStateValue = {
   value: [0.4, 0, 1, 0.6], // easeIn
@@ -12,76 +12,92 @@ const defaultStateValue = {
   movingEndHandleStart: { x: 0, y: 0 }
 };
 
+interface CurveStoreProps {
+  value: number[];
+  movingStartHandle: boolean;
+  movingEndHandle: boolean;
+  movingStartHandleStart: { x: number; y: number };
+  movingEndHandleStart: { x: number; y: number };
+
+  setValue: (newValue: number[]) => void;
+  setMovingStartHandle: (isMoving: boolean) => void;
+  setMovingEndHandle: (isMoving: boolean) => void;
+  setMovingStartHandleStart: (coords: { x: number; y: number }) => void;
+  setMovingEndHandleStart: (coords: { x: number; y: number }) => void;
+}
+
+export const createCurveStore = (defaultValues) =>
+  create<CurveStoreProps>((set) => ({
+    value: defaultValues,
+    movingStartHandle: false,
+    movingEndHandle: false,
+    movingStartHandleStart: { x: 0, y: 0 },
+    movingEndHandleStart: { x: 0, y: 0 },
+
+    setValue: (newValue) => set({ value: newValue }),
+    setMovingStartHandle: (isMoving) => set({ movingStartHandle: isMoving }),
+    setMovingEndHandle: (isMoving) => set({ movingEndHandle: isMoving }),
+    setMovingStartHandleStart: (coords) => set({ movingStartHandleStart: coords }),
+    setMovingEndHandleStart: (coords) => set({ movingEndHandleStart: coords }),
+  }));
+
 const BezierCurveEditor = ({
   size = 200,
   outerAreaSize = 50,
   strokeWidth = 2,
   handleLineStrokeWidth = 1,
   borderRadiusContainer = 0,
-  axisColor = styles.colorDark,
-  outerAreaColor,
-  fixedHandleColor,
-  curveLineColor,
+  fixedHandleColor = "white", // the circles in the bottom left and top right
+  curveLineColor = "white",
   handleLineColor,
-  startHandleColor,
-  endHandleColor,
-  className,
-  startHandleClassName,
-  startHandleActiveClassName,
-  endHandleClassName,
-  endHandleActiveClassName,
+  startHandleColor = "",
+  endHandleColor = "",
+  className = "",
+  startHandleClassName = "",
+  startHandleActiveClassName = "",
+  endHandleClassName = "",
+  endHandleActiveClassName = "",
   value,
   onChange,
 }) => {
-  const [state, setState] = useState({
-    ...defaultStateValue,
-    value: value || defaultStateValue.value
-  });
+  const useCurveStore = useMemo(() => createCurveStore(value), [] )
 
-  // Synchronize internal State when prop 'value' changes dakdos 
-  useEffect(() => {
-    setState((prevState) => ({
-      ...prevState,
-      value
-    }))
-  }, [value])
+  const {
+    value: bezierValue,
+    movingStartHandle,
+    movingEndHandle,
+    setValue,
+    setMovingStartHandle,
+    setMovingEndHandle,
+    movingEndHandleStart,
+    movingStartHandleStart,
+    setMovingStartHandleStart,
+    setMovingEndHandleStart,
+  } = useCurveStore();
+
 
   const width = size;
   const height = width;
   const startCoordinate = [0, height];
   const endCoordinate = [width, 0];
-  const startBezierHandle = [
-    width * state.value[0],
-    height * (1 - state.value[1])
-  ];
-  const endBezierHandle = [
-    width * state.value[2],
-    height * (1 - state.value[3])
-  ];
+  const startBezierHandle = [width * bezierValue[0], height * (1 - bezierValue[1])];
+  const endBezierHandle = [width * bezierValue[2], height * (1 - bezierValue[3])];
 
   const svgWidth = width + strokeWidth * 2;
   const svgHeight = height + strokeWidth * 2 + outerAreaSize * 2;
 
   const stopMovingAll = () => {
-    setState({
-      ...state,
-      movingStartHandle: false,
-      movingEndHandle: false
-    });
+    setMovingStartHandle(false);
+    setMovingEndHandle(false);
   };
 
   const moveHandles = (x, y) => {
-    const { startValue, movingStartHandle, movingEndHandle } = state;
-    const relevantStart = movingStartHandle
-      ? state.movingStartHandleStart
-      : movingEndHandle
-      ? state.movingEndHandleStart
-      : undefined;
+    const relevantStart = movingStartHandle ? movingStartHandleStart : movingEndHandleStart;
 
     if (movingStartHandle || movingEndHandle) {
       const relXMoved = (x - relevantStart.x) / width;
       const relYMoved = (y - relevantStart.y) / height;
-      const nextValue = [...startValue];
+      const nextValue = [...bezierValue];
 
       if (movingStartHandle) {
         nextValue[0] = nextValue[0] + relXMoved;
@@ -96,10 +112,7 @@ const BezierCurveEditor = ({
       const clampedValue = clampValue(nextValue);
       if (onChange) onChange(clampedValue);
 
-      setState({
-        ...state,
-        value: clampedValue
-      });
+      setValue(clampedValue);
     }
   };
 
@@ -108,67 +121,34 @@ const BezierCurveEditor = ({
     const nextValue = [...value];
     nextValue[0] = Math.max(0, Math.min(1, nextValue[0]));
     nextValue[2] = Math.max(0, Math.min(1, nextValue[2]));
-    nextValue[1] = Math.max(
-      -allowedOuterValue,
-      Math.min(1 + allowedOuterValue, nextValue[1])
-    );
-    nextValue[3] = Math.max(
-      -allowedOuterValue,
-      Math.min(1 + allowedOuterValue, nextValue[3])
-    );
+    nextValue[1] = Math.max(-allowedOuterValue, Math.min(1 + allowedOuterValue, nextValue[1]));
+    nextValue[3] = Math.max(-allowedOuterValue, Math.min(1 + allowedOuterValue, nextValue[3]));
     return nextValue;
   };
 
   const handleStartHandleStartMoving = (event) => {
-    const { value, movingStartHandle } = state;
     if (!movingStartHandle) {
       event.preventDefault();
+      let startX = event.type === 'touchstart' ? event.touches[0].screenX : event.screenX;
+      let startY = event.type === 'touchstart' ? event.touches[0].screenY : event.screenY;
 
-      let startX = 0;
-      let startY = 0;
-      if (event.type === "touchstart") {
-        startX = event.touches[0].screenX;
-        startY = event.touches[0].screenY;
-      } else if (event.type === "mousedown") {
-        startX = event.screenX;
-        startY = event.screenY;
-      }
-
-      setState({
-        ...state,
-        startValue: [...value],
-        movingStartHandle: true,
-        movingStartHandleStart: { x: startX, y: startY }
-      });
+      setMovingStartHandle(true);
+      setMovingStartHandleStart({ x: startX, y: startY });
     }
   };
 
   const handleEndHandleStartMoving = (event) => {
-    const { value, movingEndHandle } = state;
     if (!movingEndHandle) {
       event.preventDefault();
+      let startX = event.type === 'touchstart' ? event.touches[0].screenX : event.screenX;
+      let startY = event.type === 'touchstart' ? event.touches[0].screenY : event.screenY;
 
-      let startX = 0;
-      let startY = 0;
-      if (event.type === "touchstart") {
-        startX = event.touches[0].screenX;
-        startY = event.touches[0].screenY;
-      } else if (event.type === "mousedown") {
-        startX = event.screenX;
-        startY = event.screenY;
-      }
-
-      setState({
-        ...state,
-        startValue: [...value],
-        movingEndHandle: true,
-        movingEndHandleStart: { x: startX, y: startY }
-      });
+      setMovingEndHandle(true);
+      setMovingEndHandleStart({ x: startX, y: startY });
     }
   };
 
   const handleWindowTouchMove = (event) => {
-    const { movingStartHandle, movingEndHandle } = state;
     if (movingStartHandle || movingEndHandle) {
       const x = event.touches[0].screenX;
       const y = event.touches[0].screenY;
@@ -177,7 +157,6 @@ const BezierCurveEditor = ({
   };
 
   const handleWindowMouseMove = (event) => {
-    const { movingStartHandle, movingEndHandle } = state;
     if (movingStartHandle || movingEndHandle) {
       const x = event.screenX;
       const y = event.screenY;
@@ -186,30 +165,28 @@ const BezierCurveEditor = ({
   };
 
   useEffect(() => {
-    window.addEventListener("mousemove", handleWindowMouseMove);
-    window.addEventListener("touchmove", handleWindowTouchMove);
-
-    window.addEventListener("mouseup", stopMovingAll);
-    window.addEventListener("touchend", stopMovingAll);
-    window.addEventListener("mouseleave", stopMovingAll);
-    window.addEventListener("touchcancel", stopMovingAll);
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('touchmove', handleWindowTouchMove);
+    window.addEventListener('mouseup', stopMovingAll);
+    window.addEventListener('touchend', stopMovingAll);
+    window.addEventListener('mouseleave', stopMovingAll);
+    window.addEventListener('touchcancel', stopMovingAll);
 
     return () => {
-      window.removeEventListener("mousemove", handleWindowMouseMove);
-      window.removeEventListener("touchmove", handleWindowTouchMove);
-
-      window.removeEventListener("mouseup", stopMovingAll);
-      window.removeEventListener("touchend", stopMovingAll);
-      window.removeEventListener("mouseleave", stopMovingAll);
-      window.removeEventListener("touchcancel", stopMovingAll);
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('touchmove', handleWindowTouchMove);
+      window.removeEventListener('mouseup', stopMovingAll);
+      window.removeEventListener('touchend', stopMovingAll);
+      window.removeEventListener('mouseleave', stopMovingAll);
+      window.removeEventListener('touchcancel', stopMovingAll);
     };
-  });
+  }, [movingStartHandle, movingEndHandle]);
 
   return (
     <div
       className={classNames({
         [styles.rootContainer]: true,
-        [className]: !!className
+        [className]: !!className,
       })}
       style={{
         width: `${width}px`,
@@ -218,20 +195,8 @@ const BezierCurveEditor = ({
       }}
     >
       <div className={styles.wrap}>
- 
-     
-        <svg
-          className={styles.curve}
-          fill="none"
-          width={svgWidth}
-          height={svgHeight}
-          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        >
-          <g
-            transform={`translate(${strokeWidth}, ${
-              outerAreaSize + strokeWidth
-            })`}
-          >
+        <svg className={styles.curve} fill="none" width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+          <g transform={`translate(${strokeWidth}, ${outerAreaSize + strokeWidth})`}>
             <line
               stroke={handleLineColor || styles.colorHandleLine}
               strokeWidth={handleLineStrokeWidth}
@@ -264,7 +229,7 @@ const BezierCurveEditor = ({
             top: `${startCoordinate[1] + outerAreaSize + strokeWidth}px`,
             left: `${startCoordinate[0] + strokeWidth}px`,
             borderColor: handleLineColor,
-            backgroundColor: fixedHandleColor
+            backgroundColor: fixedHandleColor,
           }}
         />
         <span
@@ -273,7 +238,7 @@ const BezierCurveEditor = ({
             top: `${endCoordinate[1] + outerAreaSize + strokeWidth}px`,
             left: `${endCoordinate[0] + strokeWidth}px`,
             borderColor: handleLineColor,
-            backgroundColor: fixedHandleColor
+            backgroundColor: fixedHandleColor,
           }}
         />
         <button
@@ -282,15 +247,14 @@ const BezierCurveEditor = ({
             [styles.handle]: true,
             [styles.start]: true,
             [startHandleClassName]: !!startHandleClassName,
-            [styles.active]: state.movingStartHandle,
-            [startHandleActiveClassName]:
-              !!startHandleActiveClassName && state.movingStartHandle
+            [styles.active]: movingStartHandle,
+            [startHandleActiveClassName]: !!startHandleActiveClassName && movingStartHandle,
           })}
           style={{
             top: `${startBezierHandle[1] + outerAreaSize + strokeWidth}px`,
             left: `${startBezierHandle[0] + strokeWidth}px`,
             color: startHandleColor,
-            backgroundColor: startHandleColor
+            backgroundColor: startHandleColor,
           }}
           onMouseDown={handleStartHandleStartMoving}
           onTouchStart={handleStartHandleStartMoving}
@@ -301,15 +265,14 @@ const BezierCurveEditor = ({
             [styles.handle]: true,
             [styles.end]: true,
             [endHandleClassName]: !!endHandleClassName,
-            [styles.active]: state.movingEndHandle,
-            [endHandleActiveClassName]:
-              !!endHandleActiveClassName && state.movingEndHandle
+            [styles.active]: movingEndHandle,
+            [endHandleActiveClassName]: !!endHandleActiveClassName && movingEndHandle,
           })}
           style={{
             top: `${endBezierHandle[1] + outerAreaSize + strokeWidth}px`,
             left: `${endBezierHandle[0] + strokeWidth}px`,
             color: endHandleColor,
-            backgroundColor: endHandleColor
+            backgroundColor: endHandleColor,
           }}
           onMouseDown={handleEndHandleStartMoving}
           onTouchStart={handleEndHandleStartMoving}
@@ -318,5 +281,4 @@ const BezierCurveEditor = ({
     </div>
   );
 };
-
 export default BezierCurveEditor;

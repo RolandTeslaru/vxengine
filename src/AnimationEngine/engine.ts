@@ -232,15 +232,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
-    const result = isTick || this.trigger('beforeSetTime', { time, engine: this });
-    if (!result) return false;
-
     this._currentTime = time
 
-    this._applyAllKeyframes(time);
+    if(isTick){
+      this.trigger('timeUpdatedAutomatically', { time, engine: this });
+      return;
+    }
+    else {
+      this._applyAllKeyframes(time);
+      this.trigger('timeSetManually', { time, engine: this });
+    }
 
-    if (isTick) this.trigger('timeUpdatedAutomatically', { time, engine: this });
-    else this.trigger('timeSetManually', { time, engine: this });
     return true;
   }
 
@@ -268,10 +270,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log("VXAnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
-    if (time !== undefined)
+    if (time !== undefined){
       this._applyAllKeyframes(time);
-    else
+    }
+    else{
       this._applyAllKeyframes(this._currentTime)
+      console.log("Rerendering with current time ", this._currentTime)
+    }
   }
 
 

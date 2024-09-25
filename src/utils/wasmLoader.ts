@@ -18,5 +18,4 @@ export async function loadWasmModule() {
       throw error;
     }
   }
-
   //# sourceMappingURL=../../build/release.wasm.map

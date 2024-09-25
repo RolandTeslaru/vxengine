@@ -38,21 +38,23 @@ const TrackSegmentEditor = () => {
 
     const handleOnCurveChange = (value: [number, number, number, number]) => {
         let [outHandleX, outHandleY, inHandleX, inHandleY] = value;
+        // out handles are the left bottom ones
+        // in handles are the right top ones
 
         const truncateToTwoDecimals = (num: number) => {
             return Math.round(num * 100) / 100;
         };
-
+        
         outHandleX = truncateToTwoDecimals(outHandleX);
         outHandleY = truncateToTwoDecimals(outHandleY);
         inHandleX = truncateToTwoDecimals(inHandleX);
         inHandleY = truncateToTwoDecimals(inHandleY);
-
+        
         // update first keyframe
         setKeyframeHandles(
             selectedTrackSegment?.firstKeyframeKey,
             selectedTrackSegment?.trackKey,
-            secondKeyframeInHandle,
+            firstKeyframeInHandle,
             { x: outHandleX, y: outHandleY },
             false
         );
@@ -62,16 +64,10 @@ const TrackSegmentEditor = () => {
             selectedTrackSegment?.secondKeyframeKey,
             selectedTrackSegment?.trackKey,
             { x: inHandleX, y: inHandleY },
-            firstKeyframeOutHandle,
+            secondKeyframeOutHandle,
             true
         );
     };
-
-
-    useEffect(() => {
-        console.log("Track keyyframe   firstKeyframe:", firstKeyframe, " secondKeyframe:", secondKeyframe)
-    }, [selectedTrackSegment])
-
 
     return <>
         <div className='border border-neutral-800 py-2 rounded-lg'>
@@ -81,8 +77,6 @@ const TrackSegmentEditor = () => {
                 handleLineStrokeWidth={2}
                 borderRadiusContainer={8}
                 handleLineColor={"#64B5FF"}
-                axisColor={"transparent"}
-                outerAreaColor={"#fafafa"}
                 onChange={handleOnCurveChange}
                 value={[
                     firstKeyframeOutHandle.x, firstKeyframeOutHandle.y,
