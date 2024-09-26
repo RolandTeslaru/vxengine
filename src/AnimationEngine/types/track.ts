@@ -36,6 +36,11 @@ export interface ISettings{
     positionSplineKey?: string
 }
 
+export interface IAdditionalSettingsProps{
+    showPositionPath?: boolean
+}
+
+
 
 export interface IKeyframe {
     id: string
@@ -52,8 +57,7 @@ export interface IKeyframe {
 export interface ISpline {
     splineKey: string;
     vxkey: string;
-    nodes: ISplineNode[];
-    // keyframeNodes: ISplineKeyframeNode[];
+    nodes: [ number, number, number][];
 }
 
 export interface ISplineNode {

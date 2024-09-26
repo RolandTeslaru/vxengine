@@ -158,10 +158,9 @@ export default TimelineEditorUI
 
 
 export const TimelineSelect = () => {
-    const { currentTimeline, timelines } = useVXAnimationStore(state => ({
-        currentTimeline: state.currentTimeline,
-        timelines: state.timelines
-    }), shallow)
+    const currentTimeline = useVXAnimationStore(state => state.currentTimeline)
+    const timelines = useVXAnimationStore(state => state.timelines)
+
     const { animationEngine } = useVXEngine()
 
     return (

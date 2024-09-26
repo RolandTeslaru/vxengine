@@ -19,18 +19,18 @@ export function useDragLine() {
     cursorLeft: number;
   }) => {
     const { assistActionIds, action, row, scale, scaleWidth, startLeft, cursorLeft, hideCursor } = data;
-    const { editorData } = useTimelineEditorAPI(state => ({
-      editorData: state.editorData
+    const { editorObjects } = useTimelineEditorAPI(state => ({
+      editorObjects: state.editorObjects
     }))
     const otherActions: TimelineAction[] = [];
     if (assistActionIds) {
-      editorData.forEach((rowItem: any) => {
+      editorObjects.forEach((rowItem: any) => {
         rowItem.actions.forEach((actionItem) => {
           if (assistActionIds.includes(actionItem.id)) otherActions.push(actionItem);
         });
       });
     } else {
-      editorData.forEach((rowItem: any) => {
+      editorObjects.forEach((rowItem: any) => {
         if (rowItem.id !== row.id) {
           otherActions.push(...rowItem.actions);
         } else {

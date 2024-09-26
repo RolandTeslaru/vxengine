@@ -5,16 +5,22 @@ import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { useVXObjectStore } from "@vxengine/vxobject";
+import { useObjectSettingsStore } from "@vxengine/vxobject/ObjectSettingsStore";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerStore((state) => state.selectedObjects[0]);
     const vxkey = firstObjectSelectedStored.vxkey
 
-    const settings = useVXObjectStore(state => state.objects[vxkey].settings)
-    const additionalSettings = useVXObjectStore(state => state.objects[vxkey].additionalSettings)
 
-    const toggleAdditionalSetting = useVXObjectStore(state => state.toggleAdditionalSetting)
-    const toggleSetting = useVXObjectStore(state => state.toggleSetting)
+    useEffect(() => {
+        console.log("Transorm Properties first object selecte ", firstObjectSelectedStored)
+    }, [firstObjectSelectedStored])
+
+    const settings = useObjectSettingsStore(state => state.settings[vxkey])
+    const toggleSetting = useObjectSettingsStore(state => state.toggleSetting)
+
+    const additionalSettings = useObjectSettingsStore(state => state.additionalSettings[vxkey])
+    const toggleAdditionalSetting = useObjectSettingsStore(state => state.toggleAdditionalSetting)
 
     const renderInputs = (property) => {
         return ['x', 'y', 'z'].map((axis) => (
@@ -38,21 +44,21 @@ export const TransformProperties = () => {
                     <p className="mx-[16.5px] text-blue-400">z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p>Position</p>
+                    <p className="text-xs font-light">Position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position')}
                     </div>
                 </div>
 
                 <div className='flex flex-row'>
-                    <p>Scale</p>
+                    <p className="text-xs font-light">Scale</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('scale')}
                     </div>
                 </div>
 
                 <div className='flex flex-row gap-2'>
-                    <p>Rotation</p>
+                    <p className="text-xs font-light">Rotation</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('rotation')}
                     </div>
@@ -60,10 +66,9 @@ export const TransformProperties = () => {
                 {settings && <>
                     {"useSplinePath" in settings && (
                         <div className="flex flex-row mb-1">
-                            <p>Use Spline Path</p>
+                            <p className="text-xs font-light">Use Spline Path</p>
                             <Switch
                                 onClick={() => toggleSetting(vxkey, "useSplinePath")}
-                                value={settings["useSplinePath"]}
                                 checked={settings["useSplinePath"]}
                                 className='ml-auto my-auto scale-[80%]'
                             />
@@ -73,10 +78,9 @@ export const TransformProperties = () => {
                 {additionalSettings && <>
                     {"showPositionPath" in additionalSettings && (
                         <div className="flex flex-row mb-1">
-                            <p>Show postion path</p>
+                            <p className="text-xs font-light">Show postion path</p>
                             <Switch
                                 onClick={() => toggleAdditionalSetting(vxkey, "showPositionPath")}
-                                value={additionalSettings["showPositionPath"]}
                                 checked={additionalSettings["showPositionPath"]}
                                 className='ml-auto my-auto scale-[80%]'
                             />

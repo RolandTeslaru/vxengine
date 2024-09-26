@@ -10,7 +10,7 @@ import KeyframeNode from "./keyframeNode";
 
 const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
-    const trackKeys = useTimelineEditorAPI(state => state.editorData[vxkey].trackKeys, shallow);
+    const trackKeys = useTimelineEditorAPI(state => state.editorObjects[vxkey].trackKeys, shallow);
 
     const keyframeKeysForTrackPostionX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]?.keyframes)
     const keyframeKeysForTrackPostionY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]?.keyframes)
@@ -114,7 +114,7 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
                     keyframeKeys={keyframeDataForNodes[index].map(data => data.id)} // Pass the keyframe keys
                     axis={keyframeDataForNodes[index].map(data => data.axis)} // Pass the axis info
                     position={[positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]]}
-                    color={"blue"}
+                    color={"#2563eb"}
                 />
             ))}
         </>

@@ -56,8 +56,8 @@ export const EditAction: FC<EditActionProps> = ({
   const rowRnd = useRef<RowRndApi>();
   const isDragWhenClick = useRef(false);
   const { id, maxEnd, minStart, end, start, selected, flexible = true, movable = true, effectId } = action;
-  const { editorData, setScaleCount } = useTimelineEditorAPI(state => ({
-    editorData: state.editorData,
+  const { editorObjects, setScaleCount } = useTimelineEditorAPI(state => ({
+    editorObjects: state.editorObjects,
     setScaleCount: state.setScaleCount
   }));
   const { animationEngine } = useVXEngine();
@@ -125,11 +125,11 @@ export const EditAction: FC<EditActionProps> = ({
     const { start, end } = parserTransformToTime({ left, width }, { scaleWidth, scale, startLeft });
 
     //设置数据
-    const rowItem = editorData.find((item) => item.id === row.id);
+    const rowItem = editorObjects.find((item) => item.id === row.id);
     const action = rowItem.actions.find((item) => item.id === id);
     action.start = start;
     action.end = end;
-    animationEngine.setEditorData(editorData);
+    animationEngine.setEditorData(editorObjects);
 
     //执行回调
     if (onActionMoveEnd) onActionMoveEnd({ action, row, start, end });
@@ -155,11 +155,11 @@ export const EditAction: FC<EditActionProps> = ({
     const { start, end } = parserTransformToTime({ left, width }, { scaleWidth, scale, startLeft });
 
     //设置数据
-    const rowItem = editorData.find((item) => item.id === row.id);
+    const rowItem = editorObjects.find((item) => item.id === row.id);
     const action = rowItem.actions.find((item) => item.id === id);
     action.start = start;
     action.end = end;
-    animationEngine.setEditorData(editorData);
+    animationEngine.setEditorData(editorObjects);
 
     //触发回调
     if (onActionResizeEnd) onActionResizeEnd({ action, row, start, end, dir });

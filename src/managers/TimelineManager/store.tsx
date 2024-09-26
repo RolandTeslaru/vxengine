@@ -15,21 +15,20 @@ import { useObjectManagerStore, useObjectPropertyStore } from '../ObjectManager/
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from '@vxengine/types/objectStore';
-import { EditorObjectProps, SettingsProps, TimelineEditorStoreProps } from './types/store';
+import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { RowRndApi } from './components/row_rnd/row_rnd_interface';
+import { useVXAnimationStore } from '@vxengine/AnimationEngine';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
 
 function processRawData(
-    timeline: ITimeline
+    rawObjects: RawObjectProps[]
 ) {
-    const editorData: Record<string, EditorObjectProps> = {};
+    const editorObjects: Record<string, EditorObjectProps> = {};
     const tracks: Record<string, ITrack> = {};
     const staticProps: Record<string, IStaticProps> = {};
     const keyframes: Record<string, IKeyframe> = {};
-    
-    const { objects: rawObjects, splines, settings  } = timeline
 
     // Generate Editor Data Record
     rawObjects.forEach((rawObj) => {
@@ -78,26 +77,24 @@ function processRawData(
             staticProps[staticPropKey] = newStaticProp;
         });
 
-        editorData[rawObj.vxkey] = {
+        editorObjects[rawObj.vxkey] = {
             vxkey: rawObj.vxkey,
             trackKeys: trackKeys,
             staticPropKeys: staticPropKeys,
         };
     });
-    const groupedPaths = computeGroupPaths(editorData)
+    const groupedPaths = computeGroupPaths(editorObjects)
 
-    return { editorData, tracks, staticProps, groupedPaths, keyframes, settings, splines };
+    return { editorObjects, tracks, staticProps, groupedPaths, keyframes };
 }
 
 
 export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
-    editorData: {},
+    editorObjects: {},
     tracks: {},
     staticProps: {},
     groupedPaths: {},
     keyframes: {},
-    splines: {},
-    settings: {},
 
     animationEngineRef: React.createRef<AnimationEngine>(),
 
@@ -125,16 +122,15 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }), false);
     },
 
-    setEditorData: (timeline: ITimeline) => {
-        const { editorData, tracks, staticProps, groupedPaths, keyframes, settings, splines } = processRawData(timeline);
+    setEditorData: (rawObjects: RawObjectProps[]) => {
+        const { editorObjects, tracks, staticProps, groupedPaths, keyframes, } = processRawData(rawObjects);
         set({
-            editorData,
+            editorObjects,
             tracks,
             staticProps,
             groupedPaths,
             keyframes,
-            settings, 
-            splines
+
         });
     },
 
@@ -199,14 +195,14 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     getKeyframe: (keyframeId) => { return get().keyframes[keyframeId]; },
 
     getTracksForObject: (vxkey) => {
-        const object = get().editorData[vxkey];
+        const object = get().editorObjects[vxkey];
         if (object) {
             return object.trackKeys.map((trackKey: string) => get().tracks[trackKey]);
         }
         return [];
     },
     getStaticPropsForObject: (vxkey: string) => {
-        const object = get().editorData[vxkey];
+        const object = get().editorObjects[vxkey];
         if (object) {
             return object.staticPropKeys.map((staticPropKey: string) => get().staticProps[staticPropKey]);
         }
@@ -250,9 +246,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     // Writer functions
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => {
-        // Check if the object is already in the editorData.
+        // Check if the object is already in the editorObjects.
         // it usually means it was added by the animationEngine when processing the raw data
-        if (newVxObject.vxkey in get().editorData) {
+        if (newVxObject.vxkey in get().editorObjects) {
             return
         }
         const newEdObject: EditorObjectProps = {
@@ -261,7 +257,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             staticPropKeys: []
         }
         set(produce((state: TimelineEditorStoreProps) => {
-            state.editorData[newVxObject.vxkey] = newEdObject
+            state.editorObjects[newVxObject.vxkey] = newEdObject
         }))
     },
 
@@ -339,7 +335,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
         const vxObjects = useVXObjectStore.getState().objects;
         set(produce((state: TimelineEditorStoreProps) => {
-            const edObject = state.editorData[vxkey];
+            const edObject = state.editorObjects[vxkey];
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
             const staticProp = staticPropsForObject.find(prop => prop.propertyPath === propertyPath)
@@ -352,7 +348,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             // Delete from Record
             delete state.staticProps[staticPropKey]
 
-            // Delete from editorData vxobject
+            // Delete from editorObjects vxobject
             edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
 
             // Handle Keyframe
@@ -381,7 +377,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             edObject.trackKeys.push(trackKey)
 
             // Recompute grouped Paths for Visual 
-            state.groupedPaths = computeGroupPaths(state.editorData)
+            state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
         const animationEngine = get().animationEngineRef.current
@@ -394,7 +390,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     makePropertyStatic: (trackKey, reRender) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         set(produce((state: TimelineEditorStoreProps) => {
-            const edObject = state.editorData[vxkey];
+            const edObject = state.editorObjects[vxkey];
 
             const tracksForObject = state.getTracksForObject(vxkey); // this will be filtered
             const vxObject = useVXObjectStore.getState().objects[vxkey]
@@ -417,7 +413,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             edObject.staticPropKeys.push(staticPropKey)
 
             // Recompute grouped Paths for Visual 
-            state.groupedPaths = computeGroupPaths(state.editorData)
+            state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
         const animationEngine = get().animationEngineRef.current
@@ -490,7 +486,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         set(produce((state: TimelineEditorStoreProps) => {
             state.staticProps[staticPropKey] = newStaticProp;           // Add to Record
-            state.editorData[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorData
+            state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
         }))
 
         const animationEngine = get().animationEngineRef.current
@@ -507,8 +503,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             // Delete from Record
             delete state.staticProps[staticPropKey]
 
-            // Delete from editorData vxobject
-            const edObject = state.editorData[vxkey];
+            // Delete from editorObjects vxobject
+            const edObject = state.editorObjects[vxkey];
             edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
         }))
     },
@@ -567,17 +563,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, newValue);
     },
 
-    setSetting: (vxkey, settingKey, settingValue) => {
-        set(produce((state: TimelineEditorStoreProps) => {
-            state.settings[vxkey][settingKey] = settingValue
-        }))
-    },
-    toggleSetting: (vxkey, settingKey) => {
-        set(produce((state: TimelineEditorStoreProps) => {
-            state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
-        }))
-    },
+    dumpData: () => {
 
-
-})
-);
+    }
+}))

@@ -16,6 +16,9 @@ import { useVXAnimationStore } from "@vxengine/AnimationEngine/AnimationStore"
 import { useVXObjectStore } from "@vxengine/vxobject"
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
+import { useObjectSettingsStore } from "@vxengine/vxobject/ObjectSettingsStore"
+import { useSplineStore } from "@vxengine/managers/SplineManager/store"
+import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
 
 export const CoreUI = () => {
     return (
@@ -120,6 +123,7 @@ const LeftPanel = () => {
             >
                 <ObjectList />
                 <TrackSegmentProperties />
+                <SplineManagerUI/>
                 <div className="w-full mt-auto h-auto flex flex-row pl-2">
                     <button className={"bg-transparent border ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                         onClick={() => setLeftPanelAttached(!leftPanelAttached)}
@@ -177,7 +181,7 @@ const FrequentStateVisualizer = () => {
 
 
 const EditorDataComponent = () => {
-    const editorData = useTimelineEditorAPI(state => state.editorData);
+    const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
     return (
         <pre
             style={{
@@ -185,7 +189,7 @@ const EditorDataComponent = () => {
             }}
             className="text-xs"
         >
-            {JSON.stringify(editorData, null, 2)}
+            {JSON.stringify(editorObjects, null, 2)}
         </pre>
     );
 };
@@ -286,7 +290,7 @@ const UtilityNodesComponent = () => {
 };
 
 const SettingsComponent = () => {
-    const settings = useTimelineEditorAPI(state => state.settings);
+    const settings = useObjectSettingsStore(state => state.settings);
     return (
         <pre
             style={{
@@ -299,9 +303,23 @@ const SettingsComponent = () => {
         </pre>
     )
 }
+const AdditionalSettingsComponent = () => {
+    const additionalSettings = useObjectSettingsStore(state => state.additionalSettings);
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(additionalSettings, null, 2)}
+        </pre>
+    )
+}
 
 const SplinesComponent = () => {
-    const splines = useTimelineEditorAPI(state => state.splines);
+    const splines = useSplineStore(state => state.splines);
     return (
         <pre
             style={{
@@ -336,13 +354,13 @@ const VxobjectsComponent = () => {
 };
 
 const TimelineEditorDebug = () => {
-    const [activeData, setActiveData] = useState("editorData");
+    const [activeData, setActiveData] = useState("editorObjects");
     const [attachedState, setAttachedState] = useState(true);
 
     // Conditionally render the correct mini component
     const renderActiveComponent = () => {
         switch (activeData) {
-            case "editorData":
+            case "editorObjects":
                 return <EditorDataComponent />;
             case "keyframes":
                 return <KeyframesComponent />;
@@ -360,6 +378,8 @@ const TimelineEditorDebug = () => {
                 return <UtilityNodesComponent />;
             case "settings": 
                 return <SettingsComponent/>
+            case "additionalSettings": 
+                return <AdditionalSettingsComponent/>
             case "splines": 
                 return <SplinesComponent/>;
             default:
@@ -392,7 +412,7 @@ const TimelineEditorDebug = () => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value={"editorData"} >editorData</SelectItem>
+                                <SelectItem value={"editorObjects"} >editorObjects</SelectItem>
                                 <SelectItem value={"keyframes"} >keyframes</SelectItem>
                                 <SelectItem value={"tracks"} >tracks</SelectItem>
                                 <SelectItem value={"staticProps"} >staticProps</SelectItem>
@@ -401,6 +421,7 @@ const TimelineEditorDebug = () => {
                                 <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
                                 <SelectItem value={"utilityNodes"} >utilityNodes</SelectItem>
                                 <SelectItem value={"settings"} >settings</SelectItem>
+                                <SelectItem value={"additionalSettings"} >additionalSettings</SelectItem>
                                 <SelectItem value={"splines"} >splines</SelectItem>
                             </SelectGroup>
                         </SelectContent>

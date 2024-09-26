@@ -8,15 +8,16 @@ const TrackSegmentProperties = React.memo(() => {
     const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
 
     return (
-        <CollapsiblePanel
-            title="Track Segment Props."
-            className='gap-2'
-        >
-            {selectedTrackSegment
-                ? <TrackSegmentEditor />
-                : <p className='font-sans-menlo text-center' style={{ fontSize: "10px"}}>Select a track segment</p>
+        <> 
+            {selectedTrackSegment && 
+                <CollapsiblePanel
+                    title="Track Segment Props."
+                    className='gap-2'
+                >
+                    <TrackSegmentEditor />
+                </CollapsiblePanel>
             }
-        </CollapsiblePanel>
+        </>
     )
 })
 export default TrackSegmentProperties

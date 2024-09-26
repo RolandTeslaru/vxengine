@@ -121,11 +121,11 @@ export const computeGroupPathFromRawObject = (
     return { groupedPaths: rootGroupedPaths, newIndex };
   };
 
-export const computeGroupPaths = ( editorData: Record<string, edObjectProps>) => {
+export const computeGroupPaths = ( editorObjects: Record<string, edObjectProps>) => {
     let rowIndex = 0;
     const groupedPaths = {};
 
-    Object.values(editorData).map((edObject: edObjectProps) => {
+    Object.values(editorObjects).map((edObject: edObjectProps) => {
         const { groupedPaths: objGroupedPaths, newIndex } = computeGroupPathFromRawObject(edObject, rowIndex);
         rowIndex = newIndex;
         groupedPaths[edObject.vxkey] = objGroupedPaths;

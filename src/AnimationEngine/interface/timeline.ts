@@ -179,7 +179,7 @@ export interface EditData {
   /**
    *@description Get the action id list to prompt the auxiliary line. Calculate it when move/resize start. By default, get all the action ids except the current move action.
    */
-  getAssistDragLineActionIds?: (params: { action: TimelineAction; editorData: ITrack[]; row: TimelineRow }) => string[];
+  getAssistDragLineActionIds?: (params: { action: TimelineAction; editorObjects: ITrack[]; row: TimelineRow }) => string[];
   /**
    *@description cursor starts drag event
    */
@@ -237,5 +237,5 @@ export interface TimelineEditor extends EditData {
   /**
    * @description Data change callback will be triggered after the operation action end changes the data (returning false will prevent automatic engine synchronization to reduce performance overhead)
    */
-  onChange?: (editorData: ITrack[]) => void | boolean;
+  onChange?: (editorObjects: ITrack[]) => void | boolean;
 }

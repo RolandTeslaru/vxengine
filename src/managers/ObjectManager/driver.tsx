@@ -7,33 +7,28 @@ import { useObjectManagerStore, useObjectPropertyStore } from "./store";
 import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import * as THREE from "three"
+import { KeyframeNodeDataProps } from "@vxengine/types/utilityNode";
+import { useSplineStore } from "@vxengine/managers/SplineManager/store";
+import { extractSplineKeyFromNodeKey } from "@vxengine/managers/SplineManager/utils";
 
 
 export const ObjectManagerDriver = () => {
-  const { selectedObjectKeys, transformMode } = useObjectManagerStore(
-    (state) => ({
-      selectedObjectKeys: state.selectedObjectKeys,
-      transformMode: state.transformMode,
-    }),
-    shallow
-  );
+  const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange);
+  const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
-  const firstSelectedObjectStored = useObjectManagerStore(
-    (state) => state.selectedObjects[0],
-    shallow
-  );
+  const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
+  const firstSelectedObjectStored = useObjectManagerStore(state => state.selectedObjects[0]);
+  const utilityTransfromAxis = useObjectManagerStore(state => state.utilityTransformAxis)
+  const transformMode = useObjectManagerStore(state => state.transformMode);
+
+
   const firstObjectSelected = firstSelectedObjectStored?.ref.current;
-  const handlePropertyValueChange = useTimelineEditorAPI(
-    (state) => state.handlePropertyValueChange,
-    shallow
-  );
 
-  // Reference to the TransformControls instance
   const transformControlsRef = useRef();
 
   const handleTransformChange = (e) => {
-    const controls = e.target; // TransformControls instance
-    const axis = controls.axis; // 'X', 'Y', 'Z', 'XY', etc.
+    const controls = e.target; 
+    const axis = controls.axis; 
 
     if (firstSelectedObjectStored && firstObjectSelected && axis) {
       const vxkey = firstSelectedObjectStored.vxkey;
@@ -84,28 +79,39 @@ export const ObjectManagerDriver = () => {
     return 'x';
   };
 
-  const selectedUtilityNodeKey = useObjectManagerStore(state => state.selectedUtilityNodeKey)
-  const selectedUtilityNode = useObjectManagerStore(state => state.utilityNodes[selectedUtilityNodeKey])
-  const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
+  const handleUtilityKeyframeNodeChange = () => {
+    if(selectedUtilityNode.type === "keyframe") {
+      const { data, ref } = selectedUtilityNode;
+        (data as KeyframeNodeDataProps)?.keyframeKeys?.forEach((keyframeKey) => {
+          const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
+          // Update keyframe in the store from the the ref stored in the utility node 
+          const newPosition = ref.position;
+          const axis = getKeyframeAxis(keyframe.propertyPath); 
+          setKeyframeValue(keyframeKey, newPosition[axis]);
+        });
+    }
+  }
+
+  const handleUtilitySplineNodeChange = () => {
+    if(selectedUtilityNode.type === "spline"){
+      const { index, splineKey, ref } = selectedUtilityNode;
+      const newPosition = ref.position
+      useSplineStore.getState().setSplineNodePosition(splineKey, index, newPosition)
+    }
+  }
 
   const handleUtilityObjectChange = () => {
-    
-    if (selectedUtilityNode?.type === "keyframe") {
-      const { data, ref } = selectedUtilityNode;
-
-      data?.keyframeKeys?.forEach((keyframeKey) => {
-        const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
-        const position = ref.position;
-        const axis = getKeyframeAxis(keyframe.propertyPath); 
-        setKeyframeValue(keyframeKey, position[axis]);
-      });
-
+    switch(selectedUtilityNode?.type) {
+      case "keyframe":
+        handleUtilityKeyframeNodeChange();
+        break;
+      case "spline":
+        handleUtilitySplineNodeChange();
+        break;
     }
   };
 
   const utilityTrasnformControlsRef = useRef();
-
-  const utilityTransfromAxis = useObjectManagerStore(state => state.utilityTransformAxis)
 
   useEffect(() => {
     if (!selectedUtilityNode || !utilityTrasnformControlsRef.current) return;

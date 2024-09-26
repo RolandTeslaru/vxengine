@@ -1,14 +1,6 @@
 import { vxObjectProps } from "./objectStore";
 import { UtilityNodeProps } from "./utilityNode";
 
-type utilityObjectTypes = "keyframeNode" | "splineNode"
-
-interface SelectedUtilityObject {
-    utilObject: THREE.Object3D;  // The object being selected
-    type: utilityObjectTypes;    // The type of the utility object
-    keyframeKeys: string[];   // Array of keyframe keys
-}
-
 export interface ObjectEditorStoreProps {
     transformMode: "translate" | "rotate" | "scale";
     setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
@@ -20,8 +12,8 @@ export interface ObjectEditorStoreProps {
     hoveredObject: vxObjectProps | null;
     setHoveredObject: (vxobject: vxObjectProps) => void;
     
-    selectedUtilityNodeKey: string;
-    setSelectedUtilityNodeKey: (utilityNodeKey: string) => void;
+    selectedUtilityNode: UtilityNodeProps;
+    setSelectedUtilityNode: (utilityNodeKey: string) => void;
 
     utilityTransformAxis: string[];
     setUtilityTransformAxis: (axis: string[]) => void;

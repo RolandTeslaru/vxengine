@@ -14,6 +14,8 @@ import { Edges } from "@react-three/drei";
 import PositionPath from "./utils/positionPath";
 import { computeMorphedAttributes } from "three-stdlib";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { useObjectSettingsStore } from "./ObjectSettingsStore";
+import Spline from "@vxengine/managers/SplineManager/Spline";
 
 export interface VXEditableWrapperProps<T extends THREE.Object3D> {
     type: string;
@@ -62,15 +64,15 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
                 ref: ref,
                 vxkey: vxkey,
                 name: props.name || type,
-                additionalSettings: { 
-                    showPositionPath: false,
-                }
+                // additionalSettings: { 
+                //     showPositionPath: false,
+                // }
             };
 
             memoizedAddObject(newVXObject);
             animationEngine.initObjectOnMount(newVXObject);
             useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject)
-
+            useObjectSettingsStore.getState().setAdditionalSetting(vxkey,"showPositionPath", false )
             return () => {
                 memoizedRemoveObject(vxkey);
             };
@@ -132,7 +134,10 @@ const VxObjectEditorUtils: React.FC<ObjectEditorUtils> = React.memo(({ vxObject,
         return false;
     }, [object3DInnerChildren]);
 
-    console.log("Rerendering object editor utils ")
+    const settings = useObjectSettingsStore(state => state.settings[vxkey])
+    const additionalSettings = useObjectSettingsStore(state => state.additionalSettings[vxkey])
+
+    console.log("Rerendering object editor utils ", settings)
 
     return (
         <>
@@ -142,8 +147,16 @@ const VxObjectEditorUtils: React.FC<ObjectEditorUtils> = React.memo(({ vxObject,
             <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
             </Edges>
 
-            {vxObject.additionalSettings["showPositionPath"] &&
+            {additionalSettings["showPositionPath"] && <>
+                {settings.useSplinePath && (
+                    <Spline 
+                        splineKey={"spline1"}
+                        splineIndex={1}
+                    />
+                )}
                 <PositionPath vxkey={vxkey}/>
+                
+            </>
             }
         </>
     )

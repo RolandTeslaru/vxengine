@@ -1,5 +1,5 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "@vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
 import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
@@ -10,12 +10,10 @@ export interface KeyframesPositionDataProps {
 
 export interface TimelineEditorStoreProps {
     // Records of data used in the editor
-    editorData: Record<string, edObjectProps>;
+    editorObjects: Record<string, edObjectProps>;
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
     keyframes: Record<string, IKeyframe>
-    splines: Record<string, ISpline>
-    settings: Record<string, ISettings>
 
     animationEngineRef: React.MutableRefObject<AnimationEngine | null>
 
@@ -103,8 +101,6 @@ export interface TimelineEditorStoreProps {
         reRender?: boolean
     ) => void
 
-    setSetting: ( vxkey: string, settingKey: string, settingValue: string) => void
-    toggleSetting: ( vxkey: string, settingKey: string) => void
 }
 
 export interface EditorObjectProps {

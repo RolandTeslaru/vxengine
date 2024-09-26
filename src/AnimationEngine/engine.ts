@@ -18,6 +18,8 @@ import { useVXObjectStore } from '@vxengine/vxobject';
 import Stats from 'stats.js';
 import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 import { loadWasmModule } from '@vxengine/utils/wasmLoader';
+import { useObjectSettingsStore } from '@vxengine/vxobject/ObjectSettingsStore';
+import { useSplineStore } from '@vxengine/managers/SplineManager/store';
 // import { cubicBezier as wasmCubicBezier, solveCubicBezierT as wasmSolveCubicBezierT } from "../../build/release"
 const IS_DEV = process.env.NODE_ENG === 'development'
 
@@ -56,7 +58,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log("VXAnimationEngine Refresher: No timeline is currently loaded.");
       return
     }
-    const editorData = useTimelineEditorAPI.getState().editorData
+    const editorObjects = useTimelineEditorAPI.getState().editorObjects
     const tracks = useTimelineEditorAPI.getState().tracks
     const staticProps = useTimelineEditorAPI.getState().staticProps
     const keyframes = useTimelineEditorAPI.getState().keyframes
@@ -67,9 +69,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
 
-    // Update / Add objects in the currentTimeline based on the editorData
-    Object.keys(editorData).forEach(vxkey => {
-      const edObject = editorData[vxkey];
+    // Update / Add objects in the currentTimeline based on the editorObjects
+    Object.keys(editorObjects).forEach(vxkey => {
+      const edObject = editorObjects[vxkey];
 
       if (currentObjectsMap.has(vxkey)) {
         // Refresh existing raw object
@@ -110,9 +112,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     });
 
-    // Remove rawObjects that are no longer in editorData
+    // Remove rawObjects that are no longer in editorObjects
     this.currentTimeline.objects = this.currentTimeline.objects.filter(rawObject => {
-      return editorData.hasOwnProperty(rawObject.vxkey);
+      return editorObjects.hasOwnProperty(rawObject.vxkey);
     });
 
     // Re-render the timeline
@@ -223,9 +225,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
 
     this.reRender({ time: this._currentTime, force: true });
+    const { objects: rawObjects, settings, splines } = selectedTimeline
 
-    //  Initialize the Editor Data
-    useTimelineEditorAPI.getState().setEditorData(selectedTimeline)
+    // set the Timeline Editor Data
+    useTimelineEditorAPI.getState().setEditorData(rawObjects)
+    // Initialize the settings store
+    useObjectSettingsStore.getState().initSettings(settings)
+    // Initialize the splines store
+    useSplineStore.getState().initSplines(splines)
   }
 
 

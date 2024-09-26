@@ -43,7 +43,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps,
     const vxkey = useObjectManagerStore(state => state.selectedObjects[0].vxkey, shallow);
     const firstObjectSelectedStored = useObjectManagerStore(state => state.selectedObjects[0], shallow);
     const firstObjectSelected = firstObjectSelectedStored?.ref.current;
-    const editorData = useTimelineEditorAPI(state => state.editorData, shallow);
+    const editorObjects = useTimelineEditorAPI(state => state.editorObjects, shallow);
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyStore.getState().properties[vxkey], propertyPath)

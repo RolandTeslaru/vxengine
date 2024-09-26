@@ -1,6 +1,6 @@
 import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRef } from "react";
 import { useObjectManagerStore } from "@vxengine/managers/ObjectManager/store";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
@@ -19,18 +19,19 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
 
     const addUtilityNode = useObjectManagerStore(state => state.addUtilityNode);
     const removeUtilityNode = useObjectManagerStore(state => state.removeUtilityNode);
-    const setSelectedUtilityNodeKey = useObjectManagerStore(state => state.setSelectedUtilityNodeKey);
+    const setSelectedUtilityNode = useObjectManagerStore(state => state.setSelectedUtilityNode);
     const setUtilityTransformAxis = useObjectManagerStore(state => state.setUtilityTransformAxis);
-    const selectedUtilityNodeKey = useObjectManagerStore(state => state.selectedUtilityNodeKey)
+    const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
     
-    const nodeKey = keyframeKeys.join('-');
+    const nodeKey = useMemo(() => keyframeKeys.join('-'), [keyframeKeys])
 
     useEffect(() => {
         if(ref.current){
             const node: UtilityNodeProps = {
                 type: "keyframe",
                 ref: ref.current,
+                nodeKey: nodeKey,
                 data: {
                     keyframeKeys
                 }
@@ -38,16 +39,14 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             addUtilityNode(node, nodeKey)
         }
 
-        return () => {
-            removeUtilityNode(nodeKey)
-        }
+        return () => removeUtilityNode(nodeKey)
     }, [keyframeKeys])
 
 
     const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
         if (!ref.current) return;
         setUtilityTransformAxis(axis);
-        setSelectedUtilityNodeKey(nodeKey);
+        setSelectedUtilityNode(nodeKey);
         setSelectedKeyframeKeys(keyframeKeys)
     };
 
@@ -62,14 +61,14 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
         <>
             {/* Keyframe Node */}
             <mesh ref={ref} position={position} onClick={handleOnClick}>
-                <octahedronGeometry args={[size, 0]} />
-                <meshBasicMaterial color={selectedUtilityNodeKey === nodeKey ? "yellow" : color} wireframe />
+                <sphereGeometry args={[0.2, 24, 24]} />
+                <meshBasicMaterial color={selectedUtilityNode?.nodeKey === nodeKey ? "yellow" : color} />
             </mesh>
 
             {/* Axis Dots and Html */}
             <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
-                    {selectedUtilityNodeKey === nodeKey && (
+                    {selectedUtilityNode?.nodeKey === nodeKey && (
                         <div className="absolute -left-[100px] flex flex-col bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px] text-xs font-sans-menlo">
                             <p>Keyframe Node</p>
                         </div>

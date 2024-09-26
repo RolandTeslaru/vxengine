@@ -26,8 +26,8 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
   const timelineLength = useVXAnimationStore(state => state.currentTimeline.length)
 
-  const { editorData, scale, groupedPaths } = useTimelineEditorAPI(state => ({
-    editorData: state.editorData,
+  const { editorObjects, scale, groupedPaths } = useTimelineEditorAPI(state => ({
+    editorObjects: state.editorObjects,
     scale: state.scale,
     groupedPaths: state.groupedPaths
   }), shallow);
@@ -63,7 +63,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
 
     Object.entries(groupedPaths).forEach(([key, group]) => fillRows({ key, group }));
     return allRows;
-  }, [editorData]);
+  }, [editorObjects]);
 
 
   // Handle Keyframe Click
