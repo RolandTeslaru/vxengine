@@ -6,28 +6,59 @@ import { create } from 'zustand';
 import { produce } from "immer"
 import { ISpline } from '@vxengine/AnimationEngine/types/track';
 import { SplineNodeProps } from './SplineNode';
+import { useTimelineEditorAPI } from '../TimelineManager/store';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>
     initSplines: (newSplines: Record<string, ISpline>) => void;
+    addSpline: (spline: ISpline) => void;
+    removeSpline: (splineKey: string) => void;
     setSplineNodePosition: (splineKey: string, nodeIndex: number, newPosition: THREE.Vector3) => void;
     selectedSpline: ISpline;
     setSelectedSpline: (splineKey: string) => void;
     insertNode: (splineKey: string, index: number) => void;
     removeNode: (splineKey: string, index: number) => void;
+    createSpline: (vxkey: string, splineKey: string, nodes: [number, number, number][]) => void
 }
 
-export const useSplineStore = create<SplineStoreProps>((set, get) => ({
+export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
     splines: {},
+    createSpline: (vxkey, splineKey, nodes) => {
+        const newSpline: ISpline = {
+            splineKey,
+            vxkey,
+            nodes
+        }
+        get().addSpline(newSpline);
+
+        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        animationEngine.refreshSpline("create", splineKey, true)
+    },
+    addSpline: (spline: ISpline) => {
+        set(produce((state: SplineStoreProps) => {
+            state.splines[spline.splineKey] = spline
+        }))
+    },
+    removeSpline: (splineKey) => {
+        set(produce((state: SplineStoreProps) => {
+            delete state.splines[splineKey];
+        }))
+
+        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        animationEngine.refreshSpline("remove", splineKey, true)
+    },
     initSplines: (newSplines) => {
         set(produce((state: SplineStoreProps) => {
-            state.splines = newSplines;
+            state.splines = newSplines || {};
         }))
     },
     setSplineNodePosition: (splineKey: string, nodeIndex: number, newPosition: THREE.Vector3) => {
         set(produce((state: SplineStoreProps) => {
             state.splines[splineKey].nodes[nodeIndex] = [newPosition.x, newPosition.y, newPosition.z];
         }))
+
+        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        animationEngine.refreshSpline("update", splineKey, true)
     },
     selectedSpline: undefined,
     setSelectedSpline: (splineKey) => {
@@ -64,6 +95,9 @@ export const useSplineStore = create<SplineStoreProps>((set, get) => ({
                 state.selectedSpline = { ...spline, nodes: [...nodes] };
             }
         }));
+
+        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        animationEngine.refreshSpline("update", splineKey, true)
     },
     removeNode: (splineKey, index) => {
         set(produce((state: SplineStoreProps) => {
@@ -79,5 +113,8 @@ export const useSplineStore = create<SplineStoreProps>((set, get) => ({
                 state.selectedSpline = spline;
             }
         }));
+
+        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        animationEngine.refreshSpline("update", splineKey, true)
     },
 }))

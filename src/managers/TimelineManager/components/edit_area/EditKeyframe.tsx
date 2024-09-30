@@ -119,10 +119,14 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                         <ContextMenuItem
                             onClick={() => {
                                 const trackKey = `${track.vxkey}.${track.propertyPath}`
-                                removeKeyframe(trackKey, keyframe.id, true)
+                                removeKeyframe({
+                                    trackKey, 
+                                    keyframeKey:keyframe.id, 
+                                    reRender: true
+                                })
                             }}
                         >
-                            <p className=' text-red-700'>
+                            <p className=' text-red-600'>
                                 Delete Keyframe
                             </p>
                         </ContextMenuItem>

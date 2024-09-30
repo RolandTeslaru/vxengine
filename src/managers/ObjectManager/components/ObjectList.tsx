@@ -1,6 +1,6 @@
 import React from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
-import { useObjectManagerStore } from '../store';
+import { useObjectManagerAPI } from '../store';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 import { shallow } from 'zustand/shallow';
 import { useVXObjectStore } from '@vxengine/vxobject';
@@ -8,9 +8,9 @@ import { useVXObjectStore } from '@vxengine/vxobject';
 const ObjectList = () => {
     const objects = useVXObjectStore(state => state.objects)
     
-    const selectedObjectKeys = useObjectManagerStore(state => state.selectedObjectKeys)
-    const selectObjects = useObjectManagerStore(state => state.selectObjects)
-    const hoveredObject = useObjectManagerStore(state => state.hoveredObject)
+    const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
+    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
 
     const [lastSelectedIndex, setLastSelectedIndex] = React.useState(null);
 
@@ -49,10 +49,10 @@ const ObjectList = () => {
         >
             <div className='text-xs flex flex-row text-neutral-400'>
                 {selectedObjectKeys.length === 1 && (
-                    <p className='text-xs text-neutral-400' style={{fontSize: "10px"}} >{selectedObjectKeys.length} object selected</p>
+                    <p className=' text-neutral-400 font-light' style={{fontSize: "11px"}} >{selectedObjectKeys.length} object selected</p>
                 )}
                 {selectedObjectKeys.length > 1 && (
-                    <p className='text-xs  text-neutral-400' style={{fontSize: "10px"}}>{selectedObjectKeys.length} objects selected</p>
+                    <p className='text-neutral-400 font-light' style={{fontSize: "11px"}}>{selectedObjectKeys.length} objects selected</p>
                 )}
                 <p className='ml-auto text-xs' style={{fontSize: "10px"}}> objects</p>
             </div>
@@ -61,8 +61,10 @@ const ObjectList = () => {
                     const isSelected = selectedObjectKeys.includes(vxobject.vxkey);
                     const isHovered = hoveredObject?.vxkey === vxobject.vxkey
                     return (
-                        <div key={index} className={'h-9 border flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer ' +
-                            `${isHovered && " !bg-blue-800 !border-blue-600"} ${isSelected && " !bg-blue-600 !border-neutral-200"} `}
+                        <div key={index} className={`h-9 border flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
+                                ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
+                                ${isHovered && " !bg-blue-800 !border-blue-600"} 
+                             `}
                             onClick={(event) => handleObjectClick(event, vxobject, index)}
                             onMouseDown={(event) => event.preventDefault()}
                         >
@@ -83,5 +85,6 @@ const ObjectList = () => {
         </CollapsiblePanel>
     )
 }
+// bg-gradient-to-r from-emerald-500 to-emerald-900
 
 export default ObjectList

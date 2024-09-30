@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { vxObjectProps } from '@vxengine/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
-import { useObjectManagerStore, useObjectPropertyStore } from './store'
+import { useObjectManagerAPI, useObjectPropertyAPI } from './store'
 import { shallow } from 'zustand/shallow'
 import { TransformProperties } from './components/TransformProperties'
 import { GeometryProperties } from './components/GeometryProperties'
@@ -81,9 +81,9 @@ export const ObjectManagerUI = () => {
 
 export const ObjectTransformControls = React.memo(() => {
 
-  const selectedObjects = useObjectManagerStore(state => state.selectedObjects)
-  const transformMode = useObjectManagerStore(state => state.transformMode)
-  const setTransformMode = useObjectManagerStore(state => state.setTransformMode)
+  const selectedObjects = useObjectManagerAPI(state => state.selectedObjects)
+  const transformMode = useObjectManagerAPI(state => state.transformMode)
+  const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
 
   return (
     <AnimatePresence>
@@ -119,7 +119,7 @@ export const ObjectTransformControls = React.memo(() => {
 })
 
 export const ObjectProperties = React.memo(() => {
-  const firstObjectSelected = useObjectManagerStore((state) => state.selectedObjects[0]);
+  const firstObjectSelected = useObjectManagerAPI((state) => state.selectedObjects[0]);
 
   const material = firstObjectSelected?.ref?.current?.material;
 

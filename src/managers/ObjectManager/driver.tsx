@@ -3,12 +3,12 @@ import { useFrame, useThree } from "@react-three/fiber";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useVXEngine } from "@vxengine/engine";
-import { useObjectManagerStore, useObjectPropertyStore } from "./store";
+import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
 import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import * as THREE from "three"
 import { KeyframeNodeDataProps } from "@vxengine/types/utilityNode";
-import { useSplineStore } from "@vxengine/managers/SplineManager/store";
+import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { extractSplineKeyFromNodeKey } from "@vxengine/managers/SplineManager/utils";
 
 
@@ -16,10 +16,10 @@ export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange);
   const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
-  const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
-  const firstSelectedObjectStored = useObjectManagerStore(state => state.selectedObjects[0]);
-  const utilityTransfromAxis = useObjectManagerStore(state => state.utilityTransformAxis)
-  const transformMode = useObjectManagerStore(state => state.transformMode);
+  const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
+  const firstSelectedObjectStored = useObjectManagerAPI(state => state.selectedObjects[0]);
+  const utilityTransfromAxis = useObjectManagerAPI(state => state.utilityTransformAxis)
+  const transformMode = useObjectManagerAPI(state => state.transformMode);
 
 
   const firstObjectSelected = firstSelectedObjectStored?.ref.current;
@@ -96,7 +96,7 @@ export const ObjectManagerDriver = () => {
     if(selectedUtilityNode.type === "spline"){
       const { index, splineKey, ref } = selectedUtilityNode;
       const newPosition = ref.position
-      useSplineStore.getState().setSplineNodePosition(splineKey, index, newPosition)
+      useSplineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
     }
   }
 

@@ -1,9 +1,9 @@
 import { Html } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
-import { useObjectManagerStore } from '@vxengine/managers/ObjectManager';
+import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useSplineStore } from './store';
+import { useSplineManagerAPI } from './store';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -13,12 +13,12 @@ export interface SplineNodeProps {
 }
 
 const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, color = "white" }) => {
-    const addUtilityNode = useObjectManagerStore(state => state.addUtilityNode)
-    const removeUtilityNode = useObjectManagerStore(state => state.removeUtilityNode)
-    const setSelectedUtilityNode = useObjectManagerStore(state => state.setSelectedUtilityNode);
-    const setUtilityTransformAxis = useObjectManagerStore(state => state.setUtilityTransformAxis);
-    const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
-    const setSelectedSpline = useSplineStore(state => state.setSelectedSpline)
+    const addUtilityNode = useObjectManagerAPI(state => state.addUtilityNode)
+    const removeUtilityNode = useObjectManagerAPI(state => state.removeUtilityNode)
+    const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode);
+    const setUtilityTransformAxis = useObjectManagerAPI(state => state.setUtilityTransformAxis);
+    const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
+    const setSelectedSpline = useSplineManagerAPI(state => state.setSelectedSpline)
 
     const ref = useRef();
 

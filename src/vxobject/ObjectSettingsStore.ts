@@ -5,10 +5,11 @@
 import { create } from 'zustand';
 import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
+import { useVXAnimationStore } from '@vxengine/AnimationEngine';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
-    setSetting: (vxkey: string, settingKey: string, settingValue: string) => void
+    setSetting: (vxkey: string, settingKey: string, settingValue: string | boolean) => void
     toggleSetting: (vxkey: string, settingKey: string) => void
     initSettings: (newSettings: Record<string, ISettings>) => void;
 
@@ -17,15 +18,18 @@ interface ObjectSettingsStoreProps {
     toggleAdditionalSetting: (vxkey: string, settingKey: string) => void;
 }
 
-export const useObjectSettingsStore = create<ObjectSettingsStoreProps>((set, get) => ({
+export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) => {
+    return ({
     settings: {},
     setSetting: (vxkey, settingKey, settingValue) => {
         set(produce((state: ObjectSettingsStoreProps) => {
+            if(state.settings[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
             state.settings[vxkey][settingKey] = settingValue
         }))
     },
     toggleSetting: (vxkey, settingKey) => {
         set(produce((state: ObjectSettingsStoreProps) => {
+            if(state.setSetting[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
             state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
         }))
     },
@@ -38,16 +42,14 @@ export const useObjectSettingsStore = create<ObjectSettingsStoreProps>((set, get
     additionalSettings: {},
     setAdditionalSetting: (vxkey, settingKey, settingValue) => {
         set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.additionalSettings[vxkey] === undefined)
-                state.additionalSettings[vxkey] = {};
+            if(state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
             state.additionalSettings[vxkey][settingKey] = settingValue
         }))
     },
     toggleAdditionalSetting: (vxkey, settingKey) => {
         set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.additionalSettings[vxkey] === undefined)
-                state.additionalSettings[vxkey] = {};
+            if(state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
             state.additionalSettings[vxkey][settingKey] = !state.additionalSettings[vxkey][settingKey]
         }))
     },
-}))
+})})

@@ -2,7 +2,7 @@ import React, { forwardRef, ElementRef, ComponentPropsWithoutRef } from 'react'
 import Image from "next/image"
 import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../shadcn/menubar'
 import { } from '@radix-ui/react-menubar'
-import { useObjectManagerStore } from '@vxengine/managers/ObjectManager/store'
+import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager/store'
 import { shallow } from 'zustand/shallow'
 import { useVXObjectStore } from '@vxengine/vxobject'
 
@@ -74,8 +74,8 @@ const EditButton = () => {
 }
 
 const SelectButton = React.memo(() => {
-    const selectObjects = useObjectManagerStore(state => state.selectObjects)
-    const selectedObjectKeys = useObjectManagerStore(state => state.selectedObjectKeys)
+    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
     const handleSelectAll = () => { selectObjects(Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey)) }
     const handleSelectNone = () => { selectObjects([]) }

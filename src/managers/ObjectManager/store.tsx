@@ -20,7 +20,7 @@ const selectObjects = (state: ObjectEditorStoreProps, vxkeys: string[]): ObjectE
     };
 };
 
-export const useObjectManagerStore = createWithEqualityFn<ObjectEditorStoreProps>((set, get) => ({
+export const useObjectManagerAPI = createWithEqualityFn<ObjectEditorStoreProps>((set, get) => ({
     transformMode: "translate",
     setTransformMode: (mode: "translate" | "rotate" | "scale") => set((state) => ({
         ...state,
@@ -59,7 +59,7 @@ export const useObjectManagerStore = createWithEqualityFn<ObjectEditorStoreProps
     })
 }))
 
-export const useObjectPropertyStore = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({
+export const useObjectPropertyAPI = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({
     properties: {},
     updateProperty: (vxkey, propertyPath, value) => {
         set(

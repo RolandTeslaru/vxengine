@@ -4,8 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@vxengine/utils"
 
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+export const buttonVariants = cva(
+  `inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-colors 
+   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`,
   {
     variants: {
       variant: {
@@ -13,7 +14,7 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-neutral-700 bg-neutral-800 hover:bg-neutral-950 hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -32,11 +33,15 @@ const buttonVariants = cva(
           "relative after:absolute after:bg-neutral-950 after:bottom-2 after:h-[1px] after:w-2/3 after:origin-bottom-left after:scale-x-100 hover:after:origin-bottom-right hover:after:scale-x-0 after:transition-transform after:ease-in-out after:duration-300",
         linkHover2:
           "relative after:absolute after:bg-neutral-950 after:bottom-2 after:h-[1px] after:w-2/3 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:ease-in-out after:duration-300",
+        warning:
+          "border border-yellow-400 bg-yellow-500 hover:text-accent-foreground",
+        error:
+          "border border-red-600 bg-red-700 hover:text-accent-foreground",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        default: "h-8 px-4 py-0",
+        sm: "h-7 rounded-lg px-3",
+        lg: "h-9 rounded-lg px-8",
         icon: "h-10 w-10",
       },
     },
@@ -89,13 +94,15 @@ const Button = React.forwardRef<
         {...props}
       >
         {Icon && iconPlacement === "left" && (
-          <div className="w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-100 group-hover:pr-2 group-hover:opacity-100">
+          <div className={`w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 
+                           group-hover:w-5 group-hover:translate-x-100 group-hover:pr-2 group-hover:opacity-100`}>
             <Icon />
           </div>
         )}
         <Slottable>{props.children}</Slottable>
         {Icon && iconPlacement === "right" && (
-          <div className="w-0 translate-x-[100%] pl-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-0 group-hover:pl-2 group-hover:opacity-100">
+          <div className={`w-0 translate-x-[100%] pl-0 opacity-0 transition-all duration-200 
+                           group-hover:w-5 group-hover:translate-x-0 group-hover:pl-2 group-hover:opacity-100`}>
             <Icon />
           </div>
         )}
@@ -105,5 +112,5 @@ const Button = React.forwardRef<
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+export { Button };
         

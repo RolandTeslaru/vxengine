@@ -45,10 +45,15 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "moveBackground": {
+          '0%': { backgroundPosition: '0 0' }, // Starting position
+          '100%': { backgroundPosition: '40px 40px' } // Move 40px in both directions (diagonally)
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "moveBackground": 'moveBackground 2s linear infinite', 
       },
     },
   },

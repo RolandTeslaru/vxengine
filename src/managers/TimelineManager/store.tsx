@@ -7,11 +7,11 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
-import { useVXObjectStore } from "@vxengine/vxobject";
+import { useVXObjectStore, vx } from "@vxengine/vxobject";
 import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
 import { computeGroupPathFromRawObject, computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { useObjectManagerStore, useObjectPropertyStore } from '../ObjectManager/store';
+import { useObjectManagerAPI, useObjectPropertyAPI } from '../ObjectManager/store';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from '@vxengine/types/objectStore';
@@ -21,6 +21,7 @@ import { useVXAnimationStore } from '@vxengine/AnimationEngine';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
+const DEBUG_REFRESHER = true;
 
 function processRawData(
     rawObjects: RawObjectProps[]
@@ -88,6 +89,86 @@ function processRawData(
     return { editorObjects, tracks, staticProps, groupedPaths, keyframes };
 }
 
+function removeStaticPropLogic(state: TimelineEditorStoreProps, staticPropKey: string) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
+    delete state.staticProps[staticPropKey] // Delete from record
+
+    // Delete from editorObjects vxobject
+    const edObject = state.editorObjects[vxkey];
+    edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
+}
+
+function removeKeyframeLogic(state: TimelineEditorStoreProps, trackKey: string, keyframeKey: string) {
+    delete state.keyframes[keyframeKey]
+
+    const track = state.tracks[trackKey]
+    track.keyframes = track.keyframes.filter(kfKeys => kfKeys !== keyframeKey)
+}
+
+function removeTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    const track = state.tracks[trackKey]
+
+    // Remove all keyframes required by the track
+    track.keyframes.forEach(keyframeKey => {
+        removeKeyframeLogic(state, trackKey, keyframeKey)
+    })
+
+    delete state.tracks[trackKey]
+
+    // Remove the track key from the editor object
+    const trackKeys = state.editorObjects[vxkey].trackKeys.filter(key => key !== trackKey)
+    state.editorObjects[vxkey].trackKeys = trackKeys;
+}
+
+function createKeyframeLogic(state: TimelineEditorStoreProps, trackKey, keyframeKey, value) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
+
+    if (!value) {
+        value = getNestedProperty(useVXObjectStore.getState().objects[vxkey].ref.current, propertyPath)
+    }
+
+    const newKeyframe: IKeyframe = {
+        id: keyframeKey,
+        time: state.cursorTime,
+        value: value,
+        vxkey: vxkey,
+        propertyPath: propertyPath,
+        handles: {
+            in: { x: 0, y: 0 },
+            out: { x: 1, y: 1 }
+        },
+    };
+
+    const keyframes = state.getKeyframesForTrack(trackKey)
+
+    state.keyframes[keyframeKey] = newKeyframe;  // Add keyframe to Record
+    let track = state.getTrack(trackKey)
+
+    const isPropertyTracked = !!track;
+
+    if (isPropertyTracked) {
+        // Check if the cursor is on a keyframe that already exists
+        const isCursorOnKeyframe = keyframes.some(kf => kf.time === state.cursorTime)
+        if (isCursorOnKeyframe === false) {
+            state.addKeyframeToTrack(state, keyframeKey, trackKey);
+        }
+    }
+
+    state.addChange();
+}
+
+function createStaticPropLogic(state: TimelineEditorStoreProps, vxkey: string, propertyPath: string, value: number) {
+    const staticPropKey = `${vxkey}.${propertyPath}`
+    const newStaticProp: IStaticProps = {
+        vxkey: vxkey,
+        propertyPath: propertyPath,
+        value: value
+    }
+
+    state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
+    state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
+}
 
 export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorObjects: {},
@@ -272,59 +353,35 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }
     },
 
-    createKeyframe: (trackKey, value, reRender = true) => {
-        const { addChange, getTrack, addKeyframeToTrack, getKeyframesForTrack } = get();
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-
-        const keyframeId = `keyframe-${Date.now()}`
-
-        if (!value) {
-            value = getNestedProperty(useVXObjectStore.getState().objects[vxkey].ref.current, propertyPath)
-        }
-
-        const newKeyframe: IKeyframe = {
-            id: keyframeId,
-            time: get().cursorTime,
-            value: value,
-            vxkey: vxkey,
-            propertyPath: propertyPath,
-            handles: {
-                in: { x: 0, y: 0 },
-                out: { x: 1, y: 1 }
-            },
-        };
-
-        const keyframes = getKeyframesForTrack(trackKey)
-
+    removeTrack: ({ trackKey, refresh }) => {
+        console.log("REmoving Track key ", trackKey)
         set(produce((state: TimelineEditorStoreProps) => {
-            state.keyframes[keyframeId] = newKeyframe;  // Add keyframe to Record
-            let track = getTrack(trackKey)
-
-            const isPropertyTracked = !!track;
-
-            if (isPropertyTracked) {
-                // Check if the cursor is on a keyframe that already exists
-                const isCursorOnKeyframe = keyframes.some(kf => kf.time === get().cursorTime)
-                if (isCursorOnKeyframe === false) {
-                    addKeyframeToTrack(state, keyframeId, trackKey);
-                }
-            }
+            removeTrackLogic(state, trackKey)
+            state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
-        const animationEngine = get().animationEngineRef.current
-        // Refresh Raw Data and ReRender
-        animationEngine.refreshKeyframe(trackKey, 'create', keyframeId, reRender)
+        // Recompute grouped Paths for Visual 
+        if (refresh) {
+            const animationEngine = get().animationEngineRef.current
+            if (!animationEngine) return
 
-        addChange();
+            // Refresh only the track 
+            animationEngine.refreshTrack(trackKey, "remove")
+        }
     },
 
-    removeKeyframe: (trackKey, keyframeKey, reRender = true) => {
-        set(produce((state: TimelineEditorStoreProps) => {
-            delete state.keyframes[keyframeKey]
+    createKeyframe: ({ trackKey, value, reRender = true }) => {
+        const keyframeKey = `keyframe-${Date.now()}`
 
-            const track = state.tracks[trackKey]
-            track.keyframes = track.keyframes.filter(kfKeys => kfKeys !== keyframeKey)
-        }))
+        set(produce((state: TimelineEditorStoreProps) => createKeyframeLogic(state, trackKey, keyframeKey, value)))
+        const animationEngine = get().animationEngineRef.current
+        // Refresh Raw Data and ReRender
+        animationEngine.refreshKeyframe(trackKey, 'create', keyframeKey, reRender)
+    },
 
+    removeKeyframe: ({ trackKey, keyframeKey, reRender }) => {
+        set(produce((state: TimelineEditorStoreProps) => removeKeyframeLogic(state, trackKey, keyframeKey)))
+        // Only refreshe the currentTimeline if removeKeyframe is not used inside a nested immer produce
+        // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         const animationEngine = get().animationEngineRef.current
         if (!animationEngine) return
 
@@ -334,92 +391,89 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     makePropertyTracked: (staticPropKey, reRender) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
         const vxObjects = useVXObjectStore.getState().objects;
+        let doesPropertyExist = false
+        const trackKey = staticPropKey;
+
+        const track = get().tracks[trackKey]
+        if (track) {
+            console.error("VXAnimationEngine: property ", trackKey, " is already tracked")
+            return
+        }
+
+        const animationEngine = get().animationEngineRef.current
+
+        // Default Keyframe that will be added when creating a new track
+        const keyframeKey = `keyframe-${Date.now()}`
+        animationEngine.refreshStaticProp("remove", staticPropKey, false)
+
         set(produce((state: TimelineEditorStoreProps) => {
             const edObject = state.editorObjects[vxkey];
+            let value;
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
-            const staticProp = staticPropsForObject.find(prop => prop.propertyPath === propertyPath)
 
-            const value = staticProp
-                ? staticProp.value
-                : getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
-
-            // Remove static Prop Logic
-            // Delete from Record
-            delete state.staticProps[staticPropKey]
-
-            // Delete from editorObjects vxobject
-            edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
-
-            // Handle Keyframe
-            const keyframeId = `keyframe-${Date.now()}`
-            const newKeyframe: IKeyframe = {
-                id: keyframeId,
-                time: get().cursorTime,
-                value: value,
-                vxkey: vxkey,
-                propertyPath: propertyPath,
-                handles: {
-                    in: { x: 0, y: 0 },
-                    out: { x: 1, y: 1 }
-                },
-            };
-            state.keyframes[keyframeId] = newKeyframe
+            if (staticPropsForObject) {
+                const staticProp = staticPropsForObject.find(prop => prop.propertyPath === propertyPath)
+                if (staticProp) {
+                    value = staticProp.value;
+                    removeStaticPropLogic(state, staticPropKey)
+                    doesPropertyExist = true;
+                }
+                else
+                    value = getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
+            }
+            else
+                value = getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
 
             // Handle Track 
-            const trackKey = staticPropKey;
+
             const newTrack: ITrack = {
                 vxkey: vxkey,
                 propertyPath: propertyPath,
-                keyframes: [newKeyframe.id]
+                keyframes: [keyframeKey]
             }
             state.tracks[trackKey] = newTrack;
             edObject.trackKeys.push(trackKey)
 
+            createKeyframeLogic(state, trackKey, keyframeKey, value,)
+
             // Recompute grouped Paths for Visual 
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
-
-        const animationEngine = get().animationEngineRef.current
-
         // Refresh Raw Data and ReRender
-        animationEngine.refreshCurrentTimeline()
+        animationEngine.refreshKeyframe(trackKey, "create", keyframeKey, false)
+        animationEngine.refreshTrack(trackKey, "create", true)
     },
 
 
-    makePropertyStatic: (trackKey, reRender) => {
+    makePropertyStatic: (trackKey, reRender = true) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+        const staticPropKey = trackKey;
+        let doesTrackExist = false;
         set(produce((state: TimelineEditorStoreProps) => {
-            const edObject = state.editorObjects[vxkey];
 
-            const tracksForObject = state.getTracksForObject(vxkey); // this will be filtered
             const vxObject = useVXObjectStore.getState().objects[vxkey]
             const value = getNestedProperty(vxObject.ref.current, propertyPath)
+            const edObject = useTimelineEditorAPI.getState().editorObjects[vxkey];
 
-            // Remove the track Key from the edObject trackKetys string array
-            const filteredTracksForObject = tracksForObject.filter(track => track.propertyPath !== track.propertyPath)
-            edObject.trackKeys = filteredTracksForObject.map(track => `${vxkey}.${track.propertyPath}`)
+            doesTrackExist =  !!edObject.trackKeys.find(key => key === trackKey)
 
-            delete state.tracks[trackKey];
+            if(doesTrackExist)
+                removeTrackLogic(state, trackKey)
 
-            // Handle StaticProp
-            const staticPropKey = trackKey;
-            const newStaticProp: IStaticProps = {
-                vxkey: vxkey,
-                propertyPath: propertyPath,
-                value: value
-            }
-            state.staticProps[staticPropKey] = newStaticProp;
-            edObject.staticPropKeys.push(staticPropKey)
+            createStaticPropLogic(state, vxkey, propertyPath, value)
 
             // Recompute grouped Paths for Visual 
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
         const animationEngine = get().animationEngineRef.current
+        if (!animationEngine) return;
 
-        // Refresh Raw Data and ReRender
-        animationEngine.refreshCurrentTimeline()
+        if(doesTrackExist)
+            animationEngine.refreshTrack(trackKey, "remove")
+
+        animationEngine.refreshStaticProp("create", staticPropKey, true )
     },
 
 
@@ -474,39 +528,32 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
 
-    createStaticProp: (vxkey: string, propertyPath: string, value: number, reRender = true) => {
+    createStaticProp: ({ vxkey, propertyPath, value, reRender, state }) => {
         const staticPropKey = `${vxkey}.${propertyPath}`
-        // console.log("Creating StaticProp Key", staticPropKey)
 
-        const newStaticProp: IStaticProps = {
-            vxkey: vxkey,
-            propertyPath: propertyPath,
-            value: value
+        if (state)
+            createStaticPropLogic(state, vxkey, propertyPath, value)
+        else {
+            set(produce((state: TimelineEditorStoreProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
+            const animationEngine = get().animationEngineRef.current
+            if (!animationEngine)
+                return
+
+            animationEngine.refreshStaticProp("create", staticPropKey, reRender)
         }
-
-        set(produce((state: TimelineEditorStoreProps) => {
-            state.staticProps[staticPropKey] = newStaticProp;           // Add to Record
-            state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
-        }))
-
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine)
-            return
-
-        animationEngine.refreshStaticProp("create", staticPropKey, reRender)
     },
 
-    removeStaticProp: (staticPropKey: string) => {
-        // console.log("Removing static Prop with key", staticPropKey)
-        const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
-        set(produce((state: TimelineEditorStoreProps) => {
-            // Delete from Record
-            delete state.staticProps[staticPropKey]
+    removeStaticProp: ({ staticPropKey, state, reRender }) => {
+        if (state)
+            removeStaticPropLogic(state, staticPropKey)
+        else {
+            set(produce((state: TimelineEditorStoreProps) => removeStaticPropLogic(state, staticPropKey)))
+            // Refresh Keyframe
+            const animationEngine = get().animationEngineRef.current
+            if (!animationEngine) return
 
-            // Delete from editorObjects vxobject
-            const edObject = state.editorObjects[vxkey];
-            edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
-        }))
+            animationEngine.refreshStaticProp("remove", staticPropKey, reRender)
+        }
     },
 
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender = true) => {
@@ -522,19 +569,18 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     handlePropertyValueChange: (vxkey, propertyPath, newValue, reRender = true) => {
-        const state = get();
         const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
-        const track = state.getTrack(generalKey);
+        const track = get().getTrack(generalKey);
         const isPropertyTracked = !!track;
 
         if (isPropertyTracked) {
             const trackKey = generalKey;
-            const keyframes = state.getKeyframesForTrack(trackKey);
+            const keyframes = get().getKeyframesForTrack(trackKey);
 
             // Check if the cursor is under any keyframe
             let targetedKeyframe: IKeyframe | undefined;
             keyframes.some(kf => {
-                if (kf.time === state.cursorTime) {
+                if (kf.time === get().cursorTime) {
                     targetedKeyframe = kf;
                     return true;  // Exit early once we find the keyframe
                 }
@@ -544,23 +590,27 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             // if keyframe exists, update its value
             // else create a new keyframe at cursortime
             if (targetedKeyframe)
-                state.setKeyframeValue(targetedKeyframe.id, newValue, reRender);
+                get().setKeyframeValue(targetedKeyframe.id, newValue, reRender);
             else
-                state.createKeyframe(trackKey, newValue, reRender);
+                get().createKeyframe({
+                    trackKey,
+                    value: newValue,
+                    reRender
+                });
 
         } else {
             const staticPropKey = generalKey;
             // Check if the static prop exists
-            const staticProp = state.getStaticProp(staticPropKey);
+            const staticProp = get().getStaticProp(staticPropKey);
 
             if (staticProp)
-                state.setStaticPropValue(staticPropKey, newValue, reRender);
+                get().setStaticPropValue(staticPropKey, newValue, reRender);
             else
-                state.createStaticProp(vxkey, propertyPath, newValue, reRender);
+                get().createStaticProp({ vxkey, propertyPath, value: newValue, reRender });
 
         }
 
-        useObjectPropertyStore.getState().updateProperty(vxkey, propertyPath, newValue);
+        useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, newValue);
     },
 
     dumpData: () => {

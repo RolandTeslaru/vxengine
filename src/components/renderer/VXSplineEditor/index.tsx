@@ -1,12 +1,7 @@
 "use client"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, TransformControls, Text, Html } from '@react-three/drei';
-import * as THREE from 'three';
-import { Leva, useControls, button } from 'leva';
+import { Html } from '@react-three/drei';
 import splinePointsData from "@vxengine/SplinePositions.json";
-import { TransformControls as TransformControlsAPI } from 'three-stdlib';
-import { useVXEngine } from '@vxengine/VXEngine';
 import { createPortal } from 'react-dom';
 import Spline from './Spline';
 import SplineEditorUI from '../../ui/SplineEditorUI';

@@ -16,8 +16,8 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={` z-20 w-full h-fit relative !transform-gpu
-                            rounded-2xl p-2 pt-0 pb-0 ${open === false && "!h-[40px]"} ` + s.gradient_border_mask + " " +
+        <div className={` z-20 w-full h-fit relative !transform-gpu rounded-2xl p-2 pt-0 pb-0 
+                         ${open === false && "!h-[40px]"} ` + s.gradient_border_mask + " " +
             className  }
             style={{background: "linear-gradient(130deg, rgba(20,20,20,1) 0%, rgba(10,10,10,1) 50%)",
             }}

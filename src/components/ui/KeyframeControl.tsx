@@ -4,9 +4,10 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 
 interface TimelineKeyframeControlProps {
     trackKey?: string,
+    disabled?: boolean
 }
 
-const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKey }) => {
+const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKey, disabled }) => {
     const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe)
     const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
     const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
@@ -44,7 +45,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){
-            createKeyframe(trackKey) // auto sets the value to the ref property path of the object
+            createKeyframe({trackKey}) // auto sets the value to the ref property path of the object
         }
         else if ( isPropertyTracked === false) {
             // This is a singular static prop
@@ -54,11 +55,12 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
     }
 
     return (
-        <div className='flex flex-row h-[12px]'>
+        <div className={`flex flex-row h-[12px] ${disabled && "opacity-0"}`}>
             {isPropertyTracked &&
                 <button
                     onClick={() => moveToPreviousKeyframe(keyframesOnTrack)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
+                    disabled={disabled}
                 >
                     <ChevronLeft className=' w-3 h-3' />
                 </button>
@@ -67,6 +69,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
             <button
                 onClick={handleMiddleButton}
                 className="hover:*:stroke-[5] hover:*:stroke-white "
+                disabled={disabled}
             >
                 <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />
             </button>
@@ -74,6 +77,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
                 <button
                     onClick={() => moveToNextKeyframe(keyframesOnTrack)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
+                    disabled={disabled}
                 >
                     <ChevronRight className='w-3 h-3 ' />
                 </button>

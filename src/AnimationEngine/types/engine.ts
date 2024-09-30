@@ -24,13 +24,16 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     loadTimelines(timelines: ITimeline[]): void;
     setCurrentTime(time: number, isTick?: boolean): boolean;
     refreshCurrentTimeline(): void
+    refreshTrack(
+      trackKey: string ,
+      action: 'create' | 'remove'
+    ): void;
     refreshKeyframe(
       trackKey: string, 
       action:  'create' | 'remove' | 'update',
       keyframeKey: string,
       reRender: boolean
     ): void
-
     refreshStaticProp: (
       action:  'create' | 'remove' | 'update',
       staticPropKey: string,

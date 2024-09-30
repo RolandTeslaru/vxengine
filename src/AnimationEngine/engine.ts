@@ -8,22 +8,29 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
+import { IKeyframe, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
-import { useObjectPropertyStore } from '@vxengine/managers/ObjectManager/store';
+import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useVXAnimationStore } from './AnimationStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
 import Stats from 'stats.js';
 import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 import { loadWasmModule } from '@vxengine/utils/wasmLoader';
-import { useObjectSettingsStore } from '@vxengine/vxobject/ObjectSettingsStore';
-import { useSplineStore } from '@vxengine/managers/SplineManager/store';
+import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
+import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 // import { cubicBezier as wasmCubicBezier, solveCubicBezierT as wasmSolveCubicBezierT } from "../../build/release"
+
+import init, { 
+  Spline as wasm_Spline, 
+  Vector3 as wasm_Vector3, 
+  interpolate_number as wasm_interpolateNumber, 
+ } from '../wasm/pkg';
+
 const IS_DEV = process.env.NODE_ENG === 'development'
 
-const DEBUG_REFRESHER = false;
+const DEBUG_REFRESHER = true;
 const DEBUG_RERENDER = true;
 
 export const ENGINE_PRECISION = 3;
@@ -36,11 +43,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _wasmReady: Promise<void>
   private _isWasmInitialized: boolean = false
 
+  private _splinesCache: Record<string, any> = {}
+
   private _currentTime: number = 0;
 
   constructor() {
     super(new Events());
-    this._wasmReady = this._initializeWasm()
+    this._wasmReady = this._initializeWasm();
   }
 
   get timelines() { return useVXAnimationStore.getState().timelines; }
@@ -121,6 +130,37 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender({ force: true, cause: "refresh currentTimeline" });
   }
 
+  refreshTrack(
+    trackKey: string,
+    action: 'create' | 'remove',
+    reRender = true,
+  ) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    const rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
+
+    if (DEBUG_REFRESHER)
+      console.log("VXAnimationEngine: Refreshing track on edObject:", vxkey)
+
+    if (action === "create") {
+      const keyframesForTrack = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey);
+      const rawTrack: RawTrackProps = {
+        propertyPath: propertyPath,
+        keyframes: keyframesForTrack || []
+      }
+      rawObject.tracks.push(rawTrack);
+      if (DEBUG_REFRESHER)
+        console.log(`VXAnimationEngine TrackRefresher: Track ${trackKey} was added to ${vxkey}`);
+    }
+
+    else if (action === "remove") {
+      rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath)
+      if (DEBUG_REFRESHER)
+        console.log(`VXAnimationEngine TrackRefresher: Track ${trackKey} was removed from ${vxkey}`);
+    }
+
+    if (reRender)
+      this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
+  }
 
   refreshKeyframe(
     trackKey: string,
@@ -128,42 +168,43 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     keyframeKey: string,
     reRender = true
   ) {
-    const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
     if (DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing keyframe on trackKey:", trackKey)
 
+    // AGAIN CHATGPT 
+    // TODO: FIX THIS SHIT
     this.currentTimeline.objects.forEach((object) => {
       object.tracks.forEach((track) => {
-        if (track.propertyPath === propertyPath) {
-          switch (action) {
-            case 'create':
-              track.keyframes.push(edKeyframe);
-              track.keyframes.sort((a, b) => a.time - b.time);
-              if (DEBUG_REFRESHER)
-                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
-              break;
+        if (track.propertyPath === propertyPath && object.vxkey === vxkey) {
 
-            case 'remove':
-              track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
-              if (DEBUG_REFRESHER)
-                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
-              break;
-
-            case 'update':
-              track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
-              track.keyframes.sort((a, b) => a.time - b.time);
-              if (DEBUG_REFRESHER)
-                console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
-              break;
-
-            default:
-              console.error('Invalid action type');
+          if (action === "create") {
+            const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+            track.keyframes.push(edKeyframe);
+            track.keyframes.sort((a, b) => a.time - b.time);
+            if (DEBUG_REFRESHER)
+              console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
           }
+
+          else if (action === "update") {
+            const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+            track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
+            track.keyframes.sort((a, b) => a.time - b.time);
+            if (DEBUG_REFRESHER)
+              console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
+          }
+
+          else if (action === "remove") {
+            track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
+            if (DEBUG_REFRESHER)
+              console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
+          }
+
         }
       });
     });
+
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
@@ -175,34 +216,44 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     staticPropKey: string,
     reRender = true,
   ) {
-    const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
+    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
 
     if (DEBUG_REFRESHER)
       console.log("VXAnimationEngine: Refreshing static prop")
 
+    // ONLY refresh the object that has the static prop
+    // Stupid chat gpt added the the new static prop on all objects
     this.currentTimeline.objects.forEach((rawObject) => {
-      switch (action) {
-        case 'create':
+      if (rawObject.vxkey === vxkey) {
+
+        if (action === "create") {
+          const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
           const propExists = rawObject.staticProps.some(
-            (prop) => prop.propertyPath === staticProp.propertyPath
+            (prop) => prop.propertyPath === propertyPath
           );
 
           if (!propExists) {
             rawObject.staticProps.push(staticProp);
           }
-          break;
-        case 'update':
+        }
+
+        else if (action === "update") {
+          const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
           rawObject.staticProps = rawObject.staticProps.map((prop) => {
-            if (prop.propertyPath === staticProp.propertyPath)
+            if (prop.propertyPath === propertyPath)
               return staticProp
             else
               return prop;
           })
-          break;
-        case 'remove':
+        }
+
+        else if (action === "remove") {
           rawObject.staticProps = rawObject.staticProps
-            .map((prop) => (prop.propertyPath === staticProp.propertyPath ? null : prop))
+            .map((prop) => (prop.propertyPath === propertyPath ? null : prop))
             .filter(Boolean);
+        }
+
+        return
       }
     });
 
@@ -210,10 +261,74 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
   }
 
+  refreshSpline(
+    action: 'create' | 'remove' | 'update',
+    splineKey: string,
+    reRender = true,
+  ) {
+
+    if (action === "create") {
+      const spline = useSplineManagerAPI.getState().splines[splineKey];
+      if (!this.currentTimeline.splines)
+        this.currentTimeline.splines = {};
+      this.currentTimeline.splines[splineKey] = spline
+
+      // Create the WebAssembly spline object in the cache if not already created
+      if (!this._splinesCache[splineKey]) {
+        const wasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
+        this._splinesCache[splineKey] = wasmSpline;
+      }
+    }
+    else if (action === "remove") {
+      delete this.currentTimeline.splines[splineKey];
+
+      // Free the WebAssembly object in the cache
+      if (this._splinesCache[splineKey]) {
+        this._splinesCache[splineKey].free();
+        delete this._splinesCache[splineKey];
+      }
+    }
+    else if (action === "update") {
+      const spline = useSplineManagerAPI.getState().splines[splineKey];
+      this.currentTimeline.splines = {
+        ...this.currentTimeline.splines,
+        [splineKey]: {
+          ...this.currentTimeline.splines[splineKey],
+          nodes: [...spline.nodes]  // Clone the nodes array
+        }
+      };
+
+      // Free the old WebAssembly spline object in the cache and update it
+      if (this._splinesCache[splineKey]) {
+        this._splinesCache[splineKey].free();  
+      }
+
+      const newWasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
+      this._splinesCache[splineKey] = newWasmSpline;
+    }
+
+    if (reRender)
+      this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
+  }
+
   // Setter functions
 
   setIsPlaying(value: boolean) { useVXAnimationStore.setState({ isPlaying: value }) }
 
+  async cacheSplines(splines: Record<string, ISpline>) {
+    await this._wasmReady; // Ensure WASM is initialized
+
+    Object.entries(splines).forEach(([key, spline]) => {
+      const nodes = spline.nodes;
+      let wasmNodes = [];
+      nodes.forEach(node => {
+        const wasmNode = wasm_Vector3.new(node[0], node[1], node[2]);
+        wasmNodes.push(wasmNode);
+      });
+      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5); // Example args
+      this._splinesCache[key] = wasmSpline;
+    });
+  }
 
   setCurrentTimeline(timelineId: string) {
     console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
@@ -224,22 +339,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
 
-    this.reRender({ time: this._currentTime, force: true });
-    const { objects: rawObjects, settings, splines } = selectedTimeline
+    const { objects: rawObjects, splines: rawSplines } = selectedTimeline
+
 
     // set the Timeline Editor Data
     useTimelineEditorAPI.getState().setEditorData(rawObjects)
-    // Initialize the settings store
-    useObjectSettingsStore.getState().initSettings(settings)
-    // Initialize the splines store
-    useSplineStore.getState().initSplines(splines)
+    
+    this.cacheSplines(rawSplines);
+
+    this.reRender({ time: this._currentTime, force: true });
   }
 
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
     this._currentTime = time
 
-    if(isTick){
+    if (isTick) {
       this.trigger('timeUpdatedAutomatically', { time, engine: this });
       return;
     }
@@ -275,10 +390,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log("VXAnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
-    if (time !== undefined){
+    if (time !== undefined) {
       this._applyAllKeyframes(time);
     }
-    else{
+    else {
       this._applyAllKeyframes(this._currentTime)
       console.log("Rerendering with current time ", this._currentTime)
     }
@@ -311,11 +426,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  // When called, it initializes the objects props 
+  // When called, it initializes objects props
   // During the animationEngine initialization, the engine loads the first timeline, 
-  // but it cant apply all the keyframes and static props because the objects arent mounted at that point
+  // but it cant apply all keyframes and static props because the objects arent mounted at that point
   initObjectOnMount(object: vxObjectProps) {
-    console.log("AnimationEngine: InitObjectOnMount", object)
+    console.log("VXAnimationEngine: Initializing vxobject", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
     if (!objectInTimeline) {
       const newRawObject = {
@@ -343,14 +458,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
   }
 
-  private async _initializeWasm(): Promise<void> {
+  // private _initializeWasm() {
+  //   try {
+  //     this._wasmInstance = await loadWasmModule();
+  //     this._isWasmInitialized = true;
+  //   } catch (error) {
+  //     console.log('VXAnimationEngine Error: Failed to initialize WebAssembly module:', error)
+  //     console.log('VXAnimationEngine: Using fallback interpolater');
+  //   }
+  // }
+  private async _initializeWasm() {
     try {
-      this._wasmInstance = await loadWasmModule();
+      await init();  // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
-      // Perform any additional setup that requires wasmInstance
+      console.log("WASM initialized successfully");
     } catch (error) {
-      console.error('Error initializing WebAssembly module:', error);
-      // Handle the error appropriately
+      console.error("Failed to initialize WASM", error);
     }
   }
 
@@ -417,7 +540,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
       // TODO: make this optional when in production
-      useObjectPropertyStore.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
+      useObjectPropertyAPI.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
   }
@@ -463,19 +586,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const endHandleX = endKeyframe.handles.in.x || 0.7
     const endHandleY = endKeyframe.handles.in.y || 0.7
 
-    // Use WebAssembly calculations
+    // WebAssembly Number Interpolator
     if (this._isWasmInitialized) {
-      const wasmInterpolateNumber = this._wasmInstance.exports.interpolateNumber as (
-        startValue: number, 
-        endValue: number, 
-        startHandleX: number, 
-        startHandleY: number,
-        endHandleX: number,
-        endHandleY: number,
-        progress: number
-      ) => number
-
-      const WASM_interpolatedValue = wasmInterpolateNumber(
+      const WASM_interpolatedValue = wasm_interpolateNumber(
         startValue,
         endValue,
         startHandleX,
@@ -484,12 +597,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         endHandleY,
         progress
       )
-      // console.log("WASM Interpolated Value", WASM_interpolatedValue)
       
       return WASM_interpolatedValue;
     }
 
-    // console.log("VXAnimationEngine: using fallback javascript calculation")
+    // Fallback JS Number Interpolator
     const p0: { x: number, y: number } = { x: 0, y: startValue };
     const p1: { x: number, y: number } = {
       x: startHandleX,

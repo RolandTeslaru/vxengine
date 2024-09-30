@@ -2,7 +2,7 @@ import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
 import { useRef } from "react";
-import { useObjectManagerStore } from "@vxengine/managers/ObjectManager/store";
+import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { UtilityNodeProps } from "@vxengine/types/utilityNode";
 
@@ -17,11 +17,11 @@ export interface KeyframeNodeProps {
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, position, color = "yellow", size = 0.3 }) => {
     const ref = useRef<THREE.Mesh>(null);
 
-    const addUtilityNode = useObjectManagerStore(state => state.addUtilityNode);
-    const removeUtilityNode = useObjectManagerStore(state => state.removeUtilityNode);
-    const setSelectedUtilityNode = useObjectManagerStore(state => state.setSelectedUtilityNode);
-    const setUtilityTransformAxis = useObjectManagerStore(state => state.setUtilityTransformAxis);
-    const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
+    const addUtilityNode = useObjectManagerAPI(state => state.addUtilityNode);
+    const removeUtilityNode = useObjectManagerAPI(state => state.removeUtilityNode);
+    const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode);
+    const setUtilityTransformAxis = useObjectManagerAPI(state => state.setUtilityTransformAxis);
+    const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
     
     const nodeKey = useMemo(() => keyframeKeys.join('-'), [keyframeKeys])

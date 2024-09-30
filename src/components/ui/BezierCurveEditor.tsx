@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { create } from "zustand"
 // @ts-expect-error
 import styles from "./bezierCurveStyles.module.scss"
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 
 const defaultStateValue = {
   value: [0.4, 0, 1, 0.6], // easeIn
@@ -61,7 +62,8 @@ const BezierCurveEditor = ({
   value,
   onChange,
 }) => {
-  const useCurveStore = useMemo(() => createCurveStore(value), [] )
+  const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
+  const useCurveStore = useMemo(() => createCurveStore(value), [selectedTrackSegment])
 
   const {
     value: bezierValue,

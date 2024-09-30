@@ -1,8 +1,8 @@
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useSplineStore } from './store'
-import { useObjectManagerStore } from '../ObjectManager'
-import { useObjectSettingsStore } from '@vxengine/vxobject/ObjectSettingsStore'
+import { useSplineManagerAPI } from './store'
+import { useObjectManagerAPI } from '../ObjectManager'
+import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
@@ -12,7 +12,7 @@ import styles from "./styles.module.scss"
 
 const SplineManagerUI = () => {
 
-  const selectedSpline = useSplineStore(state => state.selectedSpline)
+  const selectedSpline = useSplineManagerAPI(state => state.selectedSpline)
   if (!selectedSpline)
     return
 
@@ -22,8 +22,8 @@ const SplineManagerUI = () => {
 export default SplineManagerUI
 
 const SplineSettings = () => {
-  const selectedSpline = useSplineStore(state => state.selectedSpline)
-  const isShowingSpline = useObjectSettingsStore(state => state.additionalSettings[selectedSpline.vxkey].showPositionPath)
+  const vxkey = useSplineManagerAPI(state => state.selectedSpline.vxkey)
+  const isShowingSpline = useObjectSettingsAPI(state => state.additionalSettings[vxkey].showPositionPath)
 
   if (isShowingSpline)
     return (
@@ -32,7 +32,7 @@ const SplineSettings = () => {
       >
         <div className='gap-2 flex flex-col'>
           <div className='w-auto mx-auto'>
-            <SplineSelect defaultSplineKey={selectedSpline.vxkey} />
+            <SplineSelect defaultSplineKey={vxkey} />
           </div>
           <SplineNodesScrollArea/>
         </div>
@@ -44,7 +44,7 @@ const SplineSettings = () => {
 const SplineNodesScrollArea = () => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const selectedSpline = useSplineStore(state => state.selectedSpline);
+  const selectedSpline = useSplineManagerAPI(state => state.selectedSpline);
 
   useEffect(() => {
     const checkOverflow = () => {
@@ -77,12 +77,12 @@ const SplineNodesScrollArea = () => {
 
 const SplineNodeListObject = ({ splineKey, position, index, }) => {
   const nodeKey = `${splineKey}.node${index}`
-  const splineUtilityNode = useObjectManagerStore(state => state.utilityNodes[nodeKey])
-  const selectedUtilityNode = useObjectManagerStore(state => state.selectedUtilityNode)
-  const setSelectedUtilityNode = useObjectManagerStore(state => state.setSelectedUtilityNode)
+  const splineUtilityNode = useObjectManagerAPI(state => state.utilityNodes[nodeKey])
+  const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
+  const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode)
 
-  const insertNode = useSplineStore(state => state.insertNode)
-  const removeNode = useSplineStore(state => state.removeNode)
+  const insertNode = useSplineManagerAPI(state => state.insertNode)
+  const removeNode = useSplineManagerAPI(state => state.removeNode)
 
   const isSelected = useMemo(() => { return splineUtilityNode?.nodeKey === selectedUtilityNode?.nodeKey }, [splineUtilityNode, selectedUtilityNode])
 
@@ -90,8 +90,8 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger className={'h-6 px-2 border flex flex-row rounded-xl bg-neutral-900 border-neutral-700 cursor-pointer ' +
-          ` ${isSelected && " !bg-blue-600 !border-neutral-300"} `}
+        <ContextMenuTrigger className={'h-6 px-2 border flex flex-row rounded-xl bg-neutral-800 hover:bg-neutral-900 border-neutral-700 cursor-pointer ' +
+          ` ${isSelected && " !bg-blue-600 hover:!bg-blue-700 !border-neutral-300"} `}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setSelectedUtilityNode(nodeKey)}
         >
@@ -122,8 +122,8 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
 }
 
 const SplineSelect = ({ defaultSplineKey }) => {
-  const setSelectedSpline = useSplineStore(state => state.setSelectedSpline)
-  const splines = useSplineStore(state => state.splines)
+  const setSelectedSpline = useSplineManagerAPI(state => state.setSelectedSpline)
+  const splines = useSplineManagerAPI(state => state.splines)
 
   const handleOnValueChange = (newSplineKey: string) => {
     setSelectedSpline(newSplineKey)
