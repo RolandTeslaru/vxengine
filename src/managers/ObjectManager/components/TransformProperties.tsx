@@ -10,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { IStaticProps } from "@vxengine/AnimationEngine/types/track";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
+import { Slider } from "@vxengine/components/shadcn/slider";
+import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
@@ -70,11 +72,6 @@ export const TransformProperties = () => {
                         {renderInputs('rotation')}
                     </div>
                 </div>
-                {settings && <>
-                    {"useSplinePath" in settings && (
-                        <BTN_useSplinePath vxkey={vxkey} />
-                    )}
-                </>}
                 {additionalSettings && <>
                     {"showPositionPath" in additionalSettings && (
                         <div className="flex flex-row mb-1">
@@ -91,10 +88,43 @@ export const TransformProperties = () => {
 
                 </>
                 }
+                {settings && <>
+                    {"useSplinePath" in settings && <>
+                        <BTN_useSplinePath vxkey={vxkey} />
+                        {settings.useSplinePath &&
+                            <SplineProgress vxkey={vxkey}/>
+                        }
+                    </>}
+                </>}
             </div>
         </CollapsiblePanel>
     );
 };
+
+const SplineProgress = ({ vxkey }) => {
+    const [value, setValue] = useState(0);
+    const propertyPath = "splineProgress"
+    const trackKey = `${vxkey}.splineProgress`
+
+    return (
+        <div className="flex flex-col gap-2">
+            <p className="text-xs font-light text-neutral-500">spline progress</p>
+            <div className="w-full flex flex-row">
+                <Slider
+                    defaultValue={[value]}
+                    max={10}
+                    step={0.5}
+                    min={0.0}
+                    className='w-24 mr-auto'
+                    onValueChange={(newValue) => {
+                        setValue(newValue[0])
+                    }}
+                />
+                <PropInput propertyPath={propertyPath} />
+            </div>
+        </div>
+    )
+}
 
 const BTN_useSplinePath = ({ vxkey }) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
@@ -140,7 +170,7 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
 
     const setSetting = useObjectSettingsAPI(state => state.setSetting)
     const removeSpline = useSplineManagerAPI(state => state.removeSpline)
-    
+
     const splineKey = `${vxkey}.spline`
 
     const isPositionProperty = (propertyPath) => {
@@ -156,7 +186,7 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
             tracks.forEach(track => {
                 const trackKey = `${track.vxkey}.${track.propertyPath}`;
                 if (isPositionProperty(track.propertyPath)) {
-                    removeTrack({ trackKey, refresh: true });
+                    removeTrack({ trackKey, reRender: true });
                 }
             });
 
@@ -210,7 +240,7 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
                                 })}
                             </> : <>
                                 <p>Disabling the spline path will remove the current spline and allow position tracks and keyframes to be created. </p>
-                                <br/>
+                                <br />
                                 <p>Spline <span className="text-red-600">{`${vxkey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
                             </>}
                         </AlertDialogDescription>

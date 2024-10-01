@@ -83,7 +83,8 @@ export interface TimelineEditorStoreProps {
     makePropertyTracked: (staticPropKey: string, reRender?: boolean) => void
     makePropertyStatic: (trackKey: string, reRender?: boolean) => void
 
-    removeTrack: (props: {trackKey: string, refresh: boolean}) => void
+    createTrack: (trackKey: string, keyframeKeys?: string[]) => void
+    removeTrack: (props: {trackKey: string, reRender: boolean}) => void
 
     // Keyframe functions
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;

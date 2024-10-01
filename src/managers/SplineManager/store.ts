@@ -7,6 +7,7 @@ import { produce } from "immer"
 import { ISpline } from '@vxengine/AnimationEngine/types/track';
 import { SplineNodeProps } from './SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
+import { extractVxKeyFromSplineKey } from './utils';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>
@@ -35,22 +36,33 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
         animationEngine.refreshSpline("create", splineKey, true)
     },
     addSpline: (spline: ISpline) => {
+        const { vxkey } = spline
         set(produce((state: SplineStoreProps) => {
-            state.splines[spline.splineKey] = spline
+            state.splines[spline.splineKey] = spline // Add to record
         }))
+        
+        const createTrack = useTimelineEditorAPI.getState().createTrack;
+        const trackKey = `${vxkey}.splineProgress`
+        createTrack(trackKey);
     },
     removeSpline: (splineKey) => {
+        const vxkey = extractVxKeyFromSplineKey(splineKey)
         set(produce((state: SplineStoreProps) => {
             delete state.splines[splineKey];
         }))
+
+        const trackKey = `${vxkey}.splineProgress`
+        const removeTrack = useTimelineEditorAPI.getState().removeTrack;
+        removeTrack({trackKey, reRender: true})
 
         const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
         animationEngine.refreshSpline("remove", splineKey, true)
     },
     initSplines: (newSplines) => {
-        set(produce((state: SplineStoreProps) => {
-            state.splines = newSplines || {};
-        }))
+        const addSpline = get().addSpline;
+        Object.entries(newSplines).forEach(([key, spline]) => {
+            addSpline(spline)
+        })
     },
     setSplineNodePosition: (splineKey: string, nodeIndex: number, newPosition: THREE.Vector3) => {
         set(produce((state: SplineStoreProps) => {

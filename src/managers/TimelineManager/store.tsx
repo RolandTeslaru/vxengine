@@ -170,6 +170,20 @@ function createStaticPropLogic(state: TimelineEditorStoreProps, vxkey: string, p
     state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
 }
 
+
+function createTrackLogic(state: TimelineEditorStoreProps, trackKey: string, keyframeKeys: string[]) {
+    const {vxkey, propertyPath} = extractDataFromTrackKey(trackKey);
+
+    state.editorObjects[vxkey].trackKeys.push(trackKey);
+    
+    const newTrack: ITrack = {
+        vxkey,
+        propertyPath,
+        keyframes: keyframeKeys || []
+    }
+    state.tracks[trackKey] = newTrack;
+}
+
 export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
@@ -353,20 +367,31 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }
     },
 
-    removeTrack: ({ trackKey, refresh }) => {
+    createTrack: (trackKey, keyframeKeys) => {
+        set(produce((state: TimelineEditorStoreProps) => {
+            createTrackLogic(state, trackKey, keyframeKeys)
+            state.groupedPaths = computeGroupPaths(state.editorObjects)
+        }))
+
+        const animationEngine = get().animationEngineRef.current
+        if (!animationEngine) return
+
+        // Refresh only the track 
+        animationEngine.refreshTrack(trackKey, "create")
+    },
+
+    removeTrack: ({ trackKey, reRender }) => {
         console.log("REmoving Track key ", trackKey)
         set(produce((state: TimelineEditorStoreProps) => {
             removeTrackLogic(state, trackKey)
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
-        // Recompute grouped Paths for Visual 
-        if (refresh) {
-            const animationEngine = get().animationEngineRef.current
-            if (!animationEngine) return
 
-            // Refresh only the track 
-            animationEngine.refreshTrack(trackKey, "remove")
-        }
+        const animationEngine = get().animationEngineRef.current
+        if (!animationEngine) return
+
+        // Refresh only the track 
+        animationEngine.refreshTrack(trackKey, "remove", reRender)
     },
 
     createKeyframe: ({ trackKey, value, reRender = true }) => {
