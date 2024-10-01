@@ -40,10 +40,13 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
         set(produce((state: SplineStoreProps) => {
             state.splines[spline.splineKey] = spline // Add to record
         }))
-        
         const createTrack = useTimelineEditorAPI.getState().createTrack;
+        const createKeyframe = useTimelineEditorAPI.getState().createKeyframe;
+        
         const trackKey = `${vxkey}.splineProgress`
         createTrack(trackKey);
+        createKeyframe({trackKey, value: 0.0001})
+        
     },
     removeSpline: (splineKey) => {
         const vxkey = extractVxKeyFromSplineKey(splineKey)

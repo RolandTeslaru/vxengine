@@ -121,7 +121,12 @@ function removeTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
     state.editorObjects[vxkey].trackKeys = trackKeys;
 }
 
-function createKeyframeLogic(state: TimelineEditorStoreProps, trackKey, keyframeKey, value) {
+function createKeyframeLogic(
+    state: TimelineEditorStoreProps, 
+    trackKey: string, 
+    keyframeKey: string, 
+    value?: number
+) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
 
     if (!value) {
@@ -135,8 +140,8 @@ function createKeyframeLogic(state: TimelineEditorStoreProps, trackKey, keyframe
         vxkey: vxkey,
         propertyPath: propertyPath,
         handles: {
-            in: { x: 0, y: 0 },
-            out: { x: 1, y: 1 }
+            in: { x: 0.7, y: 0.7 },
+            out: { x: 0.3, y: 0.3 }
         },
     };
 
@@ -432,7 +437,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.refreshStaticProp("remove", staticPropKey, false)
 
         set(produce((state: TimelineEditorStoreProps) => {
-            const edObject = state.editorObjects[vxkey];
             let value;
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
@@ -451,15 +455,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 value = getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
 
             // Handle Track 
-
-            const newTrack: ITrack = {
-                vxkey: vxkey,
-                propertyPath: propertyPath,
-                keyframes: [keyframeKey]
-            }
-            state.tracks[trackKey] = newTrack;
-            edObject.trackKeys.push(trackKey)
-
+            createTrackLogic(state, trackKey, [keyframeKey])
             createKeyframeLogic(state, trackKey, keyframeKey, value,)
 
             // Recompute grouped Paths for Visual 
@@ -604,7 +600,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
             // Check if the cursor is under any keyframe
             let targetedKeyframe: IKeyframe | undefined;
-            keyframes.some(kf => {
+            keyframes.some((kf: IKeyframe) => {
                 if (kf.time === get().cursorTime) {
                     targetedKeyframe = kf;
                     return true;  // Exit early once we find the keyframe

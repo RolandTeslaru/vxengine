@@ -8,10 +8,11 @@ import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
-import { IStaticProps } from "@vxengine/AnimationEngine/types/track";
+import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
+import { getNestedProperty } from "@vxengine/utils";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
@@ -106,19 +107,36 @@ const SplineProgress = ({ vxkey }) => {
     const propertyPath = "splineProgress"
     const trackKey = `${vxkey}.splineProgress`
 
+    useEffect(() => {
+        const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
+            const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
+            const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
+
+            if (newValue !== prevValue) {
+                setValue(newValue);
+            }
+        })
+
+        return () => unsubscribe();
+    }, [])
+
+    const handleChange = (newValue) => {
+        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+        setValue(newValue);
+    }
+
     return (
         <div className="flex flex-col gap-2">
             <p className="text-xs font-light text-neutral-500">spline progress</p>
             <div className="w-full flex flex-row">
                 <Slider
                     defaultValue={[value]}
-                    max={10}
+                    max={100}
                     step={0.5}
-                    min={0.0}
+                    min={0}
                     className='w-24 mr-auto'
-                    onValueChange={(newValue) => {
-                        setValue(newValue[0])
-                    }}
+                    value={[value]}
+                    onValueChange={(newValue) => handleChange(newValue[0])}
                 />
                 <PropInput propertyPath={propertyPath} />
             </div>
@@ -183,7 +201,7 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
     const handleOnClick = () => {
         if (alertType === "addSpline") {
             // Remove all position tracks
-            tracks.forEach(track => {
+            tracks.forEach((track: ITrack) => {
                 const trackKey = `${track.vxkey}.${track.propertyPath}`;
                 if (isPositionProperty(track.propertyPath)) {
                     removeTrack({ trackKey, reRender: true });
@@ -191,7 +209,7 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
             });
 
             // Remove all position static props
-            staticProps.forEach(staticProp => {
+            staticProps.forEach((staticProp: IStaticProps) => {
                 const staticPropKey = `${staticProp.vxkey}.${staticProp.propertyPath}`;
                 if (isPositionProperty(staticProp.propertyPath)) {
                     removeStaticProp({ staticPropKey, reRender: true });
