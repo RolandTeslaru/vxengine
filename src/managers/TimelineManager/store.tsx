@@ -399,7 +399,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.refreshTrack(trackKey, "remove", reRender)
     },
 
-    createKeyframe: ({ trackKey, value, reRender = true }) => {
+    createKeyframe: (props) => {
+        const { trackKey, value, reRender = true } = props;
         const keyframeKey = `keyframe-${Date.now()}`
 
         set(produce((state: TimelineEditorStoreProps) => createKeyframeLogic(state, trackKey, keyframeKey, value)))

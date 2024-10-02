@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
 import { useVXAnimationStore } from '@vxengine/AnimationEngine';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
@@ -20,36 +21,51 @@ interface ObjectSettingsStoreProps {
 
 export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) => {
     return ({
-    settings: {},
-    setSetting: (vxkey, settingKey, settingValue) => {
-        set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.settings[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
-            state.settings[vxkey][settingKey] = settingValue
-        }))
-    },
-    toggleSetting: (vxkey, settingKey) => {
-        set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.setSetting[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
-            state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
-        }))
-    },
-    initSettings: (newSettings) => {
-        set(produce((state: ObjectSettingsStoreProps) => {
-            state.settings = newSettings
-        }))
-    },
+        settings: {},
+        setSetting: (vxkey, settingKey, settingValue) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                if (state.settings[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
+                state.settings[vxkey][settingKey] = settingValue
+            }))
 
-    additionalSettings: {},
-    setAdditionalSetting: (vxkey, settingKey, settingValue) => {
-        set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
-            state.additionalSettings[vxkey][settingKey] = settingValue
-        }))
-    },
-    toggleAdditionalSetting: (vxkey, settingKey) => {
-        set(produce((state: ObjectSettingsStoreProps) => {
-            if(state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
-            state.additionalSettings[vxkey][settingKey] = !state.additionalSettings[vxkey][settingKey]
-        }))
-    },
-})})
+            const animationEngineRef = useTimelineEditorAPI.getState().animationEngineRef
+            const animationEngine = animationEngineRef.current
+
+            if (!animationEngine) return
+
+            animationEngine.refreshSettings("set", settingKey, vxkey)
+        },
+        toggleSetting: (vxkey, settingKey) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                if (state.setSetting[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
+                state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
+            }))
+
+            const animationEngineRef = useTimelineEditorAPI.getState().animationEngineRef
+            const animationEngine = animationEngineRef.current
+
+            if (!animationEngine) return
+
+            animationEngine.refreshSettings("set", settingKey, vxkey)
+        },
+        initSettings: (newSettings) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                state.settings = newSettings
+            }))
+        },
+
+        additionalSettings: {},
+        setAdditionalSetting: (vxkey, settingKey, settingValue) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                if (state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
+                state.additionalSettings[vxkey][settingKey] = settingValue
+            }))
+        },
+        toggleAdditionalSetting: (vxkey, settingKey) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                if (state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
+                state.additionalSettings[vxkey][settingKey] = !state.additionalSettings[vxkey][settingKey]
+            }))
+        },
+    })
+})

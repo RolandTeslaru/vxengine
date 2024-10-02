@@ -24,6 +24,7 @@ import init, {
   Vector3 as wasm_Vector3,
   interpolate_number as wasm_interpolateNumber,
 } from '../wasm/pkg';
+import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 
 const IS_DEV = process.env.NODE_ENG === 'development'
 
@@ -335,6 +336,25 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
   }
 
+  refreshSettings(
+    action: 'set' | 'remove',
+    settingKey: string,
+    vxkey: string,
+  ){
+    if(action === "set"){
+      const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey]
+      if(!this.currentTimeline.settings)
+        this.currentTimeline.settings = {}
+
+      if(!this.currentTimeline.settings[vxkey])
+        this.currentTimeline.settings[vxkey] = {}
+
+      this.currentTimeline.settings[vxkey][settingKey] = value;    
+    }
+    else if(action === "remove"){
+      delete this.currentTimeline.settings?.[vxkey]?.[settingKey];
+    }
+  }
 
 
   /*   -------------   */
@@ -514,9 +534,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     try {
       await init();  // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
-      console.log("WASM initialized successfully");
+      console.log("AnimationEngine: WASM initialized successfully");
     } catch (error) {
-      console.error("Failed to initialize WASM", error);
+      console.error("AnimationEngine Error: Failed to initialize WASM", error);
     }
   }
 
@@ -586,6 +606,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       useObjectPropertyAPI.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
+
+    if(propertyPath === "splineProgress"){
+      this._applySplinePosition(vxobject, interpolatedValue as number / 100)
+    }
   }
 
 
@@ -681,6 +705,25 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
       })
     })
+  }
+
+  private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
+    const vxkey = vxobject.vxkey;
+    const splineKey = useObjectSettingsAPI.getState().settings[vxkey]?.positionSplineKey;
+  
+    if (!splineKey || !this._splinesCache[splineKey]) {
+      console.warn(`Spline ${splineKey} not found for ${vxkey}`);
+      return;
+    }
+  
+    // Get the spline from the cache
+    const spline = this._splinesCache[splineKey];
+  
+    // Get the interpolated position from the spline
+    const interpolatedPosition = spline.get_point(splineProgress);
+  
+    // Apply the interpolated position to the object
+    vxobject.ref.current.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
   }
 
 
