@@ -6,7 +6,7 @@ import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef} from 'react';
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
-import { useVXEngine } from "@vxengine/engine";
+import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, useFrame } from '@react-three/fiber';
 import { vxObjectProps } from "@vxengine/types/objectStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
@@ -30,7 +30,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const selectObjects = useObjectManagerAPI(state => state.selectObjects)
         const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
 
-        const { animationEngine } = useVXEngine();
+        const animationEngine = getVXEngineState().getState().animationEngine
 
         const internalRef = useRef<THREE.Object3D | null>(null);
 

@@ -11,7 +11,7 @@ import { Slider } from '@vxengine/components/shadcn/slider';
 import { Switch } from '@vxengine/components/shadcn/switch';
 import { TimelineEffect } from '@vxengine/AnimationEngine/interface/effect';
 import { TimelineAction, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
-import { useVXEngine } from '@vxengine/engine';
+import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useTimelineEditorAPI } from './store';
 import { useShallow } from 'zustand/react/shallow'
@@ -161,7 +161,7 @@ export const TimelineSelect = () => {
     const currentTimeline = useVXAnimationStore(state => state.currentTimeline)
     const timelines = useVXAnimationStore(state => state.timelines)
 
-    const { animationEngine } = useVXEngine()
+    const animationEngine = useVXEngine(state => state.animationEngine)
 
     return (
         <Select

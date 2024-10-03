@@ -15,8 +15,6 @@ export interface TimelineEditorStoreProps {
     staticProps: Record<string, IStaticProps>
     keyframes: Record<string, IKeyframe>
 
-    animationEngineRef: React.MutableRefObject<AnimationEngine | null>
-
     groupedPaths: GroupedPaths
 
     setCollapsedGroups: (groupKey: string) => void;

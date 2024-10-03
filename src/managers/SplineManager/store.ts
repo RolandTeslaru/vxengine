@@ -8,6 +8,7 @@ import { ISpline } from '@vxengine/AnimationEngine/types/track';
 import { SplineNodeProps } from './SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
 import { extractVxKeyFromSplineKey } from './utils';
+import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>
@@ -32,7 +33,7 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
         }
         get().addSpline(newSpline);
 
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("create", splineKey, true)
         const createTrack = useTimelineEditorAPI.getState().createTrack;
         const createKeyframe = useTimelineEditorAPI.getState().createKeyframe;
@@ -57,7 +58,7 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
         const removeTrack = useTimelineEditorAPI.getState().removeTrack;
         removeTrack({trackKey, reRender: true})
 
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("remove", splineKey, true)
     },
     initSplines: (newSplines) => {
@@ -71,7 +72,7 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
             state.splines[splineKey].nodes[nodeIndex] = [newPosition.x, newPosition.y, newPosition.z];
         }))
 
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
     },
     selectedSpline: undefined,
@@ -110,7 +111,7 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
             }
         }));
 
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
     },
     removeNode: (splineKey, index) => {
@@ -128,7 +129,7 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
             }
         }));
 
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
     },
 }))

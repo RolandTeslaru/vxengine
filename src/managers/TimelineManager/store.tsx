@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
-import { useVXEngine } from '@vxengine/engine';
+import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { ScrollSync } from 'react-virtualized';
 import { createWithEqualityFn } from 'zustand/traditional';
@@ -196,8 +196,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     groupedPaths: {},
     keyframes: {},
 
-    animationEngineRef: React.createRef<AnimationEngine>(),
-
     setCollapsedGroups: (groupKey: string) => {
         set(produce((state: TimelineEditorStoreProps) => {
             const pathSegments = groupKey.split('/');
@@ -378,9 +376,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine) return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh only the track 
         animationEngine.refreshTrack(trackKey, "create")
     },
@@ -392,9 +388,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine) return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh only the track 
         animationEngine.refreshTrack(trackKey, "remove", reRender)
     },
@@ -404,7 +398,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const keyframeKey = `keyframe-${Date.now()}`
 
         set(produce((state: TimelineEditorStoreProps) => createKeyframeLogic(state, trackKey, keyframeKey, value)))
-        const animationEngine = get().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh Raw Data and ReRender
         animationEngine.refreshKeyframe(trackKey, 'create', keyframeKey, reRender)
     },
@@ -413,9 +407,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         set(produce((state: TimelineEditorStoreProps) => removeKeyframeLogic(state, trackKey, keyframeKey)))
         // Only refreshe the currentTimeline if removeKeyframe is not used inside a nested immer produce
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine) return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "remove", keyframeKey, reRender)
     },
 
@@ -431,8 +423,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             return
         }
 
-        const animationEngine = get().animationEngineRef.current
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         // Default Keyframe that will be added when creating a new track
         const keyframeKey = `keyframe-${Date.now()}`
         animationEngine.refreshStaticProp("remove", staticPropKey, false)
@@ -443,7 +434,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
 
             if (staticPropsForObject) {
-                const staticProp = staticPropsForObject.find(prop => prop.propertyPath === propertyPath)
+                const staticProp = staticPropsForObject.find((prop: IStaticProps) => prop.propertyPath === propertyPath)
                 if (staticProp) {
                     value = staticProp.value;
                     removeStaticPropLogic(state, staticPropKey)
@@ -489,9 +480,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             state.groupedPaths = computeGroupPaths(state.editorObjects)
         }))
 
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine) return;
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         if(doesTrackExist)
             animationEngine.refreshTrack(trackKey, "remove")
 
@@ -507,10 +496,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const keyframe = get().keyframes[keyframeKey]
         const trackKey = `${keyframe.vxkey}.${keyframe.propertyPath}`;
 
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine)
-            return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
     },
 
@@ -525,10 +511,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const trackKey = `${keyframe.vxkey}.${keyframe.propertyPath}`;
 
         // Refresh Keyframe
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine)
-            return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
     },
 
@@ -542,10 +525,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }))
 
         // Refresh Keyframe
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine)
-            return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
     },
 
@@ -557,10 +537,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             createStaticPropLogic(state, vxkey, propertyPath, value)
         else {
             set(produce((state: TimelineEditorStoreProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
-            const animationEngine = get().animationEngineRef.current
-            if (!animationEngine)
-                return
-
+            const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshStaticProp("create", staticPropKey, reRender)
         }
     },
@@ -571,9 +548,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         else {
             set(produce((state: TimelineEditorStoreProps) => removeStaticPropLogic(state, staticPropKey)))
             // Refresh Keyframe
-            const animationEngine = get().animationEngineRef.current
-            if (!animationEngine) return
-
+            const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshStaticProp("remove", staticPropKey, reRender)
         }
     },
@@ -584,9 +559,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }))
 
         // Refresh Keyframe
-        const animationEngine = get().animationEngineRef.current
-        if (!animationEngine) return
-
+        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshStaticProp("update", staticPropKey, reRender)
     },
 

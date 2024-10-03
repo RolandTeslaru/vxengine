@@ -7,7 +7,7 @@ function useAnimationEngineEvent(
   callback: (eventData: any) => void,
   dependencies: any[] = []
 ) {
-  const { animationEngine } = useVXEngine();
+  const animationEngine = useVXEngine(state => state.animationEngine)
   useEffect(() => {
     // Register the event listener
     animationEngine.on(eventName, callback);

@@ -3,6 +3,7 @@ import { parserPixelToTime, parserTimeToPixel } from "./deal_data";
 import { DEFAULT_SCALE_WIDTH } from "@vxengine/AnimationEngine/interface/const";
 import { useTimelineEditorAPI } from "../store";
 import { useRefStore } from "@vxengine/utils/useRefStore";
+import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 
 export const handleSetCursor = (param: {
     left?: number;
@@ -13,11 +14,7 @@ export const handleSetCursor = (param: {
     const cursorThumbRef = useRefStore.getState().cursorThumbRef
     const cursorLineRef = useRefStore.getState().cursorLineRef
 
-    // console.log("Handling set cursor with params with rerender ", rerender)
-
-    const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
-    if(!animationEngine)
-        return
+    const animationEngine = getVXEngineState().getState().animationEngine
     
     if (typeof left === 'undefined' && typeof time === 'undefined') return;
 

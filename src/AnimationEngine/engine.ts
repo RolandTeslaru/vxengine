@@ -35,6 +35,7 @@ export const ENGINE_PRECISION = 3;
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
+  private _id: string
   private _timerId: number;
   private _prev: number;
   private _wasmReady: Promise<void>
@@ -46,6 +47,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   constructor() {
     super(new Events());
+    this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
+    console.log("Created AnimationEngine instance with ID:", this._id);
     this._wasmReady = this._initializeWasm();
   }
 
@@ -416,6 +419,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
     this._currentTime = time
+    console.log("AnimationEngine setCurrenTime", this._currentTime)
 
     if (isTick) {
       this.trigger('timeUpdatedAutomatically', { time, engine: this });
@@ -446,6 +450,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     cause?: string
   } = {}) {
     const { time, force, cause } = params
+    console.log("Rerendering with current time ", this._currentTime, this)
     if (this.isPlaying && force === false)
       return;
 
@@ -458,7 +463,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
     else {
       this._applyAllKeyframes(this._currentTime)
-      console.log("Rerendering with current time ", this._currentTime)
     }
   }
 
@@ -542,6 +546,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
+    console.log("Ticking with this ", this)
     if (this.isPaused) return;
     const { now, autoEnd, to } = data;
 
@@ -709,7 +714,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
     const vxkey = vxobject.vxkey;
-    const splineKey = useObjectSettingsAPI.getState().settings[vxkey]?.positionSplineKey;
+    const splineKey = `${vxkey}.spline`
   
     if (!splineKey || !this._splinesCache[splineKey]) {
       console.warn(`Spline ${splineKey} not found for ${vxkey}`);

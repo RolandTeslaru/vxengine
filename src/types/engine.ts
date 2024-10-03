@@ -12,3 +12,10 @@ export interface VXEngineProviderProps {
     mount?: boolean;
     animations_json: any;
 }
+
+export interface VXEngineStoreProps {
+    mountEngineUI: boolean;
+    setMountEngineUI: (value: boolean) => void;
+    composer: React.MutableRefObject<EffectComposer | null>;
+    animationEngine: AnimationEngine | null;
+  }

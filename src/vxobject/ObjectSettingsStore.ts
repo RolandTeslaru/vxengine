@@ -7,6 +7,7 @@ import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
 import { useVXAnimationStore } from '@vxengine/AnimationEngine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
@@ -28,11 +29,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
                 state.settings[vxkey][settingKey] = settingValue
             }))
 
-            const animationEngineRef = useTimelineEditorAPI.getState().animationEngineRef
-            const animationEngine = animationEngineRef.current
-
-            if (!animationEngine) return
-
+            const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshSettings("set", settingKey, vxkey)
         },
         toggleSetting: (vxkey, settingKey) => {
@@ -41,11 +38,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
                 state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
             }))
 
-            const animationEngineRef = useTimelineEditorAPI.getState().animationEngineRef
-            const animationEngine = animationEngineRef.current
-
-            if (!animationEngine) return
-
+            const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshSettings("set", settingKey, vxkey)
         },
         initSettings: (newSettings) => {

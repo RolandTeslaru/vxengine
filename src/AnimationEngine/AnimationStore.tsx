@@ -27,6 +27,7 @@ export const useVXAnimationStore = createWithEqualityFn<TimelineStoreStateProps>
     isPlaying: false,
     playRate: 1,
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),
+
 }))
 
 // if a setter function is not present then it means that state needs be changed thru the AnimationEngine

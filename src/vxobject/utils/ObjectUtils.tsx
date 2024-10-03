@@ -10,6 +10,7 @@ import { useVXAnimationStore } from '@vxengine/AnimationEngine'
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store'
 import { useVXObjectStore } from '../ObjectStore'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
+import { getVXEngineState } from '@vxengine/engine'
 
 interface ObjectUtils {
     vxObject: vxObjectProps
@@ -51,7 +52,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
     // also when the current timeline changes the 
     // if use spline path gets deactivated then it gets deleted
     useEffect(() => {
-        const animationEngine = useTimelineEditorAPI.getState().animationEngineRef.current
+        const animationEngine = getVXEngineState().getState().animationEngine
         const currenetTimeline = useVXAnimationStore.getState().currentTimeline
         const splineKey = `${vxkey}.spline`
         if (settings?.useSplinePath) {
@@ -75,6 +76,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
                         (Math.random() * 10)
                     ]
                 ]
+                // @ts-expect-error
                 createSpline(vxkey, splineKey, newNodes) // create and add spline
 
                 animationEngine.refreshSpline("create", splineKey, true)

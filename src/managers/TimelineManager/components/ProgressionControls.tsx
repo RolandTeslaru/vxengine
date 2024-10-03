@@ -6,7 +6,7 @@ import { shallow } from "zustand/shallow";
 import TimeRender from "./TimeRender";
 
 const ProgressionControls = () => {
-    const { animationEngine } = useVXEngine();
+    const animationEngine = useVXEngine(state => state.animationEngine)
     const { isPlaying } = useVXAnimationStore(state => ({
         isPlaying: state.isPlaying
     }), shallow)
