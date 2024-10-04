@@ -28,8 +28,8 @@ import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 
 const IS_DEV = process.env.NODE_ENG === 'development'
 
-const DEBUG_REFRESHER = true;
-const DEBUG_RERENDER = true;
+const DEBUG_REFRESHER = false;
+const DEBUG_RERENDER = false;
 
 export const ENGINE_PRECISION = 3;
 
@@ -419,7 +419,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   setCurrentTime(time: number, isTick?: boolean): boolean {
     this._currentTime = time
-    console.log("AnimationEngine setCurrenTime", this._currentTime)
 
     if (isTick) {
       this.trigger('timeUpdatedAutomatically', { time, engine: this });
@@ -450,7 +449,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     cause?: string
   } = {}) {
     const { time, force, cause } = params
-    console.log("Rerendering with current time ", this._currentTime, this)
     if (this.isPlaying && force === false)
       return;
 
@@ -546,7 +544,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
-    console.log("Ticking with this ", this)
     if (this.isPaused) return;
     const { now, autoEnd, to } = data;
 
@@ -729,6 +726,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   
     // Apply the interpolated position to the object
     vxobject.ref.current.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
+  }
+
+  getSplinePointAt(splineKey: string, progress: number) {
+    const spline = this._splinesCache[splineKey];
+    
+    const point = spline.get_point(progress);
+    return point
   }
 
 

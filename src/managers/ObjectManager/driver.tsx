@@ -82,7 +82,7 @@ export const ObjectManagerDriver = () => {
   const handleUtilityKeyframeNodeChange = () => {
     if(selectedUtilityNode.type === "keyframe") {
       const { data, ref } = selectedUtilityNode;
-        (data as KeyframeNodeDataProps)?.keyframeKeys?.forEach((keyframeKey) => {
+        ((data as KeyframeNodeDataProps)?.keyframeKeys as string[])?.forEach((keyframeKey) => {
           const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
           // Update keyframe in the store from the the ref stored in the utility node 
           const newPosition = ref.position;

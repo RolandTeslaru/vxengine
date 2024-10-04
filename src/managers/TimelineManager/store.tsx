@@ -258,13 +258,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     scrollLeft: 0,
-    scrollTop: 0,
 
     setScale: (count) => set({ scale: count }),
     setScaleCount: (count) => set({ scaleCount: count }),
     setWidth: (width) => set({ width }),
     setScrollLeft: (value) => set({ scrollLeft: Math.max(value, 0) }),
-    setScrollTop: (scrollTop) => set({ scrollTop }),
     setActiveTool: (tool) => set({ activeTool: tool }),
     setSnap: (value) => set({ snap: value }),
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),

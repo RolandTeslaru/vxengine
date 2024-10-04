@@ -46,8 +46,7 @@ export interface TimelineEditorStoreProps {
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
     setScrollLeft: (scrollLeft: number) => void;
-    scrollTop: number;
-    setScrollTop: (scrollTop: number) => void;
+    
     clientWidth: number;
     clientHeight: number;
     scrollHeight: number;

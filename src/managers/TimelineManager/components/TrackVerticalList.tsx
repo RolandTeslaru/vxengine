@@ -12,12 +12,11 @@ import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { useRefStore } from "@vxengine/utils/useRefStore";
 
 const TrackVerticalList = () => {
-    const { setCollapsedGroups, groupedPaths } = useTimelineEditorAPI(state => ({
-        setCollapsedGroups: state.setCollapsedGroups,
-        groupedPaths: state.groupedPaths,
-    }), shallow);
-    const trackListRef = useRefStore(state => state.trackListRef)
+    const setCollapsedGroups = useTimelineEditorAPI(state => state.setCollapsedGroups)
+    const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
 
+    const trackListRef = useRefStore(state => state.trackListRef)
+    const editAreaRef = useRefStore(state => state.editAreaRef)
 
     const createCollapsedTracksList = (group: PathGroup) => {
 
@@ -62,6 +61,8 @@ const TrackVerticalList = () => {
 
             const isCollapsed = group.isCollapsed || false
 
+            
+
             return (
                 <div
                     key={groupKey}
@@ -105,7 +106,9 @@ const TrackVerticalList = () => {
     };
 
     const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        useTimelineEditorAPI.setState({ scrollTop: e.currentTarget.scrollTop})
+        const scrollContainer = e.target;
+        // @ts-expect-error
+        editAreaRef.current.scrollTop = scrollContainer.scrollTop;
     }
 
     return (

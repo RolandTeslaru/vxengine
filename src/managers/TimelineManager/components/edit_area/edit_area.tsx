@@ -20,7 +20,6 @@ export interface EditAreaState {
 
 export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, ref) => {
   const {
-    dragLine,
     deltaScrollLeft
   } = props;
 
@@ -31,23 +30,9 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     scale: state.scale,
     groupedPaths: state.groupedPaths
   }), shallow);
-  const trackListRef = useRefStore(state => state.trackListRef)
-  const { dragLineData, initDragLine, updateDragLine, disposeDragLine, defaultGetAssistPosition, defaultGetMovePosition } = useDragLine();
+  const { dragLineData } = useDragLine();
 
   const startLeft = 22
-
-  const handleUpdateDragLine = (data) => {
-    if (dragLine) {
-      const movePositions = defaultGetMovePosition({
-        ...data,
-        startLeft,
-        DEFAULT_SCALE_WIDTH,
-        scale,
-      });
-      updateDragLine({ movePositions });
-    }
-  };
-
 
   const verticalRowList = useMemo(() => {
     const allRows = [];
@@ -66,34 +51,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
   }, [editorObjects]);
 
 
-  // Handle Keyframe Click
-  const handleKeyframeClick = (event: React.MouseEvent, keyframeKey: string) => {
-    event.preventDefault();
-
-    const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys;
-
-    // Click + CTRL key ( command key on macOS )
-    if (event.metaKey || event.ctrlKey) {
-      const newSelectedKeys = selectedKeyframeKeys.includes(keyframeKey)
-        ? selectedKeyframeKeys.filter(key => key !== keyframeKey)
-        : [...selectedKeyframeKeys, keyframeKey];
-      useTimelineEditorAPI.getState().setSelectedKeyframeKeys(newSelectedKeys);
-    }
-    // Normal Click
-    else {
-      useTimelineEditorAPI.getState().setSelectedKeyframeKeys([keyframeKey]);
-    }
-  };
-
-
-  // Handle scroll events manually
-  // TODO: eleimante all the scroll states and change to refs
-  const handleScroll = (e) => {
-    const scrollContainer = e.target;
-
-    trackListRef.current.scrollTop = scrollContainer.scrollTop;
-  };
-
   const renderRows = () => {
     return verticalRowList.map((row, index) => {
       const track = verticalRowList[index];
@@ -109,11 +66,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
             key={index}
             trackKey={track} 
             dragLineData={dragLineData}
-            onActionMoving={handleUpdateDragLine}
-            onActionResizing={handleUpdateDragLine}
-            onActionResizeEnd={disposeDragLine}
-            onActionMoveEnd={disposeDragLine}
-            globalKeyframeClickHandle={handleKeyframeClick}
           />
         );
       } else {
@@ -133,13 +85,9 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       }
     });
   };
-
-
   const timelineClientWidth = timelineLength * DEFAULT_SCALE_WIDTH + startLeft
 
   return (
-
-
     <div
       style={{
         position: 'relative',

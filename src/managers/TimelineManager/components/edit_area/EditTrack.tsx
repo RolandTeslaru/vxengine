@@ -14,21 +14,16 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@vxengine/components/shadcn/alertDialog';
 import HazardStripes from '@vxengine/components/ui/HazardStripes/HazardStripes';
 
-export type EditRowProps = CommonProp & {
+export type EditRowProps = {
   trackKey: string
   style?: React.CSSProperties;
   dragLineData: DragLineData;
-  /** Scroll distance from the left */
-  scrollLeft: number;
-  /** Set scroll left */
-  editAreaRef: React.MutableRefObject<HTMLDivElement>;
-  globalKeyframeClickHandle: (event, keyframeKey) => void
 };
 
 const startLeft = 22
 
 export const EditTrack: FC<EditRowProps> = (props) => {
-  const { trackKey, globalKeyframeClickHandle } = props;
+  const { trackKey } = props;
   const track = useTimelineEditorAPI(state => state.tracks[trackKey])
   return (
     <div
@@ -56,7 +51,6 @@ export const EditTrack: FC<EditRowProps> = (props) => {
           track={track}
           {...props}
           keyframeKey={keyframeKey}
-          globalKeyframeClickHandle={globalKeyframeClickHandle}
         />
       ))}
     </div>

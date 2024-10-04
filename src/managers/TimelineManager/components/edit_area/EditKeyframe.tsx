@@ -11,7 +11,6 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 export type EditKeyframeProps = {
     track: ITrack;
     keyframeKey: string;
-    globalKeyframeClickHandle: (event, keyframeKey) => void;
     rowHeight: number
 };
 
@@ -19,7 +18,6 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     keyframeKey,
     track,
     rowHeight,
-    globalKeyframeClickHandle
 }) => {
     const keyframe = useTimelineEditorAPI(state => state.keyframes[keyframeKey])
 
@@ -29,7 +27,7 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     const scaleWidth = useTimelineEditorAPI(state => state.scaleWidth)
     const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
-    
+
     const startLeft = 12.5;
     const [left, setLeft] = useState(() => {
         return parserTimeToPixel(keyframe.time, startLeft);
@@ -40,15 +38,16 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
     }, [keyframe.time, startLeft, scaleWidth, scale]);
 
 
-    // Handle dragging event
     const handleOnDrag = (data: { left: number, lastLeft: number }) => {
+        if (selectedKeyframeKeys.length == 0)
+            setSelectedKeyframeKeys([keyframeKey])
         // Single Keyframe Drag
-        if(selectedKeyframeKeys.length == 1){
+        if (selectedKeyframeKeys.length == 1) {
             const newTime = parserPixelToTime(data.left, startLeft)
             useTimelineEditorAPI.getState().setKeyframeTime(keyframe.id, newTime);
         }
         // Multiple Keyframe Drag
-        else if(selectedKeyframeKeys.length > 1){
+        else if (selectedKeyframeKeys.length > 1) {
             const lastTime = parserPixelToTime(data.lastLeft, startLeft)
             const newTime = parserPixelToTime(data.left, startLeft)
             const deltaTime = newTime - lastTime;
@@ -56,24 +55,42 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
             selectedKeyframeKeys.forEach(keyframeKey => {
                 const oldKeyframetime = useTimelineEditorAPI.getState().keyframes[keyframeKey].time
                 const newKeyframeTime = oldKeyframetime + deltaTime
-                if (newKeyframeTime !== null && newKeyframeTime !== undefined && !isNaN(newKeyframeTime)){
+                if (newKeyframeTime !== null && newKeyframeTime !== undefined && !isNaN(newKeyframeTime)) {
                     useTimelineEditorAPI.getState().setKeyframeTime(keyframeKey, parseFloat(newKeyframeTime.toFixed(4)))
                 }
             })
         }
     }
 
+    const handleOnClick = (event: React.MouseEvent) => {
+        event.preventDefault();
+
+        const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys;
+
+        // Click + CTRL key ( command key on macOS )
+        if (event.metaKey || event.ctrlKey) {
+            const newSelectedKeys = selectedKeyframeKeys.includes(keyframeKey)
+                ? selectedKeyframeKeys.filter(key => key !== keyframeKey)
+                : [...selectedKeyframeKeys, keyframeKey];
+            useTimelineEditorAPI.getState().setSelectedKeyframeKeys(newSelectedKeys);
+        }
+        // Normal Click
+        else {
+            useTimelineEditorAPI.getState().setSelectedKeyframeKeys([keyframeKey]);
+        }
+    }
+
     return (
         <RowDnd
             left={left}
-            width={rowHeight / 2} 
+            width={rowHeight / 2}
             start={startLeft}
-            grid={snap ? scaleWidth / 10 : 1} 
+            grid={snap ? scaleWidth / 10 : 1}
             enableDragging={true}
-            enableResizing={false} 
+            enableResizing={false}
             bounds={{
-                left: 0, 
-                right: scaleWidth * 1000 
+                left: 0,
+                right: scaleWidth * 1000
             }}
             // @ts-expect-error
             onDragEnd={handleOnDrag}
@@ -87,16 +104,8 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                     left: `${left}px`,
                     top: `${rowHeight / 4}px`,
                 }}
-                onClick={(e) => {
-                    globalKeyframeClickHandle(e, keyframe.id);
-                    // Handle keyframe click event here
-                }}
-                onDoubleClick={(e) => {
-                    // Handle keyframe double click event here
-                }}
-                onContextMenu={(e) => {
-                    setSelectedKeyframeKeys([ keyframe.id ])
-                }}
+                onClick={handleOnClick}
+                onContextMenu={(e) => { setSelectedKeyframeKeys([keyframe.id]) }}
             >
                 <ContextMenu>
                     <ContextMenuTrigger>
@@ -120,8 +129,8 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
                             onClick={() => {
                                 const trackKey = `${track.vxkey}.${track.propertyPath}`
                                 removeKeyframe({
-                                    trackKey, 
-                                    keyframeKey:keyframe.id, 
+                                    trackKey,
+                                    keyframeKey: keyframe.id,
                                     reRender: true
                                 })
                             }}

@@ -13,6 +13,9 @@ import { createStore, useStore, StoreApi } from 'zustand'
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
+
+const animationEngineInstance = new AnimationEngine();
+
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
 
 let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null; 
@@ -20,17 +23,15 @@ let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 const createVXEngineStore = (props: VXEngineProviderProps) => {
     const { mount, animations_json } = props;
     
+    animationEngineInstance.loadTimelines(animations_json);
+
     VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
       mountEngineUI: mount ? mount : true,
       setMountEngineUI: (value) => set({ mountEngineUI: value }),
   
       composer: useRef<EffectComposer | null>(null),
       
-      animationEngine: (() => {
-        const engine = new AnimationEngine();
-        engine.loadTimelines(animations_json);
-        return engine;
-      })(),
+      animationEngine: animationEngineInstance
     }));
 
     return VXEngineStore
@@ -72,52 +73,3 @@ export const getVXEngineState = () => {
     }
     return VXEngineStore
 }
-// export const VXEngineProvider: React.FC<VXEngineProviderProps> = ({
-//     children,
-//     mount = true,
-//     animations_json
-// }) => {
-//     const [mountEngineUI, setMountEngineUI] = useState(false);
-//     const composer = useRef<EffectComposer | null>(null);
-
-//     useEffect(() => {
-//         setMountEngineUI(mount)
-//     }, [])
-
-//     const [themeType, setThemeType] = useState('dark')
-//     const switchThemes = () => {
-//         setThemeType(last => (last === 'dark' ? 'light' : 'dark'))
-//     }
-
-//     const animationEngine = useMemo(() => {
-//         const engine = new AnimationEngine();
-//         engine.loadTimelines(animations_json)
-
-//         return engine
-//     }, [])
-    
-//     useEffect(() => {
-//         useTimelineEditorAPI.getState().animationEngineRef.current = animationEngine;
-//     }, [animationEngine])
-
-//     return (
-//         <VXEngineContext.Provider value={{
-//             mountEngineUI, composer,
-//             animationEngine
-//         }}>
-//             <ThemeProvider
-//                 attribute="class"
-//                 defaultTheme="dark"
-//                 enableSystem
-//                 disableTransitionOnChange
-//             >
-//                 {mountEngineUI && (
-//                     <VXEngineCoreUI />
-//                 )}
-//             </ThemeProvider>
-//             {children}
-//         </VXEngineContext.Provider>
-//     )
-// }
-
-
