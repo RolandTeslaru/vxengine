@@ -4,6 +4,7 @@ import { useVXAnimationStore } from "@vxengine/AnimationEngine";
 import { useVXEngine } from "@vxengine/engine";
 import { shallow } from "zustand/shallow";
 import TimeRender from "./TimeRender";
+import { handleSetCursor } from "../utils/handleSetCursor";
 
 const ProgressionControls = () => {
     const animationEngine = useVXEngine(state => state.animationEngine)
@@ -19,7 +20,7 @@ const ProgressionControls = () => {
             animationEngine.play({ autoEnd: true });
     };
 
-    const handleReset = () => { animationEngine.setCurrentTime(0, true) }
+    const handleReset = () => handleSetCursor({ time: 0 })
 
     return (
         <div className='flex flex-row gap-2 w-auto ml-auto'>

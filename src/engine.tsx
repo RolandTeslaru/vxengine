@@ -9,6 +9,9 @@ import { type ThemeProviderProps } from "next-themes/dist/types"
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine"
 import { useTimelineEditorAPI } from './managers/TimelineManager/store'
 import { createStore, useStore, StoreApi } from 'zustand'
+import useSourceManagerAPI from './managers/SourceManager/store'
+import { useVXAnimationStore } from './AnimationEngine'
+import { DataSyncPopup } from './managers/SourceManager/ui'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>
@@ -22,7 +25,9 @@ let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 
 const createVXEngineStore = (props: VXEngineProviderProps) => {
     const { mount, animations_json } = props;
-    
+
+    const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath
+    setDiskFilePath(animations_json)
     animationEngineInstance.loadTimelines(animations_json);
 
     VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
@@ -43,6 +48,19 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = (props) => {
     // Initialize the store with the given props
     const store = useRef(createVXEngineStore(props)).current;
     const mountEngineUI = store.getState().mountEngineUI
+
+    const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
+    
+    const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
+    const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
+
+    useEffect(() => {
+      addBeforeUnloadListener()
+
+      return () => {
+        removeBeforeUnloadListener()
+      }
+    }, []) 
     
     return (
       <VXEngineContext.Provider value={store}>
@@ -52,9 +70,12 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = (props) => {
             enableSystem
             disableTransitionOnChange
         >
-            {mountEngineUI && (
-                <VXEngineCoreUI />
-            )}
+          {mountEngineUI && (
+              <VXEngineCoreUI />
+          )}
+          {showSyncPopup && (
+            <DataSyncPopup/>
+          )}
         </ThemeProvider>
         {children}
       </VXEngineContext.Provider>

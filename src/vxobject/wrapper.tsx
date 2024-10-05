@@ -30,7 +30,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const selectObjects = useObjectManagerAPI(state => state.selectObjects)
         const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
 
-        const animationEngine = getVXEngineState().getState().animationEngine
+        const animationEngine = useVXEngine(state => state.animationEngine)
 
         const internalRef = useRef<THREE.Object3D | null>(null);
 

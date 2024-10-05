@@ -10,8 +10,8 @@ const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, ...rest } = props;
     const vxkey = rest.vxkey;
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelieId = useVXAnimationStore(state => state.currentTimeline.id)
-    const currentSettingsForObject = useVXAnimationStore(state => state.currentTimeline.settings[vxkey])
+    const currentTimelieId = useVXAnimationStore(state => state.currentTimeline?.id)
+    const currentSettingsForObject = useVXAnimationStore(state => state.currentTimeline?.settings[vxkey])
 
     // INITIALIZE settigngs on object mount
     const defaultAdditionalSettings = {
@@ -34,6 +34,7 @@ const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
 
     // Refresh settings when the current timeline changes
     useEffect(() => {
+        if(currentTimelieId === undefined) return 
         const mergedSettingsForObject = {
             ...defaultSettingsForObject,
             ...currentSettingsForObject
@@ -41,10 +42,6 @@ const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
         Object.entries(mergedSettingsForObject).forEach(([settingKey, value]) => {
             useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
         })
-    }, [currentTimelieId])
-
-    useEffect(() => {
-        console.log("Rerendering because of currentTimeline Change ")
     }, [currentTimelieId])
 
     return (

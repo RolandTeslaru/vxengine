@@ -20,6 +20,8 @@ import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore"
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store"
 import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
+import { Button } from "@vxengine/components/shadcn/button"
+import SourceManagerUI from "@vxengine/managers/SourceManager/ui"
 
 export const CoreUI = () => {
     return (
@@ -49,7 +51,6 @@ export const CoreUI = () => {
             {/* Bottom Toolbar */}
 
             {/*  */}
-
 
 
 
@@ -126,6 +127,7 @@ const LeftPanel = () => {
                     <ObjectList />
                     <TrackSegmentProperties />
                     <SplineManagerUI />
+                    <SourceManagerUI />
                 </div>
                 <button className={" border bottom-1 right-1 absolute z-20 ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                     onClick={() => setLeftPanelAttached(!leftPanelAttached)}
@@ -137,6 +139,7 @@ const LeftPanel = () => {
                     }
                 </button>
                 <ObjectTransformControls />
+
             </div>
 
 
@@ -354,6 +357,22 @@ const VxobjectsComponent = () => {
     );
 };
 
+const TimelinesComponent = () => {
+    const timelines = useVXAnimationStore(state => state.timelines)
+
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(timelines, null, 2)}
+        </pre>
+    )
+}
+
 const TimelineEditorDebug = () => {
     const [activeData, setActiveData] = useState("editorObjects");
     const [attachedState, setAttachedState] = useState(true);
@@ -383,6 +402,8 @@ const TimelineEditorDebug = () => {
                 return <AdditionalSettingsComponent />
             case "splines":
                 return <SplinesComponent />;
+            case "timelines":
+                return <TimelinesComponent />;
             default:
                 return null;
         }
@@ -424,6 +445,7 @@ const TimelineEditorDebug = () => {
                                 <SelectItem value={"settings"} >settings</SelectItem>
                                 <SelectItem value={"additionalSettings"} >additionalSettings</SelectItem>
                                 <SelectItem value={"splines"} >splines</SelectItem>
+                                <SelectItem value={"timelines"} >timelines</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

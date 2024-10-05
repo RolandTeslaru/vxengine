@@ -1,7 +1,8 @@
-'use client'
 // VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
+
+'use client'
 
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
@@ -17,16 +18,18 @@ import { useVXAnimationStore } from './AnimationStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
 import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-// import { cubicBezier as wasmCubicBezier, solveCubicBezierT as wasmSolveCubicBezierT } from "../../build/release"
+import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
+import { js_interpolateNumber } from './utils/interpolateNumber';
 
 import init, {
   Spline as wasm_Spline,
   Vector3 as wasm_Vector3,
   interpolate_number as wasm_interpolateNumber,
 } from '../wasm/pkg';
-import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 
-const IS_DEV = process.env.NODE_ENG === 'development'
+import useSourceManagerAPI from '../managers/SourceManager/store'
+
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -40,6 +43,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _prev: number;
   private _wasmReady: Promise<void>
   private _isWasmInitialized: boolean = false
+  private _isReady: boolean = false
 
   private _splinesCache: Record<string, any> = {}
 
@@ -59,7 +63,427 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   get playRate() { return useVXAnimationStore.getState().playRate }
 
 
-  // Refresh functions
+
+  /*   --------------   */
+  /*                    */
+  /*   Set is playing   */
+  /*                    */
+  /*   --------------   */
+  setIsPlaying(value: boolean) { useVXAnimationStore.setState({ isPlaying: value }) }
+
+
+
+  /*   --------------------   */
+  /*                          */
+  /*   Set current Timeline   */
+  /*                          */
+  /*   --------------------   */
+  setCurrentTimeline(timelineId: string) {
+    const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
+    if (!selectedTimeline) {
+      throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
+    }
+    const { objects: rawObjects, splines: rawSplines } = selectedTimeline
+
+    useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
+
+    this.cacheSplines(rawSplines);
+    this.reRender({ time: this._currentTime, force: true });
+
+    // set the editor data only when in the development environment
+    if (IS_DEV) useTimelineEditorAPI.getState().setEditorData(rawObjects)
+  }
+
+
+  setCurrentTime(time: number, isTick?: boolean): boolean {
+    this._currentTime = time
+
+    if (isTick) {
+      this.trigger('timeUpdatedAutomatically', { time, engine: this });
+      return;
+    }
+    else {
+      this._applyAllKeyframes(time);
+      this.trigger('timeSetManually', { time, engine: this });
+    }
+  }
+
+
+  loadTimelines(timelines: ITimeline[]) {
+    const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
+
+    if (syncResult.status === 'out_of_sync') {
+      this.setIsPlaying(false);
+    }
+
+
+    console.log("VXAnimationEngine: Loading timelines ", timelines[0])
+    if (timelines.length > 0) {
+      this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
+    }
+
+    this._isReady = true;
+  }
+
+
+  /*   -------   */
+  /*             */
+  /*   reRender  */
+  /*             */
+  /*   -------   */
+  reRender(params: {
+    time?: number,
+    force?: boolean,
+    cause?: string
+  } = {}) {
+    const { time, force, cause } = params
+    if (this.isPlaying && force === false)
+      return;
+
+    if (DEBUG_RERENDER)
+      console.log("VXAnimationEngine: rerendering", " cause: ", cause)
+
+    this._applyAllStaticProps();
+
+    if (time !== undefined)
+      this._applyAllKeyframes(time);
+    else
+      this._applyAllKeyframes(this._currentTime)
+  }
+
+
+  play(param: {
+    toTime?: number;
+    autoEnd?: boolean;
+  }): boolean {
+    const { toTime, autoEnd } = param;
+
+    if (this.isPlaying || (toTime && toTime <= this._currentTime)) return false;
+
+    this.setIsPlaying(true);
+
+    this._timerId = requestAnimationFrame((time: number) => {
+      this._prev = time;
+      this._tick({ now: time, autoEnd, to: toTime });
+    });
+  }
+
+
+  pause() {
+    if (this.isPlaying) {
+      this.setIsPlaying(false)
+      this.trigger('paused', { engine: this });
+    }
+    cancelAnimationFrame(this._timerId);
+  }
+
+
+  /*   -----------------   */ // When called, it initializes objects props
+  /*                       */ // During the animationEngine initialization, the engine loads the first timeline, 
+  /*   initObjectOnMount   */ // but it cant apply all keyframes and static props because the objects arent mounted at that point
+  /*                       */
+  /*   -----------------   */
+  initObjectOnMount(object: vxObjectProps) {
+    if (this._isReady === false)
+      return
+    console.log("VXAnimationEngine: Initializing vxobject", object)
+    const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+    if (!objectInTimeline) {
+      const newRawObject = {
+        vxkey: object.vxkey,
+        tracks: [],
+        staticProps: []
+      }
+      this.currentTimeline.objects.push(newRawObject)
+      return
+    }
+
+    if (objectInTimeline.tracks) {
+      objectInTimeline.tracks.forEach(track => {
+        const vxkey = object.vxkey;
+        const propertyPath = track.propertyPath
+        const keyframes = track.keyframes
+
+        this._applyKeyframes(object, propertyPath, keyframes, this._currentTime);
+      })
+    }
+    if (objectInTimeline.staticProps) {
+      objectInTimeline.staticProps.map(staticProp => {
+        this._updateObjectProperty(object, staticProp.propertyPath, staticProp.value)
+      })
+    }
+  }
+
+
+  private async _initializeWasm() {
+    try {
+      await init();  // Wait for the WebAssembly module to initialize
+      this._isWasmInitialized = true;
+      console.log("AnimationEngine: WASM initialized successfully");
+    } catch (error) {
+      console.error("AnimationEngine Error: Failed to initialize WASM", error);
+    }
+  }
+
+
+
+  private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
+    if (this.isPaused)
+      return;
+    const { now, autoEnd, to } = data;
+
+    let newCurrentTime = this._currentTime + (Math.min(1000, now - this._prev) / 1000) * this.playRate;
+    this._prev = now;
+
+    if (to && to <= newCurrentTime)
+      newCurrentTime = to;
+
+    this.setCurrentTime(newCurrentTime, true);
+    this._applyAllKeyframes(newCurrentTime);
+
+    // Determine whether to stop or continue the animation
+    if (to && to <= newCurrentTime)
+      this._end();
+
+    if (this.isPaused) return;
+
+    this._timerId = requestAnimationFrame((time) => {
+      this._tick({ now: time, autoEnd, to });
+    });
+  }
+
+
+  /*   -------------------   */ // Applies all keyframes for each trach for each object
+  /*                         */
+  /*   Apply all keyframes   */
+  /*                         */
+  /*   -------------------   */
+  private _applyAllKeyframes(currentTime: number) {
+    const objectsStoreState = useVXObjectStore.getState();
+    this.currentTimeline.objects.forEach(object => {
+      const vxkey = object.vxkey;
+      const vxobject = objectsStoreState.objects[vxkey];
+      if (!vxobject) return
+
+      object.tracks.forEach(track => {
+        const propertyPath = track.propertyPath
+        const keyframes = track.keyframes
+
+        this._applyKeyframes(vxobject, propertyPath, keyframes, currentTime);
+      })
+    })
+  }
+
+
+  private _applyKeyframes(
+    vxobject: vxObjectProps,
+    propertyPath: string,
+    keyframes: IKeyframe[],
+    currentTime: number
+  ) {
+    if (!vxobject) return;
+
+    let interpolatedValue: number | THREE.Vector3;
+
+    if (keyframes.length === 0) return
+
+    if (currentTime < keyframes[0].time) {
+      interpolatedValue = keyframes[0].value;
+    } else if (currentTime > keyframes[keyframes.length - 1].time) {
+      interpolatedValue = keyframes[keyframes.length - 1].value;
+    } else {
+      interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
+      // This is used by the Object properties ui panel
+      // since its only used in the development server, we dont need it in production because it can slow down
+      if (IS_DEV)
+        useObjectPropertyAPI.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
+    }
+    this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
+
+    if (propertyPath === "splineProgress") {
+      this._applySplinePosition(vxobject, interpolatedValue as number / 100)
+    }
+  }
+
+
+
+  /*   ---------------------   */
+  /*                           */
+  /*   Interpolate Keyframes   */
+  /*                           */
+  /*   ---------------------   */
+  private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
+    let startKeyframe: IKeyframe | undefined;
+    let endKeyframe: IKeyframe | undefined;
+
+    for (let i = 0; i < keyframes.length - 1; i++) {
+      if (currentTime >= keyframes[i].time && currentTime <= keyframes[i + 1].time) {
+        startKeyframe = keyframes[i];
+        endKeyframe = keyframes[i + 1];
+        break;
+      }
+    }
+    // If currentTime < first keyframe or currentTime > last keyframe, return closest keyframe value
+    if (!startKeyframe || !endKeyframe) {
+      return keyframes.length > 0 ? keyframes[0].value as number : 0;
+    }
+
+    const duration = endKeyframe.time - startKeyframe.time;
+    const progress = truncateToDecimals((currentTime - startKeyframe.time) / duration, ENGINE_PRECISION + 1)
+
+    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
+    // Truncate the result to ensure precision
+    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
+  }
+
+
+
+  /*   ------------------   */
+  /*                        */
+  /*   Interpolate Number   */
+  /*                        */
+  /*   ------------------   */
+  private _interpolateNumber(
+    startKeyframe: IKeyframe,
+    endKeyframe: IKeyframe,
+    progress: number
+  ): number {
+    const startValue = startKeyframe.value as number;
+    const endValue = endKeyframe.value as number;
+
+    const startHandleX = startKeyframe.handles.out.x || 0.3
+    const startHandleY = startKeyframe.handles.out.y || 0.3
+
+    const endHandleX = endKeyframe.handles.in.x || 0.7
+    const endHandleY = endKeyframe.handles.in.y || 0.7
+
+    // WebAssembly Number Interpolator
+    if (this._isWasmInitialized) {
+      const WASM_interpolatedValue = wasm_interpolateNumber(
+        startValue,
+        endValue,
+        startHandleX,
+        startHandleY,
+        endHandleX,
+        endHandleY,
+        progress
+      )
+
+      return WASM_interpolatedValue;
+    }
+
+    // Fallback JS Number Interpolator
+    const JS_interpolatedValue = js_interpolateNumber(
+      startValue,
+      endValue,
+      startHandleX,
+      startHandleY,
+      endHandleX,
+      endHandleY,
+      progress
+    )
+    return JS_interpolatedValue;
+  }
+
+
+  private _applyAllStaticProps() {
+    this, this.currentTimeline.objects.map(obj => {
+      const vxkey = obj.vxkey
+      const vxobject = useVXObjectStore.getState().objects[vxkey]
+
+      if (!vxobject) return
+
+      obj.staticProps.map(staticProp => {
+        this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
+      })
+    })
+  }
+
+  private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
+    const vxkey = vxobject.vxkey;
+    const splineKey = `${vxkey}.spline`
+
+    if (!splineKey || !this._splinesCache[splineKey]) {
+      console.warn(`Spline ${splineKey} not found for ${vxkey}`);
+      return;
+    }
+
+    // Get the spline from the cache
+    const spline = this._splinesCache[splineKey];
+
+    // Get the interpolated position from the spline
+    const interpolatedPosition = spline.get_point(splineProgress);
+
+    // Apply the interpolated position to the object
+    vxobject.ref.current.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
+  }
+
+  getSplinePointAt(splineKey: string, progress: number) {
+    const spline = this._splinesCache[splineKey];
+
+    const point = spline.get_point(progress);
+    return point
+  }
+
+
+  private _updateObjectProperty(
+    vxobject: vxObjectProps,
+    propertyPath: string,
+    newValue: number | THREE.Vector3
+  ) {
+    const propertyKeys = propertyPath.split('.');
+    let target = vxobject.ref.current;
+
+    if (target === undefined) return;
+
+    // Navigate through the property path
+    for (let i = 0; i < propertyKeys.length - 1; i++) {
+      if (target[propertyKeys[i]] === undefined) {
+        return;
+      }
+      target = target[propertyKeys[i]];
+    }
+
+    // Update the final property if target is still defined
+    const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
+    if (target !== undefined) {
+      target[finalPropertyKey] = newValue;
+    }
+  }
+
+  /** Playback completed */
+  private _end() {
+    this.pause();
+    this.trigger('ended', { engine: this });
+  }
+
+
+
+  /*   -------------   */
+  /*                   */
+  /*   Cache Splines   */
+  /*                   */
+  /*   -------------   */
+  async cacheSplines(splines: Record<string, ISpline>) {
+    await this._wasmReady; // Ensure WASM is initialized
+
+    if (!splines) return
+
+    Object.entries(splines).forEach(([key, spline]) => {
+      const nodes = spline.nodes;
+      let wasmNodes = [];
+      nodes.forEach(node => {
+        const wasmNode = wasm_Vector3.new(node[0], node[1], node[2]);
+        wasmNodes.push(wasmNode);
+      });
+      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5); // Example args
+      this._splinesCache[key] = wasmSpline;
+    });
+  }
+
+  //
+  //  R E F R R E S H     F U N C T I O N S
+  //
   // Used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
   /*   ------------------------   */
@@ -133,6 +557,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Re-render the timeline
     this.reRender({ force: true, cause: "refresh currentTimeline" });
+
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 
 
@@ -172,6 +599,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
+
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 
 
@@ -213,17 +643,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
           else if (action === "remove") {
             track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
-            
+
             if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
           }
 
         }
       });
     });
-
-
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
+
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 
 
@@ -280,6 +711,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
+
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 
 
@@ -337,434 +771,32 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
+
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 
   refreshSettings(
     action: 'set' | 'remove',
     settingKey: string,
     vxkey: string,
-  ){
-    if(action === "set"){
+  ) {
+    if (action === "set") {
       const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey]
-      if(!this.currentTimeline.settings)
+      if (!this.currentTimeline.settings)
         this.currentTimeline.settings = {}
 
-      if(!this.currentTimeline.settings[vxkey])
+      if (!this.currentTimeline.settings[vxkey])
         this.currentTimeline.settings[vxkey] = {}
 
-      this.currentTimeline.settings[vxkey][settingKey] = value;    
+      this.currentTimeline.settings[vxkey][settingKey] = value;
     }
-    else if(action === "remove"){
+    else if (action === "remove") {
       delete this.currentTimeline.settings?.[vxkey]?.[settingKey];
     }
-  }
 
-
-  /*   -------------   */
-  /*                   */
-  /*   Cache Splines   */
-  /*                   */
-  /*   -------------   */
-  async cacheSplines(splines: Record<string, ISpline>) {
-    await this._wasmReady; // Ensure WASM is initialized
-
-    Object.entries(splines).forEach(([key, spline]) => {
-      const nodes = spline.nodes;
-      let wasmNodes = [];
-      nodes.forEach(node => {
-        const wasmNode = wasm_Vector3.new(node[0], node[1], node[2]);
-        wasmNodes.push(wasmNode);
-      });
-      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5); // Example args
-      this._splinesCache[key] = wasmSpline;
-    });
-  }
-
-
-
-  /*   --------------   */
-  /*                    */
-  /*   Set is playing   */
-  /*                    */
-  /*   --------------   */
-  setIsPlaying(value: boolean) { useVXAnimationStore.setState({ isPlaying: value }) }
-
-
-
-  /*   --------------------   */
-  /*                          */
-  /*   Set current Timeline   */
-  /*                          */
-  /*   --------------------   */
-  setCurrentTimeline(timelineId: string) {
-    console.log("VXAnimationEngine: Setting currentTimeline to ", timelineId)
-    const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
-    if (!selectedTimeline) {
-      throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
-    }
-
-    useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
-
-    const { objects: rawObjects, splines: rawSplines } = selectedTimeline
-
-
-    // set the Timeline Editor Data
-    useTimelineEditorAPI.getState().setEditorData(rawObjects)
-
-    this.cacheSplines(rawSplines);
-
-    this.reRender({ time: this._currentTime, force: true });
-  }
-
-
-  setCurrentTime(time: number, isTick?: boolean): boolean {
-    this._currentTime = time
-
-    if (isTick) {
-      this.trigger('timeUpdatedAutomatically', { time, engine: this });
-      return;
-    }
-    else {
-      this._applyAllKeyframes(time);
-      this.trigger('timeSetManually', { time, engine: this });
-    }
-
-    return true;
-  }
-
-
-  loadTimelines(timelines: ITimeline[]) {
-    useVXAnimationStore.setState({ timelines: timelines });
-
-    console.log("VXAnimationEngine: Loading timelines ", timelines[0])
-    if (timelines.length > 0) {
-      this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
-    }
-  }
-
-
-  reRender(params: {
-    time?: number,
-    force?: boolean,
-    cause?: string
-  } = {}) {
-    const { time, force, cause } = params
-    if (this.isPlaying && force === false)
-      return;
-
-    if (DEBUG_RERENDER)
-      console.log("VXAnimationEngine: rerendering", " cause: ", cause)
-
-    this._applyAllStaticProps();
-    if (time !== undefined) {
-      this._applyAllKeyframes(time);
-    }
-    else {
-      this._applyAllKeyframes(this._currentTime)
-    }
-  }
-
-
-  play(param: {
-    toTime?: number;
-    autoEnd?: boolean;
-  }): boolean {
-    const { toTime, autoEnd } = param;
-
-    if (this.isPlaying || (toTime && toTime <= this._currentTime)) return false;
-
-    this.setIsPlaying(true);
-
-    this._timerId = requestAnimationFrame((time: number) => {
-      this._prev = time;
-      this._tick({ now: time, autoEnd, to: toTime });
-    });
-  }
-
-
-  pause() {
-    if (this.isPlaying) {
-      this.setIsPlaying(false)
-      this.trigger('paused', { engine: this });
-    }
-    cancelAnimationFrame(this._timerId);
-  }
-
-
-  // When called, it initializes objects props
-  // During the animationEngine initialization, the engine loads the first timeline, 
-  // but it cant apply all keyframes and static props because the objects arent mounted at that point
-  initObjectOnMount(object: vxObjectProps) {
-    console.log("VXAnimationEngine: Initializing vxobject", object)
-    const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
-    if (!objectInTimeline) {
-      const newRawObject = {
-        vxkey: object.vxkey,
-        tracks: [],
-        staticProps: []
-      }
-      this.currentTimeline.objects.push(newRawObject)
-      return
-    }
-
-    if (objectInTimeline.tracks) {
-      objectInTimeline.tracks.forEach(track => {
-        const vxkey = object.vxkey;
-        const propertyPath = track.propertyPath
-        const keyframes = track.keyframes
-
-        this._applyKeyframes(object, propertyPath, keyframes, this._currentTime);
-      })
-    }
-    if (objectInTimeline.staticProps) {
-      objectInTimeline.staticProps.map(staticProp => {
-        this._updateObjectProperty(object, staticProp.propertyPath, staticProp.value)
-      })
-    }
-  }
-
-  // private _initializeWasm() {
-  //   try {
-  //     this._wasmInstance = await loadWasmModule();
-  //     this._isWasmInitialized = true;
-  //   } catch (error) {
-  //     console.log('VXAnimationEngine Error: Failed to initialize WebAssembly module:', error)
-  //     console.log('VXAnimationEngine: Using fallback interpolater');
-  //   }
-  // }
-  private async _initializeWasm() {
-    try {
-      await init();  // Wait for the WebAssembly module to initialize
-      this._isWasmInitialized = true;
-      console.log("AnimationEngine: WASM initialized successfully");
-    } catch (error) {
-      console.error("AnimationEngine Error: Failed to initialize WASM", error);
-    }
-  }
-
-
-  private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
-    if (this.isPaused) return;
-    const { now, autoEnd, to } = data;
-
-    let newCurrentTime = this._currentTime + (Math.min(1000, now - this._prev) / 1000) * this.playRate;
-    this._prev = now;
-
-    if (to && to <= newCurrentTime) newCurrentTime = to;
-    this.setCurrentTime(newCurrentTime, true);
-
-    this._applyAllKeyframes(newCurrentTime);
-
-    // Determine whether to stop or continue the animation
-    if (to && to <= newCurrentTime)
-      this._end();
-
-    if (this.isPaused) return;
-
-    this._timerId = requestAnimationFrame((time) => {
-      this._tick({ now: time, autoEnd, to });
-    });
-  }
-
-
-  private _applyAllKeyframes(currentTime: number) {
-    const objectsStoreState = useVXObjectStore.getState();
-    this.currentTimeline.objects.forEach(object => {
-      const vxkey = object.vxkey;
-      const vxobject = objectsStoreState.objects[vxkey];
-      if (!vxobject) return
-
-      object.tracks.forEach(track => {
-        const propertyPath = track.propertyPath
-        const keyframes = track.keyframes
-
-        this._applyKeyframes(vxobject, propertyPath, keyframes, currentTime);
-      })
-    })
-  }
-
-
-  private _applyKeyframes(
-    vxobject: vxObjectProps,
-    propertyPath: string,
-    keyframes: IKeyframe[],
-    currentTime: number
-  ) {
-    if (!vxobject) return;
-
-    let interpolatedValue: number | THREE.Vector3;
-
-    if (keyframes.length === 0) return
-
-    if (currentTime < keyframes[0].time) {
-      interpolatedValue = keyframes[0].value;
-    } else if (currentTime > keyframes[keyframes.length - 1].time) {
-      interpolatedValue = keyframes[keyframes.length - 1].value;
-    } else {
-      interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
-      // This is used by the Object properties ui panel
-      // since its only used in the development server, we dont need it in production because it can slow down
-      // TODO: make this optional when in production
-      useObjectPropertyAPI.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
-    }
-    this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
-
-    if(propertyPath === "splineProgress"){
-      this._applySplinePosition(vxobject, interpolatedValue as number / 100)
-    }
-  }
-
-
-  private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
-    let startKeyframe: IKeyframe | undefined;
-    let endKeyframe: IKeyframe | undefined;
-
-    for (let i = 0; i < keyframes.length - 1; i++) {
-      if (currentTime >= keyframes[i].time && currentTime <= keyframes[i + 1].time) {
-        startKeyframe = keyframes[i];
-        endKeyframe = keyframes[i + 1];
-        break;
-      }
-    }
-
-    // If currentTime < first keyframe or currentTime > last keyframe, return closest keyframe value
-    if (!startKeyframe || !endKeyframe) {
-      return keyframes.length > 0 ? keyframes[0].value as number : 0;
-    }
-
-    const duration = endKeyframe.time - startKeyframe.time;
-    const progress = truncateToDecimals((currentTime - startKeyframe.time) / duration, ENGINE_PRECISION + 1)
-
-    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
-
-    // Truncate the result to ensure precision
-    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
-  }
-
-  private _interpolateNumber(
-    startKeyframe: IKeyframe,
-    endKeyframe: IKeyframe,
-    progress: number
-  ): number {
-    const startValue = startKeyframe.value as number;
-    const endValue = endKeyframe.value as number;
-
-    const startHandleX = startKeyframe.handles.out.x || 0.3
-    const startHandleY = startKeyframe.handles.out.y || 0.3
-
-    const endHandleX = endKeyframe.handles.in.x || 0.7
-    const endHandleY = endKeyframe.handles.in.y || 0.7
-
-    // WebAssembly Number Interpolator
-    if (this._isWasmInitialized) {
-      const WASM_interpolatedValue = wasm_interpolateNumber(
-        startValue,
-        endValue,
-        startHandleX,
-        startHandleY,
-        endHandleX,
-        endHandleY,
-        progress
-      )
-
-      return WASM_interpolatedValue;
-    }
-
-    // Fallback JS Number Interpolator
-    const p0: { x: number, y: number } = { x: 0, y: startValue };
-    const p1: { x: number, y: number } = {
-      x: startHandleX,
-      y: startValue + startHandleY * (endValue - startValue),
-    };
-    const p2: { x: number, y: number } = {
-      x: endHandleX,
-      y: startValue + endHandleY * (endValue - startValue),
-    };
-    const p3: { x: number, y: number } = { x: 1, y: endValue };
-
-    if ( // Special case for linear interpolation
-      startHandleX === 0.3 && startHandleY === 0.3 &&
-      endHandleX === 0.7 && endHandleY === 0.7
-    ) {
-      return startValue + (endValue - startValue) * progress;
-    }
-
-    const t = solveCubicBezierT(p0.x, p1.x, p2.x, p3.x, progress);
-    const JS_interpolatedValue = cubicBezier(p0.y, p1.y, p2.y, p3.y, t);
-
-    return JS_interpolatedValue;
-  }
-
-
-  private _applyAllStaticProps() {
-    this, this.currentTimeline.objects.map(obj => {
-      const vxkey = obj.vxkey
-      const vxobject = useVXObjectStore.getState().objects[vxkey]
-
-      if (!vxobject) return
-
-      obj.staticProps.map(staticProp => {
-        this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
-      })
-    })
-  }
-
-  private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
-    const vxkey = vxobject.vxkey;
-    const splineKey = `${vxkey}.spline`
-  
-    if (!splineKey || !this._splinesCache[splineKey]) {
-      console.warn(`Spline ${splineKey} not found for ${vxkey}`);
-      return;
-    }
-  
-    // Get the spline from the cache
-    const spline = this._splinesCache[splineKey];
-  
-    // Get the interpolated position from the spline
-    const interpolatedPosition = spline.get_point(splineProgress);
-  
-    // Apply the interpolated position to the object
-    vxobject.ref.current.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
-  }
-
-  getSplinePointAt(splineKey: string, progress: number) {
-    const spline = this._splinesCache[splineKey];
-    
-    const point = spline.get_point(progress);
-    return point
-  }
-
-
-  private _updateObjectProperty(
-    vxobject: vxObjectProps,
-    propertyPath: string,
-    newValue: number | THREE.Vector3
-  ) {
-    const propertyKeys = propertyPath.split('.');
-    let target = vxobject.ref.current;
-
-    if (target === undefined) return;
-
-    // Navigate through the property path
-    for (let i = 0; i < propertyKeys.length - 1; i++) {
-      if (target[propertyKeys[i]] === undefined) {
-        return;
-      }
-      target = target[propertyKeys[i]];
-    }
-
-    // Update the final property if target is still defined
-    const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
-    if (target !== undefined) {
-      target[finalPropertyKey] = newValue;
-    }
-  }
-
-  /** Playback completed */
-  private _end() {
-    this.pause();
-    this.trigger('ended', { engine: this });
+    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
+    saveDataToLocalStorage();
   }
 }
 

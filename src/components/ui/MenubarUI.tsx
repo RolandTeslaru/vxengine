@@ -5,6 +5,7 @@ import { } from '@radix-ui/react-menubar'
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager/store'
 import { shallow } from 'zustand/shallow'
 import { useVXObjectStore } from '@vxengine/vxobject'
+import { Button } from '../shadcn/button'
 
 export const MenubarUI = () => {
 

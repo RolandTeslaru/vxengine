@@ -5,9 +5,9 @@
 import { create } from 'zustand';
 import { produce } from "immer"
 import { ISpline } from '@vxengine/AnimationEngine/types/track';
-import { SplineNodeProps } from './SplineNode';
+import { SplineNodeProps } from './components/SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
-import { extractVxKeyFromSplineKey } from './utils';
+import { extractVxKeyFromSplineKey } from './components/utils';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 interface SplineStoreProps {

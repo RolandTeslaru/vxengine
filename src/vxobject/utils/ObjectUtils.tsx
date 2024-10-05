@@ -45,7 +45,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
-    const currenetTimelineID = useVXAnimationStore(state => state.currentTimeline.id)
+    const currenetTimelineID = useVXAnimationStore(state => state.currentTimeline?.id)
 
 
     // Initialize the slpine object in the record when mount ( meaning its not there yet so i have to get it from the currentTimeline) 

@@ -10,7 +10,8 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-neutral-950 text-primary-foreground hover:bg-neutral-950/90",
+        default: `border border-neutral-200 bg-gradient-to-b from-neutral-200 to-neutral-300 text-black font-sans-menlo 
+                  hover:bg-neutral-400`,
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
@@ -34,9 +35,9 @@ export const buttonVariants = cva(
         linkHover2:
           "relative after:absolute after:bg-neutral-950 after:bottom-2 after:h-[1px] after:w-2/3 after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:ease-in-out after:duration-300",
         warning:
-          "border border-yellow-400 bg-yellow-500 hover:text-accent-foreground",
+          "border border-yellow-400 bg-yellow-500 hover:bg-yellow-600 hover:text-accent-foreground",
         error:
-          "border border-red-600 bg-red-700 hover:text-accent-foreground",
+          "border border-red-600 bg-red-700 hover:bg-red-800 hover:text-accent-foreground",
       },
       size: {
         default: "h-8 px-4 py-0",

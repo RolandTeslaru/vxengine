@@ -1,10 +1,10 @@
 import { ThreeEvent } from '@react-three/fiber';
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useObjectManagerAPI } from '../ObjectManager';
-import { useSplineManagerAPI } from './store';
+import { useObjectManagerAPI } from '../../ObjectManager';
+import { useSplineManagerAPI } from '../store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
-import { useTimelineEditorAPI } from '../TimelineManager/store';
+import { useTimelineEditorAPI } from '../../TimelineManager/store';
 import { useVXEngine } from '@vxengine/engine';
 
 export interface SplineKeyframeNode {

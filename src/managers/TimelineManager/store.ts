@@ -266,9 +266,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     setActiveTool: (tool) => set({ activeTool: tool }),
     setSnap: (value) => set({ snap: value }),
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
-    setCursorTime: (time: number) => {
-        set({ cursorTime: time });
-    },
+    setCursorTime: (time: number) => set({ cursorTime: time }),
 
     selectedKeyframeKeys: [],
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
@@ -605,8 +603,4 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, newValue);
     },
-
-    dumpData: () => {
-
-    }
 }))

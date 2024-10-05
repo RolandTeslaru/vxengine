@@ -3,7 +3,7 @@ import { ThreeEvent } from '@react-three/fiber';
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useSplineManagerAPI } from './store';
+import { useSplineManagerAPI } from '../store';
 
 export interface SplineNodeProps {
     splineKey: string;

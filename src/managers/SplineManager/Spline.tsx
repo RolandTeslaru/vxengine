@@ -2,9 +2,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-import SplineNode from './SplineNode';
+import SplineNode from './components/SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
-import SplineKeyframeNode from './SplineKeyframeNode';
+import SplineKeyframeNode from './components/SplineKeyframeNode';
 
 interface SplineProps {
     splineKey: string;
