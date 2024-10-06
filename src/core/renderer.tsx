@@ -3,14 +3,14 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 "use client"
-import React, { Suspense, useContext, useEffect, useState } from 'react'
+import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { Canvas, extend } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
 import { Bloom } from '@react-three/postprocessing'
 import { Perf } from 'r3f-perf'
-import { EffectsManagerDriver as VXEffectsManagerDriver } from '../managers/EffectsManager'
-import { ObjectManagerDriver as VXObjectManagerDriver } from '../managers/ObjectManager'
+import { EffectsManagerDriver} from '../managers/EffectsManager'
+import { ObjectManagerDriver} from '../managers/ObjectManager'
 import { RendererCoreProps } from '../types/core'
 import dynamic from 'next/dynamic'
 import { useVXEngine } from '@vxengine/engine'
@@ -20,7 +20,8 @@ import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
 extend({ MeshLineGeometry, MeshLineMaterial })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
-import { useVXObjectStore } from '@vxengine/vxobject'
+import { useVXObjectStore, vx } from '@vxengine/vxobject'
+import CameraManagerDriver from '@vxengine/managers/CameraManager/driver'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
@@ -42,17 +43,6 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
 }) => {
   const [dpr_state, setDpr_state] = useState(0.6)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
-  // const { animationEngine } = useVXEngine();
-  // const { objects } = useVXObjectStore(state => state.objects)
-
-  // idk why I added this  
-
-  // Because the animationEngine is initialized really early, 
-  // it cant apply the starter keyframes to the vxObjects present in the scene 
-  // because they aren't mounted.
-  // useEffect(() => {
-  //   animationEngine.reRender({ force: true, cause: "objects added"});
-  // }, [Object.keys(objects ? objects : {}), animationEngine])
 
   return (
     <>
@@ -72,15 +62,17 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         <PerformanceMonitor
           onChange={({ factor }) => setDpr_state(round(0.2 + 1.1 * factor, 1))}
         >
-              <color attach="background" args={['black']} />
-              {process.env.NODE_ENV === 'development' && (
-                VXEngineUtils && <VXEngineUtils/>
-              )}
-              <VXEffectsManagerDriver>
-                <Bloom mipmapBlur={true} intensity={3} kernelSize={5}  />
-              </VXEffectsManagerDriver>
-              <VXObjectManagerDriver/>
-              {children}
+          <color attach="background" args={['black']} />
+          {process.env.NODE_ENV === 'development' && (
+            VXEngineUtils && <VXEngineUtils />
+          )}
+          <EffectsManagerDriver>
+            <Bloom mipmapBlur={true} intensity={3} kernelSize={5} />
+          </EffectsManagerDriver>
+          <ObjectManagerDriver/>
+          <CameraManagerDriver/>
+          
+          {children}
         </PerformanceMonitor>
       </Canvas>
     </>

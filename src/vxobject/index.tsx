@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useRef, isValidElement, useMemo, useState, forwardRef } from 'react';
-import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCamera, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D } from 'three';
+import React, { useCallback, useEffect, useRef, isValidElement, useMemo, useState, forwardRef, useImperativeHandle } from 'react';
+import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D, CameraHelper } from 'three';
 import { EditableMeshProps, EditableSpotLightProps, EditableLineSegmentsProps, EditableLineLoopProps, EditableAmbientLightProps, EditableDirectionalLightProps, EditableFogProps, EditableGroupProps, EditableHemisphereLightProps, EditableOrthographicCameraProps, EditablePerspectiveCameraProps, EditablePointLightProps, EditablePointsProps, } from "../types/editableObject";
 import VXEditableWrapper, { VXEditableWrapperProps } from './wrapper';
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectSettingsAPI } from './ObjectSettingsStore';
 import { useVXAnimationStore } from '@vxengine/AnimationEngine';
+import { PerspectiveCamera, useHelper } from '@react-three/drei';
+import { useFrame, useThree } from '@react-three/fiber';
 
 const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, ...rest } = props;
@@ -73,7 +75,7 @@ const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, 
 
     return (
         <VXEditableWrapper type="spotlight" ref={ref} {...props}>
-            <spotLight ref={ref} />
+            <spotLight/>
         </VXEditableWrapper>
     );
 })
@@ -180,29 +182,43 @@ const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) => {
     );
 })
 
-const EditablePerspectiveCamera = forwardRef<PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
+const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
 
     const { ...rest } = props;
     const vxkey = rest.vxkey;
-
-
+  
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
-
+      showPositionPath: false,
+    };
+  
     useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
+      Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
+        setAdditionalSetting(vxkey, settingKey, value);
+      });
+    }, []);
+  
+    const cameraRef = useRef(null)
+    const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
 
+    useFrame(() => {
+        if(cameraRef.current && cameraTarget){
+            const camera: THREE.PerspectiveCamera = cameraRef.current
+            const targetPosition: THREE.Vector3 = cameraTarget.position
+
+            camera.lookAt(targetPosition)
+        }
+    })
+
+    useHelper(cameraRef, CameraHelper,)
+  
     return (
-        <perspectiveCamera ref={ref} {...props} />
-    )
-}
-)
+      <VXEditableWrapper vxkey={vxkey} ref={cameraRef} type="perspectiveCamera" {...props}>
+        <PerspectiveCamera name="VXPerspectiveCamera"/>
+      </VXEditableWrapper>
+    );
+  });
 
 const EditableOrthographicCamera = forwardRef<OrthographicCamera, EditableOrthographicCameraProps>((props, ref) => (
     <orthographicCamera ref={ref} {...props} />

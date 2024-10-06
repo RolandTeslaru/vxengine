@@ -3,7 +3,7 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import * as THREE from "three"
-import React, { forwardRef, useCallback, useEffect, useRef} from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle} from 'react';
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
@@ -20,7 +20,7 @@ export interface VXEditableWrapperProps<T extends THREE.Object3D> {
 }
 
 const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THREE.Object3D>>(
-    ({ type, children, vxkey, ...props }, forwardedRef) => {
+    ({ type, children, vxkey, ...props }, ref) => {
         if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${type}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
@@ -33,16 +33,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const animationEngine = useVXEngine(state => state.animationEngine)
 
         const internalRef = useRef<THREE.Object3D | null>(null);
-
-        useEffect(() => {
-            if (typeof forwardedRef === 'function') {
-                forwardedRef(internalRef.current);
-            } else if (forwardedRef) {
-                forwardedRef.current = internalRef.current;
-            }
-        }, [forwardedRef]);
-
-        const ref = internalRef;
+        useImperativeHandle(ref, () => internalRef.current, [])
 
         const memoizedAddObject = useCallback(addObject, []);
         const memoizedRemoveObject = useCallback(removeObject, []);
@@ -51,12 +42,9 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         useEffect(() => {
             const newVXObject: vxObjectProps = {
                 type: type,
-                ref: ref,
+                ref: internalRef,
                 vxkey: vxkey,
                 name: props.name || type,
-                // additionalSettings: { 
-                //     showPositionPath: false,
-                // }
             };
 
             memoizedAddObject(newVXObject);
@@ -71,7 +59,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
         const handlePointerOut = () => setHoveredObject(null);
 
         const modifiedChildren = React.cloneElement(children, {
-            ref: ref as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
+            ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
             onPointerOver: handlePointerOver,
             onPointerOut: handlePointerOut,
             onClick: () => memoizedSelectObjects([vxkey]),

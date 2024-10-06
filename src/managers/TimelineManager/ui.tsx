@@ -38,10 +38,8 @@ const TimelineEditorUI = () => {
     }), shallow);
 
     const { open, setOpen } = useVXUiStore(state => ({ open: state.timelineEditorOpen, setOpen: state.setTimelineEditorOpen }))
-    const { setTimelineEditorAttached, timelineEditorAttached } = useVXUiStore(state => ({
-        setTimelineEditorAttached: state.setTimelineEditorAttached,
-        timelineEditorAttached: state.timelineEditorAttached
-    }), shallow)
+    const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached)
+    const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
 
     const timelineLength = useVXAnimationStore(state => state.currentTimeline.length)
 

@@ -15,17 +15,17 @@ const SourceManagerUI = () => {
             title='Source Manager'
         >
             <div className="flex flex-col gap-2">
-                <Button onClick={saveToDisk} variant='default' className="mx-auto">
+                <Button onClick={saveToDisk} variant='default' className="mx-auto" size="sm">
                     <p className="text-xs font-sans-menlo">
                         Save to Disk
                     </p>
                 </Button>
-                <Button variant='default' className="mx-auto">
+                <Button variant='default' className="mx-auto" size="sm">
                     <p className="text-xs font-sans-menlo">
                         Save to LS
                     </p>
                 </Button>
-                <Button variant='default' className="mx-auto">
+                <Button variant='default' className="mx-auto" size="sm">
                     <p className="text-xs font-sans-menlo">
                         Sync Data
                     </p>

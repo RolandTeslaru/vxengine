@@ -12,85 +12,92 @@ import { createStore, useStore, StoreApi } from 'zustand'
 import useSourceManagerAPI from './managers/SourceManager/store'
 import { useVXAnimationStore } from './AnimationEngine'
 import { DataSyncPopup } from './managers/SourceManager/ui'
+import ClientOnly from './components/ui/ClientOnly'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-    return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
-const animationEngineInstance = new AnimationEngine();
+let animationEngineInstance;
+if(typeof window !== 'undefined')
+  animationEngineInstance = new AnimationEngine();
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
 
-let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null; 
+let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 
 const createVXEngineStore = (props: VXEngineProviderProps) => {
-    const { mount, animations_json } = props;
+  const { mount, animations_json } = props;
 
-    const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath
-    setDiskFilePath(animations_json)
-    animationEngineInstance.loadTimelines(animations_json);
+  const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath
+  setDiskFilePath(animations_json)
+  animationEngineInstance?.loadTimelines(animations_json);
 
-    VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
-      mountEngineUI: mount ? mount : true,
-      setMountEngineUI: (value) => set({ mountEngineUI: value }),
-  
-      composer: useRef<EffectComposer | null>(null),
-      
-      animationEngine: animationEngineInstance
-    }));
+  VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
+    mountEngineUI: mount ? mount : true,
+    setMountEngineUI: (value) => set({ mountEngineUI: value }),
 
-    return VXEngineStore
-  };
+    composer: useRef<EffectComposer | null>(null),
+
+    animationEngine: animationEngineInstance
+  }));
+
+  return VXEngineStore
+};
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = (props) => {
-    const { children, } = props;
-    
-    // Initialize the store with the given props
-    const store = useRef(createVXEngineStore(props)).current;
-    const mountEngineUI = store.getState().mountEngineUI
+  const { children, } = props;
 
-    const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
-    
-    const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
-    const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
+  // Initialize the store with the given props
+  const store = useRef(createVXEngineStore(props)).current;
+  const mountEngineUI = store.getState().mountEngineUI
 
-    useEffect(() => {
-      addBeforeUnloadListener()
+  const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
 
-      return () => {
-        removeBeforeUnloadListener()
-      }
-    }, []) 
-    
-    return (
-      <VXEngineContext.Provider value={store}>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-        >
+  const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
+  const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
+
+  console.log("Creating VX Engine Provider")
+
+  useEffect(() => {
+    addBeforeUnloadListener()
+
+    return () => {
+      removeBeforeUnloadListener()
+    }
+  }, [])
+
+  return (
+    <VXEngineContext.Provider value={store}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <ClientOnly>
           {mountEngineUI && (
-              <VXEngineCoreUI />
+            <VXEngineCoreUI />
           )}
           {showSyncPopup && (
-            <DataSyncPopup/>
+            <DataSyncPopup />
           )}
-        </ThemeProvider>
-        {children}
-      </VXEngineContext.Provider>
-    );
-  };
+        </ClientOnly>
+      </ThemeProvider>
+      {children}
+    </VXEngineContext.Provider>
+  );
+};
 
-  export function useVXEngine<T>(selector: (state: VXEngineStoreProps) => T){
-    const store = useContext(VXEngineContext);
-    if(!store) throw new Error("VXEngineProvider FATAL: Missing VXEngineContext.Provider in the tree!")
-    return useStore(store, selector)
+export function useVXEngine<T>(selector: (state: VXEngineStoreProps) => T) {
+  const store = useContext(VXEngineContext);
+  if (!store) throw new Error("VXEngineProvider FATAL: Missing VXEngineContext.Provider in the tree!")
+  return useStore(store, selector)
 };
 
 export const getVXEngineState = () => {
-    if(!VXEngineStore) {
-        throw new Error("VXEngineStore is not initialized. Make sure to initialize it inside VXEngineProvider.");
-    }
-    return VXEngineStore
+  if (!VXEngineStore) {
+    throw new Error("VXEngineStore is not initialized. Make sure to initialize it inside VXEngineProvider.");
+  }
+  return VXEngineStore
 }
