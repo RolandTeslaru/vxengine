@@ -12,15 +12,16 @@ import { vxObjectProps } from "@vxengine/types/objectStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import ObjectUtils from "./utils/ObjectUtils";
 
-export interface VXEditableWrapperProps<T extends THREE.Object3D> {
+export interface VXObjectWrapperProps<T extends THREE.Object3D> {
     type: string;
     vxkey: string;
     name?: string;
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
+    params?: string[]
 }
 
-const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THREE.Object3D>>(
-    ({ type, children, vxkey, ...props }, ref) => {
+const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Object3D>>(
+    ({ type, children, vxkey, params, ...props }, ref) => {
         if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${type}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
@@ -45,6 +46,7 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
                 ref: internalRef,
                 vxkey: vxkey,
                 name: props.name || type,
+                params: params || []
             };
 
             memoizedAddObject(newVXObject);
@@ -78,4 +80,4 @@ const VXEditableWrapper = forwardRef<THREE.Object3D, VXEditableWrapperProps<THRE
     }
 );
 
-export default VXEditableWrapper
+export default VXObjectWrapper

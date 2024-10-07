@@ -28,12 +28,6 @@ import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 export const CoreUI = () => {
     return (
         <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
-
-            <>
-                {/* <ObjectManagerUI/> */}
-                {/* <SourceManagerUI/> */}
-            </>
-
             {/* Menubar */}
             <div
                 className={`absolute top-6 left-6 h-10 w-fit border-neutral-800 border-[1px] text-white 
@@ -43,26 +37,15 @@ export const CoreUI = () => {
                 <MenubarUI />
             </div>
 
-
-            {/* Left Panel */}
-
             <LeftPanel />
-
             <RightPanel />
-
-            {/* Bottom Toolbar */}
-
-            {/*  */}
-
-
 
             <TimelineEditor />
 
             <FrequentStateVisualizer />
             
             <CameraManagerUI/>
-            {/* <StateVisualizer /> */}
-
+            
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
                 href="https://vexr-labs.com/"

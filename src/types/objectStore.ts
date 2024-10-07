@@ -3,7 +3,8 @@ export interface vxObjectProps {
     name: string;
     // FIXME Three js Object ref
     ref: React.MutableRefObject<any>;
-    vxkey: string
+    vxkey: string;
+    params?: string[]
 }
 
 export interface ObjectStoreStateProps {

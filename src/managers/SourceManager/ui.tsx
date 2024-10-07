@@ -7,7 +7,6 @@ import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
 
 const SourceManagerUI = () => {
-
     const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)
 
     return (

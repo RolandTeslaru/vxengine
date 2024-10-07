@@ -21,6 +21,7 @@ import { TransformProperties } from './components/TransformProperties'
 import { GeometryProperties } from './components/GeometryProperties'
 import ObjectList from './components/ObjectList'
 import MaterialProperties from './components/MaterialProperties'
+import Params from './components/Params'
 
 export const ObjectManagerUI = () => {
 
@@ -134,6 +135,7 @@ export const ObjectProperties = React.memo(() => {
       {firstObjectSelected?.ref?.current && <>
         
         <TransformProperties />
+        <Params vxkey={firstObjectSelected.vxkey}/>
         {firstObjectSelected.type === "mesh" && (
           <>
             <GeometryProperties

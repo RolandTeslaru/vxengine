@@ -378,7 +378,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     removeTrack: ({ trackKey, reRender }) => {
-        console.log("REmoving Track key ", trackKey)
         set(produce((state: TimelineEditorStoreProps) => {
             removeTrackLogic(state, trackKey)
             state.groupedPaths = computeGroupPaths(state.editorObjects)

@@ -2,7 +2,7 @@ import React, { ForwardRefExoticComponent, PropsWithoutRef, Ref, RefAttributes, 
 import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCamera, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D } from 'three';
 import { FogProps, MeshProps, SpotLightProps, LineSegmentsProps, LineLoopProps, PointsProps, GroupProps, PerspectiveCameraProps, OrthographicCameraProps, PointLightProps, HemisphereLightProps, DirectionalLightProps, AmbientLightProps, ExtendedColors } from '@react-three/fiber';
 
-export interface VXEditableWrapperProps {
+export interface VXObjectWrapperProps {
     type: string;
     children: React.ReactNode;
     vxkey: string;
