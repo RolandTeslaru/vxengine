@@ -14,10 +14,13 @@ const CameraManagerDriver = React.memo(() => {
     return (
         <>
             {mode === "free" && (
-                <OrbitControls/>
+                <OrbitControls makeDefault/>
             )}
             <CameraTarget />
-            <vx.perspectiveCamera makeDefault={mode === "attached"} vxkey='perspectiveCamera' name="Camera" />
+            
+            <vx.perspectiveCamera 
+                // @ts-expect-error
+                makeDefault={mode === "attached"} vxkey='perspectiveCamera' name="Camera" />
         </>
     )
 })

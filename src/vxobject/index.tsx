@@ -7,6 +7,7 @@ import { useObjectSettingsAPI } from './ObjectSettingsStore';
 import { useVXAnimationStore } from '@vxengine/AnimationEngine';
 import { PerspectiveCamera, useHelper } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
+import { useCameraManagerAPI } from '@vxengine/managers/CameraManager/store';
 
 const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, ...rest } = props;
@@ -183,10 +184,14 @@ const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) => {
 })
 
 const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-
     const { ...rest } = props;
     const vxkey = rest.vxkey;
+    
+    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
+    const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
+    const currentTimelieId = useVXAnimationStore(state => state.currentTimeline?.id)
+    const currentSettingsForObject = useVXAnimationStore(state => state.currentTimeline?.settings[vxkey])
+    
   
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
@@ -200,7 +205,6 @@ const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditableP
     }, []);
   
     const cameraRef = useRef(null)
-    const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
 
     useFrame(() => {
         if(cameraRef.current && cameraTarget){
@@ -210,8 +214,36 @@ const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditableP
             camera.lookAt(targetPosition)
         }
     })
+    // Show the camera helper only in free mode
+    const mode = useCameraManagerAPI(state => state.mode)
+    useHelper(cameraRef, mode === "free" && CameraHelper)
 
-    useHelper(cameraRef, CameraHelper,)
+    const defaultSettingsForObject = {
+        useSplinePath: false,
+        setingMeshProp1: true,
+    }
+
+    // Refresh settings when the current timeline changes
+    useEffect(() => {
+        if(currentTimelieId === undefined) return 
+        const mergedSettingsForObject = {
+            ...defaultSettingsForObject,
+            ...currentSettingsForObject
+        }
+        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]) => {
+            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
+        })
+    }, [currentTimelieId])
+
+    const params = [
+        "far",
+        "near",
+        "fov",
+        "zoom",
+        "focus",
+        "filmGauge",
+        "filmOffset"
+    ]
   
     return (
       <VXEditableWrapper vxkey={vxkey} ref={cameraRef} type="perspectiveCamera" {...props}>
