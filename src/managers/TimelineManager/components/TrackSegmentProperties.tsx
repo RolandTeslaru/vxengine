@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import BezierCurveEditor from '@vxengine/components/ui/BezierCurveEditor'
+import BezierCurveEditor from '@vxengine/managers/TimelineManager/components/BezierCurveEditor'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useTimelineEditorAPI } from '../store'
 import { Input } from '@vxengine/components/shadcn/input'

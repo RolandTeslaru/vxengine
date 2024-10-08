@@ -24,6 +24,7 @@ import { Button } from "@vxengine/components/shadcn/button"
 import SourceManagerUI from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
+import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
 
 export const CoreUI = () => {
     return (
@@ -43,7 +44,7 @@ export const CoreUI = () => {
             <TimelineEditor />
 
             <FrequentStateVisualizer />
-            
+            <StateVisualizer />
             <CameraManagerUI/>
             
             <a
@@ -111,6 +112,7 @@ const LeftPanel = () => {
             >
                 <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll">
                     <ObjectList />
+                    <EffectsManagerUI/>
                     <TrackSegmentProperties />
                     <SplineManagerUI />
                     <SourceManagerUI />

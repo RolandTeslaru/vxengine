@@ -134,10 +134,10 @@ export const ObjectProperties = React.memo(() => {
     <>
       {firstObjectSelected?.ref?.current && <>
         
-        <TransformProperties />
         <Params vxkey={firstObjectSelected.vxkey}/>
-        {firstObjectSelected.type === "mesh" && (
+        {firstObjectSelected?.ref.current.type === "Mesh" && (
           <>
+            <TransformProperties />
             <GeometryProperties
               geometry={firstObjectSelected.ref.current.geometry}
             />

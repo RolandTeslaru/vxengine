@@ -14,7 +14,7 @@ const Params: React.FC<ParamsProps> = ({ vxkey }) => {
 
     return (
         <>
-            {params.length > 0 && (
+            {params?.length > 0 && (
                 <CollapsiblePanel
                     title={"General Params"}
                 >

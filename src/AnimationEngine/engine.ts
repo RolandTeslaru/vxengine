@@ -47,6 +47,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   private _splinesCache: Record<string, any> = {}
 
+  private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
+
   private _currentTime: number = 0;
 
   constructor() {
@@ -95,6 +97,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+  /*   ----------------   */
+  /*                      */
+  /*   Set Current Time   */
+  /*                      */
+  /*   ----------------   */
   setCurrentTime(time: number, isTick?: boolean): boolean {
     this._currentTime = time
 
@@ -124,6 +131,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this._isReady = true;
   }
+
 
 
   /*   -------   */
@@ -227,6 +235,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
+  /*   ----   */ //   Main Ticker function
+  /*          */ //   applies all interpolated values for each track 
+  /*   tick   */
+  /*          */
+  /*   ----   */
   private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
     if (this.isPaused)
       return;
@@ -253,7 +266,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  /*   -------------------   */ // Applies all keyframes for each trach for each object
+  /*   -------------------   */ //   Applies all keyframes for each trach for each object
   /*                         */
   /*   Apply all keyframes   */
   /*                         */
@@ -273,7 +286,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       })
     })
   }
-
 
   private _applyKeyframes(
     vxobject: vxObjectProps,
@@ -386,6 +398,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+
+  /*   ----------------------   */
+  /*                            */
+  /*   Apply all static props   */
+  /*                            */
+  /*   ----------------------   */
   private _applyAllStaticProps() {
     this, this.currentTimeline.objects.map(obj => {
       const vxkey = obj.vxkey
@@ -399,6 +417,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     })
   }
 
+  
+
+  /*   ---------------------    */
+  /*                            */
+  /*   Apply spline position    */
+  /*                            */
+  /*   ---------------------    */
   private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
     const vxkey = vxobject.vxkey;
     const splineKey = `${vxkey}.spline`
@@ -408,10 +433,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
     }
 
-    // Get the spline from the cache
     const spline = this._splinesCache[splineKey];
 
-    // Get the interpolated position from the spline
     const interpolatedPosition = spline.get_point(splineProgress);
 
     // Apply the interpolated position to the object
@@ -426,30 +449,52 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+
+  /*   ----------------------   */
+  /*                            */
+  /*   Update Object Property   */
+  /*                            */
+  /*   ----------------------   */
   private _updateObjectProperty(
     vxobject: vxObjectProps,
     propertyPath: string,
     newValue: number | THREE.Vector3
   ) {
-    const propertyKeys = propertyPath.split('.');
-    let target = vxobject.ref.current;
-
+    const target = vxobject.ref.current;
     if (target === undefined) return;
 
-    // Navigate through the property path
-    for (let i = 0; i < propertyKeys.length - 1; i++) {
-      if (target[propertyKeys[i]] === undefined) {
-        return;
-      }
-      target = target[propertyKeys[i]];
+    // Check if we have a cached setter function
+    let setter = this._propertySetterCache.get(propertyPath);
+
+    if (!setter) { // Generate and cache the setter function
+      setter = this._generatePropertySetter(propertyPath);
+      this._propertySetterCache.set(propertyPath, setter);
     }
 
-    // Update the final property if target is still defined
-    const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
-    if (target !== undefined) {
-      target[finalPropertyKey] = newValue;
-    }
+    setter(target, newValue);
   }
+
+  /*   ------------------------   */ // Generate the setter function for a given property path
+  /*                              */
+  /*   Generate Property Setter   */
+  /*                              */
+  /*   ------------------------   */
+  private _generatePropertySetter(propertyPath: string): (target: any, newValue: any) => void {
+    const propertyKeys = propertyPath.split('.');
+
+    return (targetObject: any, newValue: any) => {
+      let target = targetObject;
+      for (let i = 0; i < propertyKeys.length - 1; i++) {
+        target = target[propertyKeys[i]];
+        if (target === undefined) return; // Exit if any part of the path is undefined
+      }
+      const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
+      if (target !== undefined) {
+        target[finalPropertyKey] = newValue;
+      }
+    };
+  }
+
 
   /** Playback completed */
   private _end() {
@@ -501,8 +546,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const staticProps = useTimelineEditorAPI.getState().staticProps
     const keyframes = useTimelineEditorAPI.getState().keyframes
 
-    // if (this.isPlaying) this.pause();
-
     if (DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
 
     const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
@@ -512,8 +555,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       const edObject = editorObjects[vxkey];
 
       if (currentObjectsMap.has(vxkey)) {
-        // Refresh existing raw object
-        const rawObject = currentObjectsMap.get(vxkey);
+        const rawObject = currentObjectsMap.get(vxkey); // Refresh existing raw object
 
         // Assign tracks to Object by converting from ITrack to RawTrackProps
         rawObject.tracks = edObject.trackKeys.map(trackKey => {
@@ -776,6 +818,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     saveDataToLocalStorage();
   }
 
+
+  /*   ---------------   */
+  /*                     */
+  /*   Refresh Setting   */
+  /*                     */
+  /*   ---------------   */
   refreshSettings(
     action: 'set' | 'remove',
     settingKey: string,
