@@ -1,5 +1,7 @@
 import React from 'react';
 import { EditableAmbientLight, EditableDirectionalLight, EditableFog, EditableGroup, EditableHemisphereLight, EditableMesh, EditablePerspectiveCamera, EditablePointLight, EditablePoints, EditableSpotLight } from './editableObjects';
+import { EditableFadeEffect } from './editableEffects/EditableFader';
+import { EditableBloom } from './editableEffects/EditableBloom';
 
 export const vx = {
     mesh: EditableMesh,
@@ -12,6 +14,9 @@ export const vx = {
     directionalLight: EditableDirectionalLight,
     ambientLight: EditableAmbientLight,
     fog: EditableFog,
+
+    fadeEffect: EditableFadeEffect,
+    bloom: EditableBloom,
 };
 
 export { useVXObjectStore } from "./ObjectStore"

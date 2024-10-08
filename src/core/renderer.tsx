@@ -7,7 +7,7 @@ import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { Canvas, extend } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
-import { Bloom } from '@react-three/postprocessing'
+import { Bloom, DepthOfField, Noise } from '@react-three/postprocessing'
 import { Perf } from 'r3f-perf'
 import { EffectsManagerDriver} from '../managers/EffectsManager'
 import { ObjectManagerDriver} from '../managers/ObjectManager'
@@ -16,8 +16,9 @@ import dynamic from 'next/dynamic'
 import { useVXEngine } from '@vxengine/engine'
 import { context as FiberContext } from '@react-three/fiber';
 import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
+import { RenderPass } from 'three-stdlib'
 
-extend({ MeshLineGeometry, MeshLineMaterial })
+extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
 import { useVXObjectStore, vx } from '@vxengine/vxobject'
@@ -67,7 +68,9 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
             VXEngineUtils && <VXEngineUtils />
           )}
           <EffectsManagerDriver>
+            {/* <Noise opacity={0.02} /> */}
             <Bloom mipmapBlur={true} intensity={3} kernelSize={5} />
+            <vx.fadeEffect />
           </EffectsManagerDriver>
           <ObjectManagerDriver/>
           <CameraManagerDriver/>

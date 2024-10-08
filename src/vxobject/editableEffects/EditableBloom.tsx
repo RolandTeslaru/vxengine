@@ -22,7 +22,6 @@ export const EditableBloom = forwardRef<BloomEffect, EditableBloomProps>((props,
 
   const addObject = useVXObjectStore((state) => state.addObject);
   const removeObject = useVXObjectStore((state) => state.removeObject);
-
   const memoizedAddObject = useCallback(addObject, []);
   const memoizedRemoveObject = useCallback(removeObject, []);
 

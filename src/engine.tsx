@@ -45,7 +45,7 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   return VXEngineStore
 };
 
-export const VXEngineProvider: React.FC<VXEngineProviderProps> = (props) => {
+export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
   const { children, } = props;
 
   // Initialize the store with the given props
@@ -87,7 +87,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = (props) => {
       {children}
     </VXEngineContext.Provider>
   );
-};
+});
 
 export function useVXEngine<T>(selector: (state: VXEngineStoreProps) => T) {
   const store = useContext(VXEngineContext);
@@ -101,3 +101,4 @@ export const getVXEngineState = () => {
   }
   return VXEngineStore
 }
+ 

@@ -1,44 +1,76 @@
-import React, { forwardRef, useMemo } from 'react'
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
+import { vxObjectProps } from '@vxengine/types/objectStore'
+import { useVXObjectStore } from '../ObjectStore'
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
+import { useVXEngine } from '@vxengine/engine'
 
 const fragmentShader = /* glsl */`
-uniform float opacity;
-uniform sampler2D tDiffuse;
-varying vec2 vUv;
-void main() {
-  vec4 texel = texture2D( tDiffuse, vUv );
-  gl_FragColor = opacity * texel;
-}
-`
+    uniform float opacity;
+    void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+        outputColor = inputColor * 0.1;
+    }
+`;
 
 const vertexShader = /* glsl */`
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-}
-`
+    void mainUv(inout vec2 uv) {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+`;
 
 let _uParam
 
 class FadeShaderEffectImpl extends Effect {
-    constructor({ param = 0.1 } = {}) {
+    constructor({ opacity = 0.5 } = {}) {
         super("FadeShader", fragmentShader, {
-            uniforms: new Map([[ 'param', new Uniform(param)]]),
+            uniforms: new Map([['opacity', new Uniform(opacity)]]),
             vertexShader: vertexShader
         })
 
-        _uParam = param;
+        _uParam = opacity;
     }
 
-    update(renderer, inputBuffer, deltaTime){
-        this.uniforms.get('param').value = _uParam;
+    update(renderer, inputBuffer, deltaTime) {
+        this.uniforms.get('opacity').value = _uParam;
     }
 }
 
-export const FadeEffect = forwardRef(({ param }, ref) => {
+export const EditableFadeEffect = forwardRef(({ param }, ref) => {
+    const vxkey = "fadeEffect"
+    const name = "Fade Effect"
     const effect = useMemo(() => new FadeShaderEffectImpl(param), [param])
 
-    return <primitive ref={ref} object={effect} dispose={null}/>
+    const addObject = useVXObjectStore((state) => state.addObject);
+    const removeObject = useVXObjectStore((state) => state.removeObject);
+    const memoizedAddObject = useCallback(addObject, []);
+    const memoizedRemoveObject = useCallback(removeObject, []);
+
+    const internalRef = useRef<any>(null); // Use 'any' to bypass type mismatch
+    useImperativeHandle(ref, () => internalRef.current);
+
+    const animationEngine = useVXEngine((state) => state.animationEngine);
+
+    useEffect(() => {
+        const newVXObject: vxObjectProps = {
+            type: "effect",
+            ref: internalRef,
+            vxkey: vxkey,
+            name: name,
+            params: param || [],
+        }
+
+        memoizedAddObject(newVXObject);
+        animationEngine.initObjectOnMount(newVXObject);
+        useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject);
+
+        console.log("Effect newVXObject ", newVXObject.ref.current.uniforms)
+        return () => {
+            memoizedRemoveObject(vxkey);
+        };
+    }, [memoizedAddObject, memoizedRemoveObject])
+
+
+
+    return <primitive ref={internalRef} object={effect} dispose={null} />
 })

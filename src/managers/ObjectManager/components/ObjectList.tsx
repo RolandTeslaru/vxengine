@@ -8,8 +8,6 @@ import { useVXObjectStore } from '@vxengine/vxobject';
 const ObjectList = () => {
     const objects = useVXObjectStore(state => state.objects)
     
-    console.log("Objects ", objects)
-
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
