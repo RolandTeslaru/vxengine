@@ -41,11 +41,10 @@ interface ValueRendererProps {
     isPropertyTracked: boolean
 }
 
-const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps, isPropertyTracked }) => {
+const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, inputProps, isPropertyTracked }) => {
     const vxkey = useObjectManagerAPI(state => state.selectedObjects[0].vxkey);
     const firstObjectSelectedStored = useObjectManagerAPI(state => state.selectedObjects[0]);
     const firstObjectSelected = firstObjectSelectedStored?.ref.current;
-    const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
@@ -87,6 +86,6 @@ const ValueRenderer: React.FC<ValueRendererProps> = ({ propertyPath, inputProps,
             {...inputProps}
         />
     )
-}
+})
 
 export default PropInput

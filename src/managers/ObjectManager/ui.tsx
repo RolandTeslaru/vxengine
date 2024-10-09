@@ -130,25 +130,25 @@ export const ObjectProperties = React.memo(() => {
     validMaterial = material;
   }
 
+  const type = firstObjectSelected?.ref.current?.type
+
+  if(!firstObjectSelected) return
+
   return (
     <>
-      {firstObjectSelected?.ref?.current && <>
-        
-        <Params vxkey={firstObjectSelected.vxkey}/>
-        {firstObjectSelected?.ref.current.type === "Mesh" && (
-          <>
-            <TransformProperties />
-            <GeometryProperties
-              geometry={firstObjectSelected.ref.current.geometry}
-            />
-            {validMaterial && (
-              <MaterialProperties material={validMaterial} />
-            )}
-          </>
+      {type === "Mesh" && <>
+        <TransformProperties />
+        <GeometryProperties
+          geometry={firstObjectSelected.ref.current.geometry}
+        />
+        {validMaterial && (
+          <MaterialProperties material={validMaterial} />
         )}
-
-      </>
-      }
+      </>}
+      {type === "Group" && <>
+        <TransformProperties />
+      </>}
+      <Params vxkey={firstObjectSelected.vxkey} />
     </>
   );
 });

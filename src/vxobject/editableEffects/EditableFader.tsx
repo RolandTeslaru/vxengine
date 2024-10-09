@@ -5,11 +5,13 @@ import { vxObjectProps } from '@vxengine/types/objectStore'
 import { useVXObjectStore } from '../ObjectStore'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 import { useVXEngine } from '@vxengine/engine'
+import { useFrame } from '@react-three/fiber'
 
 const fragmentShader = /* glsl */`
-    uniform float opacity;
+    precision mediump float;
+    uniform float fadeIntensity;
     void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-        outputColor = inputColor * 0.1;
+        outputColor = inputColor * fadeIntensity;
     }
 `;
 
@@ -19,27 +21,22 @@ const vertexShader = /* glsl */`
     }
 `;
 
-let _uParam
-
 class FadeShaderEffectImpl extends Effect {
-    constructor({ opacity = 0.5 } = {}) {
+    constructor({ fadeIntensity = 0.5 } = {}) {
         super("FadeShader", fragmentShader, {
-            uniforms: new Map([['opacity', new Uniform(opacity)]]),
+            uniforms: new Map([['fadeIntensity', new Uniform(0.1)]]),
             vertexShader: vertexShader
         })
-
-        _uParam = opacity;
-    }
-
-    update(renderer, inputBuffer, deltaTime) {
-        this.uniforms.get('opacity').value = _uParam;
     }
 }
 
-export const EditableFadeEffect = forwardRef(({ param }, ref) => {
+export const EditableFadeEffect = forwardRef((props, ref) => {
     const vxkey = "fadeEffect"
     const name = "Fade Effect"
-    const effect = useMemo(() => new FadeShaderEffectImpl(param), [param])
+
+    const { fadeIntensity } = props as any
+
+    const effect = useMemo(() => new FadeShaderEffectImpl({fadeIntensity}), [fadeIntensity])
 
     const addObject = useVXObjectStore((state) => state.addObject);
     const removeObject = useVXObjectStore((state) => state.removeObject);
@@ -51,26 +48,28 @@ export const EditableFadeEffect = forwardRef(({ param }, ref) => {
 
     const animationEngine = useVXEngine((state) => state.animationEngine);
 
+    const params = [
+        "uniforms.fadeIntensity"
+    ]
+
     useEffect(() => {
         const newVXObject: vxObjectProps = {
             type: "effect",
             ref: internalRef,
             vxkey: vxkey,
             name: name,
-            params: param || [],
+            params: params || [],
         }
+
+        console.log("Fade effect internal ref ", internalRef)
 
         memoizedAddObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);
-        useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject);
 
-        console.log("Effect newVXObject ", newVXObject.ref.current.uniforms)
         return () => {
             memoizedRemoveObject(vxkey);
         };
     }, [memoizedAddObject, memoizedRemoveObject])
-
-
 
     return <primitive ref={internalRef} object={effect} dispose={null} />
 })

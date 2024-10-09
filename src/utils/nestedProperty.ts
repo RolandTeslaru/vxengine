@@ -1,15 +1,36 @@
-// Utility function to get a nested property value
+// Utility function to get a nested property value, supporting Map structures
 export const getNestedProperty = (obj: any, path: string) => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    return path.split('.').reduce((acc, part) => {
+        if (!acc) return undefined;
+
+        if (acc instanceof Map) {
+            return acc.get(part);
+        }
+
+        return acc[part];
+    }, obj);
 };
 
-// Utility function to set a nested property value
+// Utility function to set a nested property value, supporting Map structures
 export const setNestedProperty = (obj: any, path: string, value: any) => {
     const parts = path.split('.');
     const last = parts.pop();
-    const target = parts.reduce((acc, part) => acc && acc[part], obj);
+    
+    const target = parts.reduce((acc, part) => {
+        if (!acc) return undefined;
+
+        if (acc instanceof Map) {
+            return acc.get(part);
+        }
+
+        return acc[part];
+    }, obj);
 
     if (target && last) {
-        target[last] = value;
+        if (target instanceof Map) {
+            target.set(last, value);
+        } else {
+            target[last] = value;
+        }
     }
 };

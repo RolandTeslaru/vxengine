@@ -82,9 +82,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   --------------------   */
   setCurrentTimeline(timelineId: string) {
     const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
-    if (!selectedTimeline) {
+    
+    if (!selectedTimeline) 
       throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
-    }
+
     const { objects: rawObjects, splines: rawSplines } = selectedTimeline
 
     useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
@@ -119,15 +120,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   loadTimelines(timelines: ITimeline[]) {
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
-    if (syncResult.status === 'out_of_sync') {
+    if (syncResult.status === 'out_of_sync') 
       this.setIsPlaying(false);
-    }
-
 
     console.log("VXAnimationEngine: Loading timelines ", timelines[0])
-    if (timelines.length > 0) {
+    if (timelines.length > 0) 
       this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
-    }
 
     this._isReady = true;
   }
@@ -194,6 +192,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   initObjectOnMount(object: vxObjectProps) {
     if (this._isReady === false)
       return
+
+    useTimelineEditorAPI.getState().addObjectToEditorData(object)
+
     console.log("VXAnimationEngine: Initializing vxobject", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
     if (!objectInTimeline) {
@@ -276,6 +277,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.currentTimeline.objects.forEach(object => {
       const vxkey = object.vxkey;
       const vxobject = objectsStoreState.objects[vxkey];
+      
       if (!vxobject) return
 
       object.tracks.forEach(track => {
@@ -463,7 +465,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const target = vxobject.ref.current;
     if (target === undefined) return;
 
-    // Check if we have a cached setter function
+    // // Check if we have a cached setter function
     let setter = this._propertySetterCache.get(propertyPath);
 
     if (!setter) { // Generate and cache the setter function
@@ -481,15 +483,24 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   ------------------------   */
   private _generatePropertySetter(propertyPath: string): (target: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
-
+  
     return (targetObject: any, newValue: any) => {
       let target = targetObject;
+  
       for (let i = 0; i < propertyKeys.length - 1; i++) {
+        // Traverse the property path
         target = target[propertyKeys[i]];
-        if (target === undefined) return; // Exit if any part of the path is undefined
+        if (target === undefined) return; 
       }
+  
       const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
-      if (target !== undefined) {
+  
+      if (target instanceof Map) 
+      { // Handle Map-based properties (e.g., uniforms in post-processing effects)
+        target.get(finalPropertyKey).value = newValue
+      } 
+      else if (target !== undefined) 
+      { // Regular object properties
         target[finalPropertyKey] = newValue;
       }
     };

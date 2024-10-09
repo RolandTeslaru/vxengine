@@ -51,7 +51,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
             memoizedAddObject(newVXObject);
             animationEngine.initObjectOnMount(newVXObject);
-            useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject)
+            
             return () => {
                 memoizedRemoveObject(vxkey);
             };
