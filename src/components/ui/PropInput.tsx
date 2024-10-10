@@ -84,6 +84,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, 
             onChange={handleChange}
             className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-10"
             {...inputProps}
+            
         />
     )
 })

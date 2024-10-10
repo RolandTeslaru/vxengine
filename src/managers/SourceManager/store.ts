@@ -20,7 +20,6 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
 
     saveDataToDisk: async () => {
         const timelines = useVXAnimationStore.getState().timelines
-
         try {
             const response = await fetch('/api/vxSaveTimelines', {
                 method: "POST",
@@ -40,6 +39,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     },
     saveDataToLocalStorage: () => {
         const timelines = useVXAnimationStore.getState().timelines
+        console.log("SourecManager: saveDataToLocalStorage timelines:", timelines)
 
         localStorage.setItem('timelines', JSON.stringify(timelines));
     },
@@ -50,7 +50,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
 
         if (!savedTimelines) {
             // If no data in localStorage, initialize it with current timelines
-            console.log("Initializing localStorage with timeline data.");
+            console.log("SourceManager: Initializing localStorage with timeline data.");
             useVXAnimationStore.setState({ timelines: timelines })
             get().saveDataToLocalStorage();
 
@@ -59,7 +59,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
             const restoredTimelines = JSON.parse(savedTimelines);
 
             const areTimelinesInSync = deepEqual(timelines, restoredTimelines);
-            console.log("Restoring timelines from localStorage", restoredTimelines);
+            console.log("SourceManager: Restoring timelines from localStorage", restoredTimelines);
 
             if (!areTimelinesInSync) {
                 get().setShowSyncPopup(true)

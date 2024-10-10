@@ -458,8 +458,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         const staticPropKey = trackKey;
         let doesTrackExist = false;
+        
         set(produce((state: TimelineEditorStoreProps) => {
-
             const vxObject = useVXObjectStore.getState().objects[vxkey]
             const value = getNestedProperty(vxObject.ref.current, propertyPath)
             const edObject = useTimelineEditorAPI.getState().editorObjects[vxkey];

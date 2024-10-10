@@ -53,7 +53,6 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   const mountEngineUI = store.getState().mountEngineUI
 
   const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
-
   const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
   const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
 
