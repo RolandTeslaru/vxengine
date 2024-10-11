@@ -24,7 +24,7 @@ export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
                 {Object.entries(geometry.parameters).map(([key, value]) => {
                         return (
                             <div key={key} className='flex flex-row py-1'>
-                                <p className='text-xs'>{key}</p>
+                                <p className='text-xs font-light text-neutral-500'>{key}</p>
                                 <PropInput
                                     type="number"
                                     className="ml-auto w-fit"

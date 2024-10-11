@@ -2,15 +2,12 @@ import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import PropInput from '@vxengine/components/ui/PropInput'
 import { useVXObjectStore } from '@vxengine/vxobject'
 import React from 'react'
+import { useObjectManagerAPI } from '..'
 
-interface ParamsProps {
-    vxkey: string
-}
-
-const Params: React.FC<ParamsProps> = ({ vxkey }) => {
+const Params = () => {
+    const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey)
     const vxobjectType = useVXObjectStore(state => state.objects[vxkey]?.type)
     const params = useVXObjectStore(state => state.objects[vxkey]?.params);
-
 
     return (
         <>

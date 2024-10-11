@@ -34,7 +34,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
         },
         toggleSetting: (vxkey, settingKey) => {
             set(produce((state: ObjectSettingsStoreProps) => {
-                if (state.setSetting[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
+                if (state.settings[vxkey] === undefined) state.settings[vxkey] = {} // init the object 
                 state.settings[vxkey][settingKey] = !state.settings[vxkey][settingKey]
             }))
 

@@ -22,9 +22,9 @@ import { GeometryProperties } from './components/GeometryProperties'
 import ObjectList from './components/ObjectList'
 import MaterialProperties from './components/MaterialProperties'
 import Params from './components/Params'
+import SettingsList from './components/SettingsList'
 
 export const ObjectManagerUI = () => {
-
   const listMountOnId = 'VXEngineLeftPanel'
   const propsMountOnId = 'VXEngineRightPanel'
 
@@ -81,7 +81,6 @@ export const ObjectManagerUI = () => {
 }
 
 export const ObjectTransformControls = React.memo(() => {
-
   const selectedObjects = useObjectManagerAPI(state => state.selectedObjects)
   const transformMode = useObjectManagerAPI(state => state.transformMode)
   const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
@@ -130,14 +129,17 @@ export const ObjectProperties = React.memo(() => {
     validMaterial = material;
   }
 
-  const type = firstObjectSelected?.ref.current?.type
+  const threejsType = firstObjectSelected?.ref.current?.type
+  const vxType = firstObjectSelected?.type
 
-  if(!firstObjectSelected) return
+  if (!firstObjectSelected) return
 
   return (
     <>
-      {type === "Mesh" && <>
+      {vxType === "object" && 
         <TransformProperties />
+      }
+      {threejsType === "Mesh" && <>
         <GeometryProperties
           geometry={firstObjectSelected.ref.current.geometry}
         />
@@ -145,10 +147,6 @@ export const ObjectProperties = React.memo(() => {
           <MaterialProperties material={validMaterial} />
         )}
       </>}
-      {type === "Group" && <>
-        <TransformProperties />
-      </>}
-      <Params vxkey={firstObjectSelected.vxkey} />
     </>
   );
 });

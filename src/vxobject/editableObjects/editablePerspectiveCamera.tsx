@@ -12,10 +12,11 @@ import { CameraHelper } from "three";
 
 export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCameraProps> & {
     ref?: React.Ref<typeof PerspectiveCamera>;
+    settings: {}
 };
 
 export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
-    const { ...rest } = props;
+    const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
 
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
@@ -52,6 +53,7 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
     const defaultSettingsForObject = {
         useSplinePath: false,
         setingMeshProp1: true,
+        ...settings
     }
 
     // Refresh settings when the current timeline changes

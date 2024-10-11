@@ -9,10 +9,11 @@ import { MeshProps } from "@react-three/fiber";
 
 export type EditableMeshProps = EditableObjectProps<MeshProps> & {
     ref?: React.Ref<Mesh>;
+    settings: {}
 };
 
 export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
-    const { children: meshChildren, ...rest } = props;
+    const { children: meshChildren, settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
     const currentTimelieId = useVXAnimationStore(state => state.currentTimeline?.id)
@@ -35,6 +36,7 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
     const defaultSettingsForObject = {
         useSplinePath: false,
         setingMeshProp1: true,
+        ...settings
     }
 
     // Refresh settings when the current timeline changes

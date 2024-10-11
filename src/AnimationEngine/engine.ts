@@ -51,11 +51,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   private _currentTime: number = 0;
 
+  private _interpolateNumberFunction: Function;
+
   constructor() {
     super(new Events());
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
     console.log("Created AnimationEngine instance with ID:", this._id);
     this._wasmReady = this._initializeWasm();
+    this._interpolateNumberFunction = js_interpolateNumber;
   }
 
   get timelines() { return useVXAnimationStore.getState().timelines; }
@@ -82,8 +85,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   --------------------   */
   setCurrentTimeline(timelineId: string) {
     const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
-    
-    if (!selectedTimeline) 
+
+    if (!selectedTimeline)
       throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
 
     const { objects: rawObjects, splines: rawSplines } = selectedTimeline
@@ -120,11 +123,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   loadTimelines(timelines: ITimeline[]) {
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
-    if (syncResult?.status === 'out_of_sync') 
+    if (syncResult?.status === 'out_of_sync')
       this.setIsPlaying(false);
 
     console.log("VXAnimationEngine: Loading timelines ", timelines[0])
-    if (timelines.length > 0) 
+    if (timelines.length > 0)
       this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
 
     this._isReady = true;
@@ -228,6 +231,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     try {
       await init();  // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
+      this._interpolateNumberFunction = wasm_interpolateNumber;
       console.log("AnimationEngine: WASM initialized successfully");
     } catch (error) {
       console.error("AnimationEngine Error: Failed to initialize WASM", error);
@@ -277,7 +281,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.currentTimeline.objects.forEach(object => {
       const vxkey = object.vxkey;
       const vxobject = objectsStoreState.objects[vxkey];
-      
+
       if (!vxobject) return
 
       object.tracks.forEach(track => {
@@ -327,21 +331,31 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                           */
   /*   ---------------------   */
   private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
-    let startKeyframe: IKeyframe | undefined;
-    let endKeyframe: IKeyframe | undefined;
+    // Edge cases
+    if (currentTime <= keyframes[0].time) return keyframes[0].value;
+    if (currentTime >= keyframes[keyframes.length - 1].time) return keyframes[keyframes.length - 1].value;
 
-    for (let i = 0; i < keyframes.length - 1; i++) {
-      if (currentTime >= keyframes[i].time && currentTime <= keyframes[i + 1].time) {
-        startKeyframe = keyframes[i];
-        endKeyframe = keyframes[i + 1];
-        break;
+    // Binary search
+    let left = 0;
+    let right = keyframes.length - 1;
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const midTime = keyframes[mid].time;
+
+      if (currentTime < midTime) {
+        right = mid - 1;
+      } else if (currentTime > midTime) {
+        left = mid + 1;
+      } else {
+        // Exact match
+        return keyframes[mid].value;
       }
     }
-    // If currentTime < first keyframe or currentTime > last keyframe, return closest keyframe value
-    if (!startKeyframe || !endKeyframe) {
-      return keyframes.length > 0 ? keyframes[0].value as number : 0;
-    }
 
+    // left is now the index of the first keyframe with time greater than currentTime
+    const startKeyframe = keyframes[left - 1];
+    const endKeyframe = keyframes[left];
     const duration = endKeyframe.time - startKeyframe.time;
     const progress = truncateToDecimals((currentTime - startKeyframe.time) / duration, ENGINE_PRECISION + 1)
 
@@ -371,23 +385,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const endHandleX = endKeyframe.handles.in.x || 0.7
     const endHandleY = endKeyframe.handles.in.y || 0.7
 
-    // WebAssembly Number Interpolator
-    if (this._isWasmInitialized) {
-      const WASM_interpolatedValue = wasm_interpolateNumber(
-        startValue,
-        endValue,
-        startHandleX,
-        startHandleY,
-        endHandleX,
-        endHandleY,
-        progress
-      )
-
-      return WASM_interpolatedValue;
-    }
-
-    // Fallback JS Number Interpolator
-    const JS_interpolatedValue = js_interpolateNumber(
+    return this._interpolateNumberFunction(
       startValue,
       endValue,
       startHandleX,
@@ -395,8 +393,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       endHandleX,
       endHandleY,
       progress
-    )
-    return JS_interpolatedValue;
+    );
   }
 
 
@@ -419,7 +416,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     })
   }
 
-  
+
 
   /*   ---------------------    */
   /*                            */
@@ -483,24 +480,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   ------------------------   */
   private _generatePropertySetter(propertyPath: string): (target: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
-  
+
     return (targetObject: any, newValue: any) => {
       let target = targetObject;
-  
+
       for (let i = 0; i < propertyKeys.length - 1; i++) {
         // Traverse the property path
         target = target[propertyKeys[i]];
-        if (target === undefined) return; 
+        if (target === undefined) return;
       }
-  
+
       const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
-  
-      if (target instanceof Map) 
-      { // Handle Map-based properties (e.g., uniforms in post-processing effects)
+
+      if (target instanceof Map) { // Handle Map-based properties (e.g., uniforms in post-processing effects)
         target.get(finalPropertyKey).value = newValue
-      } 
-      else if (target !== undefined) 
-      { // Regular object properties
+      }
+      else if (target !== undefined) { // Regular object properties
         target[finalPropertyKey] = newValue;
       }
     };
