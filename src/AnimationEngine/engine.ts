@@ -120,7 +120,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   loadTimelines(timelines: ITimeline[]) {
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
-    if (syncResult.status === 'out_of_sync') 
+    if (syncResult?.status === 'out_of_sync') 
       this.setIsPlaying(false);
 
     console.log("VXAnimationEngine: Loading timelines ", timelines[0])

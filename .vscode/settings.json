@@ -3,6 +3,7 @@
         "immer",
         "overscan",
         "precompute",
+        "reinitializations",
         "Toolset",
         "vxengine",
         "vxkey",

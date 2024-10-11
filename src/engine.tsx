@@ -19,30 +19,43 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 let animationEngineInstance;
-if(typeof window !== 'undefined')
+if (typeof window !== 'undefined')
   animationEngineInstance = new AnimationEngine();
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
 
 let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 
+// This flag ensures that the timelines are loaded only once.
+// It prevents re-running the timeline loading logic during React Fast Refresh or re-renders.
+let areTimelinesLoaded = false;
+
 const createVXEngineStore = (props: VXEngineProviderProps) => {
   const { mount, animations_json } = props;
 
-  const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath
-  setDiskFilePath(animations_json)
-  animationEngineInstance?.loadTimelines(animations_json);
+  // Set the disk file path for the timelines using the provided animations JSON
+  const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath;
+  setDiskFilePath(animations_json);
 
+  // Ensure that timelines are loaded only once.
+  // Without this flag, React Fast Refresh or component re-renders could repeatedly trigger
+  // the `loadTimelines` function, leading to an infinite loop and unnecessary reinitializations.
+  if (!areTimelinesLoaded) {
+    animationEngineInstance?.loadTimelines(animations_json);
+    areTimelinesLoaded = true;  // Set the flag to true after the first load to prevent re-execution
+  }
+
+  // Create the VXEngine store, initializing the Zustand store once
   VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
-    mountEngineUI: mount ? mount : true,
-    setMountEngineUI: (value) => set({ mountEngineUI: value }),
+    mountEngineUI: mount ?? true,  // Set whether to mount the engine UI
+    setMountEngineUI: (value) => set({ mountEngineUI: value }),  // Function to update mount state
 
-    composer: useRef<EffectComposer | null>(null),
+    composer: useRef<EffectComposer | null>(null),  // Reference to the EffectComposer
 
-    animationEngine: animationEngineInstance
+    animationEngine: animationEngineInstance  // Attach the animation engine instance
   }));
 
-  return VXEngineStore
+  return VXEngineStore;
 };
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
@@ -55,8 +68,6 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
   const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
   const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
-
-  console.log("Creating VX Engine Provider")
 
   useEffect(() => {
     addBeforeUnloadListener()
@@ -100,4 +111,3 @@ export const getVXEngineState = () => {
   }
   return VXEngineStore
 }
- 
