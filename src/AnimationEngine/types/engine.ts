@@ -5,9 +5,8 @@ import { edObjectProps, IKeyframe, IStaticProps, ITimeline, ITrack } from "./tra
 export interface IAnimationEngine extends Emitter<EventTypes> {
     readonly isPlaying: boolean;     
     readonly isPaused: boolean;        
-    readonly currentTimeline: ITimeline | null; 
     readonly playRate: number;         
-    readonly timelines: ITimeline[];  
+    readonly timelines: Record<string, ITimeline>;  
         
     reRender(param?: {
       time?: number;
@@ -21,7 +20,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   
     setIsPlaying(value: boolean): void;  
     setCurrentTimeline(timelineId: string): void;
-    loadTimelines(timelines: ITimeline[]): void;
+    loadTimelines(timelines: Record<string, ITimeline>): void;
     setCurrentTime(time: number, isTick?: boolean): boolean;
     refreshCurrentTimeline(): void
 

@@ -1,4 +1,4 @@
-import { useVXAnimationStore } from "@vxengine/AnimationEngine";
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useTimelineEditorAPI } from "../store";
 import React from "react";
 

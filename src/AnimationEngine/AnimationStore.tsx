@@ -10,20 +10,9 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from 'immer';
 
-const addTimeline = (state: TimelineStoreStateProps, newTimeline: ITimeline) => ({
-    ...state,
-    timelines: [...state.timelines, newTimeline],
-})
-
-const getTimelineById = (timelines: ITimeline[], id: string): ITimeline | undefined => {
-    return timelines.find((timeline) => timeline.id === id);
-}
-
-export const useVXAnimationStore = createWithEqualityFn<TimelineStoreStateProps>((set, get) => ({
-    timelines: [],
-    addTimeline: (newTimeline: ITimeline) => set((state) => addTimeline(state, newTimeline)),
-    currentTimeline: undefined,
-    getTimelineById: (id: string) => getTimelineById(get().timelines, id),
+export const useAnimationEngineAPI = createWithEqualityFn<TimelineStoreStateProps>((set, get) => ({
+    timelines: {},
+    currentTimelineID: "",
     isPlaying: false,
     playRate: 1,
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),

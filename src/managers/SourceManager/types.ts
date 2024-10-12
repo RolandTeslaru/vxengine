@@ -13,10 +13,10 @@ export interface SourceManagerAPIProps {
     saveDataToDisk: () => void,
     saveDataToLocalStorage: () => void
 
-    syncLocalStorage: (timelines: ITimeline[]) => void
+    syncLocalStorage: (timelines: Record<string, ITimeline>) => void
 
-    overwriteLocalStorageData: (data: ITimeline[]) => void
-    overwriteDiskData: (data: ITimeline[]) => void
+    overwriteLocalStorageData: (data: Record<string, ITimeline>) => void
+    overwriteDiskData: (data: Record<string, ITimeline>) => void
 
     addBeforeUnloadListener: () => void
     removeBeforeUnloadListener: () => void

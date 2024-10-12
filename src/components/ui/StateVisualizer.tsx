@@ -5,7 +5,7 @@ import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager";
 import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/store";
-import { useVXAnimationStore } from "@vxengine/AnimationEngine";
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
 
@@ -67,7 +67,8 @@ const StaticPropsComponent = () => {
 };
 
 const CurrentTimelineComponent = () => {
-    const currentTimeline = useVXAnimationStore(state => state.currentTimeline);
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const currentTimeline = useAnimationEngineAPI(state => state.timelines[currentTimelineID]);
     return (
         <pre
             style={{
@@ -75,6 +76,7 @@ const CurrentTimelineComponent = () => {
             }}
             className="text-xs"
         >
+            {"currentTimelineID: " + currentTimelineID}
             {JSON.stringify(currentTimeline, null, 2)}
         </pre>
     );
@@ -183,7 +185,7 @@ const VxobjectsComponent = () => {
 };
 
 const TimelinesComponent = () => {
-    const timelines = useVXAnimationStore(state => state.timelines)
+    const timelines = useAnimationEngineAPI(state => state.timelines)
 
     return (
         <pre

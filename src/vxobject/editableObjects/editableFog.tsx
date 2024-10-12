@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useVXAnimationStore } from "../../AnimationEngine"
+import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXObjectWrapper from "../wrapper";
 

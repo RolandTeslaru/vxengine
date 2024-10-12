@@ -1,4 +1,4 @@
-import { useVXAnimationStore } from '@vxengine/AnimationEngine'
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { getVXEngineState, useVXEngine } from '@vxengine/engine'
 import React from 'react'
 import { create } from 'zustand'
@@ -22,7 +22,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     saveDataToDisk: async () => {
         if (DEBUG) console.log("SourceManager: Saving Data To Disk");
 
-        const timelines = useVXAnimationStore.getState().timelines
+        const timelines = useAnimationEngineAPI.getState().timelines
         try {
             const response = await fetch('/api/vxSaveTimelines', {
                 method: "POST",
@@ -43,7 +43,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     saveDataToLocalStorage: debounce(() => {
         if (DEBUG) console.log("SourceManager: Saving Data To LocalStorage")
 
-        const timelines = useVXAnimationStore.getState().timelines
+        const timelines = useAnimationEngineAPI.getState().timelines
         localStorage.setItem('timelines', JSON.stringify(timelines));
     }, 500),
 
@@ -67,14 +67,14 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
      *  - `out_of_sync`: If the timelines in localStorage and the current state are not synchronized.
      *  - `in_sync`: If the timelines are synchronized.
      */
-    syncLocalStorage: (timelines: ITimeline[]) => {
+    syncLocalStorage: (timelines: Record<string, ITimeline>) => {
         if (DEBUG) console.log("SourceManager: Validating LocalStorage")
         const savedTimelines = localStorage.getItem('timelines');
 
         if (!savedTimelines) {
             // If no data in localStorage, initialize it with current timelines
             console.log("SourceManager: Initializing LocalStorage with timeline data.");
-            useVXAnimationStore.setState({ timelines: timelines })
+            useAnimationEngineAPI.setState({ timelines: timelines })
             get().saveDataToLocalStorage();
 
             return { status: 'init' };
@@ -86,21 +86,21 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
 
             if (!areTimelinesInSync) {
                 get().setShowSyncPopup(true)
-                useVXAnimationStore.setState({ timelines: timelines });
+                useAnimationEngineAPI.setState({ timelines: timelines });
                 return { status: 'out_of_sync', restoredTimelines, timelines };
             }
 
-            useVXAnimationStore.setState({ timelines: restoredTimelines });
+            useAnimationEngineAPI.setState({ timelines: restoredTimelines });
 
             return { status: 'in_sync' };
         }
     },
 
-    overwriteLocalStorageData: (data: ITimeline[]) => {
+    overwriteLocalStorageData: (data: Record<string, ITimeline>) => {
         localStorage.setItem('timelines', JSON.stringify(data))
     },
 
-    overwriteDiskData: async (data: ITimeline[]) => {
+    overwriteDiskData: async (data: Record<string, ITimeline>) => {
         if (DEBUG)
             console.log("VXEngine SourceManager: Overwriting Disk Data: ", data)
         try {

@@ -6,7 +6,7 @@ import { useObjectSettingsAPI } from '../ObjectSettingsStore'
 import { Edges } from '@react-three/drei'
 import Spline from '@vxengine/managers/SplineManager/Spline'
 import PositionPath from './positionPath'
-import { useVXAnimationStore } from '@vxengine/AnimationEngine'
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store'
 import { useVXObjectStore } from '../ObjectStore'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
@@ -45,15 +45,17 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
-    const currenetTimelineID = useVXAnimationStore(state => state.currentTimeline?.id)
 
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
     // Initialize the slpine object in the record when mount ( meaning its not there yet so i have to get it from the currentTimeline) 
     // also when the current timeline changes the 
     // if use spline path gets deactivated then it gets deleted
     useEffect(() => {
         const animationEngine = getVXEngineState().getState().animationEngine
-        const currenetTimeline = useVXAnimationStore.getState().currentTimeline
+        const currentTimelineID = useAnimationEngineAPI.getState().currentTimelineID
+        const currenetTimeline = useAnimationEngineAPI.getState().timelines[currentTimelineID]
+
         const splineKey = `${vxkey}.spline`
         if (settings?.useSplinePath) {
             const splineObjFromTimeline = currenetTimeline.splines?.[splineKey];
@@ -82,7 +84,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
                 animationEngine.refreshSpline("create", splineKey, true)
             }
         }
-    }, [currenetTimelineID, settings?.useSplinePath])
+    }, [currentTimelineID, settings?.useSplinePath])
 
 
     return (

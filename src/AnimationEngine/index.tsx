@@ -1,1 +1,1 @@
-export { useVXAnimationStore } from "./AnimationStore";
+export { useAnimationEngineAPI } from "./AnimationStore";

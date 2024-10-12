@@ -14,7 +14,7 @@ import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { useVXAnimationStore } from './AnimationStore';
+import { useAnimationEngineAPI } from './AnimationStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
 import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
@@ -46,8 +46,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _isReady: boolean = false
 
   private _splinesCache: Record<string, any> = {}
-
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
+  private _object3DCache: Map<string, THREE.Object3D> = new Map();
+  private _currentTimeline: ITimeline;
 
   private _currentTime: number = 0;
 
@@ -56,16 +57,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   constructor() {
     super(new Events());
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
-    console.log("Created AnimationEngine instance with ID:", this._id);
+    // console.log("Created AnimationEngine instance with ID:", this._id);
     this._wasmReady = this._initializeWasm();
     this._interpolateNumberFunction = js_interpolateNumber;
+    this._currentTimeline = null
   }
 
-  get timelines() { return useVXAnimationStore.getState().timelines; }
-  get isPlaying() { return useVXAnimationStore.getState().isPlaying; }
+  get timelines() { return useAnimationEngineAPI.getState().timelines; }
+  get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
   get isPaused() { return !this.isPlaying; }
-  get currentTimeline() { return useVXAnimationStore.getState().currentTimeline }
-  get playRate() { return useVXAnimationStore.getState().playRate }
+  get playRate() { return useAnimationEngineAPI.getState().playRate }
+  get currentTimeline() { return this._currentTimeline }
 
 
 
@@ -74,7 +76,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   Set is playing   */
   /*                    */
   /*   --------------   */
-  setIsPlaying(value: boolean) { useVXAnimationStore.setState({ isPlaying: value }) }
+  setIsPlaying(value: boolean) { useAnimationEngineAPI.setState({ isPlaying: value }) }
 
 
 
@@ -84,14 +86,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                          */
   /*   --------------------   */
   setCurrentTimeline(timelineId: string) {
-    const selectedTimeline: ITimeline = this.timelines.find(timeline => timeline.id === timelineId);
+    useAnimationEngineAPI.setState({ currentTimelineID: timelineId })
+    const selectedTimeline: ITimeline = this.timelines[timelineId]
 
     if (!selectedTimeline)
       throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
 
-    const { objects: rawObjects, splines: rawSplines } = selectedTimeline
+    const { 
+      objects: rawObjects, 
+      splines: rawSplines 
+    } = selectedTimeline
 
-    useVXAnimationStore.setState({ currentTimeline: selectedTimeline })
+    this._currentTimeline = selectedTimeline
 
     this.cacheSplines(rawSplines);
     this.reRender({ time: this._currentTime, force: true });
@@ -99,6 +105,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // set the editor data only when in the development environment
     if (IS_DEV) useTimelineEditorAPI.getState().setEditorData(rawObjects)
   }
+
 
 
   /*   ----------------   */
@@ -120,16 +127,24 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  loadTimelines(timelines: ITimeline[]) {
+
+  /*   --------------   */
+  /*                    */
+  /*   load Timelines   */
+  /*                    */
+  /*   --------------   */
+  loadTimelines(timelines: Record<string, ITimeline>) {
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
     if (syncResult?.status === 'out_of_sync')
       this.setIsPlaying(false);
 
-    console.log("VXAnimationEngine: Loading timelines ", timelines[0])
-    if (timelines.length > 0)
-      this.setCurrentTimeline(timelines[0].id); // Automatically load the first timeline if available
-
+    // Load the first timeline
+    const firstTimeline = Object.values(timelines)[0]
+    const firstTimelineID = firstTimeline.id
+    this.setCurrentTimeline(firstTimelineID);
+    
+    console.log("VXAnimationEngine: Loading timelines ", firstTimeline)
     this._isReady = true;
   }
 
@@ -187,6 +202,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+
   /*   -----------------   */ // When called, it initializes objects props
   /*                       */ // During the animationEngine initialization, the engine loads the first timeline, 
   /*   initObjectOnMount   */ // but it cant apply all keyframes and static props because the objects arent mounted at that point
@@ -198,35 +214,49 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     useTimelineEditorAPI.getState().addObjectToEditorData(object)
 
+    // Cache the THREE.Object3D ref
+    const object3DRef = object.ref.current
+    if(object3DRef)
+      this._object3DCache.set(object.vxkey, object3DRef);
+
     console.log("VXAnimationEngine: Initializing vxobject", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+
+    // Initialize the edObject if it doesnt exist
     if (!objectInTimeline) {
-      const newRawObject = {
+      const newRawEdObject = {
         vxkey: object.vxkey,
         tracks: [],
         staticProps: []
       }
-      this.currentTimeline.objects.push(newRawObject)
+      this.currentTimeline.objects.push(newRawEdObject)
       return
     }
-
+    // Apply all initial properties controled by tracks
     if (objectInTimeline.tracks) {
       objectInTimeline.tracks.forEach(track => {
         const vxkey = object.vxkey;
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
-        this._applyKeyframes(object, propertyPath, keyframes, this._currentTime);
+        this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
       })
     }
+     // Apply all initial properties controled by staticProps
     if (objectInTimeline.staticProps) {
       objectInTimeline.staticProps.map(staticProp => {
-        this._updateObjectProperty(object, staticProp.propertyPath, staticProp.value)
+        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
       })
     }
   }
 
 
+
+  /*   ---------------   */ // Initializes the Web Assembly Module
+  /*                     */ // Sets the number interpolation function to the wasm one if succeded
+  /*   Initialize Wasm   */
+  /*                     */
+  /*   ---------------   */
   private async _initializeWasm() {
     try {
       await init();  // Wait for the WebAssembly module to initialize
@@ -271,35 +301,33 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+
   /*   -------------------   */ //   Applies all keyframes for each trach for each object
   /*                         */
   /*   Apply all keyframes   */
   /*                         */
   /*   -------------------   */
   private _applyAllKeyframes(currentTime: number) {
-    const objectsStoreState = useVXObjectStore.getState();
     this.currentTimeline.objects.forEach(object => {
       const vxkey = object.vxkey;
-      const vxobject = objectsStoreState.objects[vxkey];
-
-      if (!vxobject) return
 
       object.tracks.forEach(track => {
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
-        this._applyKeyframes(vxobject, propertyPath, keyframes, currentTime);
+        this._applyKeyframes(vxkey, propertyPath, keyframes, currentTime);
       })
     })
   }
 
   private _applyKeyframes(
-    vxobject: vxObjectProps,
+    vxkey: string,
     propertyPath: string,
     keyframes: IKeyframe[],
     currentTime: number
   ) {
-    if (!vxobject) return;
+    const object3DRef = this._object3DCache.get(vxkey);
+    if(!object3DRef) return
 
     let interpolatedValue: number | THREE.Vector3;
 
@@ -313,13 +341,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
-      if (IS_DEV)
-        useObjectPropertyAPI.getState().updateProperty(vxobject.vxkey, propertyPath, interpolatedValue)
+      if (IS_DEV) 
+        useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
     }
-    this._updateObjectProperty(vxobject, propertyPath, interpolatedValue);
+    this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
 
     if (propertyPath === "splineProgress") {
-      this._applySplinePosition(vxobject, interpolatedValue as number / 100)
+      this._applySplinePosition(object3DRef, vxkey, interpolatedValue as number / 100)
     }
   }
 
@@ -352,7 +380,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         return keyframes[mid].value;
       }
     }
-
     // left is now the index of the first keyframe with time greater than currentTime
     const startKeyframe = keyframes[left - 1];
     const endKeyframe = keyframes[left];
@@ -404,14 +431,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                            */
   /*   ----------------------   */
   private _applyAllStaticProps() {
-    this, this.currentTimeline.objects.map(obj => {
+    this.currentTimeline.objects.map(obj => {
       const vxkey = obj.vxkey
-      const vxobject = useVXObjectStore.getState().objects[vxkey]
 
-      if (!vxobject) return
+      const object3DRef = this._object3DCache.get(vxkey)
+      if (!object3DRef) return
 
       obj.staticProps.map(staticProp => {
-        this._updateObjectProperty(vxobject, staticProp.propertyPath, staticProp.value)
+        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
       })
     })
   }
@@ -423,8 +450,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   Apply spline position    */
   /*                            */
   /*   ---------------------    */
-  private _applySplinePosition(vxobject: vxObjectProps, splineProgress: number) {
-    const vxkey = vxobject.vxkey;
+  private _applySplinePosition(object3DRef: THREE.Object3D, vxkey: string, splineProgress: number) {
     const splineKey = `${vxkey}.spline`
 
     if (!splineKey || !this._splinesCache[splineKey]) {
@@ -437,7 +463,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const interpolatedPosition = spline.get_point(splineProgress);
 
     // Apply the interpolated position to the object
-    vxobject.ref.current.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
+    object3DRef.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
   }
 
   getSplinePointAt(splineKey: string, progress: number) {
@@ -455,12 +481,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                            */
   /*   ----------------------   */
   private _updateObjectProperty(
-    vxobject: vxObjectProps,
+    object3DRef: THREE.Object3D,
     propertyPath: string,
     newValue: number | THREE.Vector3
   ) {
-    const target = vxobject.ref.current;
-    if (target === undefined) return;
 
     // // Check if we have a cached setter function
     let setter = this._propertySetterCache.get(propertyPath);
@@ -470,8 +494,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._propertySetterCache.set(propertyPath, setter);
     }
 
-    setter(target, newValue);
+    setter(object3DRef, newValue);
   }
+
+
 
   /*   ------------------------   */ // Generate the setter function for a given property path
   /*                              */
@@ -531,6 +557,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._splinesCache[key] = wasmSpline;
     });
   }
+
 
   //
   //  R E F R R E S H     F U N C T I O N S
@@ -824,6 +851,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     saveDataToLocalStorage();
   }
 
+  
 
   /*   ---------------   */
   /*                     */

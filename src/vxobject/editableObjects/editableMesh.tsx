@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useVXAnimationStore } from "../../AnimationEngine"
+import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXObjectWrapper from "../wrapper";
 
@@ -16,8 +16,8 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
     const { children: meshChildren, settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelieId = useVXAnimationStore(state => state.currentTimeline?.id)
-    const currentSettingsForObject = useVXAnimationStore(state => state.currentTimeline?.settings[vxkey])
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
 
     // INITIALIZE settigngs on object mount
     const defaultAdditionalSettings = {
@@ -41,15 +41,15 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
 
     // Refresh settings when the current timeline changes
     useEffect(() => {
-        if(currentTimelieId === undefined) return 
+        if(currentTimelineID === undefined) return 
         const mergedSettingsForObject = {
             ...defaultSettingsForObject,
             ...currentSettingsForObject
         }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]) => {
+        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
             useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
         })
-    }, [currentTimelieId])
+    }, [currentTimelineID])
 
     return (
         <VXObjectWrapper type="object" ref={ref} {...rest}>

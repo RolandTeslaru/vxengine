@@ -1,6 +1,6 @@
 import React from "react";
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
-import { useVXAnimationStore } from "@vxengine/AnimationEngine";
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useVXEngine } from "@vxengine/engine";
 import { shallow } from "zustand/shallow";
 import TimeRender from "./TimeRender";
@@ -8,10 +8,7 @@ import { handleSetCursor } from "../utils/handleSetCursor";
 
 const ProgressionControls = () => {
     const animationEngine = useVXEngine(state => state.animationEngine)
-    const { isPlaying } = useVXAnimationStore(state => ({
-        isPlaying: state.isPlaying
-    }), shallow)
-
+    const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
     //Start or pause
     const handlePlayOrPause = () => {
         if (isPlaying)

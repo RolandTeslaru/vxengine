@@ -2,7 +2,7 @@ import { Button } from "@vxengine/components/shadcn/button"
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel"
 import React, { useMemo, useRef } from "react"
 import useSourceManagerAPI from "./store"
-import { useVXAnimationStore } from "@vxengine/AnimationEngine"
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"
 import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
 
@@ -38,7 +38,7 @@ export default SourceManagerUI
 
 
 export const DataSyncPopup = () => {
-    const diskData = useVXAnimationStore(state => state.timelines)
+    const diskData = useAnimationEngineAPI(state => state.timelines)
 
     const overwriteLocalStorageData = useSourceManagerAPI(state => state.overwriteLocalStorageData)
     const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData);
@@ -65,7 +65,7 @@ export const DataSyncPopup = () => {
     }
 
     const onClickKeepDisk = () => {
-        const timelines = useVXAnimationStore.getState().timelines
+        const timelines = useAnimationEngineAPI.getState().timelines
         overwriteLocalStorageData(timelines)
         setShowSyncPopup(false)
     }

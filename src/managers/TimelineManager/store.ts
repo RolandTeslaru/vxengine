@@ -17,7 +17,7 @@ import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { RowRndApi } from './components/row_rnd/row_rnd_interface';
-import { useVXAnimationStore } from '@vxengine/AnimationEngine';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 
 export type GroupedPaths = Record<string, PathGroup>;
 

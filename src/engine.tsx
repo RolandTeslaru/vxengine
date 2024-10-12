@@ -10,7 +10,7 @@ import { AnimationEngine } from "@vxengine/AnimationEngine/engine"
 import { useTimelineEditorAPI } from './managers/TimelineManager/store'
 import { createStore, useStore, StoreApi } from 'zustand'
 import useSourceManagerAPI from './managers/SourceManager/store'
-import { useVXAnimationStore } from './AnimationEngine'
+import { useAnimationEngineAPI } from './AnimationEngine'
 import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
 

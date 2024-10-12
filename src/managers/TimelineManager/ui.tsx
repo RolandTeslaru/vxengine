@@ -21,7 +21,7 @@ import TrackVerticalList from './components/TrackVerticalList';
 import TimelineEditor from './components/TimelineEditor';
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@vxengine/components/shadcn/Resizeable';
-import { useVXAnimationStore } from '@vxengine/AnimationEngine/AnimationStore';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
 import { Input } from '@vxengine/components/shadcn/input';
 import ProgressionControls from './components/ProgressionControls';
 
@@ -41,20 +41,22 @@ const TimelineEditorUI = () => {
     const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
 
-    const timelineLength = useVXAnimationStore(state => state.currentTimeline.length)
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
 
-    const handleLengthInputChange = (e) => {
-        const newValue = e.target.value;
+    // TODO: Fix this length
+    // const handleLengthInputChange = (e) => {
+    //     const newValue = e.target.value;
       
-        const currentTimeline = useVXAnimationStore.getState().currentTimeline;
+    //     const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
       
-        const newCurrentTimeline = {
-          ...currentTimeline,
-          length: newValue      
-        };
+    //     const newCurrentTimeline = {
+    //       ...currentTimeline,
+    //       length: newValue      
+    //     };
       
-        useVXAnimationStore.setState({ currentTimeline: newCurrentTimeline });
-      };
+    //     useAnimationEngineAPI.setState({ currentTimeline: newCurrentTimeline });
+    //   };
     
     return (
         <>
@@ -131,7 +133,7 @@ const TimelineEditorUI = () => {
                             <p className='h-auto my-auto'>length</p>
                             <Input className='p-1 text-xs my-auto h-fit w-16'
                                 value={timelineLength}
-                                onChange={handleLengthInputChange}
+                                // onChange={handleLengthInputChange}
                                 type='number'
                             ></Input>
                         </div>
@@ -156,14 +158,14 @@ export default TimelineEditorUI
 
 
 export const TimelineSelect = () => {
-    const currentTimeline = useVXAnimationStore(state => state.currentTimeline)
-    const timelines = useVXAnimationStore(state => state.timelines)
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const timelines = useAnimationEngineAPI(state => state.timelines)
 
     const animationEngine = useVXEngine(state => state.animationEngine)
 
     return (
         <Select
-            defaultValue={currentTimeline.id}
+            defaultValue={currentTimelineID}
             onValueChange={(value) => {
                 animationEngine.setCurrentTimeline(value)
             }}>
@@ -172,8 +174,8 @@ export const TimelineSelect = () => {
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    {timelines.map((timeline, index) =>
-                        <SelectItem value={timeline.id} key={index}>{timeline.name}</SelectItem>
+                    {Object.entries(timelines).map(([key, timeline]) =>
+                        <SelectItem value={timeline.id} key={key}>{timeline.name}</SelectItem>
                     )}
                 </SelectGroup>
             </SelectContent>

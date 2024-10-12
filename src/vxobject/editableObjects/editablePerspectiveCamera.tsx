@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useVXAnimationStore } from "../../AnimationEngine"
+import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXObjectWrapper from "../wrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
@@ -21,8 +21,8 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
 
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
     const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
-    const currentTimelieId = useVXAnimationStore(state => state.currentTimeline?.id)
-    const currentSettingsForObject = useVXAnimationStore(state => state.currentTimeline?.settings[vxkey])
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
 
 
     // INITIALIZE Additional Settings
@@ -58,15 +58,15 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
 
     // Refresh settings when the current timeline changes
     useEffect(() => {
-        if (currentTimelieId === undefined) return
+        if (currentTimelineID === undefined) return
         const mergedSettingsForObject = {
             ...defaultSettingsForObject,
             ...currentSettingsForObject
         }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]) => {
+        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
             useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
         })
-    }, [currentTimelieId])
+    }, [currentTimelineID])
 
     const params = [
         "far",

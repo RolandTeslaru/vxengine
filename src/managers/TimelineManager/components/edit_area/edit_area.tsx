@@ -6,7 +6,7 @@ import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/Animation
 import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
-import { useVXAnimationStore } from '@vxengine/AnimationEngine/AnimationStore';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
 import { CursorLine } from '../cursor/cursor';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 
@@ -23,7 +23,8 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
     deltaScrollLeft
   } = props;
 
-  const timelineLength = useVXAnimationStore(state => state.currentTimeline.length)
+  const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+  const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
 
   const { editorObjects, scale, groupedPaths } = useTimelineEditorAPI(state => ({
     editorObjects: state.editorObjects,
