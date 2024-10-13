@@ -1,4 +1,5 @@
 import { Grid } from "@react-three/drei"
+import React from "react"
 
 export const Ground = () => {
     const gridConfig = {

@@ -9,7 +9,7 @@ import { MeshProps } from "@react-three/fiber";
 
 export type EditableMeshProps = EditableObjectProps<MeshProps> & {
     ref?: React.Ref<Mesh>;
-    settings: {}
+    settings?: {}
 };
 
 export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {

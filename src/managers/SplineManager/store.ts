@@ -10,6 +10,8 @@ import { useTimelineEditorAPI } from '../TimelineManager/store';
 import { extractVxKeyFromSplineKey } from './components/utils';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
+import * as THREE from "three"
+
 interface SplineStoreProps {
     splines: Record<string, ISpline>
     initSplines: (newSplines: Record<string, ISpline>) => void;

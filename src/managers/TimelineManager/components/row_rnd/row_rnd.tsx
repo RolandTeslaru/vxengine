@@ -329,7 +329,6 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
 
     return (
       // FIXME: idk
-      // @ts-expect-error
       <InteractComp
         interactRef={interactable}
         draggable={enableDragging}

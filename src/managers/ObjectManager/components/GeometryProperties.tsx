@@ -7,6 +7,8 @@ import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { shallow } from "zustand/shallow";
 
+import * as THREE from "three"
+
 type SupportedGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 

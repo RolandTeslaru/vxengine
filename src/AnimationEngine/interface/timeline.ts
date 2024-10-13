@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import { OnScrollParams } from 'react-virtualized';
 import { Emitter } from '../emitter';
 import { EventTypes } from '../events';
 import { TimelineAction, TimelineRow } from './action';
@@ -219,7 +218,7 @@ export interface TimelineEditor extends EditData {
   /**
    * @description Edit area scrolling callback (used to control synchronization with editing row scrolling)
    */
-  onScroll?: (params: OnScrollParams) => void;
+  onScroll?: (params: any) => void;
   /**
    * @descriptionWhether to start automatic scrolling when dragging
    * @default false

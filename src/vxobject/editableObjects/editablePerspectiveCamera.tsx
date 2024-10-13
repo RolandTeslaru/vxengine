@@ -10,9 +10,12 @@ import { useCameraManagerAPI } from "../../managers/CameraManager/store"
 import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
+import * as THREE from "three"
+
+
 export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCameraProps> & {
     ref?: React.Ref<typeof PerspectiveCamera>;
-    settings: {}
+    settings?: {}
 };
 
 export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {

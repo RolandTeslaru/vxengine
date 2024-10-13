@@ -1,5 +1,7 @@
 import React from "react"
 
+import * as THREE from "three"
+
 export interface BaseUtilityNodeProps {
     ref: THREE.Object3D | null;
     nodeKey: string;

@@ -1,6 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect } from "react";
 
+// TODO: Fix this 
 export const VXFrameLimiter = ({ maxFps = 30}) => {
     const set = useThree((state) => state.set);
     const get = useThree((state) => state.get);
@@ -15,7 +16,7 @@ export const VXFrameLimiter = ({ maxFps = 30}) => {
         };
     }, []);
 
-    useFrame((state) => {
+    useFrame((state: any) => {
         if (state.get().blocked) return;
         state.set({ blocked: true });
 
@@ -29,6 +30,7 @@ export const VXFrameLimiter = ({ maxFps = 30}) => {
     useEffect(() => {
         if (frameloop !== 'never') {
             set({ frameloop: 'never' });
+            // @ts-expect-error
             advance();
         }
     }, [frameloop]);

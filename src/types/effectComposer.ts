@@ -1,4 +1,5 @@
 import { TextureDataType } from "three"
+import * as THREE from "three"
 
 export type EffectComposerProps = {
     enabled?: boolean

@@ -90,7 +90,9 @@ const TransformControls: ForwardRefComponent<TransformControlsProps, TransformCo
       React.useEffect(() => {
         if (defaultControls) {
           const callback = (event) => (defaultControls.enabled = !event.value)
+          // @ts-expect-error
           controls.addEventListener('dragging-changed', callback)
+          // @ts-expect-error
           return () => controls.removeEventListener('dragging-changed', callback)
         }
       }, [controls, defaultControls])
@@ -115,15 +117,23 @@ const TransformControls: ForwardRefComponent<TransformControlsProps, TransformCo
         const onMouseUp = (e: THREE.Event) => onMouseUpRef.current?.(e)
         const onObjectChange = (e: THREE.Event) => onObjectChangeRef.current?.(e)
 
+        // @ts-expect-error
         controls.addEventListener('change', onChange)
+        // @ts-expect-error
         controls.addEventListener('mouseDown', onMouseDown)
+        // @ts-expect-error
         controls.addEventListener('mouseUp', onMouseUp)
+        // @ts-expect-error
         controls.addEventListener('objectChange', onObjectChange)
 
         return () => {
+          // @ts-expect-error
           controls.removeEventListener('change', onChange)
+          // @ts-expect-error
           controls.removeEventListener('mouseDown', onMouseDown)
+          // @ts-expect-error
           controls.removeEventListener('mouseUp', onMouseUp)
+          // @ts-expect-error
           controls.removeEventListener('objectChange', onObjectChange)
         }
       }, [invalidate, controls])

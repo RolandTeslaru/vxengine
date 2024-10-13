@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 
 interface TimelineKeyframeControlProps {
     trackKey?: string,
@@ -29,7 +30,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
 
     const checkIfOnKeyframe = () => {
         if (trackKey) {
-            const isCursorOnKeyframe = keyframesOnTrack.some(kf => kf.time === useTimelineEditorAPI.getState().cursorTime);
+            const isCursorOnKeyframe = keyframesOnTrack.some((kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime);
             setIsOnKeyframe(isCursorOnKeyframe);
         }
     };

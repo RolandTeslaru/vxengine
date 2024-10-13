@@ -15,8 +15,6 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './AnimationStore';
-import { useVXObjectStore } from '@vxengine/vxobject';
-import { cubicBezier, solveCubicBezierT } from './utils/cubicBezier';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 import { js_interpolateNumber } from './utils/interpolateNumber';

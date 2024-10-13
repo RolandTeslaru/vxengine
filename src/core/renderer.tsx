@@ -8,21 +8,17 @@ import { Canvas, extend } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
 import { Bloom, DepthOfField, Noise } from '@react-three/postprocessing'
-import { Perf } from 'r3f-perf'
 import { EffectsManagerDriver} from '../managers/EffectsManager'
 import { ObjectManagerDriver} from '../managers/ObjectManager'
 import { RendererCoreProps } from '../types/core'
-import dynamic from 'next/dynamic'
-import { useVXEngine } from '@vxengine/engine'
-import { context as FiberContext } from '@react-three/fiber';
 import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
 import { RenderPass } from 'three-stdlib'
 
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
-import { useVXObjectStore, vx } from '@vxengine/vxobject'
-import CameraManagerDriver from '@vxengine/managers/CameraManager/driver'
+import { useVXObjectStore, vx } from '../vxobject'
+import CameraManagerDriver from '../managers/CameraManager/driver'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {

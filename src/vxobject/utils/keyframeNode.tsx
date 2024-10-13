@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { UtilityNodeProps } from "@vxengine/types/utilityNode";
+import * as THREE from "three"
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];

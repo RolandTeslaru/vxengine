@@ -9,8 +9,8 @@ import PositionPath from './positionPath'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store'
 import { useVXObjectStore } from '../ObjectStore'
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 import { getVXEngineState } from '@vxengine/engine'
+import * as THREE from "three"
 
 interface ObjectUtils {
     vxObject: vxObjectProps

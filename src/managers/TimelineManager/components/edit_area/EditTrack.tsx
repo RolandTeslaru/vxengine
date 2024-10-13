@@ -132,7 +132,7 @@ const EditTrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey }:
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                // @ts-expect-error
+              //@ts-expect-error
                 type="warning"
                 onClick={() => makePropertyStatic(trackKey)}
               >Continue</AlertDialogAction>

@@ -9,7 +9,7 @@ import { PointLightProps } from "@react-three/fiber";
 
 export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
     ref?: React.Ref<PointLight>;
-    settings: {}
+    settings?: {}
 };
 
 export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps>((props, ref) => {

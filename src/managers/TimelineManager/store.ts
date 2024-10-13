@@ -2,18 +2,15 @@ import { create } from 'zustand';
 import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
-import { ScrollSync } from 'react-virtualized';
 import { createWithEqualityFn } from 'zustand/traditional';
 import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { useVXObjectStore, vx } from "@vxengine/vxobject";
-import { keyframes } from 'leva/dist/declarations/src/styles';
 import { produce } from 'immer';
 import { computeGroupPathFromRawObject, computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { useObjectManagerAPI, useObjectPropertyAPI } from '../ObjectManager/store';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
-import { parserPixelToTime } from './utils/deal_data';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { RowRndApi } from './components/row_rnd/row_rnd_interface';
@@ -154,7 +151,7 @@ function createKeyframeLogic(
 
     if (isPropertyTracked) {
         // Check if the cursor is on a keyframe that already exists
-        const isCursorOnKeyframe = keyframes.some(kf => kf.time === state.cursorTime)
+        const isCursorOnKeyframe = keyframes.some((kf: IKeyframe) => kf.time === state.cursorTime)
         if (isCursorOnKeyframe === false) {
             state.addKeyframeToTrack(state, keyframeKey, trackKey);
         }

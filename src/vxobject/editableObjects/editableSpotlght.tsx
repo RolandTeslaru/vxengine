@@ -9,7 +9,7 @@ import { SpotLightProps } from "@react-three/fiber";
 
 export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
     ref?: React.Ref<SpotLight>;
-    settings: {}
+    settings?: {}
 };
 
 export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {

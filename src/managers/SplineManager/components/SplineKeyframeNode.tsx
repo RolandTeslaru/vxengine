@@ -7,6 +7,8 @@ import { UtilityNodeProps } from '@vxengine/types/utilityNode';
 import { useTimelineEditorAPI } from '../../TimelineManager/store';
 import { useVXEngine } from '@vxengine/engine';
 
+import * as THREE from "three"
+
 export interface SplineKeyframeNode {
     splineKey: string,
     keyframeKey: string,

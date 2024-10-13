@@ -69,13 +69,13 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
             positions[index * 3 + 1] = y;
             positions[index * 3 + 2] = z;
 
-            _keyframesForX.forEach(kf => {
+            _keyframesForX.forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "X" });
             });
-            _keyframesForY.forEach(kf => {
+            _keyframesForY.forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Y" });
             });
-            _keyframesForZ.forEach(kf => {
+            _keyframesForZ.forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Z" });
             });
         });

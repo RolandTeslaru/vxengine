@@ -24,13 +24,13 @@ export function useDragLine() {
     }))
     const otherActions: TimelineAction[] = [];
     if (assistActionIds) {
-      editorObjects.forEach((rowItem: any) => {
+      Object.entries(editorObjects).forEach((rowItem: any) => {
         rowItem.actions.forEach((actionItem) => {
           if (assistActionIds.includes(actionItem.id)) otherActions.push(actionItem);
         });
       });
     } else {
-      editorObjects.forEach((rowItem: any) => {
+      Object.entries(editorObjects).forEach((rowItem: any) => {
         if (rowItem.id !== row.id) {
           otherActions.push(...rowItem.actions);
         } else {
