@@ -46,7 +46,14 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
             const camera: THREE.PerspectiveCamera = cameraRef.current
             const targetPosition: THREE.Vector3 = cameraTarget.position
 
-            camera.lookAt(targetPosition)
+            // Make the camera look at the target
+            camera.lookAt(targetPosition);
+
+            // Define the desired roll angle in radians
+            const rollAngle = 0.523599; // Replace with your desired angle
+
+            // Rotate the camera around its local Z-axis (forward axis)
+            camera.rotateZ(rollAngle);
         }
     })
     // Show the camera helper only in free mode
