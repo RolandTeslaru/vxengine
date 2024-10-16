@@ -5,7 +5,8 @@ import { create } from 'zustand'
 import { SourceManagerAPIProps } from './types'
 import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
-import { debounce } from 'lodash'
+
+import debounce from "lodash/debounce"
 
 const DEBUG = true;
 

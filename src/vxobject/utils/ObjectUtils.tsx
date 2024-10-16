@@ -1,3 +1,5 @@
+'use client'
+
 import { ReactThreeFiber } from '@react-three/fiber'
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager'
 import { vxObjectProps } from '@vxengine/types/objectStore'

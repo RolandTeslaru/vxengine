@@ -1,15 +1,12 @@
+'use client'
+
 import { TransformControls, useCamera } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { useVXEngine } from "@vxengine/engine";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
-import { shallow } from "zustand/shallow";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
-import * as THREE from "three"
 import { KeyframeNodeDataProps } from "@vxengine/types/utilityNode";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import { extractSplineKeyFromNodeKey } from "@vxengine/managers/SplineManager/components/utils";
 
 
 export const ObjectManagerDriver = () => {

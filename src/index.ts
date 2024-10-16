@@ -1,3 +1,5 @@
+'use client'
+
 export { VXEngineProvider } from "./engine"
 export { useVXEngine } from "./engine"
 

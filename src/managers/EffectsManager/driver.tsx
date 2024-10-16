@@ -1,3 +1,5 @@
+'use client'
+
 import type { TextureDataType } from 'three'
 import { HalfFloatType } from 'three'
 import React, {

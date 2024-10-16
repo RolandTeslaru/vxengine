@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import classNames from "classnames";
 import { create } from "zustand"
-// @ts-expect-error
-import styles from "./bezierCurveStyles.module.scss"
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import styles from "./bezierCurveStyles.module.scss"
 
 const defaultStateValue = {
   value: [0.4, 0, 1, 0.6], // easeIn

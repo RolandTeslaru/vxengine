@@ -1,4 +1,6 @@
-import { Html } from "@react-three/drei";
+'use client'
+
+// import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import React, { useEffect, useMemo } from "react";
 import { useRef } from "react";
@@ -67,7 +69,7 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             </mesh>
 
             {/* Axis Dots and Html */}
-            <Html center position={position} style={{ pointerEvents: "none" }}>
+            {/* <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
                     {selectedUtilityNode?.nodeKey === nodeKey && (
                         <div className="absolute -left-[100px] flex flex-col bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px] text-xs font-sans-menlo">
@@ -90,7 +92,7 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
                     </div>
                 </div>
             </Html>
-        
+         */}
         </>
     );
 };

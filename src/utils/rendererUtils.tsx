@@ -2,6 +2,8 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
+'use client'
+
 import React from 'react'
 import { CameraControls } from '@react-three/drei/core/CameraControls'
 import { OrbitControls } from '@react-three/drei'

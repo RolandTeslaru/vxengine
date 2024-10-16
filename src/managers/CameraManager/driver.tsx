@@ -2,6 +2,8 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
+'use client'
+
 import { vx } from '@vxengine/vxobject'
 import React from 'react'
 import CameraTarget from './components/CameraTarget'

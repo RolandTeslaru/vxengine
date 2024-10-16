@@ -2,6 +2,8 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
+'use client'
+
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle} from 'react';
 import { useVXObjectStore } from "@vxengine/vxobject";
@@ -18,10 +20,11 @@ export interface VXObjectWrapperProps<T extends THREE.Object3D> {
     name?: string;
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
     params?: string[]
+    disabledParams?: string[]
 }
 
 const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Object3D>>(
-    ({ type, children, vxkey, params, ...props }, ref) => {
+    ({ type, children, vxkey, params, disabledParams, ...props }, ref) => {
         if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${type}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
@@ -46,7 +49,8 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
                 ref: internalRef,
                 vxkey: vxkey,
                 name: props.name || type,
-                params: params || []
+                params: params || [],
+                disabledParams: disabledParams || [],
             };
 
             memoizedAddObject(newVXObject);

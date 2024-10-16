@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { EditableAmbientLight, EditableDirectionalLight, EditableFog, EditableGroup, EditableHemisphereLight, EditableMesh, EditablePerspectiveCamera, EditablePointLight, EditablePoints, EditableSpotLight } from './editableObjects';
 import { EditableFadeEffect } from './editableEffects/EditableFader';

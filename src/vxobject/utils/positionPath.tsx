@@ -1,4 +1,5 @@
-import { ThreeEvent, useFrame } from "@react-three/fiber";
+'use client'
+
 import React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"

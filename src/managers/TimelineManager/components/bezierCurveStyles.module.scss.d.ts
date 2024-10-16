@@ -1,0 +1,15 @@
+export declare const active: string;
+export declare const colorBackground: string;
+export declare const colorCurveLine: string;
+export declare const colorDark: string;
+export declare const colorHandleLine: string;
+export declare const colorRow: string;
+export declare const connectionPoint: string;
+export declare const curve: string;
+export declare const end: string;
+export declare const handle: string;
+export declare const imageBackground: string;
+export declare const plane: string;
+export declare const rootContainer: string;
+export declare const start: string;
+export declare const wrap: string;

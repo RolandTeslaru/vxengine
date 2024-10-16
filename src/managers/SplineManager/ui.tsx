@@ -6,7 +6,6 @@ import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
-// @ts-expect-error
 import styles from "./styles.module.scss"
 
 
@@ -61,11 +60,11 @@ const SplineNodesScrollArea = () => {
   }, [selectedSpline.nodes]);
 
   return (
-    <div className={"relative max-h-48 overflow-hidden " + styles.scroll_container}>
+    <div className={"relative max-h-48 overflow-hidden " + styles.scrollContainer}>
       <ScrollArea
         ref={scrollAreaRef}
         scrollbarPosition="left"
-        className={`flex flex-col px-4 mx-1 max-h-48 overflow-y-scroll ${isOverflowing ? `${styles.gradient_mask}` : ''}`}
+        className={`flex flex-col px-4 mx-1 max-h-48 overflow-y-scroll ${isOverflowing ? `${styles.gradientMask}` : ''}`}
       >
         {selectedSpline.nodes.map((position, index) => (
           <SplineNodeListObject splineKey={selectedSpline.splineKey} position={position} index={index} key={index} />

@@ -5,6 +5,7 @@ export interface vxObjectProps {
     ref: React.MutableRefObject<any>;
     vxkey: string;
     params?: string[]
+    disabledParams?: string[]
 }
 
 export interface ObjectStoreStateProps {

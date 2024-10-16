@@ -1,7 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
 import { DragLineData } from './drag_lines';
-import './edit_row.scss';
 import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { CommonProp } from '@vxengine/AnimationEngine/interface/common_prop';
 import { EditKeyframe } from './EditKeyframe';

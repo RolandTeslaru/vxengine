@@ -31,7 +31,7 @@ export const handleSetCursor = (param: {
     cursorLineRef.current.updateLeft(parserTimeToPixel(time, startLeft) );
 
     if (rerender) {
-        animationEngine.setCurrentTime(time, true);
+        animationEngine.setCurrentTime(time, false);
         animationEngine.reRender({ cause: "handleSetCursor", force: true });
     }
 };

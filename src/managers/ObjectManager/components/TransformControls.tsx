@@ -1,3 +1,5 @@
+'use client'
+
 import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
 import { ReactThreeFiber, useThree } from '@react-three/fiber'
 import * as React from 'react'

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { ForwardRefExoticComponent, PropsWithoutRef, Ref, RefAttributes, forwardRef } from 'react';
 import { Mesh, SpotLight, LineSegments, LineLoop, Points, Group, PerspectiveCamera, OrthographicCamera, PointLight, HemisphereLight, DirectionalLight, AmbientLight, Fog, Object3D } from 'three';
 import { FogProps, MeshProps, SpotLightProps, LineSegmentsProps, LineLoopProps, PointsProps, GroupProps, PerspectiveCameraProps, OrthographicCameraProps, PointLightProps, HemisphereLightProps, DirectionalLightProps, AmbientLightProps, ExtendedColors } from '@react-three/fiber';

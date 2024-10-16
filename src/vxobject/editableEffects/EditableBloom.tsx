@@ -1,3 +1,5 @@
+'use client'
+
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine";

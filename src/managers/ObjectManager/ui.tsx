@@ -3,20 +3,14 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 "use client"
-import { Toggle } from '@geist-ui/core'
+
 import React, { useEffect, useRef, useState } from 'react'
 import * as THREE from "three"
 import { createPortal } from 'react-dom'
-import { useFrame } from '@react-three/fiber'
-import { isEqual } from 'lodash'
 import { ChevronRight, Move } from '@geist-ui/icons'
 import { RefreshCcw } from '@geist-ui/icons'
 import { motion, AnimatePresence } from "framer-motion"
-import { vxObjectProps } from '@vxengine/types/objectStore'
-import { useVXEngine } from '@vxengine/engine'
-import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { useObjectManagerAPI, useObjectPropertyAPI } from './store'
-import { shallow } from 'zustand/shallow'
 import { TransformProperties } from './components/TransformProperties'
 import { GeometryProperties } from './components/GeometryProperties'
 import ObjectList from './components/ObjectList'

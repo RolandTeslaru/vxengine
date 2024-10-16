@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';

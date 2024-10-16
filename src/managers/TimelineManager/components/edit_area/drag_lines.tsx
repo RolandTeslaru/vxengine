@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
 import { prefix } from "../../utils/deal_class_prefix";
-import './drag_lines.scss';
 
 export interface DragLineData {
   isMoving: boolean;

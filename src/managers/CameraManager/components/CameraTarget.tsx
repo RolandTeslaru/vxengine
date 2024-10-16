@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useMemo, useRef } from 'react'
 import { useVXObjectStore, vx } from '../../../vxobject'
 import { useFrame, useLoader } from '@react-three/fiber'

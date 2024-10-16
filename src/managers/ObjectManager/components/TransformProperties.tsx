@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
-import { shallow } from "zustand/shallow";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
-import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
-import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { getNestedProperty } from "@vxengine/utils";
 
 export const TransformProperties = () => {
     const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
     const vxkey = firstObjectSelectedStored.vxkey
+    const disabledParams = firstObjectSelectedStored.disabledParams;
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
 
@@ -24,6 +22,8 @@ export const TransformProperties = () => {
     const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
     const isUsingSplinePath = settings?.useSplinePath
+    const isRotationDisabled = disabledParams?.includes("rotation");
+    const isScaleDisabled = disabledParams?.includes("scale");
 
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
@@ -63,14 +63,14 @@ export const TransformProperties = () => {
                 <div className='flex flex-row'>
                     <p className="text-xs font-light text-neutral-500">scale</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
-                        {renderInputs('scale')}
+                        {renderInputs('scale', isScaleDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row gap-2'>
                     <p className="text-xs font-light text-neutral-500">rotation</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
-                        {renderInputs('rotation')}
+                        {renderInputs('rotation', isRotationDisabled)}
                     </div>
                 </div>
                 {additionalSettings && <>

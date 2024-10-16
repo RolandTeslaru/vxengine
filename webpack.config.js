@@ -11,13 +11,21 @@ console.log("WEBPACK DIR NAME ", __dirname)
 
 export default {
     entry: {
-        main: './src/index.ts', 
+        main: './src/index.ts',
     },
     output: {
         filename: 'index.js',
+        publicPath: '/', 
         path: path.resolve('dist'),
-        library: 'vxengine',
-        libraryTarget: 'umd',
+        library: {
+            type: 'module', // Outputs as an ES module
+        },
+        chunkFormat: 'module',
+        globalObject: 'typeof self !== "undefined" ? self : this', // For self usage in modules
+    },
+    experiments: {
+        asyncWebAssembly: true,
+        outputModule: true, // Enable output as an ES module
     },
     resolve: {
         alias: {
@@ -26,24 +34,35 @@ export default {
         modules: [path.resolve(__dirname, 'src'), 'node_modules'],
         extensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
+    target: 'web',
     externals: {
-        'three': 'THREE', // Externalize Three.js
-        'three-stdlib': 'THREE', // Externalize Three.js stdlib
-        '@react-three/fiber': 'ReactThreeFiber', // Externalize React Three Fiber
-        '@react-three/drei': 'ReactThreeDrei',  // Externalize Drei helpers
-        '@react-three/postprocessing': 'ReactThreePostProcessing' // Externalize post-processing tools
+        react: "react",
+        'react-dom': "react-dom",
+        'three': 'three',
+        '@react-three/fiber': '@react-three/fiber',
+        '@react-three/drei': '@react-three/drei',
+        '@react-three/postprocessing': '@react-three/postprocessing',
+        'three-stdlib': 'three-stdlib',
+        zustand: 'zustand',
+        howler: 'howler',
+        'framer-motion': 'framer-motion',
+        immer: 'immer',
+        'next-themes': 'next-themes',
+        classnames: 'classnames',
+        clsx: 'clsx',
+        'tailwind-merge': 'tailwind-merge',
+        tailwindcss: 'tailwindcss',
     },
     module: {
         rules: [
             {
-                test: /\.scss$/,
-                use: [
-                    process.env.NODE_ENV !== 'production'
-                        ? 'style-loader' // Injects styles into DOM
-                        : MiniCssExtractPlugin.loader, // Extracts CSS into files (production)
-                    'css-loader', // Resolves CSS imports
-                    'sass-loader' // Compiles Sass to CSS
-                ],
+                test: /\.scss$/, use: [
+                    { loader: "style-loader" },  // to inject the result into the DOM as a style block
+                    { loader: "css-modules-typescript-loader" },  // to generate a .d.ts module next to the .scss file (also requires a declaration.d.ts with "declare modules '*.scss';" in it to tell TypeScript that "import styles from './styles.scss';" means to load the module "./styles.scss.d.td")
+                    { loader: "css-loader", options: { modules: true } },  // to convert the resulting CSS to Javascript to be bundled (modules:true to rename CSS classes in output to cryptic identifiers, except if wrapped in a :global(...) pseudo class)
+                    { loader: "sass-loader" },  // to convert SASS to CSS
+                    // NOTE: The first build after adding/removing/renaming CSS classes fails, since the newly generated .d.ts typescript module is picked up only later
+                ]
             },
             {
                 test: /\.(ts|tsx)$/,
@@ -60,17 +79,21 @@ export default {
                     },
                 },
             },
+            {
+                test: /\.wasm$/,
+                type: 'asset/resource', // For Webpack 5
+            }
         ],
     },
     optimization: {
-        minimize: true,
+        minimize: false,
         minimizer: [new TerserPlugin()],
-    },
-    plugins: [
-        new JavaScriptObfuscator({
-            rotateStringArray: true,
-            stringArray: true,
-            stringArrayThreshold: 0.75,
-        }, ['excluded_bundle.js']),
-    ],
+    }
+    // plugins: [
+    //     new JavaScriptObfuscator({
+    //         rotateStringArray: true,
+    //         stringArray: true,
+    //         stringArrayThreshold: 0.75,
+    //     }, ['excluded_bundle.js']),
+    // ],
 };

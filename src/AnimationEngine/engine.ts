@@ -19,6 +19,8 @@ import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 
+import wasmUrl from "../wasm/pkg/rust_bg.wasm"
+
 import init, {
   Spline as wasm_Spline,
   Vector3 as wasm_Vector3,
@@ -55,7 +57,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   constructor() {
     super(new Events());
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
-    // console.log("Created AnimationEngine instance with ID:", this._id);
+    console.log("Created AnimationEngine instance with ID:", this._id);
     this._wasmReady = this._initializeWasm();
     this._interpolateNumberFunction = js_interpolateNumber;
     this._currentTimeline = null
@@ -113,6 +115,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   ----------------   */
   setCurrentTime(time: number, isTick?: boolean): boolean {
     this._currentTime = time
+    // console.log("AnimationEngine: setCurrentTime IsTick:", isTick);
 
     if (isTick) {
       this.trigger('timeUpdatedAutomatically', { time, engine: this });
@@ -256,8 +259,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                     */
   /*   ---------------   */
   private async _initializeWasm() {
+    console.log("AnimationEngine: Initializing WASM Driver with url:", wasmUrl);
     try {
-      await init();  // Wait for the WebAssembly module to initialize
+      await init(wasmUrl);  // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
       this._interpolateNumberFunction = wasm_interpolateNumber;
       console.log("AnimationEngine: WASM initialized successfully");

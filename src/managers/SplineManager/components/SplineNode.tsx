@@ -1,4 +1,6 @@
-import { Html } from '@react-three/drei';
+'use client'
+
+// import { Html } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
@@ -53,7 +55,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
                 <meshBasicMaterial color={selectedUtilityNode?.nodeKey === nodeKey ? "yellow" : color} />
             </mesh>
 
-            <Html center position={position} style={{ pointerEvents: "none" }}>
+            {/* <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
                     {selectedUtilityNode?.nodeKey === nodeKey ? (
                         <div className={`absolute -right-[120px] flex flex-col bg-neutral-900 p-1 px-2 rounded-full bg-opacity-70
@@ -70,7 +72,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
                         </div>
                     )}                   
                 </div>
-            </Html>
+            </Html> */}
         </>
     )
 }

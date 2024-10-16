@@ -6,21 +6,22 @@ import { EffectComposer } from 'three-stdlib'
 import { EngineContextProps, VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
-import { AnimationEngine } from "@vxengine/AnimationEngine/engine"
-import { useTimelineEditorAPI } from './managers/TimelineManager/store'
 import { createStore, useStore, StoreApi } from 'zustand'
 import useSourceManagerAPI from './managers/SourceManager/store'
-import { useAnimationEngineAPI } from './AnimationEngine'
 import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
+import { createRequire } from 'module'; // Import createRequire from 'module'
+import { AnimationEngine } from './AnimationEngine/engine'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
 let animationEngineInstance;
-if (typeof window !== 'undefined')
+if (typeof window !== 'undefined'){
+  // const { AnimationEngine } = require('@vxengine/AnimationEngine/engine');
   animationEngineInstance = new AnimationEngine();
+}
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
 
@@ -79,21 +80,21 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   return (
     <VXEngineContext.Provider value={store}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <ClientOnly>
+      <ClientOnly>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
           {mountEngineUI && (
             <VXEngineCoreUI />
           )}
           {showSyncPopup && (
             <DataSyncPopup />
           )}
-        </ClientOnly>
-      </ThemeProvider>
+        </ThemeProvider>
+      </ClientOnly>
       {children}
     </VXEngineContext.Provider>
   );

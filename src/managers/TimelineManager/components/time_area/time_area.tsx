@@ -41,7 +41,8 @@ export const TimeArea = ({deltaScrollLeft}) => {
     for (let columnIndex = 0; columnIndex < totalUnits; columnIndex++) {
       const isShowScale = showUnit ? columnIndex % scaleSplitCount === 0 : true;
       const classNames = ['time-unit'];
-      if (isShowScale) classNames.push('time-unit-big');
+      if (isShowScale) 
+        classNames.push('time-unit-big');
       const item =
         (showUnit ? columnIndex / scaleSplitCount : columnIndex) * scale;
 

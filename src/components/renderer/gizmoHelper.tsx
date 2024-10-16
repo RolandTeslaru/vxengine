@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Group, Matrix4, Object3D, OrthographicCamera as OrthographicCameraImpl, Quaternion, Vector3 } from 'three'
