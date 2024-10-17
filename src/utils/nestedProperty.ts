@@ -4,7 +4,7 @@ export const getNestedProperty = (obj: any, path: string) => {
         if (!acc) return undefined;
 
         if (acc instanceof Map) {
-            // console.log("Getting Nested Propert: found Map", acc, " part:", part, " value:", acc.get(part))
+            // console.log("Getting Nested Property: found Map", acc, " part:", part, " value:", acc.get(part))
             return acc.get(part).value;
         }
 

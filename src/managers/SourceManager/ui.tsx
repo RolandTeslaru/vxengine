@@ -1,12 +1,12 @@
 import { Button } from "@vxengine/components/shadcn/button"
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel"
 import React, { useMemo, useRef } from "react"
-import useSourceManagerAPI from "./store"
+import { useSourceManagerAPI } from "./store"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"
 import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
 
-const SourceManagerUI = () => {
+export const SourceManagerUI = () => {
     const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)
 
     return (
@@ -33,9 +33,6 @@ const SourceManagerUI = () => {
         </CollapsiblePanel>
     )
 }
-
-export default SourceManagerUI
-
 
 export const DataSyncPopup = () => {
     const diskData = useAnimationEngineAPI(state => state.timelines)

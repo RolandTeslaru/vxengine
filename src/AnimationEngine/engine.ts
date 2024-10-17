@@ -27,7 +27,7 @@ import init, {
   interpolate_number as wasm_interpolateNumber,
 } from '../wasm/pkg';
 
-import useSourceManagerAPI from '../managers/SourceManager/store'
+import { useSourceManagerAPI } from '../managers/SourceManager/store'
 
 const IS_DEV = process.env.NODE_ENV === 'development'
 
@@ -57,7 +57,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   constructor() {
     super(new Events());
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
-    console.log("Created AnimationEngine instance with ID:", this._id);
+    console.log("VXEngine AnimationEngine: Created instance with ID:", this._id);
     this._wasmReady = this._initializeWasm();
     this._interpolateNumberFunction = js_interpolateNumber;
     this._currentTimeline = null
@@ -90,7 +90,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const selectedTimeline: ITimeline = this.timelines[timelineId]
 
     if (!selectedTimeline)
-      throw new Error(`VXAnimationEngine: Timeline with id ${timelineId} not found`);
+      throw new Error(`VXEngine AnimationEngine: Timeline with id ${timelineId} not found`);
 
     const { 
       objects: rawObjects, 
@@ -145,7 +145,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const firstTimelineID = firstTimeline.id
     this.setCurrentTimeline(firstTimelineID);
     
-    console.log("VXAnimationEngine: Loading timelines ", firstTimeline)
+    console.log("VXEngine AnimationEngine: Loading timelines ", firstTimeline)
     this._isReady = true;
   }
 
@@ -166,7 +166,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
 
     if (DEBUG_RERENDER)
-      console.log("VXAnimationEngine: rerendering", " cause: ", cause)
+      console.log("VXEngine AnimationEngine: rerendering", " cause: ", cause)
 
     this._applyAllStaticProps();
 
@@ -220,7 +220,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if(object3DRef)
       this._object3DCache.set(object.vxkey, object3DRef);
 
-    console.log("VXAnimationEngine: Initializing vxobject", object)
+    console.log("VXEngine AnimationEngine: Initializing vxobject", object)
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
 
     // Initialize the edObject if it doesnt exist
@@ -259,14 +259,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                     */
   /*   ---------------   */
   private async _initializeWasm() {
-    console.log("AnimationEngine: Initializing WASM Driver with url:", wasmUrl);
+    console.log("VXEngine AnimationEngine: Initializing WASM Driver with url:", wasmUrl);
     try {
       await init(wasmUrl);  // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
       this._interpolateNumberFunction = wasm_interpolateNumber;
-      console.log("AnimationEngine: WASM initialized successfully");
+      console.log("VXEngine AnimationEngine: WASM Driver initialized successfully");
     } catch (error) {
-      console.error("AnimationEngine Error: Failed to initialize WASM", error);
+      console.error("VXEngine AnimationEngine Error: Failed to initialize WASM Driver", error);
     }
   }
 

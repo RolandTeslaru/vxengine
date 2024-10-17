@@ -1,3 +1,4 @@
+import React from "react";
 import { useRef } from "react";
 import { EffectComposer } from "three-stdlib";
 import { create } from "zustand";
@@ -10,5 +11,5 @@ interface EffectsManagerAPIProps {
 export const useEffectsManagerAPI = create<EffectsManagerAPIProps>((set, get) => ({
     selectedEffect: null,
     setSelectedEffect: (effect) => set({ selectedEffect: effect }),
-    composer: useRef<EffectComposer | null>(null),
+    composer: React.createRef<EffectComposer | null>(),
 }))

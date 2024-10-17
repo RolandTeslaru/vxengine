@@ -1,6 +1,4 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
-import { getVXEngineState, useVXEngine } from '@vxengine/engine'
-import React from 'react'
 import { create } from 'zustand'
 import { SourceManagerAPIProps } from './types'
 import { ITimeline } from '@vxengine/AnimationEngine/types/track'
@@ -10,7 +8,7 @@ import debounce from "lodash/debounce"
 
 const DEBUG = true;
 
-const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
+export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     diskFilePath: "",
     setDiskFilePath: (path) => set({ diskFilePath: path }),
 
@@ -21,7 +19,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     setShowSyncPopup: (value: boolean) => set({ showSyncPopup: value }),
 
     saveDataToDisk: async () => {
-        if (DEBUG) console.log("SourceManager: Saving Data To Disk");
+        if (DEBUG) console.log("VXEngine SourceManager: Saving data to disk");
 
         const timelines = useAnimationEngineAPI.getState().timelines
         try {
@@ -32,17 +30,17 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
                 },
                 body: JSON.stringify({ timelines })
             })
-            if (response.ok) {
-                console.log('Timelines saved successfully to the server.');
-            } else {
-                console.error('Failed to save timelines to the server.');
-            }
+            if (response.ok) 
+                console.log('VXEngine SourceManager: Timelines saved successfully to disk.');
+            else
+                console.error('VXEngine SourceManager ERROR: Failed to save timelines to disk.');
+            
         } catch (error) {
-            console.error('Error saving timelines to the server:', error);
+            console.error('VXEngine SourceManager ERROR: Unable to write timelines to disk:', error);
         }
     },
     saveDataToLocalStorage: debounce(() => {
-        if (DEBUG) console.log("SourceManager: Saving Data To LocalStorage")
+        if (DEBUG) console.log("VXEngine SourceManager: Saving Data To LocalStorage")
 
         const timelines = useAnimationEngineAPI.getState().timelines
         localStorage.setItem('timelines', JSON.stringify(timelines));
@@ -69,18 +67,18 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
      *  - `in_sync`: If the timelines are synchronized.
      */
     syncLocalStorage: (timelines: Record<string, ITimeline>) => {
-        if (DEBUG) console.log("SourceManager: Validating LocalStorage")
+        if (DEBUG) console.log("VXEngine SourceManager: Validating LocalStorage")
         const savedTimelines = localStorage.getItem('timelines');
 
         if (!savedTimelines) {
             // If no data in localStorage, initialize it with current timelines
-            console.log("SourceManager: Initializing LocalStorage with timeline data.");
+            console.log("VXEngine SourceManager: Initializing LocalStorage with timeline data.");
             useAnimationEngineAPI.setState({ timelines: timelines })
             get().saveDataToLocalStorage();
 
             return { status: 'init' };
         } else {
-            console.log("SourceManager: Restoring timelines from LocalStorage");
+            console.log("VXEngine SourceManager: Restoring timelines from LocalStorage");
             const restoredTimelines = JSON.parse(savedTimelines);
 
             const areTimelinesInSync = deepEqual(timelines, restoredTimelines);
@@ -103,7 +101,7 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
 
     overwriteDiskData: async (data: Record<string, ITimeline>) => {
         if (DEBUG)
-            console.log("VXEngine SourceManager: Overwriting Disk Data: ", data)
+            console.log("VXEngine SourceManager: Overwriting disk data: ", data)
         try {
             const response = await fetch('/api/vxSaveTimelines', {
                 method: "POST",
@@ -113,12 +111,12 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
                 body: JSON.stringify({ data })
             })
             if (response.ok) {
-                console.log('Timelines saved successfully to the server.');
+                console.log('VXEngine SourceManager: Timelines overwritten successfully to disk.');
             } else {
-                console.error('Failed to save timelines to the server.');
+                console.error('VXEngine SourceManager ERROR: Failed to overwrite timelines to disk.');
             }
         } catch (error) {
-            console.error('Error saving timelines to the server:', error);
+            console.error('VXEngine SourceManager ERROR: Unable to overwrite timelines to disk:', error);
         }
     },
 
@@ -150,5 +148,3 @@ const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
         window.removeEventListener('beforeunload', get().handleBeforeUnload);
     },
 }))
-
-export default useSourceManagerAPI

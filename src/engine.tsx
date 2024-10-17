@@ -1,16 +1,14 @@
 'use client'
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { CssBaseline, GeistProvider } from '@geist-ui/core'
 import { VXEngineCoreUI } from './core'
 import { EffectComposer } from 'three-stdlib'
-import { EngineContextProps, VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
+import { VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
 import { createStore, useStore, StoreApi } from 'zustand'
-import useSourceManagerAPI from './managers/SourceManager/store'
+import { useSourceManagerAPI } from './managers/SourceManager/store'
 import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
-import { createRequire } from 'module'; // Import createRequire from 'module'
 import { AnimationEngine } from './AnimationEngine/engine'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
@@ -19,7 +17,6 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
 let animationEngineInstance;
 if (typeof window !== 'undefined'){
-  // const { AnimationEngine } = require('@vxengine/AnimationEngine/engine');
   animationEngineInstance = new AnimationEngine();
 }
 
