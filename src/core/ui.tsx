@@ -21,20 +21,13 @@ export const CoreUI = () => {
     return (
         <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
             {/* Menubar */}
-            <div
-                className={`absolute top-6 left-6 h-10 w-fit border-neutral-800 border-[1px] text-white 
-                    backdrop-blur-sm bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-6`}
-                id="VXEngineMenubar"
-            >
-                <MenubarUI />
-            </div>
 
             <LeftPanel />
             <RightPanel />
 
             <TimelineEditor />
 
-            <FrequentStateVisualizer />
+            {/* <FrequentStateVisualizer /> */}
             <StateVisualizer />
             <CameraManagerUI />
 

@@ -8,6 +8,7 @@ import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/store";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
+import { useVXUiStore } from "./VXUIStore";
 
 const EditorDataComponent = () => {
     const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
@@ -204,6 +205,8 @@ const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("editorObjects");
     const [attachedState, setAttachedState] = useState(true);
 
+    const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
+
     // Conditionally render the correct mini component
     const renderActiveComponent = () => {
         switch (activeData) {
@@ -240,11 +243,11 @@ const StateVisualizer = () => {
 
     const memoizedChildren = React.useMemo(() => {
         return (
-            <div className={`fixed backdrop-blur-sm ${attachedState ? "top-[40%] left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} text-sm bg-neutral-900 p-2 gap-2
+            <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-6 left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} text-sm bg-neutral-900 p-2 gap-2
                                 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}
                 style={{ minWidth: "500px" }}
             >
-                <h1 className="text-center font-sans-menlo">EditorData state</h1>
+                <h1 className="text-center font-sans-menlo">State Visualizer</h1>
                 <button className={" border right-2 absolute ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 border-opacity-50 rounded-2xl cursor-pointer "}
                     onClick={() => setRefresh(refresh + 1)}
                 >
@@ -293,16 +296,20 @@ const StateVisualizer = () => {
         )
     }, [attachedState, activeData, refresh])
 
-    return (
-        <VXUiPanelWrapper
-            title="VXEngine: TimelineEditorDebug"
-            windowClasses='width=717,height=450,left=100,top=200,resizable=0'
-            attachedState={attachedState}
-            setAttachedState={setAttachedState}
-        >
-            {memoizedChildren}
-        </VXUiPanelWrapper>
-    )
+    if(showStateVisualizer){
+        return (
+            <VXUiPanelWrapper
+                title="VXEngine: TimelineEditorDebug"
+                windowClasses='width=717,height=450,left=100,top=200,resizable=0'
+                attachedState={attachedState}
+                setAttachedState={setAttachedState}
+            >
+                {memoizedChildren}
+            </VXUiPanelWrapper>
+        )
+    } else {
+        return null;
+    }
 }
 
 

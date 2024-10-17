@@ -6,11 +6,17 @@ import { useObjectManagerAPI } from "../../managers/ObjectManager/store"
 import { shallow } from 'zustand/shallow'
 import { useVXObjectStore } from '../../vxobject/ObjectStore'
 import { Button } from '../shadcn/button'
+import { useVXEngine } from '@vxengine/engine'
+import { useVXUiStore } from './VXUIStore'
 
 export const MenubarUI = () => {
 
     return (
-        <>
+        <div
+            className={`fixed top-6 left-6 z-10 h-10 w-fit border-neutral-800 border-[1px] text-white 
+                    backdrop-blur-sm bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-6`}
+            id="VXEngineMenubar"
+        >
             {/* Icon */}
             <div className='h-full  w-[40px] flex scale-75'>
                 <Image src={"/VXEngine/logo.png"} width={33} height={23}
@@ -29,12 +35,12 @@ export const MenubarUI = () => {
                     <EditButton />
                     <SelectButton />
                     <AddButton />
-                    <ObjectButton />
-                    <SceneButton/>
+                    <ViewButton />
+                    <SceneButton />
                 </Menubar>
             </div>
 
-        </>
+        </div>
     )
 }
 
@@ -124,19 +130,34 @@ const AddButton = () => {
     )
 }
 
-const ObjectButton = () => {
+const CheckVisualizer = ({ show }: { show: boolean }) => {
+    if (show)
+        return (
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+        )
+    else
+        return null;
+}
+
+const ViewButton = () => {
+
+    const mountEngineUI = useVXEngine(state => state.mountEngineUI);
+    const setMountEngineUI = useVXEngine(state => state.setMountEngineUI);
+
+    const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
+    const setShowStateVisualizer = useVXUiStore(state => state.setShowStateVisualizer);
+
     return (
-        <MenubarMenu> 
-            <MenubarTrigger><p className='font-sans-menlo'>Object</p></MenubarTrigger>
+        <MenubarMenu>
+            <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
-                <MenubarItem>
-                    New Tab <MenubarShortcut>⌘T</MenubarShortcut>
+                <MenubarItem onClick={() => setMountEngineUI(!mountEngineUI)}>
+                    Mount Engine UI <MenubarShortcut><CheckVisualizer show={mountEngineUI} /></MenubarShortcut>
                 </MenubarItem>
-                <MenubarItem>New Window</MenubarItem>
-                <MenubarSeparator />
-                <MenubarItem>Share</MenubarItem>
-                <MenubarSeparator />
-                <MenubarItem>Print</MenubarItem>
+                <MenubarItem onClick={() => setShowStateVisualizer(!showStateVisualizer)}>
+                    Show State Visualizer <MenubarShortcut><CheckVisualizer show={showStateVisualizer} /></MenubarShortcut>
+                </MenubarItem>
+                
             </MenubarContent>
         </MenubarMenu>
     )
@@ -144,7 +165,7 @@ const ObjectButton = () => {
 
 const SceneButton = () => {
     return (
-        <MenubarMenu> 
+        <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>Scene</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>

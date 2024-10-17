@@ -14,7 +14,7 @@ interface VXEngineStoreState {
 export const useVXEngineStore = create<VXEngineStoreState>((set, get) => ({
     onScreenTransform: false,
     setOnScreenTransform: (value: boolean) => set({ onScreenTransform: value }),
-    mountEngineUI: false,
+    mountEngineUI: true,
     setMountEngineUI: (value: boolean) => set({ mountEngineUI: value }),
     composer: null,
     animationEngine: new AnimationEngine(),

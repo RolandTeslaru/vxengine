@@ -10,13 +10,16 @@ import { useSourceManagerAPI } from './managers/SourceManager/store'
 import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
 import { AnimationEngine } from './AnimationEngine/engine'
+import { Tabs, TabsList, TabsTrigger } from './components/shadcn/tabs'
+import { Switch } from './components/shadcn/switch'
+import { MenubarUI } from './components/ui/MenubarUI'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
 let animationEngineInstance;
-if (typeof window !== 'undefined'){
+if (typeof window !== 'undefined') {
   animationEngineInstance = new AnimationEngine();
 }
 
@@ -61,9 +64,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
-  const mountEngineUI = store.getState().mountEngineUI
 
-  const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
   const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
   const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
 
@@ -77,6 +78,18 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   return (
     <VXEngineContext.Provider value={store}>
+      <VXEngineContent>
+        {children}
+      </VXEngineContent>
+    </VXEngineContext.Provider>
+  );
+});
+
+const VXEngineContent = ({children}: {children: React.ReactNode}) => {
+  const mountEngineUI = useVXEngine(state => state.mountEngineUI)
+  const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
+  return (
+    <>
       <ClientOnly>
         <ThemeProvider
           attribute="class"
@@ -84,6 +97,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
           enableSystem
           disableTransitionOnChange
         >
+          <MenubarUI/>
           {mountEngineUI && (
             <VXEngineCoreUI />
           )}
@@ -93,9 +107,9 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
         </ThemeProvider>
       </ClientOnly>
       {children}
-    </VXEngineContext.Provider>
-  );
-});
+    </>
+  )
+}
 
 export function useVXEngine<T>(selector: (state: VXEngineStoreProps) => T) {
   const store = useContext(VXEngineContext);

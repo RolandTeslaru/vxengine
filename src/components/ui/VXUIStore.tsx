@@ -11,6 +11,9 @@ interface UiStoreStateProps {
 
     rightPanelAttached: boolean;
     setRightPanelAttached: (value: boolean) => void;
+
+    showStateVisualizer: boolean;
+    setShowStateVisualizer: (value: boolean) => void;
 }
 
 export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) => ({
@@ -24,4 +27,7 @@ export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) =
 
     rightPanelAttached: true,
     setRightPanelAttached: (value: boolean) => set({ rightPanelAttached: value }),
+
+    showStateVisualizer: false,
+    setShowStateVisualizer: (value: boolean) => set({ showStateVisualizer: value }),
 }))
