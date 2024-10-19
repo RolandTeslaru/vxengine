@@ -17,7 +17,9 @@ export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> &
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
+
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
+    
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
     
@@ -47,6 +49,8 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
             setAdditionalSetting(vxkey, settingKey, value)
         })
     }, [])
+
+    console.log("Ref EditableAmbientLight ", ref)
 
     return (
         <ambientLight ref={ref} {...props} />

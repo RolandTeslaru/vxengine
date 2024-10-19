@@ -13,6 +13,9 @@ const SettingsList = () => {
     const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey)
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
+    
+    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
+    const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
     if (settings === null || settings === undefined) return
 
@@ -29,6 +32,31 @@ const SettingsList = () => {
                                             <p className="text-xs font-light text-neutral-500">{settingKey}</p>
                                             <Switch
                                                 onClick={() => toggleSetting(vxkey, settingKey)}
+                                                checked={value}
+                                                className='ml-auto my-auto scale-[80%]'
+                                            />
+                                        </div>
+                                    </>
+                                )
+                            }
+                            else return <></>
+                        }
+                        )}
+                    </div>
+                </CollapsiblePanel>
+            )}
+
+            {Object.entries(additionalSettings).length > 0 && (
+                <CollapsiblePanel title={"Temporary Settings"}>
+                    <div className='flex flex-col'>
+                        {Object.entries(additionalSettings).map(([settingKey, value]) => {
+                            if (!excludeSettingsKeys.includes(settingKey)) {
+                                return (
+                                    <>
+                                        <div key={settingKey} className="flex flex-row py-1">
+                                            <p className="text-xs font-light text-neutral-500">{settingKey}</p>
+                                            <Switch
+                                                onClick={() => toggleAdditionalSetting(vxkey, settingKey)}
                                                 checked={value}
                                                 className='ml-auto my-auto scale-[80%]'
                                             />

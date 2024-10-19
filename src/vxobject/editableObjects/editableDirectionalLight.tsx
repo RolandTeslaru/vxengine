@@ -46,6 +46,7 @@ export const EditableDirectionalLight = forwardRef<DirectionalLight, EditableDir
         })
     }, [])
 
+    console.log("Ref DirectionalLight ", ref)
 
     return (
         <directionalLight ref={ref} {...props} />

@@ -38,6 +38,7 @@ export interface ISettings{
 
 export interface IAdditionalSettingsProps{
     showPositionPath?: boolean
+    showHelper?: boolean
 }
 
 

@@ -24,9 +24,6 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
     // INITIALIZE settigngs on object mount
     const defaultAdditionalSettings = {
         showPositionPath: false,
-        specifcMeshProp1: false,
-        specifcMeshProp2: true,
-        specifcMeshProp3: false,
     }
 
     useEffect(() => {

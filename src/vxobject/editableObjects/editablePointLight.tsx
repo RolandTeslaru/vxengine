@@ -1,13 +1,17 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
+
+import { PointLightHelper } from "three";
+
 import VXObjectWrapper from "../wrapper";
 
 import { PointLight } from "three";
 import { PointLightProps } from "@react-three/fiber";
+import { useHelper } from "@react-three/drei";
 
 export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
     ref?: React.Ref<PointLight>;
@@ -21,6 +25,22 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
+
+    const internalRef = useRef<any>(null); 
+    useImperativeHandle(ref, () => internalRef.current);
+
+    //
+    // Additional Settings
+    //
+    const additionalSettings = {
+        showHelper: false,
+    }
+    
+    useEffect(() => {
+        Object.entries(additionalSettings).forEach(([settingKey, value]) => {
+            setAdditionalSetting(vxkey, settingKey, value)
+        })
+    }, [])
 
     // INITIALIZE Settings
     const defaultSettingsForObject = {
@@ -48,10 +68,23 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
         })
     }, [])
 
+    const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
+    useHelper(internalRef, isHelperEnabled && PointLightHelper)
+
+    const params = [
+        'distance',
+        'intensity',
+        'decay',
+    ]
 
     return (
-        <VXObjectWrapper type="object" ref={ref} {...props}>
-            <pointLight ref={ref} {...props} />
+        <VXObjectWrapper 
+            type="object" 
+            ref={internalRef} 
+            {...props}
+            params={params}
+        >
+            <pointLight ref={internalRef} {...props} />
         </VXObjectWrapper>
     )
 })

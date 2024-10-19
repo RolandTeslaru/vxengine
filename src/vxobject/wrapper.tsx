@@ -66,8 +66,8 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
-            onPointerOver: handlePointerOver,
-            onPointerOut: handlePointerOut,
+            // onPointerOver: handlePointerOver,
+            // onPointerOut: handlePointerOut,
             onClick: () => memoizedSelectObjects([vxkey]),
             onPointerDown: (e) => e.stopPropagation(),
             ...props,
@@ -79,7 +79,9 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
         return <>
             {modifiedChildren}
-            <ObjectUtils vxObject={vxObject} children={children} />
+            <ObjectUtils vxObject={vxObject}>
+                {children}
+            </ObjectUtils>
         </>;
     }
 );
