@@ -91,11 +91,11 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
 
     return (
         <>
-            <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
+            {/* <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
                 <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
             </Edges>
             <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
-            </Edges>
+            </Edges> */}
 
             {additionalSettings["showPositionPath"] && <>
                 {settings.useSplinePath && (

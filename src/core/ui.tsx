@@ -1,7 +1,11 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 "use client"
+
 import React from "react"
 import { ObjectProperties, ObjectTransformControls } from "../managers/ObjectManager/ui"
-import { MenubarUI } from "../components/ui/MenubarUI"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectList"

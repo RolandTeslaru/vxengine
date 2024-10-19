@@ -1,4 +1,11 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 'use client'
+
+import "./globals.css"
+
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { VXEngineCoreUI } from './core'
 import { EffectComposer } from 'three-stdlib'
@@ -10,8 +17,6 @@ import { useSourceManagerAPI } from './managers/SourceManager/store'
 import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
 import { AnimationEngine } from './AnimationEngine/engine'
-import { Tabs, TabsList, TabsTrigger } from './components/shadcn/tabs'
-import { Switch } from './components/shadcn/switch'
 import { MenubarUI } from './components/ui/MenubarUI'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
@@ -34,7 +39,6 @@ let areTimelinesLoaded = false;
 const createVXEngineStore = (props: VXEngineProviderProps) => {
   const { mount, animations_json } = props;
 
-  // Set the disk file path for the timelines using the provided animations JSON
   const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath;
   setDiskFilePath(animations_json);
 
@@ -46,14 +50,13 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
     areTimelinesLoaded = true;  // Set the flag to true after the first load to prevent re-execution
   }
 
-  // Create the VXEngine store, initializing the Zustand store once
   VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
-    mountEngineUI: mount ?? true,  // Set whether to mount the engine UI
-    setMountEngineUI: (value) => set({ mountEngineUI: value }),  // Function to update mount state
+    mountEngineUI: mount ?? true,  
+    setMountEngineUI: (value) => set({ mountEngineUI: value }),  
 
-    composer: useRef<EffectComposer | null>(null),  // Reference to the EffectComposer
+    composer: useRef<EffectComposer | null>(null),  
 
-    animationEngine: animationEngineInstance  // Attach the animation engine instance
+    animationEngine: animationEngineInstance  
   }));
 
   return VXEngineStore;

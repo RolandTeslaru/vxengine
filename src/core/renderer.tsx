@@ -3,6 +3,7 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 "use client"
+
 import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { Canvas, extend } from '@react-three/fiber'
 import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
@@ -28,9 +29,7 @@ declare module '@react-three/fiber' {
 }
 
 let VXEngineUtils;
-if (process.env.NODE_ENV === 'development') {
-  VXEngineUtils = require('../utils/rendererUtils.tsx').default;
-}
+VXEngineUtils = require('../utils/rendererUtils.tsx').default;
 
 // VXEngineCoreRenderer
 export const CoreRenderer: React.FC<RendererCoreProps> = ({
@@ -60,9 +59,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           onChange={({ factor }) => setDpr_state(round(0.2 + 1.1 * factor, 1))}
         >
           <color attach="background" args={['black']} />
-          {process.env.NODE_ENV === 'development' && (
-            VXEngineUtils && <VXEngineUtils />
-          )}
+          <VXEngineUtils />
           <EffectsManagerDriver>
             {/* <Noise opacity={0.02} /> */}
             <Bloom mipmapBlur={true} intensity={3} kernelSize={5} />

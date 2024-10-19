@@ -54,7 +54,7 @@ const ObjectList = () => {
                 {selectedObjectKeys.length > 1 && (
                     <p className='text-neutral-400 font-light' style={{fontSize: "11px"}}>{selectedObjectKeys.length} objects selected</p>
                 )}
-                <p className='ml-auto text-xs' style={{fontSize: "10px"}}> objects</p>
+                <p className='ml-auto text-xs' style={{fontSize: "10px"}}>{Object.entries(objects).length} objects</p>
             </div>
             <div className='flex flex-col pt-2 gap-2'>
                 {Object.values(objects).map((vxobject: vxObjectProps, index: number) => {
@@ -72,7 +72,7 @@ const ObjectList = () => {
                                 onMouseDown={(event) => event.preventDefault()}
                             >
                                 <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                                    {vxobject.name}
+                                    {vxobject.name !== "object" ? vxobject.name : vxobject.vxkey}
                                 </p>
                                 <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
                                     `${isSelected && "!text-neutral-400"}`}

@@ -29,8 +29,6 @@ import init, {
 
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 
-const IS_DEV = process.env.NODE_ENV === 'development'
-
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
 
@@ -103,7 +101,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.reRender({ time: this._currentTime, force: true });
 
     // set the editor data only when in the development environment
-    if (IS_DEV) useTimelineEditorAPI.getState().setEditorData(rawObjects)
+    useTimelineEditorAPI.getState().setEditorData(rawObjects)
   }
 
 
@@ -343,8 +341,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
       // This is used by the Object properties ui panel
       // since its only used in the development server, we dont need it in production because it can slow down
-      if (IS_DEV) 
-        useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
+      useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
     }
     this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
 

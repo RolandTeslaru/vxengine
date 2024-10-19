@@ -1,6 +1,7 @@
 import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
 import JavaScriptObfuscator from 'webpack-obfuscator';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -11,11 +12,11 @@ console.log("WEBPACK DIR NAME ", __dirname)
 
 export default {
     entry: {
-        main: './src/index.ts',
+        main: './src/index.tsx',
     },
     output: {
         filename: 'index.js',
-        publicPath: '/', 
+        publicPath: '/',
         path: path.resolve('dist'),
         library: {
             type: 'module', // Outputs as an ES module
@@ -55,20 +56,69 @@ export default {
     },
     module: {
         rules: [
+            // Rule for handling global CSS (non-modular CSS files)
             {
-                test: /\.scss$/, use: [
-                    { loader: "style-loader" },  // to inject the result into the DOM as a style block
-                    { loader: "css-modules-typescript-loader" },  // to generate a .d.ts module next to the .scss file (also requires a declaration.d.ts with "declare modules '*.scss';" in it to tell TypeScript that "import styles from './styles.scss';" means to load the module "./styles.scss.d.td")
-                    { loader: "css-loader", options: { modules: true } },  // to convert the resulting CSS to Javascript to be bundled (modules:true to rename CSS classes in output to cryptic identifiers, except if wrapped in a :global(...) pseudo class)
-                    { loader: "sass-loader" },  // to convert SASS to CSS
-                    // NOTE: The first build after adding/removing/renaming CSS classes fails, since the newly generated .d.ts typescript module is picked up only later
+                test: /\.css$/i,
+                use: [
+                    MiniCssExtractPlugin.loader, // Extracts the CSS into separate files
+                    'css-loader', // Converts CSS into CommonJS
+                    {
+                        loader: 'postcss-loader', // Applies PostCSS transformations (like Tailwind CSS)
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    'tailwindcss',
+                                    'autoprefixer',
+                                ],
+                            },
+                        },
+                    },
+                ],
+            },
+
+            {
+                test: /\.s?css$/,
+                oneOf: [
+                    {
+                        test: /\.module\.s?css$/,
+                        use: [
+                            MiniCssExtractPlugin.loader,
+                            {
+                                loader: "css-loader",
+                                options: {
+                                    esModule: false, // Add this line
+                                    modules: {
+                                        localIdentName: "[name]_[local]_[hash:base64:5]",
+                                        exportLocalsConvention: "camelCase", // Optional, depending on your convention
+                                    },
+                                }
+                            },
+                            "sass-loader"
+                        ]
+                    },
+                    {
+                        use: [
+                            MiniCssExtractPlugin.loader,
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    esModule: true, // Add this line
+                                },
+                            },
+                            "sass-loader"
+                        ]
+                    }
                 ]
             },
+
+            // Rule for TypeScript/TSX files
             {
                 test: /\.(ts|tsx)$/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+
+            // Rule for JavaScript/JSX files
             {
                 test: /\.(js|jsx)$/,
                 exclude: /node_modules/,
@@ -79,12 +129,29 @@ export default {
                     },
                 },
             },
+
+            // Rule for handling WebAssembly files
             {
                 test: /\.wasm$/,
-                type: 'asset/resource', // For Webpack 5
-            }
+                type: 'asset/resource', // For Webpack 5, handles .wasm files as assets
+            },
+
+            // Rule for handling font files
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                type: 'asset/resource', // Tells Webpack to handle font files as static assets
+                generator: {
+                    filename: 'assets/fonts/[name][ext]', // Places font files in the specified folder
+                },
+            },
         ],
     },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'mini.css',  // Specify the filename for the extracted CSS
+        }),
+    ],
+
     optimization: {
         minimize: false,
         minimizer: [new TerserPlugin()],

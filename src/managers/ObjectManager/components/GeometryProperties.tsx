@@ -18,12 +18,15 @@ interface GeometryPropertiesProps {
 
 export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
 
-    return (
-        <CollapsiblePanel
-            title={geometry.type + " Params"}
-        >
-            <div className='flex flex-col'>
-                {Object.entries(geometry.parameters).map(([key, value]) => {
+    if (geometry.parameters === undefined) {
+        return <></>
+    } else
+        return (
+            <CollapsiblePanel
+                title={geometry.type + " Params"}
+            >
+                <div className='flex flex-col'>
+                    {Object.entries(geometry?.parameters).map(([key, value]) => {
                         return (
                             <div key={key} className='flex flex-row py-1'>
                                 <p className='text-xs font-light text-neutral-500'>{key}</p>
@@ -35,8 +38,8 @@ export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
                             </div>
                         )
                     })
-                }
-            </div>
-        </CollapsiblePanel>
-    )
+                    }
+                </div>
+            </CollapsiblePanel>
+        )
 }
