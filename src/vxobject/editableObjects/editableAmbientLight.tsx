@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
@@ -23,6 +23,8 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
     
+    const internalRef = useRef<any>(null); 
+    useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
     const defaultSettingsForObject = {
@@ -45,14 +47,27 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
         showPositionPath: false,
     }
     useEffect(() => {
+        console.log("Ambient Light internal ref ", internalRef)
         Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
             setAdditionalSetting(vxkey, settingKey, value)
         })
     }, [])
 
-    console.log("Ref EditableAmbientLight ", ref)
+    const params = [
+        'intensity'
+    ]
+
+    console.log("Editable Ambient light internal ref ", internalRef)
 
     return (
-        <ambientLight ref={ref} {...props} />
+        <VXObjectWrapper 
+            type="object" 
+            ref={internalRef} 
+            params={params}
+            {...props}
+        >
+            <ambientLight {...props} />
+
+        </VXObjectWrapper>
     )
 })

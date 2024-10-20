@@ -6,6 +6,7 @@ import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useSplineManagerAPI } from '../store';
+import { Html } from '@react-three/drei';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -55,7 +56,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
                 <meshBasicMaterial color={selectedUtilityNode?.nodeKey === nodeKey ? "yellow" : color} />
             </mesh>
 
-            {/* <Html center position={position} style={{ pointerEvents: "none" }}>
+            <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
                     {selectedUtilityNode?.nodeKey === nodeKey ? (
                         <div className={`absolute -right-[120px] flex flex-col bg-neutral-900 p-1 px-2 rounded-full bg-opacity-70
@@ -72,7 +73,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
                         </div>
                     )}                   
                 </div>
-            </Html> */}
+            </Html>
         </>
     )
 }

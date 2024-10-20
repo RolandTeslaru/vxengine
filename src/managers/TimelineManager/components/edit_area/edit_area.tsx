@@ -1,5 +1,4 @@
-import React, { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { EditTrack } from './EditTrack';
+import React, { useMemo } from 'react';
 import { useDragLine } from './hooks/use_drag_line';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '../../store';
@@ -7,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
 import { CursorLine } from '../cursor/cursor';
-import { useRefStore } from '@vxengine/utils/useRefStore';
+import Track from './Track';
 
 export type EditAreaProps = {
   deltaScrollLeft: (scrollLeft: number) => void;
@@ -56,7 +55,7 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       const track = verticalRowList[index];
       if (row) {
         return (
-          <EditTrack
+          <Track
             {...props}
             style={{
               height: `${DEFAULT_ROW_HEIGHT}px`,

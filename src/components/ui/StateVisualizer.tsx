@@ -201,6 +201,21 @@ const TimelinesComponent = () => {
     )
 }
 
+const GroupedPathsComponent = () => {
+    const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
+    return (
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            {JSON.stringify(groupedPaths, null, 2)}
+        </pre>
+    )
+}
+
 const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("editorObjects");
     const [attachedState, setAttachedState] = useState(true);
@@ -234,6 +249,8 @@ const StateVisualizer = () => {
                 return <SplinesComponent />;
             case "timelines":
                 return <TimelinesComponent />;
+            case "groupedPats":
+                return <GroupedPathsComponent />;
             default:
                 return null;
         }
@@ -276,6 +293,7 @@ const StateVisualizer = () => {
                                 <SelectItem value={"additionalSettings"} >additionalSettings</SelectItem>
                                 <SelectItem value={"splines"} >splines</SelectItem>
                                 <SelectItem value={"timelines"} >timelines</SelectItem>
+                                <SelectItem value={"groupedPats"} >groupedPats</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

@@ -58,7 +58,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         <PerformanceMonitor
           onChange={({ factor }) => setDpr_state(round(0.2 + 1.1 * factor, 1))}
         >
-          <color attach="background" args={['black']} />
+          <color attach="background" args={['gray']} />
           <VXEngineUtils />
           <EffectsManagerDriver>
             {/* <Noise opacity={0.02} /> */}

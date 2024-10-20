@@ -1,12 +1,11 @@
-import React, { FC, useRef, useLayoutEffect, useState, useEffect } from 'react';
-import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
-import { RowDnd } from '../row_rnd/row_rnd';
-import { CommonProp } from '@vxengine/AnimationEngine/interface/common_prop';
-import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
-import { useTimelineEditorAPI } from '../../store';
-import { useVXEngine } from '@vxengine/engine';
-import { shallow } from 'zustand/shallow';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from '@radix-ui/react-context-menu';
+import { ITrack } from '@vxengine/AnimationEngine/types/track';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
+import React, { useEffect, useState } from 'react'
+import { RowDnd } from '../../row_rnd/row_rnd';
+import KeyframeContextMenu from './KeyframeContextMenu';
+
 
 export type EditKeyframeProps = {
     track: ITrack;
@@ -14,14 +13,14 @@ export type EditKeyframeProps = {
     rowHeight: number
 };
 
-export const EditKeyframe: FC<EditKeyframeProps> = ({
+const Keyframe: React.FC<EditKeyframeProps> = ({
     keyframeKey,
     track,
     rowHeight,
 }) => {
     const keyframe = useTimelineEditorAPI(state => state.keyframes[keyframeKey])
+    const trackKey = `${track.vxkey}.${track.propertyPath}`
 
-    const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
     const scale = useTimelineEditorAPI(state => state.scale)
     const snap = useTimelineEditorAPI(state => state.snap)
     const scaleWidth = useTimelineEditorAPI(state => state.scaleWidth)
@@ -119,30 +118,12 @@ export const EditKeyframe: FC<EditKeyframeProps> = ({
 
 
                     </ContextMenuTrigger>
-                    <ContextMenuContent>
-                        <ContextMenuItem>
-                            <p className=''>
-                                Show Handles
-                            </p>
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                            onClick={() => {
-                                const trackKey = `${track.vxkey}.${track.propertyPath}`
-                                removeKeyframe({
-                                    trackKey,
-                                    keyframeKey: keyframe.id,
-                                    reRender: true
-                                })
-                            }}
-                        >
-                            <p className=' text-red-600'>
-                                Delete Keyframe
-                            </p>
-                        </ContextMenuItem>
-                    </ContextMenuContent>
+                    <KeyframeContextMenu trackKey={trackKey} keyframeKey={keyframeKey}/>
                 </ContextMenu>
 
             </div>
         </RowDnd>
     );
-};
+}
+
+export default Keyframe

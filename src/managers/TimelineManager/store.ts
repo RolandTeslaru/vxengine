@@ -3,7 +3,6 @@ import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/in
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { createWithEqualityFn } from 'zustand/traditional';
-import React from 'react';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { useVXObjectStore, vx } from "@vxengine/vxobject";
@@ -13,7 +12,6 @@ import { useObjectManagerAPI, useObjectPropertyAPI } from '../ObjectManager/stor
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
-import { RowRndApi } from './components/row_rnd/row_rnd_interface';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 
 export type GroupedPaths = Record<string, PathGroup>;
@@ -458,7 +456,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         
         set(produce((state: TimelineEditorStoreProps) => {
             const vxObject = useVXObjectStore.getState().objects[vxkey]
-            const value = getNestedProperty(vxObject.ref.current, propertyPath)
+            const value = getNestedProperty(vxObject?.ref?.current, propertyPath) || 0
             const edObject = useTimelineEditorAPI.getState().editorObjects[vxkey];
 
             doesTrackExist =  !!edObject.trackKeys.find(key => key === trackKey)
@@ -599,4 +597,20 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, newValue);
     },
+
+    removeProperty: (vxkey, propertyPath) => {
+        const key = `${vxkey}.${propertyPath}`
+        const track = get().getTrack(key);
+        const staticProp = get().getStaticProp(key)
+
+        const doesTrackExist = !!track;
+        const doesStaticPropExist = !!staticProp;
+
+        if(doesTrackExist){
+            get().removeTrack({ trackKey: key, reRender: true})
+        }
+        if(doesStaticPropExist){
+            get().removeStaticProp({staticPropKey: key, reRender: true})
+        }
+    }
 }))

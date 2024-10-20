@@ -106,19 +106,23 @@ export const computeGroupPathFromRawObject = (
   ): ComputedGroupData => {
     const { trackKeys } = edObject;
     const { groupedPaths, finalIndex } = groupTracksByParent(trackKeys, rowIndex );
+
+    const nextRowIndex = finalIndex + 1
+    // Check if the object is empty basically
+    if(Object.entries(groupedPaths).length === 0){
+        return { groupedPaths: null, newIndex: finalIndex}
+    }
   
     const rootGroupedPaths: PathGroup = {
       rowIndex,
       prevRowIndex: null,
-      nextRowIndex: finalIndex + 1,
+      nextRowIndex: nextRowIndex,
       children: groupedPaths,
       trackKey: null,
       isCollapsed: false
     };
-  
-    const newIndex = finalIndex + 1;
-  
-    return { groupedPaths: rootGroupedPaths, newIndex };
+    
+    return { groupedPaths: rootGroupedPaths, newIndex: nextRowIndex };
   };
 
 export const computeGroupPaths = ( editorObjects: Record<string, edObjectProps>) => {
@@ -128,7 +132,8 @@ export const computeGroupPaths = ( editorObjects: Record<string, edObjectProps>)
     Object.values(editorObjects).map((edObject: edObjectProps) => {
         const { groupedPaths: objGroupedPaths, newIndex } = computeGroupPathFromRawObject(edObject, rowIndex);
         rowIndex = newIndex;
-        groupedPaths[edObject.vxkey] = objGroupedPaths;
+        if(objGroupedPaths !== null)
+            groupedPaths[edObject.vxkey] = objGroupedPaths;
     })
 
     return groupedPaths

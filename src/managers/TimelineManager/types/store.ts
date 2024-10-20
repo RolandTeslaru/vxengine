@@ -101,6 +101,8 @@ export interface TimelineEditorStoreProps {
         reRender?: boolean
     ) => void
 
+    removeProperty: (vxkey: string, propertyPath: string) => void;
+
 }
 
 export interface EditorObjectProps {
