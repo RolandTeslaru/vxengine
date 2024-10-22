@@ -1,5 +1,5 @@
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from '@radix-ui/react-context-menu';
-import { ITrack } from '@vxengine/AnimationEngine/types/track';
+import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import React, { useEffect, useState } from 'react'
@@ -26,6 +26,8 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
     const scaleWidth = useTimelineEditorAPI(state => state.scaleWidth)
     const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
+    const lastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.lastKeyframeSelectedIndex)
+    const setLastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.setLastKeyframeSelectedIndex)
 
     const startLeft = 12.5;
     const [left, setLeft] = useState(() => {
@@ -66,6 +68,14 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
 
         const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys;
 
+        // Get the keyframe index from the keyframes object ( this is done here because of rerender)
+        const keyframes = useTimelineEditorAPI.getState().keyframes;
+        const keyframesArray = Object.entries(keyframes);
+        const keyframeIndex = keyframesArray.findIndex(([key]) => key === keyframeKey);
+
+        const keyframeKeys = Object.keys(keyframes)
+
+
         // Click + CTRL key ( command key on macOS )
         if (event.metaKey || event.ctrlKey) {
             const newSelectedKeys = selectedKeyframeKeys.includes(keyframeKey)
@@ -73,10 +83,19 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
                 : [...selectedKeyframeKeys, keyframeKey];
             useTimelineEditorAPI.getState().setSelectedKeyframeKeys(newSelectedKeys);
         }
+        else if(event.shiftKey && lastKeyframeSelectedIndex !== null){
+            const start = Math.min(lastKeyframeSelectedIndex, keyframeIndex);
+            const end = Math.max(lastKeyframeSelectedIndex, keyframeIndex);
+            const newSelectedKeyframeKeys = keyframeKeys.slice(start, end + 1);
+
+            useTimelineEditorAPI.getState().setSelectedKeyframeKeys(newSelectedKeyframeKeys)
+        }
         // Normal Click
         else {
             useTimelineEditorAPI.getState().setSelectedKeyframeKeys([keyframeKey]);
         }
+
+        setLastKeyframeSelectedIndex(keyframeIndex)
     }
 
     return (
@@ -115,8 +134,6 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
                                 strokeWidth="5"
                             />
                         </svg>
-
-
                     </ContextMenuTrigger>
                     <KeyframeContextMenu trackKey={trackKey} keyframeKey={keyframeKey}/>
                 </ContextMenu>

@@ -235,9 +235,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     activeTool: "mouse",
     snap: true,
 
-    cursorThumbRef: null,
-    cursorLineRef: null,
-
     scaleWidth: 160,
     scaleSplitCount: 10,
     changes: 0,
@@ -245,12 +242,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     clientHeight: 378,
     clientWidth: 490,
     scrollHeight: 270,
-
-
-    selectedKeyframes: [],
-    keyframesPositionData: {},
-
-
 
     scrollLeft: 0,
 
@@ -267,6 +258,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
         state.selectedKeyframeKeys = keyframeKeys
     })),
+    lastKeyframeSelectedIndex: null,
+    setLastKeyframeSelectedIndex: (newIndex: number) => set({ lastKeyframeSelectedIndex: newIndex}),
 
     selectedTrackSegment: undefined,
     setSelectedTrackSegment: (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorStoreProps) => {

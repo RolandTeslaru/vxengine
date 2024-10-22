@@ -9,7 +9,6 @@ import { ObjectProperties, ObjectTransformControls } from "../managers/ObjectMan
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectList"
-import { useTimelineEditorAPI } from "../managers/TimelineManager/store"
 import VXUiPanelWrapper from "@vxengine/components/ui/VXUiPanelWrapper"
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
@@ -20,6 +19,7 @@ import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
 import Params from "@vxengine/managers/ObjectManager/components/Params"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
+import { ScrollArea } from "@vxengine/components/shadcn/scrollArea"
 
 export const CoreUI = () => {
     return (
@@ -29,7 +29,7 @@ export const CoreUI = () => {
             <LeftPanel />
             <RightPanel />
 
-            <TimelineEditor />
+            <BottomRightBar />
 
             {/* <FrequentStateVisualizer /> */}
             <StateVisualizer />
@@ -100,13 +100,13 @@ const LeftPanel = () => {
                             `}
                 id="VXEngineLeftPanel"
             >
-                <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll">
-                    <ObjectList />
-                    <EffectsManagerUI />
-                    <TrackSegmentProperties />
-                    <SplineManagerUI />
-                    <SourceManagerUI />
-                </div>
+                    <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
+                        <ObjectList />
+                        <EffectsManagerUI />
+                        <TrackSegmentProperties />
+                        <SplineManagerUI />
+                        <SourceManagerUI />
+                    </div>
                 <button className={" border bottom-1 right-1 absolute z-20 ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                     onClick={() => setLeftPanelAttached(!leftPanelAttached)}
                 >
@@ -125,7 +125,7 @@ const LeftPanel = () => {
     )
 }
 
-const TimelineEditor = () => {
+const BottomRightBar = () => {
     const timelineEditorOpen = useVXUiStore(state => state.timelineEditorOpen)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
     const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached);
@@ -160,42 +160,5 @@ const TimelineEditor = () => {
 
         </VXUiPanelWrapper>
 
-    )
-}
-
-
-const CursorTimeVisualzier = () => {
-    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
-    return (
-        <p>
-            {cursorTime.toFixed(2)}
-        </p>
-    )
-}
-
-const ScrollLeftVisualizer = () => {
-    const scrollLeft = useTimelineEditorAPI(state => state.scrollLeft)
-    return (
-        <p>
-            {scrollLeft.toFixed(2)}
-        </p>
-    )
-}
-
-
-const FrequentStateVisualizer = () => {
-    return (
-        <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
-                            gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
-            <div className="flex flex-row">
-                STATE_cursorTime &nbsp;&nbsp;
-                <CursorTimeVisualzier />
-            </div>
-
-            <div className="flex flex-row">
-                STATE_scrollLeft &nbsp;&nbsp;
-                <ScrollLeftVisualizer />
-            </div>
-        </div>
     )
 }

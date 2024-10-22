@@ -4,10 +4,6 @@ import { vxObjectProps } from "@vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
 import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
 
-export interface KeyframesPositionDataProps { 
-    left: number
-}
-
 export interface TimelineEditorStoreProps {
     // Records of data used in the editor
     editorObjects: Record<string, edObjectProps>;
@@ -32,15 +28,10 @@ export interface TimelineEditorStoreProps {
     scaleCount: number;
     setScaleCount: (count: number) => void;
 
-    cursorThumbRef: React.MutableRefObject<RowRndApi | null>
-    cursorLineRef: React.MutableRefObject<RowRndApi | null>
-
     scaleWidth: number
     scaleSplitCount: number
     changes: number
     addChange: () => void
-
-    keyframesPositionData: Record<string, KeyframesPositionDataProps>
 
     scrollLeft: number;
 
@@ -60,6 +51,9 @@ export interface TimelineEditorStoreProps {
         trackKey: string,
     };
     setSelectedTrackSegment: (firstKeyframeKey: string, secondKeyframeKey: string, trackKey) => void;
+    
+    lastKeyframeSelectedIndex: number | null
+    setLastKeyframeSelectedIndex: (newIndex: number) => void
 
     // Keyframe Controls
     moveToNextKeyframe: (keyframes: IKeyframe[]) => void;

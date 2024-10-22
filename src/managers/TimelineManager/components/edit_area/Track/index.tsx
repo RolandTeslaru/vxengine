@@ -21,7 +21,7 @@ const Track: FC<EditRowProps> = (props) => {
     const track = useTimelineEditorAPI(state => state.tracks[trackKey])
     return (
         <div
-            className='relative  py-4 border-y border-neutral-900'
+            className='relative  py-4 border-y  border-neutral-900'
             style={props.style}
         >
             {track.keyframes.map((keyframeKey: string, index: number) => {
@@ -56,7 +56,7 @@ const Track: FC<EditRowProps> = (props) => {
 export default Track
 
 
-const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey }:
+const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey,  }:
     { firstKeyframeKey: string, secondKeyframeKey: string, trackKey: string }
 ) => {
     const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey])

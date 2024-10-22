@@ -4,9 +4,11 @@
 import { ThreeEvent } from '@react-three/fiber';
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
 import { UtilityNodeProps } from '@vxengine/types/utilityNode';
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSplineManagerAPI } from '../store';
 import { Html } from '@react-three/drei';
+import { vxObjectProps } from '@vxengine/types/objectStore';
+import { useVXObjectStore } from '@vxengine/vxobject';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -16,6 +18,13 @@ export interface SplineNodeProps {
 }
 
 const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, color = "white" }) => {
+    const addObject = useVXObjectStore(state => state.addObject);
+    const removeObject = useVXObjectStore(state => state.removeObject);
+    const memoizedAddObject = useCallback(addObject, []);
+    const memoizedRemoveObject = useCallback(removeObject, []);
+
+    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+
     const addUtilityNode = useObjectManagerAPI(state => state.addUtilityNode)
     const removeUtilityNode = useObjectManagerAPI(state => state.removeUtilityNode)
     const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode);
@@ -28,24 +37,23 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
     const nodeKey = useMemo(() => `${splineKey}.node${index}`, []);
 
     useEffect(() => {
-        if (ref.current) {
-            const splineNode: UtilityNodeProps = {
-                type: "spline",
-                ref: ref.current,
-                nodeKey: nodeKey,
-                index: index,
-                splineKey: splineKey
-            };
-
-            addUtilityNode(splineNode, nodeKey);
+        const splineNodeObject: vxObjectProps = {
+            type: "splineNode",
+            ref,
+            vxkey: nodeKey,
+            index,
+            splineKey
         }
-        return () => removeUtilityNode(nodeKey);
-    }, []);
+
+        memoizedAddObject(splineNodeObject);
+
+        return () => memoizedRemoveObject(nodeKey)
+    }, [])
 
     const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
         if (!ref.current) return;
         setUtilityTransformAxis(['X', 'Y', 'Z']);
-        setSelectedUtilityNode(nodeKey);
+        selectObjects([nodeKey]);
         setSelectedSpline(splineKey)
     };
 

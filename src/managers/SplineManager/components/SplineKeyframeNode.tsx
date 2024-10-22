@@ -1,7 +1,7 @@
 'use client'
 
 import { ThreeEvent } from '@react-three/fiber';
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useObjectManagerAPI } from '../../ObjectManager';
 import { useSplineManagerAPI } from '../store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
@@ -10,6 +10,8 @@ import { useTimelineEditorAPI } from '../../TimelineManager/store';
 import { useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
+import { useVXObjectStore } from '@vxengine/vxobject';
+import { vxObjectProps } from '@vxengine/types/objectStore';
 
 export interface SplineKeyframeNode {
     splineKey: string,
@@ -19,6 +21,11 @@ export interface SplineKeyframeNode {
 
 const SplineKeyframeNode = ({ splineKey, keyframeKey, color = "blue" }) => {
     const ref = useRef<THREE.Mesh>(null);
+
+    const addObject = useVXObjectStore(state => state.addObject);
+    const removeObject = useVXObjectStore(state => state.removeObject);
+    const memoizedAddObject = useCallback(addObject, []);
+    const memoizedRemoveObject = useCallback(removeObject, []);
 
     const addUtilityNode = useObjectManagerAPI(state => state.addUtilityNode)
     const removeUtilityNode = useObjectManagerAPI(state => state.removeUtilityNode)
@@ -33,6 +40,21 @@ const SplineKeyframeNode = ({ splineKey, keyframeKey, color = "blue" }) => {
     const animationEngine = useVXEngine(state => state.animationEngine)
 
     const nodeKey = useMemo(() => `${splineKey}.keyframeNode.${keyframeKey}`,[])
+
+    useEffect(() => {
+        const newVXObject: vxObjectProps = {
+            type: "keyframeNode",
+            ref: ref,
+            vxkey: nodeKey,
+            data: {
+                keyframeKeys: keyframeKey
+            }
+        }
+
+        memoizedAddObject(newVXObject);
+
+        return () => memoizedRemoveObject(nodeKey)
+    }, [])
 
     useEffect(() => {
         if(ref.current){

@@ -14,12 +14,12 @@ export const ObjectManagerDriver = () => {
   const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
   const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
-  const firstSelectedObjectStored = useObjectManagerAPI(state => state.selectedObjects[0]);
+  const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const utilityTransfromAxis = useObjectManagerAPI(state => state.utilityTransformAxis)
   const transformMode = useObjectManagerAPI(state => state.transformMode);
 
 
-  const firstObjectSelected = firstSelectedObjectStored?.ref.current;
+  const firstObjectSelectedRef = firstSelectedObject?.ref.current;
 
   const transformControlsRef = useRef();
 
@@ -27,8 +27,8 @@ export const ObjectManagerDriver = () => {
     const controls = e.target; 
     const axis = controls.axis; 
 
-    if (firstSelectedObjectStored && firstObjectSelected && axis) {
-      const vxkey = firstSelectedObjectStored.vxkey;
+    if (firstSelectedObject && firstObjectSelectedRef && axis) {
+      const vxkey = firstSelectedObject.vxkey;
 
       // Map axis letters to property names
       const axisMap = {
@@ -46,21 +46,21 @@ export const ObjectManagerDriver = () => {
           handlePropertyValueChange(
             vxkey,
             `position.${propertyAxis}`,
-            firstObjectSelected.position[propertyAxis],
+            firstObjectSelectedRef.position[propertyAxis],
             false
           );
         } else if (transformMode === 'rotate' && propertyAxis) {
           handlePropertyValueChange(
             vxkey,
             `rotation.${propertyAxis}`,
-            firstObjectSelected.rotation[propertyAxis],
+            firstObjectSelectedRef.rotation[propertyAxis],
             false
           );
         } else if (transformMode === 'scale' && propertyAxis) {
           handlePropertyValueChange(
             vxkey,
             `scale.${propertyAxis}`,
-            firstObjectSelected.scale[propertyAxis],
+            firstObjectSelectedRef.scale[propertyAxis],
             false
           );
         }
@@ -75,6 +75,14 @@ export const ObjectManagerDriver = () => {
     if (lowerCaseKey.includes('.z')) return 'z';
     return 'x';
   };
+
+  const handleEntiyChange = () => {
+    
+  }
+
+  const handleUtilityNodeChange = () => {
+
+  }
 
   const handleUtilityKeyframeNodeChange = () => {
     if(selectedUtilityNode.type === "keyframe") {
@@ -124,10 +132,10 @@ export const ObjectManagerDriver = () => {
   return (
     <>
       {/* Object Transform Controls */}
-      {firstObjectSelected && !selectedUtilityNode && (
+      {firstObjectSelectedRef && !selectedUtilityNode && (
         <TransformControls
           ref={transformControlsRef}
-          object={firstObjectSelected}
+          object={firstObjectSelectedRef}
           mode={transformMode}
           onObjectChange={handleTransformChange}
         />

@@ -7,6 +7,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
 import styles from "./styles.module.scss"
+import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
 
 
 const SplineManagerUI = () => {
@@ -33,7 +34,7 @@ const SplineSettings = () => {
           <div className='w-auto mx-auto'>
             <SplineSelect defaultSplineKey={vxkey} />
           </div>
-          <SplineNodesScrollArea/>
+          <SplineNodesScrollArea />
         </div>
       </CollapsiblePanel>
     )
@@ -85,7 +86,6 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
 
   const isSelected = useMemo(() => { return splineUtilityNode?.nodeKey === selectedUtilityNode?.nodeKey }, [splineUtilityNode, selectedUtilityNode])
 
-
   return (
     <>
       <ContextMenu>
@@ -105,6 +105,23 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
           </p>
         </ContextMenuTrigger>
         <ContextMenuContent>
+          <Popover>
+            <PopoverTrigger asChild>
+              <ContextMenuItem
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation(); 
+                }} 
+              >
+                <p className=' text-neutral-300'>
+                  Show Data
+                </p>
+              </ContextMenuItem>
+            </PopoverTrigger>
+            <PopoverContent>
+              Popover content
+            </PopoverContent>
+          </Popover>
           <ContextMenuItem onClick={() => removeNode(splineKey, index)}>
             <p className=' text-red-700'>
               Delete Node
