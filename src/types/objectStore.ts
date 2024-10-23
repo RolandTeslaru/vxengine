@@ -1,4 +1,4 @@
-export type vxObjectTypes = "object" | "effect" | "splineNode" | "keyframeNode"
+export type vxObjectTypes = "entity" | "effect" | "splineNode" | "keyframeNode"
 
 export interface BaseVxProps {
     ref: React.MutableRefObject<any>
@@ -8,7 +8,7 @@ export interface BaseVxProps {
 }
 
 export interface vxEntityProps extends BaseVxProps {
-    type: "object";
+    type: "entity";
     name: string,
 
 }

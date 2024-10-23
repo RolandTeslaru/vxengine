@@ -45,7 +45,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
         useEffect(() => {
             const newVXObject: vxObjectProps = {
-                type: "object",
+                type: "entity",
                 ref: internalRef,
                 vxkey: vxkey,
                 name: props.name || type,

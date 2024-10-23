@@ -8,13 +8,14 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
 import styles from "./styles.module.scss"
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
+import { useVXObjectStore } from '@vxengine/vxobject'
+import { useTimelineEditorAPI } from '../TimelineManager'
 
 
 const SplineManagerUI = () => {
-
   const selectedSpline = useSplineManagerAPI(state => state.selectedSpline)
-  if (!selectedSpline)
-    return
+  
+  if (!selectedSpline) return
 
   return <SplineSettings />
 }
@@ -77,14 +78,24 @@ const SplineNodesScrollArea = () => {
 
 const SplineNodeListObject = ({ splineKey, position, index, }) => {
   const nodeKey = `${splineKey}.node${index}`
-  const splineUtilityNode = useObjectManagerAPI(state => state.utilityNodes[nodeKey])
-  const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
-  const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode)
+
+  const vxSplineNode = useVXObjectStore(state => state.objects[nodeKey]);
+
+  const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
+  const selectObject = useObjectManagerAPI(state => state.selectObjects)
 
   const insertNode = useSplineManagerAPI(state => state.insertNode)
   const removeNode = useSplineManagerAPI(state => state.removeNode)
 
-  const isSelected = useMemo(() => { return splineUtilityNode?.nodeKey === selectedUtilityNode?.nodeKey }, [splineUtilityNode, selectedUtilityNode])
+  const isSelected = useMemo(() => { 
+    return selectedObjectKeys.includes(vxSplineNode?.vxkey)
+  }, [vxSplineNode, selectedObjectKeys])
+
+  const handleOnClick = () => {
+    useObjectManagerAPI.getState().setTransformMode("translate");
+    selectObject([nodeKey])
+  }
+    
 
   return (
     <>
@@ -92,7 +103,7 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
         <ContextMenuTrigger className={'h-6 px-2 border flex flex-row rounded-xl bg-neutral-800 hover:bg-neutral-900 border-neutral-700 cursor-pointer ' +
           ` ${isSelected && " !bg-blue-600 hover:!bg-blue-700 !border-neutral-300"} `}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => setSelectedUtilityNode(nodeKey)}
+          onClick={handleOnClick}
         >
           <p className={'h-auto my-auto text-sm font-bold mr-auto text-neutral-200 text-opacity-80'}>
             {index}

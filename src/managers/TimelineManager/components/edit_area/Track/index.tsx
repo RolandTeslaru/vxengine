@@ -69,6 +69,10 @@ const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey,  }:
     const isSelectedFromKeyframes = selectedKeyframeKeys.includes(firstKeyframe.id) && selectedKeyframeKeys.includes(secondKeyframe.id)
     const isSelectedFromTrackSegments = selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey && selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
 
+    // When deleting a keyframe an issue appeasr with the endX where it cant read 
+    // the time on the secondKeyframe becuase its deleted
+    if(!firstKeyframe || !secondKeyframe) return
+
     const startX = parserTimeToPixel(firstKeyframe.time, startLeft);
     const endX = parserTimeToPixel(secondKeyframe.time, startLeft);
 

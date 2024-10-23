@@ -17,6 +17,8 @@ import ObjectList from './components/ObjectList'
 import MaterialProperties from './components/MaterialProperties'
 import Params from './components/Params'
 import SettingsList from './components/SettingsList'
+import { useVXObjectStore } from '@vxengine/vxobject'
+import NodeTransformProperties from './components/NodeTransformProperties'
 
 export const ObjectManagerUI = () => {
   const listMountOnId = 'VXEngineLeftPanel'
@@ -75,13 +77,14 @@ export const ObjectManagerUI = () => {
 }
 
 export const ObjectTransformControls = React.memo(() => {
-  const selectedObjects = useObjectManagerAPI(state => state.selectedObjects)
   const transformMode = useObjectManagerAPI(state => state.transformMode)
   const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
+  const selectedObjectType = useObjectManagerAPI(state => state.selectedObjects[0]?.type)
+
 
   return (
     <AnimatePresence>
-      {selectedObjects[0] && (
+      {selectedObjectType === "entity" && (
         <motion.div
           className='absolute right-[-54px] z-[-1] top-0 '
           initial={{ opacity: 0, x: -50 }}
@@ -130,8 +133,11 @@ export const ObjectProperties = React.memo(() => {
 
   return (
     <>
-      {vxType === "object" && 
+      {vxType === "entity" && 
         <TransformProperties />
+      }
+      {(vxType === "splineNode" || vxType === "keyframeNode") && 
+        <NodeTransformProperties/>  
       }
       {threejsType === "Mesh" && <>
         <GeometryProperties

@@ -64,7 +64,7 @@ const ObjectList = () => {
                     const isSelected = selectedObjectKeys.includes(vxobject.vxkey);
                     const isHovered = hoveredObject?.vxkey === vxobject.vxkey
 
-                    if (vxobject.type === "object")
+                    if (vxobject.type === "entity")
                         return (
                             <ListItem 
                                 index={index} 

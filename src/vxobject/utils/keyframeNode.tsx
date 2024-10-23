@@ -2,12 +2,15 @@
 
 // import { Html } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useRef } from "react";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { UtilityNodeProps } from "@vxengine/types/utilityNode";
 import * as THREE from "three"
+import { Html } from "@react-three/drei";
+import { useVXObjectStore } from "../ObjectStore";
+import { vxObjectProps } from "@vxengine/types/objectStore";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];
@@ -18,38 +21,39 @@ export interface KeyframeNodeProps {
 }
 
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, position, color = "yellow", size = 0.3 }) => {
+    const addObject = useVXObjectStore(state => state.addObject);
+    const removeObject = useVXObjectStore(state => state.removeObject);
+    const firstObjectSelected = useVXObjectStore(state => state.objects[0])
+
+    const memoizedAddObject = useCallback(addObject, []);
+    const memoizedRemoveObject = useCallback(removeObject, []);
+
+    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    
+    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
+
     const ref = useRef<THREE.Mesh>(null);
 
-    const addUtilityNode = useObjectManagerAPI(state => state.addUtilityNode);
-    const removeUtilityNode = useObjectManagerAPI(state => state.removeUtilityNode);
-    const setSelectedUtilityNode = useObjectManagerAPI(state => state.setSelectedUtilityNode);
-    const setUtilityTransformAxis = useObjectManagerAPI(state => state.setUtilityTransformAxis);
-    const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
-    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
-    
     const nodeKey = useMemo(() => keyframeKeys.join('-'), [keyframeKeys])
 
     useEffect(() => {
-        if(ref.current){
-            const node: UtilityNodeProps = {
-                type: "keyframe",
-                ref: ref.current,
-                nodeKey: nodeKey,
-                data: {
-                    keyframeKeys
-                }
+        const keyframeNode: vxObjectProps = {
+            type: "keyframeNode",
+            ref,
+            vxkey: nodeKey,
+            data: {
+                keyframeKeys
             }
-            addUtilityNode(node, nodeKey)
         }
+        memoizedAddObject(keyframeNode);
 
-        return () => removeUtilityNode(nodeKey)
+        return () => memoizedRemoveObject(nodeKey)
     }, [keyframeKeys])
 
 
     const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
         if (!ref.current) return;
-        setUtilityTransformAxis(axis);
-        setSelectedUtilityNode(nodeKey);
+        selectObjects([nodeKey]);
         setSelectedKeyframeKeys(keyframeKeys)
     };
 
@@ -65,13 +69,13 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             {/* Keyframe Node */}
             <mesh ref={ref} position={position} onClick={handleOnClick}>
                 <sphereGeometry args={[0.2, 24, 24]} />
-                <meshBasicMaterial color={selectedUtilityNode?.nodeKey === nodeKey ? "yellow" : color} />
+                <meshBasicMaterial color={firstObjectSelected?.vxkey === nodeKey ? "yellow" : color} />
             </mesh>
 
             {/* Axis Dots and Html */}
-            {/* <Html center position={position} style={{ pointerEvents: "none" }}>
+            <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
-                    {selectedUtilityNode?.nodeKey === nodeKey && (
+                    {firstObjectSelected?.vxkey === nodeKey && (
                         <div className="absolute -left-[100px] flex flex-col bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px] text-xs font-sans-menlo">
                             <p>Keyframe Node</p>
                         </div>
@@ -92,7 +96,6 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
                     </div>
                 </div>
             </Html>
-         */}
         </>
     );
 };

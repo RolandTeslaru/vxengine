@@ -26,12 +26,10 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey }) => {
         return getKeyframeForTrack(splineProgressTrackKey);
     }, [splineProgressTrackKey])
 
-    console.log("Spline Keyframe Nodes", keyframeNodes)
-
     const segmentMultiplier = 10;
-    const segments = Math.max(nodes?.length * segmentMultiplier, 10); 
+    const segments = Math.max(nodes?.length * segmentMultiplier, 10);
 
-    if(!nodes)
+    if (!nodes)
         return
 
 
@@ -41,11 +39,11 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey }) => {
                 <SplineNode splineKey={splineKey} position={nodePosition} index={index} key={index} />
             ))}
             {Object.entries(keyframeNodes).map(([key, keyframe]) => (
-                <SplineKeyframeNode 
+                <SplineKeyframeNode
                     splineKey={splineKey}
                     keyframeKey={keyframe.id}
-                /> 
-))}
+                />
+            ))}
             <CatmullRomLine
                 points={nodes}
                 curveType="catmullrom"

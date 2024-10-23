@@ -7,27 +7,40 @@ import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import { KeyframeNodeDataProps } from "@vxengine/types/utilityNode";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-
+import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/types/objectStore";
 
 export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange);
   const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
-  const selectedUtilityNode = useObjectManagerAPI(state => state.selectedUtilityNode)
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const utilityTransfromAxis = useObjectManagerAPI(state => state.utilityTransformAxis)
   const transformMode = useObjectManagerAPI(state => state.transformMode);
-
 
   const firstObjectSelectedRef = firstSelectedObject?.ref.current;
 
   const transformControlsRef = useRef();
 
   const handleTransformChange = (e) => {
-    const controls = e.target; 
-    const axis = controls.axis; 
+    if (!firstSelectedObject) return
+    const type = firstSelectedObject.type;
+    switch (type) {
+      case "entity":
+        handleEntiyChange(e)
+        break;
+      case "keyframeNode":
+        handleKeyframeNodeChange();
+        break;
+      case "splineNode":
+        handleSplineNodeChange();
+    }
+  };
 
-    if (firstSelectedObject && firstObjectSelectedRef && axis) {
+  const handleEntiyChange = (e) => {
+    const controls = e.target;
+    const axis = controls.axis;
+
+    if (firstObjectSelectedRef && axis) {
       const vxkey = firstSelectedObject.vxkey;
 
       // Map axis letters to property names
@@ -39,7 +52,7 @@ export const ObjectManagerDriver = () => {
 
       // Determine which properties have changed based on the axis
       const axes = axis.split('');
-      axes.forEach((axisLetter) => {
+      axes.forEach((axisLetter: string) => {
         const propertyAxis = axisMap[axisLetter];
 
         if (transformMode === 'translate' && propertyAxis) {
@@ -66,73 +79,55 @@ export const ObjectManagerDriver = () => {
         }
       });
     }
-  };
-
-  const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
-    const lowerCaseKey = keyframeKey.toLowerCase();
-    if (lowerCaseKey.includes('.x')) return 'x';
-    if (lowerCaseKey.includes('.y')) return 'y';
-    if (lowerCaseKey.includes('.z')) return 'z';
-    return 'x';
-  };
-
-  const handleEntiyChange = () => {
-    
   }
 
-  const handleUtilityNodeChange = () => {
+  const handleKeyframeNodeChange = () => {
+    const { data, ref } = (firstSelectedObject as vxKeyframeNodeProps);
+
+    (data.keyframeKeys as string[])?.forEach(
+      (keyframeKey) => {
+        const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
+        // Update keyframe in the store from the the ref stored in the utility node 
+        const newPosition = ref.current.position;
+        const axis = getKeyframeAxis(keyframe.propertyPath);
+        setKeyframeValue(keyframeKey, newPosition[axis]);
+
+        useObjectPropertyAPI.getState().updateProperty(firstSelectedObject.vxkey, keyframe.propertyPath, newPosition[axis])
+      }
+    );
 
   }
 
-  const handleUtilityKeyframeNodeChange = () => {
-    if(selectedUtilityNode.type === "keyframe") {
-      const { data, ref } = selectedUtilityNode;
-        ((data as KeyframeNodeDataProps)?.keyframeKeys as string[])?.forEach((keyframeKey) => {
-          const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
-          // Update keyframe in the store from the the ref stored in the utility node 
-          const newPosition = ref.position;
-          const axis = getKeyframeAxis(keyframe.propertyPath); 
-          setKeyframeValue(keyframeKey, newPosition[axis]);
-        });
-    }
+  const handleSplineNodeChange = () => {
+    const { index, splineKey, ref } = firstSelectedObject as vxSplineNodeProps;
+    const newPosition = ref.current.position
+    useSplineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
   }
 
-  const handleUtilitySplineNodeChange = () => {
-    if(selectedUtilityNode.type === "spline"){
-      const { index, splineKey, ref } = selectedUtilityNode;
-      const newPosition = ref.position
-      useSplineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
-    }
-  }
-
-  const handleUtilityObjectChange = () => {
-    switch(selectedUtilityNode?.type) {
-      case "keyframe":
-        handleUtilityKeyframeNodeChange();
-        break;
-      case "spline":
-        handleUtilitySplineNodeChange();
-        break;
-    }
-  };
-
-  const utilityTrasnformControlsRef = useRef();
-
+  // Node object must allow all axis movement and only translate
+  // This set teh axis to XYZ and the transform mode to "translate"
   useEffect(() => {
-    if (!selectedUtilityNode || !utilityTrasnformControlsRef.current) return;
-    const controls = utilityTrasnformControlsRef.current as any;
-  
-    controls.showX = utilityTransfromAxis.includes('X');
-    controls.showY = utilityTransfromAxis.includes('Y');
-    controls.showZ = utilityTransfromAxis.includes('Z');
-  
-    controls.update();
-  }, [selectedUtilityNode]);
+    if (!firstSelectedObject) return
+    if (
+      firstSelectedObject.type === "keyframeNode" ||
+      firstSelectedObject.type === "splineNode" 
+    ) {
+      if(!transformControlsRef.current) return
+      
+      useObjectManagerAPI.getState().setTransformMode("translate");
+      useObjectManagerAPI.getState().setUtilityTransformAxis(['X', 'Y', 'Z']);
+      const controls = transformControlsRef.current as any;
+
+      controls.showX = true;
+      controls.showY = true;
+      controls.showZ = true;
+    }
+  }, [firstSelectedObject])
 
   return (
     <>
       {/* Object Transform Controls */}
-      {firstObjectSelectedRef && !selectedUtilityNode && (
+      {firstObjectSelectedRef && (
         <TransformControls
           ref={transformControlsRef}
           object={firstObjectSelectedRef}
@@ -140,19 +135,14 @@ export const ObjectManagerDriver = () => {
           onObjectChange={handleTransformChange}
         />
       )}
-
-      {/* Utility Nodes Transform Controls */}
-
-      {selectedUtilityNode && (
-        <TransformControls
-          ref={utilityTrasnformControlsRef}
-          object={selectedUtilityNode.ref}
-          mode="translate"
-          onObjectChange={handleUtilityObjectChange}
-          axis='Y'
-        />
-      )}
-
     </>
   );
+};
+
+const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
+  const lowerCaseKey = keyframeKey.toLowerCase();
+  if (lowerCaseKey.includes('.x')) return 'x';
+  if (lowerCaseKey.includes('.y')) return 'y';
+  if (lowerCaseKey.includes('.z')) return 'z';
+  return 'x';
 };

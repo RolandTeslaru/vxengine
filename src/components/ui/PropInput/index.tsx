@@ -7,14 +7,17 @@ import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { vxKeyframeNodeProps } from '@vxengine/types/objectStore';
+import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 
 
 interface Props extends InputProps {
     propertyPath: string
     horizontal?: boolean
+    disableTracking?: boolean
 }
 export const PropInput: React.FC<Props> = (props) => {
-    const { propertyPath, className, horizontal, ...inputProps } = props
+    const { propertyPath, className, horizontal, disableTracking = false, ...inputProps } = props
     const disabled = props.disabled ? props.disabled : false;
     const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey);
     const trackKey = vxkey + "." + propertyPath
@@ -25,11 +28,10 @@ export const PropInput: React.FC<Props> = (props) => {
         <ContextMenu>
             <ContextMenuTrigger className={className}>
                 <div className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} `}>
-                    <div className={horizontal ? "w-auto mx-auto" : "h-auto my-auto"}>
-                        <KeyframeControl
-                            trackKey={trackKey}
-                            disabled={disabled}
-                        />
+                    <div className={(horizontal ? "w-auto mx-auto" : "h-auto my-auto")}>                        <KeyframeControl
+                        trackKey={trackKey}
+                        disabled={disabled || disableTracking}
+                    />
                     </div>
                     <ValueRenderer
                         propertyPath={propertyPath}
@@ -38,7 +40,7 @@ export const PropInput: React.FC<Props> = (props) => {
                     />
                 </div>
             </ContextMenuTrigger>
-            <PropInputContextMenu vxkey={vxkey} propertyPath={propertyPath}/>
+            <PropInputContextMenu vxkey={vxkey} propertyPath={propertyPath} />
         </ContextMenu>
     )
 }
@@ -53,21 +55,23 @@ interface ValueRendererProps {
 
 const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, inputProps, isPropertyTracked }) => {
     const vxkey = useObjectManagerAPI(state => state.selectedObjects[0].vxkey);
-    const firstObjectSelectedStored = useObjectManagerAPI(state => state.selectedObjects[0]);
-    const firstObjectSelected = firstObjectSelectedStored?.ref.current;
+    const firstObjectSelected = useObjectManagerAPI(state => state.selectedObjects[0]);
+    const firstObjectSelectedRef = firstObjectSelected?.ref.current;
+
+    const vxType = firstObjectSelected.type;
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
-        || getNestedProperty(firstObjectSelected, propertyPath)
+        || getNestedProperty(firstObjectSelectedRef, propertyPath)
     );
 
     // This trigger when the first object selected is changed
     useEffect(() => {
         setValue(
             getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
-            || getNestedProperty(firstObjectSelected, propertyPath)
+            || getNestedProperty(firstObjectSelectedRef, propertyPath)
         )
-    }, [firstObjectSelectedStored.vxkey])
+    }, [vxkey])
 
     useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
@@ -84,9 +88,30 @@ const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
-        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+        switch (vxType) {
+            case "entity": {
+                handleEntityChange(newValue)
+                break;
+            }
+            case "splineNode": {
+                handleSplineNodeChange(newValue);
+            }
+        }
         setValue(newValue);
     };
+
+    const handleEntityChange = (newValue: number) => {
+        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+    }
+
+    const handleSplineNodeChange = (newValue: number) => {
+        const axis = propertyPath.slice(-1); // Assuming propertyPath ends with 'x', 'y', or 'z'
+        const nodeIndex = extractNodeIndexFromPath(propertyPath); // You need a way to extract this from the propertyPath
+        const splineKey = vxkey; // Assuming the vxkey is the splineKey
+
+        useSplineManagerAPI.getState().changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
+    };
+
 
     return (
         <Input

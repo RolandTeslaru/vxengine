@@ -20,6 +20,7 @@ interface SplineStoreProps {
     setSplineNodePosition: (splineKey: string, nodeIndex: number, newPosition: THREE.Vector3) => void;
     selectedSpline: ISpline;
     setSelectedSpline: (splineKey: string) => void;
+    changeSplineNodeAxisValue: (splineKey: string, nodeIndex, newValue: number, axis: "x" | "y" | "z") => void
     insertNode: (splineKey: string, index: number) => void;
     removeNode: (splineKey: string, index: number) => void;
     createSpline: (vxkey: string, splineKey: string, nodes: [number, number, number][]) => void
@@ -76,6 +77,30 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
 
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
+    },
+    changeSplineNodeAxisValue: (
+        splineKey: string,
+        nodeIndex: number, 
+        newValue: number, 
+        axis: "x" | "y" | "z"
+    ) => {
+        set(produce((state: SplineStoreProps) => {
+            const newNode = state.splines[splineKey].nodes[nodeIndex];
+    
+            if (axis === "x") {
+                newNode[0] = newValue;
+            } else if (axis === "y") {
+                newNode[1] = newValue; 
+            } else if (axis === "z") {
+                newNode[2] = newValue; 
+            }
+    
+            state.splines[splineKey].nodes[nodeIndex] = [newNode[0], newNode[1], newNode[2]];
+        }));
+    
+        // Call the animation engine to refresh the spline after the update
+        const animationEngine = getVXEngineState().getState().animationEngine;
+        animationEngine.refreshSpline("update", splineKey, true);
     },
     selectedSpline: undefined,
     setSelectedSpline: (splineKey) => {
