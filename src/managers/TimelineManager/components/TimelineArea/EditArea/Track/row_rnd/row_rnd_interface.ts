@@ -46,9 +46,7 @@ export interface RowRndProps {
   onDragStart?: RndDragStartCallback;
   onDrag?: RndDragCallback;
   onDragEnd?: RndDragEndCallback;
-  // 同时传入parentRef和deltaScrollLeft时会启动自动滚动
   parentRef?: React.MutableRefObject<HTMLDivElement>;
-  deltaScrollLeft?: (delta: number) => void;
   
   children?: React.ReactNode;
 

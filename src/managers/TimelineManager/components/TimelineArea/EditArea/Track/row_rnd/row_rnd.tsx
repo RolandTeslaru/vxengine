@@ -1,13 +1,12 @@
 import { Interactable } from '@interactjs/core/Interactable';
 import { DragEvent, ResizeEvent } from '@interactjs/types/index';
 import React, { ReactElement, useEffect, useImperativeHandle, useRef } from 'react';
-import { useAutoScroll } from './hooks/useAutoScroll';
 import { InteractComp } from './interactable';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
 import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from '@vxengine/AnimationEngine/interface/const';
-import { useTimelineEditorAPI } from '../../store';
-import { shallow } from 'zustand/shallow';
 import { useRefStore } from '@vxengine/utils/useRefStore';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useAutoScroll } from '../../RowDnd/hooks/useAutoScroll';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -33,10 +32,10 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       onDragStart,
       onDragEnd,
       onDrag,
-      deltaScrollLeft,
     },
     ref,
   ) => {
+    const computeScrollLeft = useTimelineEditorAPI(state => state.computeScrollLeft)
     const interactable = useRef<Interactable>();
     const deltaX = useRef(0);
     const isAdsorption = useRef(false);
@@ -151,9 +150,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     const handleMove = (e: DragEvent) => {
       const target = e.target;
 
-      if (deltaScrollLeft && editAreaRef.current) {
+      if (editAreaRef.current) {
         const result = dealDragAutoScroll(e, (delta) => {
-          deltaScrollLeft(delta);
+          computeScrollLeft(delta);
 
           let { left, width } = target.dataset;
           const preLeft = parseFloat(left);
@@ -291,9 +290,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       const target = e.target;
       const dir = e.edges?.left ? 'left' : 'right';
 
-      if (deltaScrollLeft && editAreaRef.current) {
+      if (editAreaRef.current) {
         const result = dealResizeAutoScroll(e, dir, (delta) => {
-          deltaScrollLeft(delta);
+          computeScrollLeft(delta);
 
           let { left, width } = target.dataset;
           const preLeft = parseFloat(left);

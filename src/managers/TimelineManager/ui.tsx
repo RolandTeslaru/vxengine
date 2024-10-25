@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, useTime } from "framer-motion"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
 import { Slider } from '@vxengine/components/shadcn/slider';
 import { Switch } from '@vxengine/components/shadcn/switch';
@@ -113,22 +113,13 @@ const TimelineEditorFooter = React.memo(() => {
                         <p className='text-xs h-auto my-auto'>Scale {scale}</p>
                         <Slider
                             defaultValue={[scale]}
-                            max={10}
-                            step={0.5}
-                            min={0.0}
+                            max={20}
+                            step={0.1}
+                            min={0.1}
                             className='w-24 my-auto'
                             onValueChange={(value) => {
                                 setScale(value[0])
                             }}
-                        />
-                    </div>
-                    <div className='flex flex-row font-sans-menlo gap-2'>
-                        <p className='text-xs h-auto my-auto'>Counts</p>
-                        <Slider
-                            defaultValue={[50]}
-                            max={100}
-                            step={1}
-                            className='w-24 my-auto'
                         />
                     </div>
                     <div className='flex flex-row gap-2'>

@@ -2,7 +2,6 @@ import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
 import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "@vxengine/types/objectStore";
 import { GroupedPaths } from "../store";
-import { RowRndApi } from "../components/row_rnd/row_rnd_interface";
 
 export interface TimelineEditorStoreProps {
     // Records of data used in the editor
@@ -25,18 +24,15 @@ export interface TimelineEditorStoreProps {
     setActiveTool: (tool: string) => void;
     snap: boolean;
     setSnap: (value: boolean) => void;
-    scaleCount: number;
-    setScaleCount: (count: number) => void;
 
-    scaleWidth: number
-    scaleSplitCount: number
     changes: number
     addChange: () => void
 
     scrollLeft: number;
+    setScrollLeft: (scrollLeft: number) => void;
+    computeScrollLeft: (delta: number) => void;
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
-    setScrollLeft: (scrollLeft: number) => void;
     
     clientWidth: number;
     clientHeight: number;

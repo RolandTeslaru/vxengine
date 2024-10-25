@@ -1,19 +1,11 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { prefix } from '../../utils/deal_class_prefix';
-import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
+import { parserTimeToPixel } from '../../utils/deal_data';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from '../../utils/cursorHandlers';
 import { RowDnd } from './EditArea/RowDnd';
 
-
-/** Animation timeline component parameters */
-export type CursorProps = {
-  deltaScrollLeft: (delta: number) => void;
-};
-
-export const CursorLine: FC<CursorProps> = ({
-  deltaScrollLeft,
-}) => {
+export const CursorLine = () => {
   const cursorLineRef = useRefStore(state => state.cursorLineRef)
   const left = parserTimeToPixel(0, cursorStartLeft)
 
@@ -22,7 +14,6 @@ export const CursorLine: FC<CursorProps> = ({
         left={left}
         start={cursorStartLeft}
         ref={cursorLineRef}
-        deltaScrollLeft={deltaScrollLeft}
         enableDragging={true}
         enableResizing={false}
         onDragStart={handleCursorOnDragStart}
@@ -39,9 +30,7 @@ export const CursorLine: FC<CursorProps> = ({
 };
 
 
-export const CursorThumb: FC<CursorProps> = ({
-  deltaScrollLeft,
-}) => {
+export const CursorThumb = () => {
   const cursorThumbRef = useRefStore(state => state.cursorThumbRef)
   const left = parserTimeToPixel(0, cursorStartLeft)
 
@@ -50,7 +39,6 @@ export const CursorThumb: FC<CursorProps> = ({
         left={left}
         start={cursorStartLeft}
         ref={cursorThumbRef}
-        deltaScrollLeft={deltaScrollLeft}
         enableDragging={true}
         enableResizing={false}
         onDragStart={handleCursorOnDragStart}

@@ -1,5 +1,5 @@
+import { RowRndApi } from "@vxengine/managers/TimelineManager/components/TimelineArea/EditArea/RowDnd/row_rnd_interface";
 import React from "react";
-import { RowRndApi } from "src/managers/TimelineManager/components/row_rnd/row_rnd_interface";
 import { create } from "zustand";
 
 interface refStoreProps {

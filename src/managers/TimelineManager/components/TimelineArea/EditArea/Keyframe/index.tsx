@@ -5,6 +5,8 @@ import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/Timelin
 import React, { useEffect, useState } from 'react'
 import KeyframeContextMenu from './KeyframeContextMenu';
 import { RowDnd } from '../RowDnd';
+import { DEFAULT_ROW_HEIGHT } from '@vxengine/AnimationEngine/interface/const';
+import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 
 
 export type EditKeyframeProps = {
@@ -16,14 +18,13 @@ export type EditKeyframeProps = {
 const Keyframe: React.FC<EditKeyframeProps> = ({
     keyframeKey,
     track,
-    rowHeight,
 }) => {
+    const rowHeight = DEFAULT_ROW_HEIGHT
     const keyframe = useTimelineEditorAPI(state => state.keyframes[keyframeKey])
     const trackKey = `${track.vxkey}.${track.propertyPath}`
 
     const scale = useTimelineEditorAPI(state => state.scale)
     const snap = useTimelineEditorAPI(state => state.snap)
-    const scaleWidth = useTimelineEditorAPI(state => state.scaleWidth)
     const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
     const lastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.lastKeyframeSelectedIndex)
@@ -36,7 +37,7 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
 
     useEffect(() => {
         setLeft(parserTimeToPixel(keyframe.time, startLeft));
-    }, [keyframe.time, startLeft, scaleWidth, scale]);
+    }, [keyframe.time, startLeft, scale]);
 
 
     const handleOnDrag = (data: { left: number, lastLeft: number }) => {
@@ -103,12 +104,12 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
             left={left}
             width={rowHeight / 2}
             start={startLeft}
-            grid={snap ? scaleWidth / 10 : 1}
+            grid={snap ? ONE_SECOND_UNIT_WIDTH / 10 : 1}
             enableDragging={true}
             enableResizing={false}
             bounds={{
                 left: 0,
-                right: scaleWidth * 1000
+                right: ONE_SECOND_UNIT_WIDTH * 1000
             }}
             // @ts-expect-error
             onDragEnd={handleOnDrag}

@@ -70,6 +70,7 @@ const ObjectList = () => {
                                 isHovered={isHovered} 
                                 handleObjectClick={handleObjectClick}
                                 vxobject={vxobject}
+                                key={vxobject.vxkey}
                             />
                         )
                 })}

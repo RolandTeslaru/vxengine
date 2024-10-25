@@ -271,7 +271,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   /*   ----   */ //   Main Ticker function
-  /*          */ //   applies all interpolated values for each track 
+  /*          */ //   Calculates and applies all interpolated values for each track
   /*   tick   */
   /*          */
   /*   ----   */

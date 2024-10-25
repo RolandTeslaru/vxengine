@@ -1,6 +1,7 @@
 import { TimelineAction, TimelineRow } from "@vxengine/AnimationEngine/interface/action";
 import { ADD_SCALE_COUNT } from "@vxengine/AnimationEngine/interface/const";
 import { useTimelineEditorAPI } from "../store";
+import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 
 /** 时间转像素 */
 export function parserTimeToPixel(
@@ -8,8 +9,7 @@ export function parserTimeToPixel(
   startLeft: number
 ) {
   const scale = useTimelineEditorAPI.getState().scale
-  const scaleWidth = useTimelineEditorAPI.getState().scaleWidth
-  return startLeft + (data / scale) * scaleWidth;
+  return startLeft + (data / scale) * ONE_SECOND_UNIT_WIDTH;
 }
 
 /** 像素转时间 */
@@ -18,9 +18,8 @@ export function parserPixelToTime(
   startLeft: number
 ) {
   const scale = useTimelineEditorAPI.getState().scale
-  const scaleWidth = useTimelineEditorAPI.getState().scaleWidth
 
-  return ((data - startLeft) / scaleWidth) * scale;
+  return ((data - startLeft) / ONE_SECOND_UNIT_WIDTH) * scale;
 }
 
 /** 位置 + 宽度 转 start + end */

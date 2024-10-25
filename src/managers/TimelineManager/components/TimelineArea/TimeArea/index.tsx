@@ -1,102 +1,80 @@
 import React, { useEffect, useRef } from 'react';
 import './timeArea.scss';
-import { shallow } from 'zustand/shallow';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_prefix';
 import { parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import { handleSetCursor } from '@vxengine/managers/TimelineManager/utils/handleSetCursor';
 import { CursorThumb } from '../cursor';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
+import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 
 const maxScaleCount = 100;
 
-/** Animation timeline component */
-export const TimeArea = ({deltaScrollLeft}) => {
-  const {
-    scaleCount,
-    scaleSplitCount,
-    scaleWidth,
-    scale,
-  } = useTimelineEditorAPI(
-    (state) => ({
-      scaleCount: state.scaleCount,
-      scaleSplitCount: state.scaleSplitCount,
-      scaleWidth: state.scaleWidth,
-      scale: state.scale,
-    }),
-    shallow
+export const TimeArea = () => {
+  const scale = useTimelineEditorAPI((state) => state.scale);
+
+  const currentTimelineID = useAnimationEngineAPI(
+    (state) => state.currentTimelineID
+  );
+  const timelineLength = useAnimationEngineAPI(
+    (state) => state.timelines[currentTimelineID]?.length
   );
 
-  /** Whether to display subdivision scales */
-  const showUnit = scaleSplitCount > 0;
   const startLeft = 20;
 
-  // Calculate the total width of the timeline
-  const timelineClientWidth = scaleCount * scaleWidth + startLeft;
+  const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
+  const totalUnits = OneSecondUnitSplitCount * timelineLength;
 
-  const renderTimeUnits = () => {
-    const units = [];
-    const totalUnits = showUnit ? scaleCount * scaleSplitCount + 1 : scaleCount;
-    let left = 4;
+  const handleOnClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const position = e.clientX - rect.x;
 
-    for (let columnIndex = 0; columnIndex < totalUnits; columnIndex++) {
-      const isShowScale = showUnit ? columnIndex % scaleSplitCount === 0 : true;
-      const classNames = ['time-unit'];
-      if (isShowScale) 
-        classNames.push('time-unit-big');
-      const item =
-        (showUnit ? columnIndex / scaleSplitCount : columnIndex) * scale;
+    const scrollLeft = useTimelineEditorAPI.getState().scrollLeft;
+    const left = Math.max(position + scrollLeft, startLeft);
+    if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + startLeft - scrollLeft) return;
 
-      const unitWidth = showUnit
-        ? scaleWidth / scaleSplitCount
-        : scaleWidth;
-
-      units.push(
-        <div
-          key={columnIndex}
-          style={{
-            position: 'absolute',
-            left: `${left}px`,
-            width: `${unitWidth}px`,
-          }}
-          className={prefix(...classNames)}
-        >
-          {isShowScale && (
-            <div className={prefix('time-unit-scale')}>{item}</div>
-          )}
-        </div>
-      );
-
-      left += unitWidth;
-    }
-    return units;
+    const time = parserPixelToTime(left - scrollLeft, startLeft);
+    handleSetCursor({ time });
   };
 
+  const displayInterval = Math.ceil(scale); // Adjust display interval smoothly with scale
 
   return (
     <>
       <div
-        style={{
-          width: `${timelineClientWidth}px`,
-        }}
-        className='sticky top-0  h-[32px] bg-neutral-950 z-10'
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const position = e.clientX - rect.x;
-
-          const scrollLeft = useTimelineEditorAPI.getState().scrollLeft
-          const left = Math.max(position + scrollLeft, startLeft);
-          if (left > maxScaleCount * scaleWidth + startLeft - scrollLeft)
-            return;
-
-          const time = parserPixelToTime(left, startLeft);
-          handleSetCursor({ time });
-        }}
+        className="sticky top-0 h-[32px] bg-neutral-950 z-10"
+        onClick={handleOnClick}
       >
-        <CursorThumb
-          deltaScrollLeft={deltaScrollLeft}
-        />
-        {renderTimeUnits()}
-      </div>  
+        <CursorThumb />
+        {Array.from({ length: totalUnits + 1 }).map((_, index) => {
+          const isIntegerUnit = index % OneSecondUnitSplitCount === 0;
+          const classNames = ["time-unit"];
+
+          // Adjust unit width based on the dynamic split count
+          const unitWidth = (ONE_SECOND_UNIT_WIDTH / OneSecondUnitSplitCount) / scale;
+
+          // Display only at multiples of the displayInterval
+          const shouldDisplayNumber = isIntegerUnit && (index / OneSecondUnitSplitCount) % displayInterval === 0;
+
+          if (isIntegerUnit) classNames.push("time-unit-big");
+          return (
+            <div
+              key={index}
+              style={{
+                position: "absolute",
+                left: `${startLeft + unitWidth * index}px`,
+              }}
+              className={prefix(...classNames)}
+            >
+              {shouldDisplayNumber && (
+                <div className={prefix("time-unit-scale")}>
+                  {index / OneSecondUnitSplitCount}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 };

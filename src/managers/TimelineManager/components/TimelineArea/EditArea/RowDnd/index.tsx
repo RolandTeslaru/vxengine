@@ -6,6 +6,7 @@ import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } fr
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
 import { InteractComp } from './interactable';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -31,10 +32,10 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       onDragStart,
       onDragEnd,
       onDrag,
-      deltaScrollLeft,
     },
     ref,
   ) => {
+    const computeScrollLeft = useTimelineEditorAPI(state => state.computeScrollLeft)
     const interactable = useRef<Interactable>();
     const deltaX = useRef(0);
     const isAdsorption = useRef(false);
@@ -149,9 +150,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     const handleMove = (e: DragEvent) => {
       const target = e.target;
 
-      if (deltaScrollLeft && editAreaRef.current) {
+      if (editAreaRef.current) {
         const result = dealDragAutoScroll(e, (delta) => {
-          deltaScrollLeft(delta);
+          computeScrollLeft(delta);
 
           let { left, width } = target.dataset;
           const preLeft = parseFloat(left);
@@ -289,9 +290,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       const target = e.target;
       const dir = e.edges?.left ? 'left' : 'right';
 
-      if (deltaScrollLeft && editAreaRef.current) {
+      if (editAreaRef.current) {
         const result = dealResizeAutoScroll(e, dir, (delta) => {
-          deltaScrollLeft(delta);
+          computeScrollLeft(delta);
 
           let { left, width } = target.dataset;
           const preLeft = parseFloat(left);

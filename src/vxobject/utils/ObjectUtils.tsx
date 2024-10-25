@@ -15,16 +15,13 @@ import { getVXEngineState } from '@vxengine/engine'
 import * as THREE from "three"
 
 interface ObjectUtils {
-    vxObject: vxObjectProps
+    vxkey: string
     children: React.ReactElement<ReactThreeFiber.Object3DNode<THREE.Object3D<THREE.Object3DEventMap>, any>, string | React.JSXElementConstructor<any>>
 }
 
 const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
 
-const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) => {
-    if (!vxObject) return
-
-    const vxkey = vxObject.vxkey;
+const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
     const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
@@ -87,7 +84,6 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxObject, children }) =
             }
         }
     }, [currentTimelineID, settings?.useSplinePath])
-
 
     return (
         <>

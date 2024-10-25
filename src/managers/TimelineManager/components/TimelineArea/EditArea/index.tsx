@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
-import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
 import Track from './Track';
@@ -8,27 +7,13 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';
 import { CursorLine } from '../cursor';
 
-export type EditAreaProps = {
-  deltaScrollLeft: (scrollLeft: number) => void;
-};
-
-export interface EditAreaState {
-  domRef: React.MutableRefObject<HTMLDivElement>;
-}
-
-export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, ref) => {
-  const {
-    deltaScrollLeft
-  } = props;
-
+export const EditArea = () => {
   const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
   const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
 
-  const { editorObjects, scale, groupedPaths } = useTimelineEditorAPI(state => ({
-    editorObjects: state.editorObjects,
-    scale: state.scale,
-    groupedPaths: state.groupedPaths
-  }), shallow);
+  const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
+  const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
+
   const { dragLineData } = useDragLine();
 
   const startLeft = 22
@@ -56,7 +41,6 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
       if (row) {
         return (
           <Track
-            {...props}
             style={{
               height: `${DEFAULT_ROW_HEIGHT}px`,
               backgroundPositionX: `0, ${startLeft}px`,
@@ -94,10 +78,8 @@ export const EditArea = React.forwardRef<EditAreaState, EditAreaProps>((props, r
         width: `${timelineClientWidth}px` // Ensure this is greater than the container's width
       }}
     >
-      <CursorLine
-        deltaScrollLeft={deltaScrollLeft}
-      />
+      <CursorLine/>
       {renderRows()}
     </div>
   );
-});
+};

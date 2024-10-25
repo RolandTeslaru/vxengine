@@ -15,13 +15,12 @@ export type EditRowProps = {
 
 const startLeft = 22
 
-const Track: FC<EditRowProps> = (props) => {
-    const { trackKey } = props;
+const Track: FC<EditRowProps> = ({ trackKey, style}) => {
     const track = useTimelineEditorAPI(state => state.tracks[trackKey])
     return (
         <div
             className='relative  py-4 border-y  border-neutral-900'
-            style={props.style}
+            style={style}
         >
             {track.keyframes.map((keyframeKey: string, index: number) => {
                 if (index === 0) return null;
@@ -44,7 +43,6 @@ const Track: FC<EditRowProps> = (props) => {
                 <Keyframe
                     key={index}
                     track={track}
-                    {...props}
                     keyframeKey={keyframeKey}
                 />
             ))}

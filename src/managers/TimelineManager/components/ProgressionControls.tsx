@@ -2,7 +2,6 @@ import React from "react";
 import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useVXEngine } from "@vxengine/engine";
-import { shallow } from "zustand/shallow";
 import TimeRender from "./TimeRender";
 import { handleSetCursor } from "../utils/handleSetCursor";
 

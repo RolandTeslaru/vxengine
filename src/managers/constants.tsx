@@ -1,0 +1,1 @@
+export const ONE_SECOND_UNIT_WIDTH = 160;

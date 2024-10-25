@@ -79,9 +79,11 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
         return <>
             {modifiedChildren}
-            <ObjectUtils vxObject={vxObject}>
-                {children}
-            </ObjectUtils>
+            {vxObject && (
+                <ObjectUtils vxkey={vxkey}>
+                    {children}
+                </ObjectUtils>
+            )}
         </>;
     }
 );

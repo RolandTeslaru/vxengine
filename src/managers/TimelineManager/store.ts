@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
+import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { createWithEqualityFn } from 'zustand/traditional';
@@ -17,6 +17,8 @@ import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 export type GroupedPaths = Record<string, PathGroup>;
 
 const DEBUG_REFRESHER = true;
+export const startLeft = 0;
+
 
 function processRawData(
     rawObjects: RawObjectProps[]
@@ -26,17 +28,17 @@ function processRawData(
     const staticProps: Record<string, IStaticProps> = {};
     const keyframes: Record<string, IKeyframe> = {};
 
-    // Generate Editor Data Record
+    // Create Records
     rawObjects.forEach((rawObj) => {
         const trackKeys: string[] = [];
         const staticPropKeys: string[] = [];
 
-        // Generate Track Record for rawObj
+        // Create Track Record
         rawObj.tracks.forEach((track) => {
             const keyframeIds: string[] = [];
             const trackKey = `${rawObj.vxkey}.${track.propertyPath}`;
 
-            // Generate Keyframe Record for rawObj
+            // Create Keyframe Record
             track.keyframes.forEach((kf) => {
                 const keyframeId = kf.id || `keyframe-${Date.now()}`;
                 const newKeyframe: IKeyframe = {
@@ -60,7 +62,7 @@ function processRawData(
             tracks[trackKey] = newTrack;
         });
 
-        // Generate StaticProp Record for rawObj
+        // Create StaticProp Record 
         rawObj.staticProps.forEach((prop) => {
             const staticPropKey = `${rawObj.vxkey}.${prop.propertyPath}`;
             staticPropKeys.push(staticPropKey);
@@ -228,15 +230,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     scale: 1,
-    scaleCount: MIN_SCALE_COUNT,
     cursorTime: START_CURSOR_TIME,
     width: Number.MAX_SAFE_INTEGER,
 
     activeTool: "mouse",
     snap: true,
 
-    scaleWidth: 160,
-    scaleSplitCount: 10,
     changes: 0,
 
     clientHeight: 378,
@@ -244,11 +243,17 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     scrollHeight: 270,
 
     scrollLeft: 0,
+    setScrollLeft: (value) => set({ scrollLeft: Math.max(value, 0) }),
+    computeScrollLeft: (delta) => {
+        const scrollLeft = get().scrollLeft;
+        const data = scrollLeft + delta;
+
+        get().setScrollLeft(scrollLeft + delta);
+    },
 
     setScale: (count) => set({ scale: count }),
-    setScaleCount: (count) => set({ scaleCount: count }),
     setWidth: (width) => set({ width }),
-    setScrollLeft: (value) => set({ scrollLeft: Math.max(value, 0) }),
+
     setActiveTool: (tool) => set({ activeTool: tool }),
     setSnap: (value) => set({ snap: value }),
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
