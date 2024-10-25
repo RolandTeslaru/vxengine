@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import { useRef } from "react";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
-import { UtilityNodeProps } from "@vxengine/types/utilityNode";
 import * as THREE from "three"
 import { Html } from "@react-three/drei";
 import { useVXObjectStore } from "../ObjectStore";
@@ -41,6 +40,7 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             type: "keyframeNode",
             ref,
             vxkey: nodeKey,
+            axis: axis,
             data: {
                 keyframeKeys
             }

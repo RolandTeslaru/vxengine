@@ -2,9 +2,7 @@ import React from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
 import { vxObjectProps } from '@vxengine/types/objectStore';
-import { shallow } from 'zustand/shallow';
 import { useVXObjectStore } from '@vxengine/vxobject';
-import { FixedSizeList as List } from 'react-window';
 
 
 const ObjectList = () => {
@@ -101,7 +99,7 @@ const ListItem: React.FC<ListItemProps> = ({ isSelected, isHovered, index, handl
             onMouseDown={(event) => event.preventDefault()}
         >
             <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                {vxobject.name !== "object" ? vxobject.name : vxobject.vxkey}
+                {vxobject.type === "entity" ? vxobject.name : vxobject.vxkey}
             </p>
             <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
                 `${isSelected && "!text-neutral-400"}`}

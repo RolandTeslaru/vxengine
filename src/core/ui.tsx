@@ -19,7 +19,7 @@ import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
 import Params from "@vxengine/managers/ObjectManager/components/Params"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
-import { ScrollArea } from "@vxengine/components/shadcn/scrollArea"
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
 
 export const CoreUI = () => {
     return (
@@ -31,7 +31,7 @@ export const CoreUI = () => {
 
             <BottomRightBar />
 
-            {/* <FrequentStateVisualizer /> */}
+            <FrequentStateVisualizer />
             <StateVisualizer />
             <CameraManagerUI />
 
@@ -95,11 +95,25 @@ const LeftPanel = () => {
             setAttachedState={setLeftPanelAttached}
         >
             <div className={`absolute w-60 h-[686px] backdrop-blur-sm text-sm bg-neutral-900 
-                             bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl p-2 pb-1
+                             bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl p-2 pt-3
                             ${leftPanelAttached ? "top-32 left-6" : "top-2 left-2"}
                             `}
                 id="VXEngineLeftPanel"
             >
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-row gap-1 p-1 cursor-pointer bg-neutral-500 rounded-full bg-opacity-0 hover:bg-opacity-40 ease-in-out">
+                    <span 
+                        className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                    >
+                    </span>
+                    <span 
+                        className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                    >
+                    </span>
+                    <span 
+                        className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                    >
+                    </span>
+                </div>
                     <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                         <ObjectList />
                         <EffectsManagerUI />
@@ -160,5 +174,41 @@ const BottomRightBar = () => {
 
         </VXUiPanelWrapper>
 
+    )
+}
+
+
+const FrequentStateVisualizer = () => {
+    return (
+        <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
+                            gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
+            <div className="flex flex-row">
+                STATE_cursorTime &nbsp;&nbsp;
+                <CursorTimeVisualzier />
+            </div>
+
+            <div className="flex flex-row">
+                STATE_scrollLeft &nbsp;&nbsp;
+                <ScrollLeftVisualizer />
+            </div>
+        </div>
+    )
+}
+
+const CursorTimeVisualzier = () => {
+    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
+    return (
+        <p>
+            {cursorTime.toFixed(2)}
+        </p>
+    )
+}
+
+const ScrollLeftVisualizer = () => {
+    const scrollLeft = useTimelineEditorAPI(state => state.scrollLeft)
+    return (
+        <p>
+            {scrollLeft.toFixed(2)}
+        </p>
     )
 }

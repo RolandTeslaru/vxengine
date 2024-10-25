@@ -48,7 +48,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
                 type: "entity",
                 ref: internalRef,
                 vxkey: vxkey,
-                name: props.name || type,
+                name: props.name || vxkey,
                 params: params || [],
                 disabledParams: disabledParams || [],
             };

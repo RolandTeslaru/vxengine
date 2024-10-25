@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { useDragLine } from './hooks/use_drag_line';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
-import { useTimelineEditorAPI } from '../../store';
 import { shallow } from 'zustand/shallow';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
-import { CursorLine } from '../cursor/cursor';
 import Track from './Track';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';
+import { CursorLine } from '../cursor';
 
 export type EditAreaProps = {
   deltaScrollLeft: (scrollLeft: number) => void;

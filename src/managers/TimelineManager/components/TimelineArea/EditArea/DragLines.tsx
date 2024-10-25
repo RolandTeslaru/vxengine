@@ -1,5 +1,6 @@
+
+import { prefix } from "@vxengine/managers/TimelineManager/utils/deal_class_prefix";
 import React, { FC, useEffect, useState } from "react";
-import { prefix } from "../../utils/deal_class_prefix";
 
 export interface DragLineData {
   isMoving: boolean;

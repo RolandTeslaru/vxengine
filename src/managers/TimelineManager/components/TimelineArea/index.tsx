@@ -3,29 +3,27 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import React, { useRef } from 'react';
-import { checkProps } from '../utils/check_props';
-import { EditArea } from './edit_area/edit_area';
-import { TimeArea } from './time_area/time_area';
 import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
 import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
-import { useTimelineEditorAPI } from '../store';
-import { handleSetCursor } from '../utils/handleSetCursor';
-import { shallow } from 'zustand/shallow';
 import { useRefStore } from '@vxengine/utils/useRefStore';
+import { checkProps } from '../../utils/check_props';
+import { useTimelineEditorAPI } from '../..';
+import { handleSetCursor } from '../../utils/handleSetCursor';
+import { TimeArea } from './TimeArea';
+import { EditArea } from './EditArea';
 
 export const startLeft = 0;
 
-const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, ref) => {
+const TimelineArea: React.FC<ITimelineEditor> = ((props) => {
   const checkedProps = checkProps(props);
 
-  const { scale, scaleCount, width, setScrollLeft, } = useTimelineEditorAPI(state => ({
-    scale: state.scale,
-    scaleCount: state.scaleCount,
-    width: state.width,
-    setWidth: state.setWidth,
-    setScrollLeft: state.setScrollLeft,
-  }), shallow);
+  const scale = useTimelineEditorAPI(state => state.scale)
+  const scaleCount = useTimelineEditorAPI(state => state.scaleCount);
+  const width = useTimelineEditorAPI(state => state.width);
+  const setWidth = useTimelineEditorAPI(state => state.setWidth);
+  const setScrollLeft = useTimelineEditorAPI(state => state.setScrollLeft);
+
   const editAreaRef = useRefStore(state => state.editAreaRef)
   const trackListRef = useRefStore(state => state.trackListRef)
   const autoScrollWhenPlay = useRef<boolean>(true);
@@ -82,4 +80,4 @@ const TimelineEditor = React.forwardRef<TimelineState, ITimelineEditor>((props, 
 });
 
 
-export default TimelineEditor
+export default TimelineArea

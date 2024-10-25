@@ -1,7 +1,7 @@
 import { useRefStore } from "@vxengine/utils/useRefStore"
-import { useTimelineEditorAPI } from "../../store"
-import { parserPixelToTime, parserTimeToPixel } from "../../utils/deal_data"
-import { handleSetCursor } from "../../utils/handleSetCursor"
+import { useTimelineEditorAPI } from "../store"
+import { parserPixelToTime, parserTimeToPixel } from "./deal_data"
+import { handleSetCursor } from "./handleSetCursor"
 
 export const cursorStartLeft = 20
 export const handleCursorOnDrag = ({ left }, scroll = 0) => {

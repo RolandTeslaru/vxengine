@@ -11,6 +11,7 @@ import { extractVxKeyFromSplineKey } from './components/utils';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
+import { useObjectPropertyAPI } from '../ObjectManager/store';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>
@@ -77,6 +78,12 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
 
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
+
+        const vxNodeKey = `${splineKey}.node${nodeIndex}`
+
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.x', newPosition.x )
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.y', newPosition.y )
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.z', newPosition.z )
     },
     changeSplineNodeAxisValue: (
         splineKey: string,

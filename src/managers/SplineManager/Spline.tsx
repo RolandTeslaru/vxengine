@@ -38,12 +38,12 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey }) => {
             {nodes.map((nodePosition, index) => (
                 <SplineNode splineKey={splineKey} position={nodePosition} index={index} key={index} />
             ))}
-            {Object.entries(keyframeNodes).map(([key, keyframe]) => (
+            {/* {Object.entries(keyframeNodes).map(([key, keyframe]) => (
                 <SplineKeyframeNode
                     splineKey={splineKey}
                     keyframeKey={keyframe.id}
                 />
-            ))}
+            ))} */}
             <CatmullRomLine
                 points={nodes}
                 curveType="catmullrom"

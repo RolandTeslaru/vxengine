@@ -106,21 +106,6 @@ const replacer = (key, value) => {
     return value;
 };
 
-const UtilityNodesComponent = () => {
-    const utilityNodes = useObjectManagerAPI(state => state.utilityNodes);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(utilityNodes, replacer, 2)}
-        </pre>
-    );
-};
-
 const SettingsComponent = () => {
     const settings = useObjectSettingsAPI(state => state.settings);
     return (
@@ -239,8 +224,6 @@ const StateVisualizer = () => {
                 return <PropertiesStoreComponent />;
             case "vxobjects":
                 return <VxobjectsComponent />;
-            case "utilityNodes":
-                return <UtilityNodesComponent />;
             case "settings":
                 return <SettingsComponent />
             case "additionalSettings":
@@ -288,7 +271,6 @@ const StateVisualizer = () => {
                                 <SelectItem value={"currentTimeline"} >currentTimeline</SelectItem>
                                 <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
                                 <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
-                                <SelectItem value={"utilityNodes"} >utilityNodes</SelectItem>
                                 <SelectItem value={"settings"} >settings</SelectItem>
                                 <SelectItem value={"additionalSettings"} >additionalSettings</SelectItem>
                                 <SelectItem value={"splines"} >splines</SelectItem>

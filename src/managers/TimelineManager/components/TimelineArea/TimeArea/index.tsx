@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { prefix } from '../../utils/deal_class_prefix';
-import './time_area.scss';
-import { parserPixelToTime } from '../../utils/deal_data';
-import { useTimelineEditorAPI } from '../../store';
-import { handleSetCursor } from '../../utils/handleSetCursor';
+import './timeArea.scss';
 import { shallow } from 'zustand/shallow';
-import { CursorThumb } from '../cursor/cursor';
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_prefix';
+import { parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
+import { handleSetCursor } from '@vxengine/managers/TimelineManager/utils/handleSetCursor';
+import { CursorThumb } from '../cursor';
 
 const maxScaleCount = 100;
 

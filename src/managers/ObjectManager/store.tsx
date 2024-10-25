@@ -16,7 +16,6 @@ const selectObjects = (state: ObjectEditorStoreProps, vxkeys: string[]): ObjectE
         ...state,
         selectedObjectKeys: vxkeys,
         selectedObjects,
-        selectedUtilityNode: undefined
     };
 };
 
@@ -34,29 +33,6 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectEditorStoreProps>(
         ...state,
         hoveredObject: vxobject,
     })),
-    
-    utilityNodes: {},
-
-    selectedUtilityNode: undefined,
-    setSelectedUtilityNode: (utilityNodeKey) => {
-        set(produce((state: ObjectEditorStoreProps) => {
-            state.selectedUtilityNode = state.utilityNodes[utilityNodeKey]
-        }))
-    },
-    addUtilityNode: (node, key) => {
-        set(produce((state: ObjectEditorStoreProps) => {
-            state.utilityNodes[key] = node
-        }))
-    },
-    removeUtilityNode: (key) => {
-        set(produce((state: ObjectEditorStoreProps) => {
-            delete state.utilityNodes[key]
-        }))
-    },
-    utilityTransformAxis: ['X', 'Y', 'Z'],
-    setUtilityTransformAxis: (axis: string[]) => set({
-        utilityTransformAxis: axis
-    })
 }))
 
 export const useObjectPropertyAPI = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({

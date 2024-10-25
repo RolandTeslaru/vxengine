@@ -19,7 +19,8 @@ export interface vxSplineNodeProps extends BaseVxProps {
     splineKey: string
 }
 export interface vxKeyframeNodeProps extends BaseVxProps {
-    type: "keyframeNode"
+    type: "keyframeNode",
+    axis: string[]
     data: {
         keyframeKeys: string[] | string
     }

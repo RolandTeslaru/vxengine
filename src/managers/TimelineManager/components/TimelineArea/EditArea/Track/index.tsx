@@ -1,12 +1,11 @@
 import React, { FC, useEffect, useState } from 'react';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@vxengine/components/shadcn/alertDialog';
+import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserPixelToTime, parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
-import { RowDnd } from '../../row_rnd/row_rnd';
-import { DragLineData } from '../drag_lines';
 import TrackContextMenu from './TrackContextMenu';
 import Keyframe from '../Keyframe';
+import { DragLineData } from '../DragLines';
+import { RowDnd } from '../RowDnd';
 
 export type EditRowProps = {
     trackKey: string

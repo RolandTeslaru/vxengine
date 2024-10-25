@@ -7,7 +7,7 @@ import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { vxKeyframeNodeProps } from '@vxengine/types/objectStore';
+import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/types/objectStore';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 
 
@@ -62,7 +62,7 @@ const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, 
 
     const [value, setValue] = useState(
         getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
-        || getNestedProperty(firstObjectSelectedRef, propertyPath)
+        || getNestedProperty(firstObjectSelectedRef, propertyPath) || "err"
     );
 
     // This trigger when the first object selected is changed
@@ -106,8 +106,8 @@ const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, 
 
     const handleSplineNodeChange = (newValue: number) => {
         const axis = propertyPath.slice(-1); // Assuming propertyPath ends with 'x', 'y', or 'z'
-        const nodeIndex = extractNodeIndexFromPath(propertyPath); // You need a way to extract this from the propertyPath
-        const splineKey = vxkey; // Assuming the vxkey is the splineKey
+        const nodeIndex = (firstObjectSelected as vxSplineNodeProps).index// You need a way to extract this from the propertyPath
+        const splineKey = (firstObjectSelected as vxSplineNodeProps).splineKey
 
         useSplineManagerAPI.getState().changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
     };

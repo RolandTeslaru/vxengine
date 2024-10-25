@@ -1,9 +1,9 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserPixelToTime, parserTimeToPixel } from '../../utils/deal_data';
-import { RowDnd } from '../row_rnd/row_rnd';
 import { useRefStore } from '@vxengine/utils/useRefStore';
-import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from './handlers';
+import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from '../../utils/cursorHandlers';
+import { RowDnd } from './EditArea/RowDnd';
 
 
 /** Animation timeline component parameters */
@@ -74,6 +74,3 @@ export const CursorThumb: FC<CursorProps> = ({
       </RowDnd>
   );
 };
-
-
-

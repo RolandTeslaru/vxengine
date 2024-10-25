@@ -5,7 +5,6 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
-import { KeyframeNodeDataProps } from "@vxengine/types/utilityNode";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/types/objectStore";
 
@@ -14,7 +13,6 @@ export const ObjectManagerDriver = () => {
   const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
 
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
-  const utilityTransfromAxis = useObjectManagerAPI(state => state.utilityTransformAxis)
   const transformMode = useObjectManagerAPI(state => state.transformMode);
 
   const firstObjectSelectedRef = firstSelectedObject?.ref.current;
@@ -37,48 +35,63 @@ export const ObjectManagerDriver = () => {
   };
 
   const handleEntiyChange = (e) => {
+    if (!firstObjectSelectedRef) return
     const controls = e.target;
     const axis = controls.axis;
 
-    if (firstObjectSelectedRef && axis) {
-      const vxkey = firstSelectedObject.vxkey;
+    if (!axis) return
 
-      // Map axis letters to property names
-      const axisMap = {
-        X: 'x',
-        Y: 'y',
-        Z: 'z',
-      };
+    const vxkey = firstSelectedObject.vxkey;
 
-      // Determine which properties have changed based on the axis
-      const axes = axis.split('');
-      axes.forEach((axisLetter: string) => {
-        const propertyAxis = axisMap[axisLetter];
+    // Map axis letters to property names
+    const axisMap = {
+      X: 'x',
+      Y: 'y',
+      Z: 'z',
+    };
 
-        if (transformMode === 'translate' && propertyAxis) {
+    // Determine which properties have changed based on the axis
+    const axes = axis.split('');
+    axes.forEach((axisLetter: string) => {
+      const propertyAxis = axisMap[axisLetter];
+      if (!propertyAxis) return;
+
+      switch (transformMode) {
+        case 'translate': {
+          const newValue = firstObjectSelectedRef.position[propertyAxis];
           handlePropertyValueChange(
             vxkey,
             `position.${propertyAxis}`,
-            firstObjectSelectedRef.position[propertyAxis],
+            newValue,
             false
           );
-        } else if (transformMode === 'rotate' && propertyAxis) {
+          break;
+        }
+
+        case 'rotate': {
+          const newValue = firstObjectSelectedRef.rotation[propertyAxis]
           handlePropertyValueChange(
             vxkey,
             `rotation.${propertyAxis}`,
-            firstObjectSelectedRef.rotation[propertyAxis],
+            newValue,
             false
           );
-        } else if (transformMode === 'scale' && propertyAxis) {
+          break;
+        }
+
+        case 'scale': {
+          const newValue = firstObjectSelectedRef.scale[propertyAxis]
           handlePropertyValueChange(
             vxkey,
             `scale.${propertyAxis}`,
-            firstObjectSelectedRef.scale[propertyAxis],
+            newValue,
             false
           );
+          break;
         }
-      });
-    }
+      }
+
+    });
   }
 
   const handleKeyframeNodeChange = () => {
@@ -92,7 +105,11 @@ export const ObjectManagerDriver = () => {
         const axis = getKeyframeAxis(keyframe.propertyPath);
         setKeyframeValue(keyframeKey, newPosition[axis]);
 
-        useObjectPropertyAPI.getState().updateProperty(firstSelectedObject.vxkey, keyframe.propertyPath, newPosition[axis])
+        useObjectPropertyAPI.getState().updateProperty(
+          firstSelectedObject.vxkey,
+          keyframe.propertyPath,
+          newPosition[axis]
+        )
       }
     );
 
@@ -104,23 +121,24 @@ export const ObjectManagerDriver = () => {
     useSplineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
   }
 
-  // Node object must allow all axis movement and only translate
-  // This set teh axis to XYZ and the transform mode to "translate"
+  // Set the Axis of the controls when a node is selected
   useEffect(() => {
+    const controls = transformControlsRef.current as any;
     if (!firstSelectedObject) return
-    if (
-      firstSelectedObject.type === "keyframeNode" ||
-      firstSelectedObject.type === "splineNode" 
-    ) {
-      if(!transformControlsRef.current) return
-      
-      useObjectManagerAPI.getState().setTransformMode("translate");
-      useObjectManagerAPI.getState().setUtilityTransformAxis(['X', 'Y', 'Z']);
-      const controls = transformControlsRef.current as any;
+    if (!controls) return
 
+    useObjectManagerAPI.getState().setTransformMode("translate");
+
+    if ( firstSelectedObject.type === "splineNode" ) {
       controls.showX = true;
       controls.showY = true;
       controls.showZ = true;
+    }
+    else if(firstSelectedObject.type === "keyframeNode"){
+      const axis = firstSelectedObject.axis
+      controls.showX = axis.includes('X')
+      controls.showY = axis.includes('Y')
+      controls.showZ = axis.includes('Z')
     }
   }, [firstSelectedObject])
 

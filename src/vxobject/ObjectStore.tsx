@@ -4,8 +4,6 @@
 
 import { create } from 'zustand';
 import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
-import { shallow } from 'zustand/shallow';
-import { produce } from "immer"
 
 const addObject = (state: ObjectStoreStateProps, vxobject: vxObjectProps): ObjectStoreStateProps => ({
   ...state,

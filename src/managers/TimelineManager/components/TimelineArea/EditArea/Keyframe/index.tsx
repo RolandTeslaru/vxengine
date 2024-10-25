@@ -3,8 +3,8 @@ import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import React, { useEffect, useState } from 'react'
-import { RowDnd } from '../../row_rnd/row_rnd';
 import KeyframeContextMenu from './KeyframeContextMenu';
+import { RowDnd } from '../RowDnd';
 
 
 export type EditKeyframeProps = {
