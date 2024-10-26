@@ -119,7 +119,8 @@ export const computeGroupPathFromRawObject = (
       nextRowIndex: nextRowIndex,
       children: groupedPaths,
       trackKey: null,
-      isCollapsed: false
+      isCollapsed: false,
+      maxDepth: finalIndex - rowIndex + 1
     };
     
     return { groupedPaths: rootGroupedPaths, newIndex: nextRowIndex };

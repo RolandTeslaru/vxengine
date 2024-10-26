@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
 import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
@@ -44,7 +44,7 @@ const TimelineArea = (() => {
   };
 
   return (
-    <div className={`w-full h-full border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl relative flex flex-col overflow-hidden  `}>
+    <div className={`w-full h-full min-h-[414px] border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl relative flex flex-col overflow-hidden  `}>
       <div
         ref={editAreaRef}
         onScroll={handleScroll} // Ensure this is not interfering with default behavior

@@ -67,6 +67,37 @@ export const TimelineEditorUI = React.memo(() => {
             </div>
 
             {/* M A I N  */}
+            <TimelineEditorContent/>
+
+            {/* F O O T E R */}
+            <TimelineEditorFooter />
+        </>
+    )
+})
+
+const TimelineEditorContent = React.memo(() => {
+    const [virtualHeight, setVirtualHeight] = useState(0);
+    const ref = useRef();
+    useEffect(() => {
+        if (ref.current) {
+          const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+              if (entry.target === ref.current) {
+                setVirtualHeight(entry.contentRect.height);
+              }
+            }
+          });
+    
+          resizeObserver.observe(ref.current);
+    
+          // Clean up on component unmount
+          return () => {
+            resizeObserver.disconnect();
+          };
+        }
+      }, []);
+    
+    return (
             <ResizablePanelGroup
                 className='relative flex flex-row w-full flex-grow overflow-hidden'
                 direction='horizontal'
@@ -81,10 +112,6 @@ export const TimelineEditorUI = React.memo(() => {
                     <TimelineArea />
                 </ResizablePanel>
             </ResizablePanelGroup>
-
-            {/* F O O T E R */}
-            <TimelineEditorFooter/>
-        </>
     )
 })
 
@@ -93,7 +120,7 @@ const TimelineEditorFooter = React.memo(() => {
     const setScale = useTimelineEditorAPI(state => state.setScale);
     const snap = useTimelineEditorAPI(state => state.snap);
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
-    
+
     const { open } = useVXUiStore(state => ({ open: state.timelineEditorOpen }))
     const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)

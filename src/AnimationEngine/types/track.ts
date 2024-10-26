@@ -77,7 +77,8 @@ export interface PathGroup {
     prevRowIndex?: number;
     nextRowIndex?: number;
     localFinalTrackIndex?: number;
-    isCollapsed: boolean
+    isCollapsed: boolean;
+    maxDepth?: number
 }
 // Editor Data Object
 export interface edObjectProps {

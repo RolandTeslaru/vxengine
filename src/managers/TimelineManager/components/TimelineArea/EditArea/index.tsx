@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
@@ -6,6 +6,8 @@ import Track from './Track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';
 import { CursorLine } from '../cursor';
+import { Virtuoso } from 'react-virtuoso';
+import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
 
 export const EditArea = () => {
   const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
@@ -15,6 +17,7 @@ export const EditArea = () => {
   const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
 
   const { dragLineData } = useDragLine();
+
 
   const startLeft = 22
 
@@ -34,52 +37,57 @@ export const EditArea = () => {
     return allRows;
   }, [editorObjects]);
 
+  const renderRow = (index: number) => {
+    const track = verticalRowList[index];
+    if (track) {
+      return (
+        <Track
+          style={{
+            height: `${DEFAULT_ROW_HEIGHT}px`,
+            backgroundPositionX: `0, ${startLeft}px`,
+            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
+          }}
+          key={index}
+          trackKey={track}
+          dragLineData={dragLineData}
+        />
+      );
+    }
+    else {
+      return (
+        <div
+          key={index}
+          style={{
+            height: `${DEFAULT_ROW_HEIGHT}px`,
+            backgroundPositionX: `0, ${startLeft}px`,
+            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
+          }}
+          className="relative py-4 border-y border-neutral-900 bg-black bg-opacity-60"
+        >
+          {/* Empty row */}
+        </div>
+      );
+    }
+  }
 
-  const renderRows = () => {
-    return verticalRowList.map((row, index) => {
-      const track = verticalRowList[index];
-      if (row) {
-        return (
-          <Track
-            style={{
-              height: `${DEFAULT_ROW_HEIGHT}px`,
-              backgroundPositionX: `0, ${startLeft}px`,
-              backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
-            }}
-            key={index}
-            trackKey={track} 
-            dragLineData={dragLineData}
-          />
-        );
-      } else {
-        return (
-          <div
-            key={index}
-            style={{
-              height: `${DEFAULT_ROW_HEIGHT}px`,
-              backgroundPositionX: `0, ${startLeft}px`,
-              backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
-            }}
-            className="relative py-4 border-y border-neutral-900 bg-black bg-opacity-60"
-          >
-            {/* Empty row */}
-          </div>
-        );
-      }
-    });
-  };
   const timelineClientWidth = timelineLength * DEFAULT_SCALE_WIDTH + startLeft
 
+  const rows = verticalRowList.length;
+
   return (
-    <div
-      style={{
-        position: 'relative',
-        height: `${verticalRowList.length * DEFAULT_ROW_HEIGHT}px`,
-        width: `${timelineClientWidth}px` // Ensure this is greater than the container's width
-      }}
-    >
-      <CursorLine/>
-      {renderRows()}
+    <div className='w-full h-full'>
+      <Virtuoso
+        style={{
+          position: 'relative',
+          height: `100%`,
+          width: `${timelineClientWidth}px` // Ensure this is greater than the container's width
+        }}
+        totalCount={rows}
+        itemContent={index => renderRow(index)}
+      >
+        {/* <CursorLine /> */}
+        {/* {renderRows()} */}
+      </Virtuoso>
     </div>
   );
 };

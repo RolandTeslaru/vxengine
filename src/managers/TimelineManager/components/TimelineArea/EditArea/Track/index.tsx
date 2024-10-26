@@ -17,6 +17,8 @@ const startLeft = 22
 
 const Track: FC<EditRowProps> = ({ trackKey, style}) => {
     const track = useTimelineEditorAPI(state => state.tracks[trackKey])
+
+    if(!track) return
     return (
         <div
             className='relative  py-4 border-y  border-neutral-900'
