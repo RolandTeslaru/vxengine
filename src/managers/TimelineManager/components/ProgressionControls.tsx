@@ -5,7 +5,7 @@ import { useVXEngine } from "@vxengine/engine";
 import TimeRender from "./TimeRender";
 import { handleSetCursor } from "../utils/handleSetCursor";
 
-const ProgressionControls = () => {
+const ProgressionControls = React.memo(() => {
     const animationEngine = useVXEngine(state => state.animationEngine)
     const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
     //Start or pause
@@ -49,6 +49,6 @@ const ProgressionControls = () => {
             </button>
         </div>
     )
-}
+})
 
 export default ProgressionControls

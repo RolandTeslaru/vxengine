@@ -11,15 +11,13 @@ import { useTimelineEditorAPI } from '../..';
 import { handleSetCursor } from '../../utils/handleSetCursor';
 import { TimeArea } from './TimeArea';
 import { EditArea } from './EditArea';
+import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 
 export const startLeft = 0;
 
 const TimelineArea = (() => {
-  const scale = useTimelineEditorAPI(state => state.scale)
-
   const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
   const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
-  const autoScrollWhenPlay = useRef<boolean>(true);
 
   // Sync Cursor with Engine time
   useAnimationEngineEvent(
@@ -27,12 +25,12 @@ const TimelineArea = (() => {
     ({ time }) => {
       handleSetCursor({ time, rerender: false })
 
-      if (autoScrollWhenPlay.current) {
-        const autoScrollFrom = useTimelineEditorAPI.getState().clientWidth * 70 / 100;
-        const left = time * (DEFAULT_SCALE_WIDTH / scale) + startLeft - autoScrollFrom;
-        timelineAreaRef.current.scrollLeft = left;
-        scrollLeftRef.current = left
-      }
+      const scale = useTimelineEditorAPI.getState().scale
+      
+      const autoScrollFrom = useTimelineEditorAPI.getState().clientWidth * 70 / 100;
+      const left = time * (ONE_SECOND_UNIT_WIDTH / scale) + startLeft - autoScrollFrom;
+      timelineAreaRef.current.scrollLeft = left;
+      scrollLeftRef.current = left
     }
   );
 

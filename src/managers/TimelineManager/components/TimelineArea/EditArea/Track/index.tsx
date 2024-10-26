@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserPixelToTime, parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
@@ -6,6 +6,7 @@ import TrackContextMenu from './TrackContextMenu';
 import Keyframe from '../Keyframe';
 import { DragLineData } from '../DragLines';
 import { RowDnd } from '../RowDnd';
+import KeyframeContextMenu from '../Keyframe/KeyframeContextMenu';
 
 export type EditRowProps = {
     trackKey: string
@@ -14,47 +15,51 @@ export type EditRowProps = {
 
 const startLeft = 22
 
-const Track: FC<EditRowProps> = ({ trackKey, style}) => {
-    const track = useTimelineEditorAPI(state => state.tracks[trackKey])
+const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
+    const keyframes = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
 
-    if(!track) return
+    if (!keyframes) return
     return (
         <div
             className='relative  py-4 border-y  border-neutral-900'
-            style={style}
         >
-            {track.keyframes.map((keyframeKey: string, index: number) => {
-                if (index === 0) return null;
+            <ContextMenu>
+                {keyframes.map((keyframeKey: string, index: number) => {
+                    if (index === 0) return null;
 
-                const firstKeyframeKey = track.keyframes[index - 1]
-                const secondKeyframeKey = keyframeKey
-                return (
-                    <TrackSegment
-                        firstKeyframeKey={firstKeyframeKey}
-                        secondKeyframeKey={secondKeyframeKey}
-                        trackKey={trackKey}
-                        key={index}
-                    />
-                )
-            })}
+                    const firstKeyframeKey = keyframes[index - 1]
+                    const secondKeyframeKey = keyframeKey
+                    return (
+                        <TrackSegment
+                            firstKeyframeKey={firstKeyframeKey}
+                            secondKeyframeKey={secondKeyframeKey}
+                            trackKey={trackKey}
+                            key={index}
+                        />
+                    )
+                })}
+                <TrackContextMenu trackKey={trackKey} />
+            </ContextMenu>
 
             {/* Render Keyframes */}
-            {track.keyframes.map((keyframeKey: string, index) => (
-                // @ts-expect-error
-                <Keyframe
-                    key={index}
-                    track={track}
-                    keyframeKey={keyframeKey}
-                />
+
+            {keyframes.map((keyframeKey: string, index) => (
+                <>
+                    <Keyframe
+                        key={index}
+                        track={useTimelineEditorAPI.getState().tracks[trackKey]}
+                        keyframeKey={keyframeKey}
+                    />
+                </>
             ))}
         </div>
     );
-};
+});
 
 export default Track
 
 
-const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey,  }:
+const TrackSegment = React.memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
     { firstKeyframeKey: string, secondKeyframeKey: string, trackKey: string }
 ) => {
     const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey])
@@ -69,10 +74,16 @@ const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey,  }:
 
     // When deleting a keyframe an issue appeasr with the endX where it cant read 
     // the time on the secondKeyframe becuase its deleted
-    if(!firstKeyframe || !secondKeyframe) return
+    if (!firstKeyframe || !secondKeyframe) return
 
-    const startX = parserTimeToPixel(firstKeyframe.time, startLeft);
-    const endX = parserTimeToPixel(secondKeyframe.time, startLeft);
+    const scale = useTimelineEditorAPI(state => state.scale)
+
+    const [startX, endX] = useMemo(() => {
+        const startX = parserTimeToPixel(firstKeyframe.time, startLeft)
+        const endX = parserTimeToPixel(secondKeyframe.time, startLeft);
+
+        return [startX, endX];
+    }, [scale, firstKeyframe.time, secondKeyframe.time]);
 
     const handleOnDrag = (data: { left: number, lastLeft: number }) => {
         const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime
@@ -97,27 +108,24 @@ const TrackSegment = ({ firstKeyframeKey, secondKeyframeKey, trackKey,  }:
     }
 
     return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <RowDnd
-                    onDrag={handleOnDrag}
-                    left={startX}
-                    start={startLeft}
-                    width={endX - startX}
+        <ContextMenuTrigger>
+            <RowDnd
+                onDrag={handleOnDrag}
+                left={startX}
+                start={startLeft}
+                width={endX - startX}
+            >
+                <div
+                    key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
+                    className={`absolute bg-white h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
+                    style={{
+                        top: `calc(50% - 3px)`,
+                    }}
+                    onClick={handleOnClick}
                 >
-                    <div
-                        key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
-                        className={`absolute bg-white h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
-                        style={{
-                            top: `calc(50% - 3px)`,
-                        }}
-                        onClick={handleOnClick}
-                    >
-                    </div>
-                </RowDnd>
-            </ContextMenuTrigger>
-            <TrackContextMenu trackKey={trackKey}/>
-        </ContextMenu>
+                </div>
+            </RowDnd>
+        </ContextMenuTrigger>
     )
-}
+})
 

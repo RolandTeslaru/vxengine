@@ -11,7 +11,7 @@ export const InteractComp: FC<{
   resizable: boolean;
   resizableOptions: ResizableOptions;
   children?: React.ReactNode
-}> = ({ children, interactRef, draggable, resizable, draggableOptions, resizableOptions }) => {
+}> = React.memo(({ children, interactRef, draggable, resizable, draggableOptions, resizableOptions }) => {
   const nodeRef = useRef<HTMLElement>();
   const interactable = useRef<Interactable>();
   const draggableOptionsRef = useRef<DraggableOptions>();
@@ -49,4 +49,4 @@ export const InteractComp: FC<{
     ref: nodeRef,
     draggable: false,
   });
-};
+});

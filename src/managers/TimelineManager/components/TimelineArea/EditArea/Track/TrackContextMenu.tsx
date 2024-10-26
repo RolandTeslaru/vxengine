@@ -7,17 +7,17 @@ interface Props {
   trackKey: string
 }
 
-const TrackContextMenu: React.FC<Props> = ({trackKey}) => {
+const TrackContextMenu: React.FC<Props> = React.memo(({trackKey}) => {
   return (
     <ContextMenuContent>
       <ALERT_MakePropertyStatic trackKey={trackKey} />
     </ContextMenuContent>
   )
-}
+})
 
 export default TrackContextMenu
 
-const ALERT_MakePropertyStatic: React.FC<Props> = ({trackKey}) => {
+const ALERT_MakePropertyStatic: React.FC<Props> = React.memo(({trackKey}) => {
   const keyframeLengthForTrack = useTimelineEditorAPI(state => state.tracks[trackKey].keyframes.length)
   const makePropertyStatic = useTimelineEditorAPI(state => state.makePropertyStatic)
   const [show, setShow] = useState(false);
@@ -62,5 +62,4 @@ const ALERT_MakePropertyStatic: React.FC<Props> = ({trackKey}) => {
       </AlertDialogContent>
     </AlertDialog>
   )
-}
-
+})

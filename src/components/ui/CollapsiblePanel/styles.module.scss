@@ -1,0 +1,20 @@
+.gradient_border_mask{
+  background: linear-gradient(130deg, rgb(38, 38, 38) 0%, rgb(23, 23, 23) 40%) border-box;
+  
+  &::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 15px;
+    border: 1px solid transparent;
+    background: linear-gradient(45deg, 
+                              rgba(114, 114, 114, 0.5) 0%, 
+                              rgba(17, 17, 17, 0.5) 30%,
+                              rgba(17, 17, 17, 0.5) 70%,
+                              rgba(114, 114, 114, 0.5) 100%, 
+                              ) border-box;
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none; /* Add this line */
+  }
+}

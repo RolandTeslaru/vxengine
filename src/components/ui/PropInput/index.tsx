@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react'
 import { useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store'
 import { getNestedProperty, setNestedProperty } from '@vxengine/utils/nestedProperty'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
@@ -9,14 +9,14 @@ import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/types/objectStore';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-
+import * as THREE from "three"
 
 interface Props extends InputProps {
     propertyPath: string
     horizontal?: boolean
     disableTracking?: boolean
 }
-export const PropInput: React.FC<Props> = (props) => {
+export const PropInput: FC<Props> = (props) => {
     const { propertyPath, className, horizontal, disableTracking = false, ...inputProps } = props
     const disabled = props.disabled ? props.disabled : false;
     const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey);
@@ -28,10 +28,11 @@ export const PropInput: React.FC<Props> = (props) => {
         <ContextMenu>
             <ContextMenuTrigger className={className}>
                 <div className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} `}>
-                    <div className={(horizontal ? "w-auto mx-auto" : "h-auto my-auto")}>                        <KeyframeControl
-                        trackKey={trackKey}
-                        disabled={disabled || disableTracking}
-                    />
+                    <div className={(horizontal ? "w-auto mx-auto" : "h-auto my-auto")}>
+                        <KeyframeControl
+                            trackKey={trackKey}
+                            disabled={disabled || disableTracking}
+                        />
                     </div>
                     <ValueRenderer
                         propertyPath={propertyPath}
@@ -53,72 +54,79 @@ interface ValueRendererProps {
     isPropertyTracked: boolean
 }
 
-const ValueRenderer: React.FC<ValueRendererProps> = React.memo(({ propertyPath, inputProps, isPropertyTracked }) => {
-    const vxkey = useObjectManagerAPI(state => state.selectedObjects[0].vxkey);
-    const firstObjectSelected = useObjectManagerAPI(state => state.selectedObjects[0]);
-    const firstObjectSelectedRef = firstObjectSelected?.ref.current;
+const ValueRenderer: FC<ValueRendererProps> = memo(
+    ({ propertyPath, inputProps, isPropertyTracked }) => {
+        const vxkey = useObjectManagerAPI((state) => state.selectedObjects[0].vxkey);
+        const firstObjectSelected = useObjectManagerAPI((state) => state.selectedObjects[0]);
+        const firstObjectSelectedRef = firstObjectSelected?.ref.current;
 
-    const vxType = firstObjectSelected.type;
+        const getDefaultValue = () => {
+            const val =
+                getNestedProperty(
+                    useObjectPropertyAPI.getState().properties[vxkey],
+                    propertyPath
+                ) || getNestedProperty(firstObjectSelectedRef, propertyPath);
 
-    const [value, setValue] = useState(
-        getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
-        || getNestedProperty(firstObjectSelectedRef, propertyPath) || "err"
-    );
+            return val;
+        };
 
-    // This trigger when the first object selected is changed
-    useEffect(() => {
-        setValue(
-            getNestedProperty(useObjectPropertyAPI.getState().properties[vxkey], propertyPath)
-            || getNestedProperty(firstObjectSelectedRef, propertyPath)
-        )
-    }, [vxkey])
+        const vxType = firstObjectSelected.type;
+        const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
-            const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
-            const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
+        useEffect(() => {
+            if(!inputRef.current.value)
+                inputRef.current.value = getDefaultValue();
+            const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
+                const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
+                const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
 
-            if (newValue !== prevValue) {
-                setValue(newValue);
+                if (newValue !== prevValue && inputRef.current && inputRef.current.value !== newValue) {
+                        inputRef.current.value = newValue;
+                }
+            });
+
+            return () => unsubscribe();
+        }, [vxkey, propertyPath, isPropertyTracked]);
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newValue = parseFloat(e.target.value);
+            switch (vxType) {
+                case "entity": {
+                    handleEntityChange(newValue);
+                    break;
+                }
+                case "splineNode": {
+                    handleSplineNodeChange(newValue);
+                    break;
+                }
             }
-        });
+        };
 
-        return () => unsubscribe();
-    }, [vxkey, propertyPath, isPropertyTracked]);
+        const handleEntityChange = (newValue: number) => {
+            useTimelineEditorAPI
+                .getState()
+                .handlePropertyValueChange(vxkey, propertyPath, newValue);
+        };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = parseFloat(e.target.value);
-        switch (vxType) {
-            case "entity": {
-                handleEntityChange(newValue)
-                break;
-            }
-            case "splineNode": {
-                handleSplineNodeChange(newValue);
-            }
-        }
-        setValue(newValue);
-    };
+        const handleSplineNodeChange = (newValue: number) => {
+            const axis = propertyPath.slice(-1); // Assuming propertyPath ends with 'x', 'y', or 'z'
+            const nodeIndex = (firstObjectSelected as vxSplineNodeProps).index;
+            const splineKey = (firstObjectSelected as vxSplineNodeProps).splineKey;
 
-    const handleEntityChange = (newValue: number) => {
-        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+            useSplineManagerAPI
+                .getState()
+                .changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
+        };
+
+        
+        return (
+            <Input
+                ref={inputRef}
+                // value={getDefaultValue()} // Removed to make input uncontrolled
+                onChange={handleChange}
+                className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-10"
+                {...inputProps}
+            />
+        );
     }
-
-    const handleSplineNodeChange = (newValue: number) => {
-        const axis = propertyPath.slice(-1); // Assuming propertyPath ends with 'x', 'y', or 'z'
-        const nodeIndex = (firstObjectSelected as vxSplineNodeProps).index// You need a way to extract this from the propertyPath
-        const splineKey = (firstObjectSelected as vxSplineNodeProps).splineKey
-
-        useSplineManagerAPI.getState().changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
-    };
-
-
-    return (
-        <Input
-            value={value}
-            onChange={handleChange}
-            className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-10"
-            {...inputProps}
-        />
-    )
-})
+);

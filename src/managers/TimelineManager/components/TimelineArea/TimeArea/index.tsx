@@ -21,8 +21,10 @@ export const TimeArea = () => {
     (state) => state.timelines[currentTimelineID]?.length
   );
 
+  
   const startLeft = 20;
-
+  const timelineClientWidth = startLeft + timelineLength * ONE_SECOND_UNIT_WIDTH / scale
+  
   const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
   const totalUnits = OneSecondUnitSplitCount * timelineLength;
 
@@ -44,6 +46,7 @@ export const TimeArea = () => {
     <>
       <div
         className="sticky top-0 h-[32px] bg-neutral-950 z-10"
+        style={{width: `${timelineClientWidth}px`}}
         onClick={handleOnClick}
       >
         <CursorThumb />

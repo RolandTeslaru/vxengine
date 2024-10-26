@@ -12,7 +12,6 @@ import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 export type EditKeyframeProps = {
     track: ITrack;
     keyframeKey: string;
-    rowHeight: number
 };
 
 const Keyframe: React.FC<EditKeyframeProps> = ({

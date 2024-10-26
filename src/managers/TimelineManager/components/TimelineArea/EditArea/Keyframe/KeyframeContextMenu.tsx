@@ -7,7 +7,7 @@ interface Props {
     keyframeKey: string
 }
 
-const KeyframeContextMenu:React.FC<Props> = ({trackKey, keyframeKey}) => {
+const KeyframeContextMenu:React.FC<Props> = React.memo(({trackKey, keyframeKey}) => {
     const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
     
     return (
@@ -32,6 +32,6 @@ const KeyframeContextMenu:React.FC<Props> = ({trackKey, keyframeKey}) => {
             </ContextMenuItem>
         </ContextMenuContent>
     )
-}
+})
 
 export default KeyframeContextMenu

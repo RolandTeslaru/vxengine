@@ -33,7 +33,7 @@ export const CoreUI = () => {
 
             <FrequentStateVisualizer />
             <StateVisualizer />
-            <CameraManagerUI />
+            <CameraManagerUI /> 
 
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"

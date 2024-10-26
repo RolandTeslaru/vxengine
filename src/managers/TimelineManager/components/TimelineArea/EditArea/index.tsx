@@ -17,6 +17,8 @@ export const EditArea = () => {
   const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
   const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
 
+  const scale = useTimelineEditorAPI(state => state.scale)
+
   const editAreaRef =  useRefStore(state => state.editAreaRef);
   const trackListRef = useRefStore(state => state.trackListRef)
 
@@ -46,11 +48,6 @@ export const EditArea = () => {
     if (track) {
       return (
         <Track
-          style={{
-            height: `${DEFAULT_ROW_HEIGHT}px`,
-            backgroundPositionX: `0, ${startLeft}px`,
-            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
-          }}
           key={index}
           trackKey={track}
         />
@@ -73,7 +70,7 @@ export const EditArea = () => {
     }
   }
 
-  const timelineClientWidth = timelineLength * DEFAULT_SCALE_WIDTH + startLeft
+  const timelineClientWidth = timelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
 
   const rows = verticalRowList.length;
 

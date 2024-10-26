@@ -31,6 +31,7 @@ import { useSourceManagerAPI } from '../managers/SourceManager/store'
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
+const DEBUG_OBJECT_INIT = false;
 
 export const ENGINE_PRECISION = 3;
 
@@ -218,7 +219,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if(object3DRef)
       this._object3DCache.set(object.vxkey, object3DRef);
 
-    console.log("VXEngine AnimationEngine: Initializing vxobject", object)
+    if(DEBUG_OBJECT_INIT) console.log("VXEngine AnimationEngine: Initializing vxobject", object)
+      
     const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
 
     // Initialize the edObject if it doesnt exist

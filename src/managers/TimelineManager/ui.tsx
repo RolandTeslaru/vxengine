@@ -24,10 +24,7 @@ export const scale = 5;
 
 
 export const TimelineEditorUI = React.memo(() => {
-    const { open, setOpen } = useVXUiStore(state => ({ open: state.timelineEditorOpen, setOpen: state.setTimelineEditorOpen }))
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
-
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
     // TODO: Fix this length
     // const handleLengthInputChange = (e) => {
@@ -49,13 +46,7 @@ export const TimelineEditorUI = React.memo(() => {
             <div className={`flex flex-row gap-2 w-full  
                             ${timelineEditorAttached ? "pr-2" : "px-2"}`}
             >
-                {timelineEditorAttached &&
-                    <button className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
-                        onClick={() => setOpen(!open)}
-                    >
-                        <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
-                    </button>
-                }
+                <MinimizeButton />
 
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
                     Timeline Editor
@@ -67,7 +58,7 @@ export const TimelineEditorUI = React.memo(() => {
             </div>
 
             {/* M A I N  */}
-            <TimelineEditorContent/>
+            <TimelineEditorContent />
 
             {/* F O O T E R */}
             <TimelineEditorFooter />
@@ -75,53 +66,47 @@ export const TimelineEditorUI = React.memo(() => {
     )
 })
 
-const TimelineEditorContent = React.memo(() => {
-    const [virtualHeight, setVirtualHeight] = useState(0);
-    const ref = useRef();
-    useEffect(() => {
-        if (ref.current) {
-          const resizeObserver = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-              if (entry.target === ref.current) {
-                setVirtualHeight(entry.contentRect.height);
-              }
-            }
-          });
-    
-          resizeObserver.observe(ref.current);
-    
-          // Clean up on component unmount
-          return () => {
-            resizeObserver.disconnect();
-          };
-        }
-      }, []);
-    
+const MinimizeButton = React.memo(() => {
+    const open = useVXUiStore(state => state.timelineEditorOpen);
+    const setOpen = useVXUiStore(state => state.setTimelineEditorOpen)
+    const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
     return (
-            <ResizablePanelGroup
-                className='relative flex flex-row w-full flex-grow overflow-hidden'
-                direction='horizontal'
-            >
-                <ResizablePanel defaultSize={35}>
-                    <div className='h-full flex flex-col overflow-hidden'>
-                        <TrackVerticalList />
-                    </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle className='mx-1' />
-                <ResizablePanel defaultSize={65}>
-                    <TimelineArea />
-                </ResizablePanel>
-            </ResizablePanelGroup>
+        <>
+            {timelineEditorAttached &&
+                <button className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
+                    onClick={() => setOpen(!open)}
+                >
+                    <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
+                </button>
+            }
+        </>
+    )
+})
+
+const TimelineEditorContent = React.memo(() => {
+    return (
+        <ResizablePanelGroup
+            className='relative flex flex-row w-full flex-grow overflow-hidden'
+            direction='horizontal'
+        >
+            <ResizablePanel defaultSize={35}>
+                <div className='h-full flex flex-col overflow-hidden'>
+                    <TrackVerticalList />
+                </div>
+            </ResizablePanel>
+            <ResizableHandle withHandle className='mx-1' />
+            <ResizablePanel defaultSize={65}>
+                <TimelineArea />
+            </ResizablePanel>
+        </ResizablePanelGroup>
     )
 })
 
 const TimelineEditorFooter = React.memo(() => {
-    const scale = useTimelineEditorAPI(state => state.scale);
-    const setScale = useTimelineEditorAPI(state => state.setScale);
     const snap = useTimelineEditorAPI(state => state.snap);
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
 
-    const { open } = useVXUiStore(state => ({ open: state.timelineEditorOpen }))
+    const open = useVXUiStore(state => state.timelineEditorOpen)
     const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
 
@@ -136,19 +121,7 @@ const TimelineEditorFooter = React.memo(() => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
-                    <div className='flex flex-row gap-2'>
-                        <p className='text-xs h-auto my-auto'>Scale {scale}</p>
-                        <Slider
-                            defaultValue={[scale]}
-                            max={20}
-                            step={0.1}
-                            min={0.1}
-                            className='w-24 my-auto'
-                            onValueChange={(value) => {
-                                setScale(value[0])
-                            }}
-                        />
-                    </div>
+                    <ScaleSlider/>
                     <div className='flex flex-row gap-2'>
                         <p className='text-xs h-auto my-auto'>Snap</p>
                         <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto scale-75' />
@@ -177,7 +150,28 @@ const TimelineEditorFooter = React.memo(() => {
     )
 })
 
-export const TimelineSelect = () => {
+const ScaleSlider = () => {
+    const scale = useTimelineEditorAPI(state => state.scale);
+    const setScale = useTimelineEditorAPI(state => state.setScale);
+
+    return (
+        <div className='flex flex-row gap-2'>
+            <p className='text-xs h-auto my-auto w-20 whitespace-nowrap'>Scale {scale}</p>
+            <Slider
+                defaultValue={[scale]}
+                max={20}
+                step={0.1}
+                min={0.1}
+                className='w-24 my-auto'
+                onValueChange={(value) => {
+                    setScale(value[0])
+                }}
+            />
+        </div>
+    )
+}
+
+export const TimelineSelect = React.memo(() => {
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
@@ -201,11 +195,11 @@ export const TimelineSelect = () => {
             </SelectContent>
         </Select>
     )
-}
+})
 
 export const TimelineTools: React.FC<{
     visible: boolean,
-}> = ({ visible }) => {
+}> = React.memo(({ visible }) => {
     return (
         <AnimatePresence>
             {visible && (
@@ -240,4 +234,4 @@ export const TimelineTools: React.FC<{
             )}
         </AnimatePresence>
     )
-}
+})

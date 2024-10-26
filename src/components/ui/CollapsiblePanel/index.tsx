@@ -1,6 +1,7 @@
 import { ChevronRight } from '@geist-ui/icons'
 import { motion } from "framer-motion";
 import React, { useState } from 'react'
+import styles from "./styles.module.scss"
 
 interface Props {
     title: string,
@@ -14,11 +15,10 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={` z-20 w-full max-h-full relative !transform-gpu rounded-2xl p-2 pt-0 pb-0 
-                         ${open === false && "!h-[40px]"} `+ " border border-neutral-400 border-opacity-15 " +
-                         className  }
-            style={{background: "linear-gradient(130deg, rgba(20,20,20,1) 0%, rgba(10,10,10,1) 50%)"}}
-            // style={{ boxShadow: "0px 0px 5px 3px rgba(0,0,0, 0.6)" }}
+        <div className={` z-20 w-full h-fit relative !transform-gpu rounded-2xl p-2 pt-0 pb-0 
+            ${open === false && "!h-[40px]"} ` + styles.gradient_border_mask + " " +
+            className}
+        // style={{ boxShadow: "0px 0px 5px 3px rgba(0,0,0, 0.6)" }}
         >
             {/* Title */}
             <div className="py-2 h-[40px] relative">
@@ -31,7 +31,7 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
             </div>
             {open && (
                 <motion.div className='text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400'
-                    style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1"}}
+                    style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
