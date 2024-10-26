@@ -28,8 +28,6 @@ export interface TimelineEditorStoreProps {
     changes: number
     addChange: () => void
 
-    scrollLeft: number;
-    setScrollLeft: (scrollLeft: number) => void;
     computeScrollLeft: (delta: number) => void;
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;

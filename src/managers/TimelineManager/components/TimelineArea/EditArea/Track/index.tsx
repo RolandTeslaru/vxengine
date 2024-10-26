@@ -10,7 +10,6 @@ import { RowDnd } from '../RowDnd';
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
-    dragLineData: DragLineData;
 };
 
 const startLeft = 22

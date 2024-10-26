@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
@@ -6,8 +6,9 @@ import Track from './Track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';
 import { CursorLine } from '../cursor';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, Components } from 'react-virtuoso';
 import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
+import { useRefStore } from '@vxengine/utils';
 
 export const EditArea = () => {
   const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
@@ -15,6 +16,9 @@ export const EditArea = () => {
 
   const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
   const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
+
+  const editAreaRef =  useRefStore(state => state.editAreaRef);
+  const trackListRef = useRefStore(state => state.trackListRef)
 
   const { dragLineData } = useDragLine();
 
@@ -49,7 +53,6 @@ export const EditArea = () => {
           }}
           key={index}
           trackKey={track}
-          dragLineData={dragLineData}
         />
       );
     }
@@ -74,6 +77,36 @@ export const EditArea = () => {
 
   const rows = verticalRowList.length;
 
+  const scrollSyncId = useRefStore(state => state.scrollSyncId);
+
+  const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+    const scrollContainer = e.target;
+
+    if(!trackListRef.current) return;
+
+    if(scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
+
+    scrollSyncId.current = requestAnimationFrame(() => {
+      // @ts-expect-error
+      trackListRef.current.scrollTop = scrollContainer.scrollTop;
+    })
+  }
+
+  const scrollerRefCallback = useCallback((node) => {
+    if(node){
+      // editAreaRef.current = node;
+    }
+  }, [])
+
+  const Scroller: Components['Scroller'] = React.forwardRef((props, ref) => {
+    const {children, ...rest} = props
+    return ( 
+      <div ref={ref} {...rest}>
+        <CursorLine/>
+        {children}
+      </div>
+    )
+  })
   return (
     <div className='w-full h-full'>
       <Virtuoso
@@ -84,10 +117,10 @@ export const EditArea = () => {
         }}
         totalCount={rows}
         itemContent={index => renderRow(index)}
-      >
-        {/* <CursorLine /> */}
-        {/* {renderRows()} */}
-      </Virtuoso>
+        scrollerRef={scrollerRefCallback}
+        onScroll={handleOnScroll}
+        components={{ Scroller }}
+      />
     </div>
   );
 };

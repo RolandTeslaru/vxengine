@@ -168,32 +168,27 @@ const TrackVerticalList = () => {
             );
         });
     };
-    
-    // const height = useMemo(() => {
-    //     let h = 0;
-    //     Object.values(groupedPaths).forEach(({ maxDepth }, index) => {
-    //         h += TRACK_HEIGHT * maxDepth;
-    //     })
 
-    //     return h
-    // }, [groupedPaths])
+    const scrollSyncId = useRefStore(state => state.scrollSyncId)
 
     const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target;
-        // @ts-expect-error
-        editAreaRef.current.scrollTop = scrollContainer.scrollTop;
+        if(!editAreaRef.current) return
+
+        if(scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current); 
+
+        scrollSyncId.current = requestAnimationFrame(() => {
+            // @ts-expect-error
+            editAreaRef.current.scrollTop = scrollContainer.scrollTop;
+        })
+
     }
-    
-    // return (
-    //     <ScrollArea
-    //         ref={trackListRef}
-    //         onScroll={handleOnScroll}
-    //         scrollbarPosition="left"
-    //         className="bg-neutral-950 mr-2 mt-[26px] w-full text-xs rounded-2xl py-2 px-4 border border-neutral-800 border-opacity-70"
-    //     >
-    //         {renderTopLevelGroupedPaths(groupedPaths, null)}
-    //     </ScrollArea>
-    // );
+
+    const scrollerRefCallback = useCallback((node) => {
+        if (node) {
+            trackListRef.current = node;
+        }
+    }, []);
 
     return (
         <div
@@ -206,7 +201,8 @@ const TrackVerticalList = () => {
                 }}
                 totalCount={Object.entries(groupedPaths).length}
                 itemContent={index => renderTopLevelGroupedPaths(index)}
-                // onScroll={handleOnScroll}
+                scrollerRef={scrollerRefCallback} 
+                onScroll={handleOnScroll}
             />
         </div>
     )

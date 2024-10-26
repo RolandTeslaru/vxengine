@@ -9,7 +9,7 @@ export const handleCursorOnDrag = ({ left }, scroll = 0) => {
   const cursorLineRef = useRefStore.getState().cursorLineRef
   const draggingLeftRef = useRefStore.getState().draggingLeftRef
 
-  const scrollLeft = useTimelineEditorAPI.getState().scrollLeft
+  const scrollLeft = useRefStore.getState().scrollLeftRef.current
 
   if (!scroll || scrollLeft === 0) {
     // When dragging, if the current left < left min, set the value to left min

@@ -8,6 +8,8 @@ import debounce from "lodash/debounce"
 
 const DEBUG = true;
 
+const PAUSED_DISK_SAVING = true;
+
 export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     diskFilePath: "",
     setDiskFilePath: (path) => set({ diskFilePath: path }),
@@ -20,6 +22,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
     saveDataToDisk: async () => {
         if (DEBUG) console.log("VXEngine SourceManager: Saving data to disk");
+        if(PAUSED_DISK_SAVING) return;
 
         const timelines = useAnimationEngineAPI.getState().timelines
         try {

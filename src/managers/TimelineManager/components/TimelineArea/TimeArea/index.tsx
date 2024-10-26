@@ -7,6 +7,7 @@ import { handleSetCursor } from '@vxengine/managers/TimelineManager/utils/handle
 import { CursorThumb } from '../cursor';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
+import { useRefStore } from '@vxengine/utils';
 
 const maxScaleCount = 100;
 
@@ -29,7 +30,7 @@ export const TimeArea = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = e.clientX - rect.x;
 
-    const scrollLeft = useTimelineEditorAPI.getState().scrollLeft;
+    const scrollLeft = useRefStore.getState().scrollLeftRef.current
     const left = Math.max(position + scrollLeft, startLeft);
     if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + startLeft - scrollLeft) return;
 

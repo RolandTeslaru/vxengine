@@ -13,6 +13,7 @@ import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
+import { useRefStore } from '@vxengine/utils';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -242,13 +243,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     clientWidth: 490,
     scrollHeight: 270,
 
-    scrollLeft: 0,
-    setScrollLeft: (value) => set({ scrollLeft: Math.max(value, 0) }),
     computeScrollLeft: (delta) => {
-        const scrollLeft = get().scrollLeft;
+        const scrollLeft = useRefStore.getState().scrollLeftRef.current
         const data = scrollLeft + delta;
 
-        get().setScrollLeft(scrollLeft + delta);
+        useRefStore.getState().scrollLeftRef.current = scrollLeft + delta
     },
 
     setScale: (count) => set({ scale: count }),

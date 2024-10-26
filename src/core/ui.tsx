@@ -186,11 +186,6 @@ const FrequentStateVisualizer = () => {
                 STATE_cursorTime &nbsp;&nbsp;
                 <CursorTimeVisualzier />
             </div>
-
-            <div className="flex flex-row">
-                STATE_scrollLeft &nbsp;&nbsp;
-                <ScrollLeftVisualizer />
-            </div>
         </div>
     )
 }
@@ -204,11 +199,3 @@ const CursorTimeVisualzier = () => {
     )
 }
 
-const ScrollLeftVisualizer = () => {
-    const scrollLeft = useTimelineEditorAPI(state => state.scrollLeft)
-    return (
-        <p>
-            {scrollLeft.toFixed(2)}
-        </p>
-    )
-}

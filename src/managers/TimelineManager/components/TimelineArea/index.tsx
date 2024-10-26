@@ -16,10 +16,9 @@ export const startLeft = 0;
 
 const TimelineArea = (() => {
   const scale = useTimelineEditorAPI(state => state.scale)
-  const setScrollLeft = useTimelineEditorAPI(state => state.setScrollLeft);
 
-  const editAreaRef = useRefStore(state => state.editAreaRef)
-  const trackListRef = useRefStore(state => state.trackListRef)
+  const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
+  const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
   const autoScrollWhenPlay = useRef<boolean>(true);
 
   // Sync Cursor with Engine time
@@ -31,24 +30,17 @@ const TimelineArea = (() => {
       if (autoScrollWhenPlay.current) {
         const autoScrollFrom = useTimelineEditorAPI.getState().clientWidth * 70 / 100;
         const left = time * (DEFAULT_SCALE_WIDTH / scale) + startLeft - autoScrollFrom;
-        editAreaRef.current.scrollLeft = left;
-        setScrollLeft(left);
+        timelineAreaRef.current.scrollLeft = left;
+        scrollLeftRef.current = left
       }
     }
   );
 
-  const handleScroll = (e) => {
-    const scrollContainer = e.target;
-
-    trackListRef.current.scrollTop = scrollContainer.scrollTop;
-  };
-
   return (
     <div className={`w-full h-full min-h-[414px] border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl relative flex flex-col overflow-hidden  `}>
       <div
-        ref={editAreaRef}
-        onScroll={handleScroll} // Ensure this is not interfering with default behavior
-        className={"w-full h-full !overflow-x-scroll !overflow-y-scroll"}
+        ref={timelineAreaRef}
+        className={"w-full h-full !overflow-y-scroll"}
       >
         <TimeArea />
         <EditArea />
