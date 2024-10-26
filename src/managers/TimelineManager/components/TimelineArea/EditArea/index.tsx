@@ -91,7 +91,7 @@ export const EditArea = () => {
 
   const scrollerRefCallback = useCallback((node) => {
     if(node){
-      // editAreaRef.current = node;
+      editAreaRef.current = node;
     }
   }, [])
 

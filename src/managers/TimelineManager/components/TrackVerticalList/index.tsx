@@ -79,6 +79,8 @@ const TrackVerticalList = () => {
         const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
         const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
 
+
+        
         const isCollapsible = (group.rowIndex !== group.prevRowIndex) && 
                               (group.rowIndex !== group.localFinalTrackIndex) && 
                               !isTrack;
@@ -129,7 +131,9 @@ const TrackVerticalList = () => {
             const isTrack = !!group.trackKey;
             const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
             const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
-    
+
+            const maxDepth = group.maxDepth
+
             const isCollapsible = (group.rowIndex !== group.prevRowIndex) && 
                                   (group.rowIndex !== group.localFinalTrackIndex) && 
                                   !isTrack;
@@ -220,7 +224,7 @@ const RenderFinalProperty = ({ propKey, isCollapsed, trackKey }: { propKey: stri
                 </p>
                 {!isCollapsed &&
                     <KeyframeControl
-                        trackKey={trackKey}
+                    propertyKey={trackKey}
                     />
                 }
             </ContextMenuTrigger>

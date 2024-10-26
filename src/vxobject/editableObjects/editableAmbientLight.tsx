@@ -47,7 +47,6 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
         showPositionPath: false,
     }
     useEffect(() => {
-        console.log("Ambient Light internal ref ", internalRef)
         Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
             setAdditionalSetting(vxkey, settingKey, value)
         })
@@ -56,8 +55,6 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
     const params = [
         'intensity'
     ]
-
-    console.log("Editable Ambient light internal ref ", internalRef)
 
     return (
         <VXObjectWrapper 

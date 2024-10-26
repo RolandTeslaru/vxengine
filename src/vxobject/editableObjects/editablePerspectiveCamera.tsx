@@ -52,9 +52,9 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
         });
     }, []);
 
-    useEffect(() => {
-        cameraRef.current.localRotationZ = 0;
-    }, []);
+    // useEffect(() => {
+    //     cameraRef.current.localRotationZ = 0;
+    // }, []);
 
     // useAnimationEngineEvent("timeSetManually", () => {
     //     if(cameraRef.current && targetPositionRef.current){

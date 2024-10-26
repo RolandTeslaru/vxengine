@@ -54,7 +54,7 @@ export const TransformProperties = () => {
                     >z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-500">position</p>
+                    <p className="text-xs font-light text-neutral-500" >position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position', isUsingSplinePath)}
                     </div>

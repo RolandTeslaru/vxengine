@@ -30,7 +30,7 @@ export const PropInput: FC<Props> = (props) => {
                 <div className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} `}>
                     <div className={(horizontal ? "w-auto mx-auto" : "h-auto my-auto")}>
                         <KeyframeControl
-                            trackKey={trackKey}
+                            propertyKey={trackKey}
                             disabled={disabled || disableTracking}
                         />
                     </div>
@@ -90,15 +90,11 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
-            switch (vxType) {
-                case "entity": {
-                    handleEntityChange(newValue);
-                    break;
-                }
-                case "splineNode": {
-                    handleSplineNodeChange(newValue);
-                    break;
-                }
+            if(vxType === "entity" || vxType === "effect"){
+                handleEntityChange(newValue);
+            }
+            else if(vxType === "splineNode"){
+                handleSplineNodeChange(newValue);
             }
         };
 
@@ -118,7 +114,6 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 .changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
         };
 
-        
         return (
             <Input
                 ref={inputRef}
@@ -126,6 +121,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 onChange={handleChange}
                 className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-10"
                 {...inputProps}
+                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)"}}
             />
         );
     }

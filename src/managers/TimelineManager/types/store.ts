@@ -50,8 +50,8 @@ export interface TimelineEditorStoreProps {
     setLastKeyframeSelectedIndex: (newIndex: number) => void
 
     // Keyframe Controls
-    moveToNextKeyframe: (keyframes: IKeyframe[]) => void;
-    moveToPreviousKeyframe: (keyframes: IKeyframe[]) => void;
+    moveToNextKeyframe: (trackKey: string) => void;
+    moveToPreviousKeyframe: (trackKey: string) => void;
 
     // Getter functions
     getTrack: (trackKey: string) => ITrack | undefined,

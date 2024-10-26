@@ -65,7 +65,6 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
         showPositionPath: false,
     }
     useEffect(() => {
-        console.log("REF SpotLight ", internalRef)
         Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
             setAdditionalSetting(vxkey, settingKey, value)
         })

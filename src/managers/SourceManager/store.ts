@@ -8,7 +8,7 @@ import debounce from "lodash/debounce"
 
 const DEBUG = true;
 
-const PAUSED_DISK_SAVING = true;
+const PAUSED_DISK_SAVING = false;
 
 export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
     diskFilePath: "",

@@ -305,10 +305,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     // Cursor funcitons
 
-    moveToNextKeyframe: (keyframes) => {
+    moveToNextKeyframe: (trackKey) => {
         const { cursorTime } = get();
 
-        const sortedKeyframes = [...keyframes].sort((a, b) => a.time - b.time);
+        const keyframesForTrack = get().getKeyframesForTrack(trackKey);
+
+        const sortedKeyframes = [...keyframesForTrack].sort((a, b) => a.time - b.time);
 
         const nextKeyframe = sortedKeyframes.find(kf => kf.time > cursorTime);
 
@@ -317,10 +319,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }
     },
 
-    moveToPreviousKeyframe: (keyframes) => {
+    moveToPreviousKeyframe: (trackKey) => {
         const { cursorTime } = get();
+        const keyframesForTrack = get().getKeyframesForTrack(trackKey);
 
-        const sortedKeyframes = [...keyframes].sort((a, b) => a.time - b.time);
+        const sortedKeyframes = [...keyframesForTrack].sort((a, b) => a.time - b.time);
 
         const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < cursorTime);
 

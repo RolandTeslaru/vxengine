@@ -1,25 +1,27 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react';
 import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 
 interface TimelineKeyframeControlProps {
-    trackKey?: string,
+    propertyKey: string,
     disabled?: boolean
 }
 
-const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ trackKey, disabled }) => {
+const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, disabled }) => {        
     const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe)
     const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
     const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
     const makePropertyTracked = useTimelineEditorAPI(state => state.makePropertyTracked)
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
-    const keyframeKeysForTrack = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
+    const keyframeKeysForTrack = useTimelineEditorAPI(state => state.tracks[propertyKey]?.keyframes)
+
+    const keyframes = useTimelineEditorAPI(state => state.keyframes)
 
     const keyframesOnTrack = useMemo(() => {
-        return useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey);
-    }, [trackKey, keyframeKeysForTrack]);
+        return useTimelineEditorAPI.getState().getKeyframesForTrack(propertyKey);
+    }, [propertyKey, keyframeKeysForTrack, keyframes]);
 
     const isPropertyTracked = useMemo(() => {
         if (keyframesOnTrack.length > 0)
@@ -29,7 +31,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
     }, [keyframesOnTrack])
 
     const checkIfOnKeyframe = () => {
-        if (trackKey) {
+        if (propertyKey) {
             const isCursorOnKeyframe = keyframesOnTrack.some((kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime);
             setIsOnKeyframe(isCursorOnKeyframe);
         }
@@ -38,19 +40,20 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
     useEffect(() => {
         const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
         return () => unsubscribe();
-    }, [trackKey, keyframesOnTrack]);
+    }, [propertyKey, keyframesOnTrack]);
 
     useEffect(() => {
         checkIfOnKeyframe()
-    }, [trackKey, keyframesOnTrack])
+    }, [propertyKey, keyframesOnTrack])
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){
+            const trackKey = propertyKey
             createKeyframe({trackKey}) // auto sets the value to the ref property path of the object
         }
         else if ( isPropertyTracked === false) {
             // This is a singular static prop
-            const staticPropKey = trackKey;
+            const staticPropKey = propertyKey;
             makePropertyTracked(staticPropKey)
         }
     }
@@ -59,7 +62,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
         <div className={`flex flex-row h-[12px] ${disabled && "opacity-0"}`}>
             {isPropertyTracked &&
                 <button
-                    onClick={() => moveToPreviousKeyframe(keyframesOnTrack)}
+                    onClick={() => moveToPreviousKeyframe(propertyKey)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                     disabled={disabled}
                 >
@@ -76,7 +79,7 @@ const KeyframeControl: React.FC<TimelineKeyframeControlProps> = React.memo(({ tr
             </button>
             {isPropertyTracked &&
                 <button
-                    onClick={() => moveToNextKeyframe(keyframesOnTrack)}
+                    onClick={() => moveToNextKeyframe(propertyKey)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                     disabled={disabled}
                 >

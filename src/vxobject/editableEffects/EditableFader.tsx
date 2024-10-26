@@ -24,9 +24,9 @@ const vertexShader = /* glsl */`
 `;
 
 class FadeShaderEffectImpl extends Effect {
-    constructor({ fadeIntensity = 0.5 } = {}) {
+    constructor({ fadeIntensity = 1.0 } = {}) {
         super("FadeShader", fragmentShader, {
-            uniforms: new Map([['fadeIntensity', new Uniform(0.1)]]),
+            uniforms: new Map([['fadeIntensity', new Uniform(fadeIntensity)]]),
             vertexShader: vertexShader
         })
     }
@@ -45,7 +45,7 @@ export const EditableFadeEffect = forwardRef((props, ref) => {
     const memoizedAddObject = useCallback(addObject, []);
     const memoizedRemoveObject = useCallback(removeObject, []);
 
-    const internalRef = useRef<any>(null); // Use 'any' to bypass type mismatch
+    const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
 
     const animationEngine = useVXEngine((state) => state.animationEngine);
@@ -62,6 +62,8 @@ export const EditableFadeEffect = forwardRef((props, ref) => {
             name: name,
             params: params || [],
         }
+
+        console.log("Editable Fade Effect internal Ref", internalRef)
 
         memoizedAddObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);

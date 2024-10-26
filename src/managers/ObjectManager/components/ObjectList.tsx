@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
 import { vxObjectProps } from '@vxengine/types/objectStore';
@@ -8,7 +8,14 @@ import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 const LIST_ITEM_HEIGHT = 34
 
 const ObjectList = () => {
-    const objects = useVXObjectStore(state => state.objects)
+    const vxObjects = useVXObjectStore(state => state.objects)
+
+    const vxEntities = useMemo(() => {
+        const filteredRecord = Object.fromEntries(
+            Object.entries(vxObjects).filter(([key, vxObj]) => Boolean(vxObj.type === "entity"))
+        )
+        return filteredRecord
+    }, [vxObjects])
 
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
@@ -20,7 +27,7 @@ const ObjectList = () => {
         event.preventDefault();
 
         // Convert objects to an array to get a slice
-        const objectArray = Object.values(objects);
+        const objectArray = Object.values(vxObjects);
 
         // Click + SHIFT key
         if (event.shiftKey && lastSelectedIndex !== null) {
@@ -47,27 +54,30 @@ const ObjectList = () => {
     };
 
     const itemRenderer = (index: number) => {
-        const vxObject = Object.values(objects)[index];
-        const vxkey = vxObject.vxkey
+        const vxEntity = Object.values(vxEntities)[index];
+        const vxkey = vxEntity.vxkey
         const isSelected = selectedObjectKeys?.includes(vxkey)
         const isHovered = hoveredObject?.vxkey === vxkey;
         return (
-            <div key={index} className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
+            <div 
+                key={index} 
+                className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
                 ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
                 ${isHovered && `bg-neutral-900`}
                 ${isHovered && isSelected && " !bg-blue-800 !border-blue-600"} 
             `}
-                onClick={(event) => handleObjectClick(event, vxObject, index)}
+                onClick={(event) => handleObjectClick(event, vxEntity, index)}
                 onMouseDown={(event) => event.preventDefault()}
+                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)"}}
             >
                 <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                    {vxObject.type === "entity" ? vxObject.name : vxkey}
+                    {vxEntity.type === "entity" ? vxEntity.name : vxkey}
                 </p>
                 <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
                     `${isSelected && "!text-neutral-400"}`}
                     style={{ fontSize: "11px" }}
                 >
-                    {vxObject.ref?.current?.type}
+                    {vxEntity.ref?.current?.type}
                 </p>
             </div>
         )
@@ -79,23 +89,26 @@ const ObjectList = () => {
         >
             <div className='text-xs flex flex-row text-neutral-400'>
                 {selectedObjectKeys.length === 1 && (
-                    <p className=' text-neutral-400 font-light' style={{ fontSize: "12px" }} >{selectedObjectKeys.length} object selected</p>
+                    <p 
+                        className=' text-neutral-400 font-light text-xs'
+                        style={{textShadow: "black 0px 0px 5px"}}
+                    >
+                        {selectedObjectKeys.length} object selected
+                    </p>
                 )}
                 {selectedObjectKeys.length > 1 && (
                     <p className='text-neutral-400 font-light' style={{ fontSize: "12px" }}>{selectedObjectKeys.length} objects selected</p>
                 )}
-                <p className='ml-auto text-xs' style={{ fontSize: "10px" }}>{Object.entries(objects).length} objects</p>
+                <p className='ml-auto text-xs' style={{ fontSize: "10px" }}>{Object.entries(vxObjects).length} objects</p>
             </div>
             <div className='mt-2 max-h-96 rounded-lg overflow-hidden'>
-                <VirtuosoGrid
+                <Virtuoso
                     style={{
                         height: 384,
                     }}
-                    totalCount={Object.values(objects).length}
+                    totalCount={Object.values(vxEntities).length}
                     itemContent={index => itemRenderer(index)}
-                >
-
-                </VirtuosoGrid>
+                />
             </div>
         </CollapsiblePanel>
     )
