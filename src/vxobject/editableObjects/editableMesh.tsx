@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { forwardRef, useEffect, useLayoutEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
@@ -26,7 +26,7 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
         showPositionPath: false,
     }
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
             setAdditionalSetting(vxkey, settingKey, value)
         })
@@ -39,7 +39,7 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
     }
 
     // Refresh settings when the current timeline changes
-    useEffect(() => {
+    useLayoutEffect(() => {
         if(currentTimelineID === undefined) return 
         const mergedSettingsForObject = {
             ...defaultSettingsForObject,

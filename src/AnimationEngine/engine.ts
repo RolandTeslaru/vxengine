@@ -33,7 +33,7 @@ const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
 
-export const ENGINE_PRECISION = 3;
+export const ENGINE_PRECISION = 4;
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
@@ -208,47 +208,44 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   initObjectOnMount   */ // but it cant apply all keyframes and static props because the objects arent mounted at that point
   /*                       */
   /*   -----------------   */
-  initObjectOnMount(object: vxObjectProps) {
+  initObjectOnMount(vxObject: vxObjectProps) {
+    const vxkey = vxObject.vxkey
     if (this._isReady === false)
       return
 
-    useTimelineEditorAPI.getState().addObjectToEditorData(object)
+    useTimelineEditorAPI.getState().addObjectToEditorData(vxObject)
 
     // Cache the THREE.Object3D ref
-    const object3DRef = object.ref.current
+    const object3DRef = vxObject.ref.current
     if(object3DRef)
-      this._object3DCache.set(object.vxkey, object3DRef);
+      this._object3DCache.set(vxObject.vxkey, object3DRef);
 
-    if(DEBUG_OBJECT_INIT) console.log("VXEngine AnimationEngine: Initializing vxobject", object)
+    if(DEBUG_OBJECT_INIT) console.log("VXEngine AnimationEngine: Initializing vxobject", vxObject)
       
-    const objectInTimeline = this.currentTimeline.objects.find(obj => obj.vxkey === object.vxkey)
+    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey)
 
     // Initialize the edObject if it doesnt exist
-    if (!objectInTimeline) {
-      const newRawEdObject = {
-        vxkey: object.vxkey,
+    if (!rawObject) {
+      const newRawObject = {
+        vxkey: vxkey,
         tracks: [],
         staticProps: []
       }
-      this.currentTimeline.objects.push(newRawEdObject)
+      this.currentTimeline.objects.push(newRawObject)
       return
     }
     // Apply all initial properties controled by tracks
-    if (objectInTimeline.tracks) {
-      objectInTimeline.tracks.forEach(track => {
-        const vxkey = object.vxkey;
-        const propertyPath = track.propertyPath
-        const keyframes = track.keyframes
+    rawObject.tracks?.forEach(track => {
+      const propertyPath = track.propertyPath
+      const keyframes = track.keyframes
 
-        this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
-      })
-    }
+      this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
+    })
+
      // Apply all initial properties controled by staticProps
-    if (objectInTimeline.staticProps) {
-      objectInTimeline.staticProps.map(staticProp => {
-        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
-      })
-    }
+    rawObject.staticProps?.map(staticProp => {
+      this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
+    })
   }
 
 
@@ -361,8 +358,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*   ---------------------   */
   private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
     // Edge cases
-    if (currentTime <= keyframes[0].time) return keyframes[0].value;
-    if (currentTime >= keyframes[keyframes.length - 1].time) return keyframes[keyframes.length - 1].value;
+    if (currentTime <= keyframes[0].time) 
+      return keyframes[0].value;
+    if (currentTime >= keyframes[keyframes.length - 1].time) 
+      return keyframes[keyframes.length - 1].value;
 
     // Binary search
     let left = 0;

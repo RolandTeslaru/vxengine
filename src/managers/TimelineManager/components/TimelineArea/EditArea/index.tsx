@@ -92,6 +92,8 @@ export const EditArea = () => {
   const scrollerRefCallback = useCallback((node) => {
     if(node){
       editAreaRef.current = node;
+
+      node.addEvent
     }
   }, [])
 
@@ -117,6 +119,7 @@ export const EditArea = () => {
         scrollerRef={scrollerRefCallback}
         onScroll={handleOnScroll}
         components={{ Scroller }}
+      
       />
     </div>
   );

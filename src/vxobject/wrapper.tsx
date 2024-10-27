@@ -5,7 +5,7 @@
 'use client'
 
 import * as THREE from "three"
-import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle} from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect} from 'react';
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
@@ -21,10 +21,11 @@ export interface VXObjectWrapperProps<T extends THREE.Object3D> {
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
     params?: string[]
     disabledParams?: string[]
+    disableClickSelect?: boolean
 }
 
 const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Object3D>>(
-    ({ type, children, vxkey, params, disabledParams, ...props }, ref) => {
+    ({ type, children, vxkey, params, disabledParams, disableClickSelect = false, ...props }, ref) => {
         if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${type}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
@@ -43,7 +44,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
         const memoizedRemoveObject = useCallback(removeObject, []);
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
-        useEffect(() => {
+        useLayoutEffect(() => {
             const newVXObject: vxObjectProps = {
                 type: "entity",
                 ref: internalRef,
@@ -68,7 +69,10 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
             // onPointerOver: handlePointerOver,
             // onPointerOut: handlePointerOut,
-            onClick: () => memoizedSelectObjects([vxkey]),
+            onClick: () => {
+                if(disableClickSelect === false)
+                    memoizedSelectObjects([vxkey])
+            },
             onPointerDown: (e) => e.stopPropagation(),
             ...props,
         },

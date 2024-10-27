@@ -40,8 +40,7 @@ const CameraTarget = () => {
     const camera = useVXObjectStore(state => state.objects["perspectiveCamera"])
     const showHelpers = useObjectSettingsAPI(state => state.settings[vxkey]?.["showHelpers"])
 
-    // const isVisible = IS_DEV && showHelpers
-    const isVisible = true;
+    const isVisible = showHelpers
 
     const verticalPlaneRef = useRef<THREE.Mesh>(null);
     const FloorProjectionRef = useRef<THREE.Mesh>(null)

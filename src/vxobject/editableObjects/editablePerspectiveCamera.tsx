@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect, useRef } from "react";
+import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
@@ -46,7 +46,7 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
         showPositionPath: false,
     };
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
             setAdditionalSetting(vxkey, settingKey, value);
         });

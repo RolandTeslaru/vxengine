@@ -2,14 +2,12 @@ import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react'
 import { useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store'
 import { getNestedProperty, setNestedProperty } from '@vxengine/utils/nestedProperty'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@vxengine/components/shadcn/alertDialog';
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/types/objectStore';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-import * as THREE from "three"
 
 interface Props extends InputProps {
     propertyPath: string
@@ -74,14 +72,14 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const inputRef = useRef<HTMLInputElement>(null);
 
         useEffect(() => {
-            if(!inputRef.current.value)
+            if (!inputRef.current.value)
                 inputRef.current.value = getDefaultValue();
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
                 const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
 
                 if (newValue !== prevValue && inputRef.current && inputRef.current.value !== newValue) {
-                        inputRef.current.value = newValue;
+                    inputRef.current.value = newValue;
                 }
             });
 
@@ -90,10 +88,10 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
-            if(vxType === "entity" || vxType === "effect"){
+            if (vxType === "entity" || vxType === "effect") {
                 handleEntityChange(newValue);
             }
-            else if(vxType === "splineNode"){
+            else if (vxType === "splineNode") {
                 handleSplineNodeChange(newValue);
             }
         };
@@ -105,7 +103,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         };
 
         const handleSplineNodeChange = (newValue: number) => {
-            const axis = propertyPath.slice(-1); // Assuming propertyPath ends with 'x', 'y', or 'z'
+            const axis = propertyPath.slice(-1); // propertyPath ends with 'x', 'y', or 'z'
             const nodeIndex = (firstObjectSelected as vxSplineNodeProps).index;
             const splineKey = (firstObjectSelected as vxSplineNodeProps).splineKey;
 
@@ -115,14 +113,30 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         };
 
         return (
-            <Input
-                ref={inputRef}
-                // value={getDefaultValue()} // Removed to make input uncontrolled
-                onChange={handleChange}
-                className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-10"
-                {...inputProps}
-                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)"}}
-            />
+            <div className="relative">
+                <Input
+                    ref={inputRef}
+                    // value={getDefaultValue()} // Removed to make input uncontrolled
+                    onChange={handleChange}
+                    className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-[40px]"
+                    {...inputProps}
+                    style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
+                />
+
+                {/* <div className="absolute top-1/2 right-0 transform -translate-y-1/2 h-5 flex flex-col space-y-0.5 bg-neutral-950">
+                    <button type="button" className="text-gray-400 bg-blue-500 h-2 hover:text-white"
+                        style={{ fontSize: 8 }}
+                    >
+
+                    </button>
+                    <button type="button" className="text-gray-400 bg-blue-500 hover:text-white"
+                    >
+                        <svg width="10" height="10" viewBox="0 0 12 13" fill="currentColor">
+                            <path d="M4 6H11L7.5 10.5L4 6Z" />
+                        </svg>
+                    </button>
+                </div> */}
+            </div >
         );
     }
 );
