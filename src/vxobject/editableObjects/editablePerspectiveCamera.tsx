@@ -31,26 +31,12 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
 
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
     const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
-
-    const cameraPositionRef = useRef(cameraRef.current?.position)
-    const targetPositionRef = useRef(cameraTarget?.position)
-
-    const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
 
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
     };
-
-    useLayoutEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value);
-        });
-    }, []);
 
     // useEffect(() => {
     //     cameraRef.current.localRotationZ = 0;
@@ -95,18 +81,6 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
         ...settings
     }
 
-    // Refresh settings when the current timeline changes
-    useEffect(() => {
-        if (currentTimelineID === undefined) return
-        const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
-
     const params = [
         "localRotationZ",
         "far",
@@ -130,6 +104,8 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
             params={params} 
             disabledParams={disabledParams} 
             type="object" 
+            defaultSettingsForObject={defaultSettingsForObject}
+            defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <PerspectiveCamera name="VXPerspectiveCamera" />

@@ -2,7 +2,6 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 
 import { SpotLightHelper } from "three";
@@ -21,26 +20,9 @@ export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
 export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
-
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
     
     const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
-
-    //
-    // Additional Settings
-    //
-    const additionalSettings = {
-        showHelper: false,
-    }
-    
-    useEffect(() => {
-        Object.entries(additionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
     //
     // Settings
@@ -49,26 +31,11 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
         useSplinePath: false,
         ...settings
     }
-    useEffect(() => {
-        if(currentTimelineID === undefined) return 
-        const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
 
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
     }
-    useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
     const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
     useHelper(internalRef, isHelperEnabled && SpotLightHelper)
@@ -86,6 +53,8 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
             type="object" 
             ref={internalRef} 
             params={params}
+            defaultSettingsForObject={defaultSettingsForObject}
+            defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <spotLight/>

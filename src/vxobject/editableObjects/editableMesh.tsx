@@ -1,8 +1,6 @@
 'use client'
 
 import React, { forwardRef, useEffect, useLayoutEffect } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXObjectWrapper from "../wrapper";
 
@@ -16,42 +14,25 @@ export type EditableMeshProps = EditableObjectProps<MeshProps> & {
 
 export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, settings = {}, ...rest } = props;
-    const vxkey = rest.vxkey;
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
 
     // INITIALIZE settigngs on object mount
     const defaultAdditionalSettings = {
         showPositionPath: false,
     }
-
-    useLayoutEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
-
     const defaultSettingsForObject = {
         useSplinePath: false,
         setingMeshProp1: true,
         ...settings
     }
 
-    // Refresh settings when the current timeline changes
-    useLayoutEffect(() => {
-        if(currentTimelineID === undefined) return 
-        const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
-
     return (
-        <VXObjectWrapper type="object" ref={ref} {...rest}>
+        <VXObjectWrapper 
+            type="object" 
+            ref={ref} 
+            defaultSettingsForObject={defaultSettingsForObject}
+            defaultAdditionalSettings={defaultAdditionalSettings}
+            {...rest}
+        >
             <mesh>
                 {meshChildren}
             </mesh>

@@ -5,7 +5,7 @@
 'use client'
 
 import * as THREE from "three"
-import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect} from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
@@ -13,6 +13,8 @@ import { ReactThreeFiber, useFrame } from '@react-three/fiber';
 import { vxObjectProps } from "@vxengine/types/objectStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import ObjectUtils from "./utils/ObjectUtils";
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
+import { useObjectSettingsAPI } from "./ObjectSettingsStore";
 
 export interface VXObjectWrapperProps<T extends THREE.Object3D> {
     type: string;
@@ -22,11 +24,24 @@ export interface VXObjectWrapperProps<T extends THREE.Object3D> {
     params?: string[]
     disabledParams?: string[]
     disableClickSelect?: boolean
+
+    defaultSettingsForObject?: {},
+    defaultAdditionalSettings?: {}
 }
 
 const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Object3D>>(
-    ({ type, children, vxkey, params, disabledParams, disableClickSelect = false, ...props }, ref) => {
-        if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${type}`);
+    ({
+        type,
+        children,
+        vxkey,
+        params,
+        disabledParams,
+        disableClickSelect = false,
+        defaultSettingsForObject = {},
+        defaultAdditionalSettings = {},
+        ...props
+    }, ref) => {
+        if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${children}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
         const removeObject = useVXObjectStore(state => state.removeObject)
@@ -36,6 +51,31 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
         const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
 
         const animationEngine = useVXEngine(state => state.animationEngine)
+
+        // Initialize settings
+        const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+        const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
+
+        useLayoutEffect(() => {
+            Object.entries(defaultAdditionalSettings).forEach(
+                ([settingKey, value]: [settingKey: string, value: any]) => {
+                    useObjectSettingsAPI.getState().setAdditionalSetting(vxkey, settingKey, value)
+                })
+        }, [])
+
+
+        // Refresh settings when the current timeline changes
+        useLayoutEffect(() => {
+            if (currentTimelineID === undefined) return
+            const mergedSettingsForObject = {
+                ...defaultSettingsForObject,
+                ...currentSettingsForObject
+            }
+            Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
+                useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
+            })
+        }, [currentTimelineID])
+
 
         const internalRef = useRef<THREE.Object3D | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
@@ -56,7 +96,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
 
             memoizedAddObject(newVXObject);
             animationEngine.initObjectOnMount(newVXObject);
-            
+
             return () => {
                 memoizedRemoveObject(vxkey);
             };
@@ -70,7 +110,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
             // onPointerOver: handlePointerOver,
             // onPointerOut: handlePointerOut,
             onClick: () => {
-                if(disableClickSelect === false)
+                if (disableClickSelect === false)
                     memoizedSelectObjects([vxkey])
             },
             onPointerDown: (e) => e.stopPropagation(),

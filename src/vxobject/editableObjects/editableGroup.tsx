@@ -16,43 +16,30 @@ export type EditableGroupProps = EditableObjectProps<GroupProps> & {
 
 
 export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) => {
-    const {settings = {}, ...rest} = props;
-    const vxkey = rest.vxkey;
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
+    const {settings = {}, children: groupChildren, ...rest} = props;
     
     // INITIALIZE Settings
     const defaultSettingsForObject = {
         useSplinePath: false,
         ...settings
     }
-    useEffect(() => {
-        if(currentTimelineID === undefined) return 
-        const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
 
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
     }
-    useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
 
     return (
-        <VXObjectWrapper type="object" ref={ref} {...props}>
-            <group ref={ref} {...props} >
-                {props.children}
+        <VXObjectWrapper 
+            type="object" 
+            ref={ref} 
+            {...rest}
+            defaultSettingsForObject={defaultSettingsForObject}
+            defaultAdditionalSettings={defaultAdditionalSettings}
+        >
+            <group ref={ref} {...rest} >
+                {groupChildren}
             </group>
         </VXObjectWrapper>
     );

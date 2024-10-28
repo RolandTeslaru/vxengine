@@ -2,7 +2,6 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 
 import { PointLightHelper } from "three";
@@ -22,51 +21,20 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
 
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
-
     const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
-
-    //
-    // Additional Settings
-    //
-    const additionalSettings = {
-        showHelper: false,
-    }
-    
-    useEffect(() => {
-        Object.entries(additionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
     // INITIALIZE Settings
     const defaultSettingsForObject = {
         useSplinePath: false,
         ...settings
     }
-    useEffect(() => {
-        if(currentTimelineID === undefined) return 
-        const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
-
+    
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
+        showHelper: false,
     }
-    useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
     const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
     useHelper(internalRef, isHelperEnabled && PointLightHelper)
@@ -81,8 +49,10 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
         <VXObjectWrapper 
             type="object" 
             ref={internalRef} 
-            {...props}
             params={params}
+            defaultSettingsForObject={defaultSettingsForObject}
+            defaultAdditionalSettings={defaultAdditionalSettings}
+            {...props}
         >
             <pointLight ref={internalRef} {...props} />
         </VXObjectWrapper>

@@ -1,7 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
+import React, { forwardRef } from "react";
 import { EditableObjectProps } from "../types"
 import VXObjectWrapper from "../wrapper";
 
@@ -13,25 +12,18 @@ export type EditableLineLoopProps = EditableObjectProps<LineLoopProps> & {
 };
 
 export const EditableLineLoop = forwardRef<LineLoop, EditableLineLoopProps>((props, ref) => {
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-
-    const { ...rest } = props;
-    const vxkey = rest.vxkey;
-
-
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
     }
 
-    useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
-
     return (
-        <VXObjectWrapper type="object" ref={ref} {...props}>
+        <VXObjectWrapper 
+            type="object" 
+            ref={ref} 
+            defaultAdditionalSettings={defaultAdditionalSettings}
+            {...props}
+        >
             <lineLoop ref={ref} />
         </VXObjectWrapper>
     );
