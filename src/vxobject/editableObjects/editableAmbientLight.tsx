@@ -17,6 +17,7 @@ export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> &
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     
+    
     const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
 

@@ -11,7 +11,6 @@ import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, useFrame } from '@react-three/fiber';
 import { vxObjectProps } from "@vxengine/types/objectStore";
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "./ObjectSettingsStore";
@@ -41,7 +40,7 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
         defaultAdditionalSettings = {},
         ...props
     }, ref) => {
-        if (vxkey === undefined) throw new Error(`No vxkey was passed to: ${children}`);
+        if (vxkey === undefined) throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
 
         const addObject = useVXObjectStore(state => state.addObject)
         const removeObject = useVXObjectStore(state => state.removeObject)

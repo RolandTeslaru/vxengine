@@ -73,4 +73,6 @@ export interface EventTypes {
    *@memberof EventTypes
    */
   ended: { engine: AnimationEngine };
+
+  environmentNeedsUpdate;
 }
