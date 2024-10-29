@@ -4,7 +4,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { AmbientLight } from "three";
 import { AmbientLightProps } from "@react-three/fiber";
@@ -36,8 +36,7 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
     ]
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={internalRef} 
             params={params}
             defaultSettingsForObject={defaultSettingsForObject}
@@ -46,6 +45,6 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
         >
             <ambientLight {...rest} />
 
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     )
 })

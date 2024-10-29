@@ -4,7 +4,7 @@ import React, { forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { DirectionalLight } from "three";
 import { DirectionalLightProps } from "@react-three/fiber";

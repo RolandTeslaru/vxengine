@@ -69,6 +69,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         };
 
         const vxType = firstObjectSelected.type;
+        const isEntity = vxType === "entity" || vxType === "virtualEntity"
         const inputRef = useRef<HTMLInputElement>(null);
 
         useEffect(() => {
@@ -88,7 +89,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
-            if (vxType === "entity" || vxType === "effect") {
+            if (isEntity || vxType === "effect") {
                 handleEntityChange(newValue);
             }
             else if (vxType === "splineNode") {

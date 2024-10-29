@@ -6,7 +6,7 @@ import { EditableObjectProps } from "../types"
 
 import { PointLightHelper } from "three";
 
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { PointLight } from "three";
 import { PointLightProps } from "@react-three/fiber";
@@ -46,8 +46,7 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     ]
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={internalRef} 
             params={params}
             defaultSettingsForObject={defaultSettingsForObject}
@@ -55,6 +54,6 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
             {...props}
         >
             <pointLight ref={internalRef} {...props} />
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     )
 })

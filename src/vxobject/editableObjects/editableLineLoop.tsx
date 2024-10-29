@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from "react";
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { LineLoop } from "three";
 import { LineLoopProps } from "@react-three/fiber";
@@ -18,13 +18,12 @@ export const EditableLineLoop = forwardRef<LineLoop, EditableLineLoopProps>((pro
     }
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={ref} 
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <lineLoop ref={ref} />
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 })

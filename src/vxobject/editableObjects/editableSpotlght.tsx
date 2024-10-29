@@ -6,7 +6,7 @@ import { EditableObjectProps } from "../types"
 
 import { SpotLightHelper } from "three";
 
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { SpotLight } from "three";
 import { SpotLightProps } from "@react-three/fiber";
@@ -49,8 +49,7 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
     ]
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={internalRef} 
             params={params}
             defaultSettingsForObject={defaultSettingsForObject}
@@ -58,6 +57,6 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
             {...props}
         >
             <spotLight/>
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 })

@@ -1,5 +1,7 @@
+import { TransformControlsProps } from "@react-three/drei";
 import { RowRndApi } from "@vxengine/managers/TimelineManager/components/TimelineArea/EditArea/RowDnd/row_rnd_interface";
 import React from "react";
+import { TransformControls } from "three-stdlib";
 import { create } from "zustand";
 
 interface refStoreProps {
@@ -11,6 +13,8 @@ interface refStoreProps {
     draggingLeftRef: React.MutableRefObject<number | null>
     scrollSyncId: React.MutableRefObject<number | null>
     scrollLeftRef: React.MutableRefObject<number | null>
+
+    transformControlsRef: React.MutableRefObject<TransformControls | null>
 }
 
 export const useRefStore = create<refStoreProps>((set, get) => ({
@@ -21,5 +25,7 @@ export const useRefStore = create<refStoreProps>((set, get) => ({
     cursorLineRef: React.createRef<RowRndApi>(),
     draggingLeftRef: React.createRef<number>(),
     scrollSyncId: React.createRef<number>(),
-    scrollLeftRef: React.createRef<number>()
+    scrollLeftRef: React.createRef<number>(),
+
+    transformControlsRef: React.createRef<TransformControls>()
 }))

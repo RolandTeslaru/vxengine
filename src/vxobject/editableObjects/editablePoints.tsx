@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect } from "react";
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { Points } from "three";
 import { PointsProps } from "@react-three/fiber";
@@ -18,14 +18,13 @@ export const EditablePoints = forwardRef<Points, EditablePointsProps>((props, re
     }
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={ref} 
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <points ref={ref} />
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 })
 

@@ -6,6 +6,7 @@ import { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import { EnvironmentLoaderProps, useEnvironment } from '@react-three/drei'
 import * as THREE from "three"
 import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
+import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils"
 
 export type EnvironmentProps = {
   children?: React.ReactNode
@@ -168,16 +169,23 @@ export function VXEnvironmentPortal({
   useAnimationEngineEvent(
     'timeUpdatedAutomatically',
     ({ time }) => {
+      camera.current.update(gl as any, virtualScene)
+      count++
       
     }
   );
 
-  useFrame((state) => {
-    if (frames === Infinity || count < frames) {
+  useTransformControlsEvent(
+    "virtualEntityChange", () => {
       camera.current.update(gl as any, virtualScene)
       count++
     }
-  })
+  )
+
+  // useFrame((state) => {
+  //   if (frames === Infinity || count < frames) {
+  //   }
+  // })
 
   return (
     <>

@@ -307,10 +307,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /*                         */
   /*   -------------------   */
   private _applyAllKeyframes(currentTime: number) {
-    this.currentTimeline.objects.forEach(object => {
-      const vxkey = object.vxkey;
+    this.currentTimeline.objects.forEach(rawObject => {
+      const vxkey = rawObject.vxkey;
 
-      object.tracks.forEach(track => {
+      rawObject.tracks.forEach(track => {
         const propertyPath = track.propertyPath
         const keyframes = track.keyframes
 
@@ -332,9 +332,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if (keyframes.length === 0) return
 
+    // Check if current time is before any keyframes for the track
     if (currentTime < keyframes[0].time) {
       interpolatedValue = keyframes[0].value;
-    } else if (currentTime > keyframes[keyframes.length - 1].time) {
+    } 
+    // If the current time is after all the keyframe for the track 
+    else if (currentTime > keyframes[keyframes.length - 1].time) {
       interpolatedValue = keyframes[keyframes.length - 1].value;
     } else {
       interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);

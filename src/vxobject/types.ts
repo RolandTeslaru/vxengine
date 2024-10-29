@@ -1,4 +1,4 @@
-export interface VXObjectWrapperProps {
+export interface VXEntityWrapperProps {
     type: string;
     children: React.ReactNode;
     vxkey: string;

@@ -4,7 +4,7 @@ import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../ObjectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
@@ -98,17 +98,16 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
     ]
 
     return (
-        <VXObjectWrapper 
+        <VXEntityWrapper 
             vxkey={vxkey} 
             ref={cameraRef} 
             params={params} 
             disabledParams={disabledParams} 
-            type="object" 
             defaultSettingsForObject={defaultSettingsForObject}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <PerspectiveCamera name="VXPerspectiveCamera" />
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 });

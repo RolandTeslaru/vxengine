@@ -10,32 +10,32 @@ import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, useFrame } from '@react-three/fiber';
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { vxObjectProps, vxObjectTypes } from "@vxengine/types/objectStore";
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "./ObjectSettingsStore";
 
-export interface VXObjectWrapperProps<T extends THREE.Object3D> {
-    type: string;
+export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
     name?: string;
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
     params?: string[]
     disabledParams?: string[]
     disableClickSelect?: boolean
+    isVirtual?: boolean
 
     defaultSettingsForObject?: {},
     defaultAdditionalSettings?: {}
 }
 
-const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Object3D>>(
+const VXEntityWrapper = forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
     ({
-        type,
         children,
         vxkey,
         params,
         disabledParams,
         disableClickSelect = false,
+        isVirtual = false,
         defaultSettingsForObject = {},
         defaultAdditionalSettings = {},
         ...props
@@ -84,8 +84,8 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
         useLayoutEffect(() => {
-            const newVXObject: vxObjectProps = {
-                type: "entity",
+            const newVXEntity: vxObjectProps = {
+                type: isVirtual ? "virtualEntity" : "entity",
                 ref: internalRef,
                 vxkey: vxkey,
                 name: props.name || vxkey,
@@ -93,8 +93,8 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
                 disabledParams: disabledParams || [],
             };
 
-            memoizedAddObject(newVXObject);
-            animationEngine.initObjectOnMount(newVXObject);
+            memoizedAddObject(newVXEntity);
+            animationEngine.initObjectOnMount(newVXEntity);
 
             return () => {
                 memoizedRemoveObject(vxkey);
@@ -131,4 +131,4 @@ const VXObjectWrapper = forwardRef<THREE.Object3D, VXObjectWrapperProps<THREE.Ob
     }
 );
 
-export default VXObjectWrapper
+export default VXEntityWrapper

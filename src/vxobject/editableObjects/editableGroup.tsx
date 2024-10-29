@@ -4,7 +4,7 @@ import React, { forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { Group } from "three";
 import { GroupProps } from "@react-three/fiber";
@@ -31,8 +31,7 @@ export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) 
 
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={ref} 
             {...rest}
             defaultSettingsForObject={defaultSettingsForObject}
@@ -41,6 +40,6 @@ export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) 
             <group ref={ref} {...rest} >
                 {groupChildren}
             </group>
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 })

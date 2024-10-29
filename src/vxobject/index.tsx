@@ -5,6 +5,7 @@ import { EditableAmbientLight, EditableDirectionalLight, EditableFog, EditableGr
 import { EditableFadeEffect } from './editableEffects/EditableFader';
 import { EditableBloom } from './editableEffects/EditableBloom';
 import { EditableLightFormer } from './editableDrei/editableLightFormer';
+import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './editableDrei/EditableEnvironment/dreiImpl';
 
 export const vx = {
     mesh: EditableMesh,
@@ -21,6 +22,10 @@ export const vx = {
     fadeEffect: EditableFadeEffect,
     bloom: EditableBloom,
     lightFormer: EditableLightFormer,
+
+    environment: VXEnvironment,
+    environmentPortal: VXEnvironmentPortal,
+    environmentMap: VXEnvironmentMap
 };
 
 export { useVXObjectStore } from "./ObjectStore"

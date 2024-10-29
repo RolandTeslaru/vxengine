@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect, useLayoutEffect } from "react";
 import { EditableObjectProps } from "../types"
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 import { Mesh } from "three";
 import { MeshProps } from "@react-three/fiber";
@@ -26,8 +26,7 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
     }
 
     return (
-        <VXObjectWrapper 
-            type="object" 
+        <VXEntityWrapper 
             ref={ref} 
             defaultSettingsForObject={defaultSettingsForObject}
             defaultAdditionalSettings={defaultAdditionalSettings}
@@ -36,6 +35,6 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
             <mesh>
                 {meshChildren}
             </mesh>
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     );
 });

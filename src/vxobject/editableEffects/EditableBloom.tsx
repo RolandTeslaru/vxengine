@@ -5,7 +5,6 @@ import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine";
 import { EditableObjectProps } from "../types";
 import { useVXObjectStore } from "../ObjectStore";
-import VXObjectWrapper from "../wrapper";
 
 import { SelectiveBloomProps } from "@react-three/postprocessing";
 import { Bloom } from "@react-three/postprocessing";

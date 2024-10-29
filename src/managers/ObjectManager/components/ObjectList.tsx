@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
-import { vxObjectProps } from '@vxengine/types/objectStore';
+import { vxEntityProps, vxObjectProps } from '@vxengine/types/objectStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
@@ -12,7 +12,7 @@ const ObjectList = () => {
 
     const vxEntities = useMemo(() => {
         const filteredRecord = Object.fromEntries(
-            Object.entries(vxObjects).filter(([key, vxObj]) => Boolean(vxObj.type === "entity"))
+            Object.entries(vxObjects).filter(([key, vxObj]) => Boolean(vxObj.type === "entity" || vxObj.type === "virtualEntity"))
         )
         return filteredRecord
     }, [vxObjects])
@@ -58,6 +58,7 @@ const ObjectList = () => {
         const vxkey = vxEntity.vxkey
         const isSelected = selectedObjectKeys?.includes(vxkey)
         const isHovered = hoveredObject?.vxkey === vxkey;
+
         return (
             <div 
                 key={index} 
@@ -71,7 +72,7 @@ const ObjectList = () => {
                 style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)"}}
             >
                 <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                    {vxEntity.type === "entity" ? vxEntity.name : vxkey}
+                        {(vxEntity as vxEntityProps).name}
                 </p>
                 <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
                     `${isSelected && "!text-neutral-400"}`}

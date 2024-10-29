@@ -3,7 +3,7 @@
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { Lightformer, LightProps } from "@react-three/drei";
 import { EditableObjectProps } from "../types";
-import VXObjectWrapper from "../wrapper";
+import VXEntityWrapper from "../entityWrapper";
 
 export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     ref?: React.Ref<LightProps>;
@@ -28,14 +28,14 @@ export const EditableLightFormer = forwardRef<typeof Lightformer, EditableLightf
     }
 
     return (
-        <VXObjectWrapper 
-            type="object"
+        <VXEntityWrapper 
             ref={internalRef} 
+            isVirtual={true}
             defaultSettingsForObject={defaultSettingsForObject}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props} 
         >
             <Lightformer />
-        </VXObjectWrapper>
+        </VXEntityWrapper>
     )
 })

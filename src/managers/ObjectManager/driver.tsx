@@ -7,6 +7,7 @@ import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/types/objectStore";
+import { useRefStore } from "@vxengine/utils";
 
 export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange);
@@ -17,7 +18,7 @@ export const ObjectManagerDriver = () => {
 
   const firstObjectSelectedRef = firstSelectedObject?.ref.current;
 
-  const transformControlsRef = useRef();
+  const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
   const handleTransformChange = (e) => {
     if (!firstSelectedObject) return
@@ -26,6 +27,16 @@ export const ObjectManagerDriver = () => {
       case "entity":
         handleEntiyChange(e)
         break;
+      case "virtualEntity": {
+        handleEntiyChange(e)
+        // Create a new custom event each time
+        const virtualEntityChangeEvent = new CustomEvent('virtualEntityChange', {
+          detail: { transformation: e, object: firstSelectedObject }
+        });
+
+        document.dispatchEvent(virtualEntityChangeEvent as any);
+        break;
+      }
       case "keyframeNode":
         handleKeyframeNodeChange();
         break;
@@ -129,12 +140,12 @@ export const ObjectManagerDriver = () => {
 
     useObjectManagerAPI.getState().setTransformMode("translate");
 
-    if ( firstSelectedObject.type === "splineNode" ) {
+    if (firstSelectedObject.type === "splineNode") {
       controls.showX = true;
       controls.showY = true;
       controls.showZ = true;
     }
-    else if(firstSelectedObject.type === "keyframeNode"){
+    else if (firstSelectedObject.type === "keyframeNode") {
       const axis = firstSelectedObject.axis
       controls.showX = axis.includes('X')
       controls.showY = axis.includes('Y')
@@ -164,3 +175,7 @@ const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
   if (lowerCaseKey.includes('.z')) return 'z';
   return 'x';
 };
+
+function useMemo(arg0: () => CustomEvent<unknown>, arg1: undefined[]) {
+  throw new Error("Function not implemented.");
+}

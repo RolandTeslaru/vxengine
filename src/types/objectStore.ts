@@ -1,4 +1,8 @@
-export type vxObjectTypes = "entity" | "effect" | "splineNode" | "keyframeNode"
+export type vxObjectTypes = "entity" 
+    | "effect" 
+    | "splineNode" 
+    | "keyframeNode" 
+    | "virtualEntity"
 
 export interface BaseVxProps {
     ref: React.MutableRefObject<any>
@@ -10,7 +14,10 @@ export interface BaseVxProps {
 export interface vxEntityProps extends BaseVxProps {
     type: "entity";
     name: string,
-
+}
+export interface vxVirtualEntityProps extends BaseVxProps {
+    type: "virtualEntity";
+    name: string,
 }
 
 export interface vxSplineNodeProps extends BaseVxProps {
@@ -32,7 +39,12 @@ export interface vxEffectProps extends BaseVxProps {
 }
 
 
-export type vxObjectProps = vxEffectProps | vxKeyframeNodeProps | vxKeyframeNodeProps | vxEntityProps | vxSplineNodeProps
+export type vxObjectProps = vxEffectProps 
+    | vxKeyframeNodeProps 
+    | vxKeyframeNodeProps 
+    | vxEntityProps 
+    | vxSplineNodeProps 
+    | vxVirtualEntityProps
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>

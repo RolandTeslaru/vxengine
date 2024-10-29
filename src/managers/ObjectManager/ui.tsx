@@ -81,10 +81,11 @@ export const ObjectTransformControls = React.memo(() => {
   const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
   const selectedObjectType = useObjectManagerAPI(state => state.selectedObjects[0]?.type)
 
+  const isEntity = selectedObjectType === "entity" || selectedObjectType === "virtualEntity"
 
   return (
     <AnimatePresence>
-      {selectedObjectType === "entity" && (
+      {isEntity && (
         <motion.div
           className='absolute right-[-54px] z-[-1] top-0 '
           initial={{ opacity: 0, x: -50 }}
@@ -128,12 +129,13 @@ export const ObjectProperties = React.memo(() => {
 
   const threejsType = firstObjectSelected?.ref.current?.type
   const vxType = firstObjectSelected?.type
+  const isEntity = vxType === "entity" || vxType === "virtualEntity"
 
   if (!firstObjectSelected) return
 
   return (
     <>
-      {vxType === "entity" && 
+      {isEntity && 
         <TransformProperties />
       }
       {(vxType === "splineNode" || vxType === "keyframeNode") && 
