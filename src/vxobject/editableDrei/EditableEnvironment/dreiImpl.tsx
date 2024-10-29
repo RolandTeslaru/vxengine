@@ -7,6 +7,7 @@ import { EnvironmentLoaderProps, useEnvironment } from '@react-three/drei'
 import * as THREE from "three"
 import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
 import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils"
+import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore"
 
 export type EnvironmentProps = {
   children?: React.ReactNode
@@ -170,8 +171,7 @@ export function VXEnvironmentPortal({
     'timeUpdatedAutomatically',
     ({ time }) => {
       camera.current.update(gl as any, virtualScene)
-      count++
-      
+      count++ 
     }
   );
 
@@ -181,11 +181,6 @@ export function VXEnvironmentPortal({
       count++
     }
   )
-
-  // useFrame((state) => {
-  //   if (frames === Infinity || count < frames) {
-  //   }
-  // })
 
   return (
     <>

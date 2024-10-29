@@ -1,9 +1,11 @@
 'use client'
 
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
-import { Lightformer, LightProps } from "@react-three/drei";
+import { Lightformer, LightProps, useHelper } from "@react-three/drei";
 import { EditableObjectProps } from "../types";
 import VXEntityWrapper from "../entityWrapper";
+import { useObjectSettingsAPI } from "../ObjectSettingsStore";
+import { BoxHelper } from "three";
 
 export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     ref?: React.Ref<LightProps>;
@@ -12,6 +14,7 @@ export type EditableLightformerProps = EditableObjectProps<LightProps> & {
 
 export const EditableLightFormer = forwardRef<typeof Lightformer, EditableLightformerProps>((props, ref) => {
     const { settings = {}, ...rest} = props;
+    const vxkey = rest.vxkey;
     const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
 
@@ -24,7 +27,6 @@ export const EditableLightFormer = forwardRef<typeof Lightformer, EditableLightf
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
-        show: false,
     }
 
     return (

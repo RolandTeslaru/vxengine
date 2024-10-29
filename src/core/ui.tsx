@@ -20,6 +20,7 @@ import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
 import Params from "@vxengine/managers/ObjectManager/components/Params"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
+import VirtualEntitiesList from "@vxengine/managers/ObjectManager/components/VirtualEntitiesList"
 
 export const CoreUI = () => {
     return (
@@ -116,6 +117,7 @@ const LeftPanel = () => {
                 </div>
                     <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                         <ObjectList />
+                        <VirtualEntitiesList/>
                         <EffectsManagerUI />
                         <TrackSegmentProperties />
                         <SplineManagerUI />

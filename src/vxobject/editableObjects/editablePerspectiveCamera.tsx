@@ -1,8 +1,6 @@
 'use client'
 
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
@@ -13,7 +11,6 @@ import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
-import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent";
 
 declare module 'three' {
     interface PerspectiveCamera {

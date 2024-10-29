@@ -1,18 +1,17 @@
 import React, { useMemo } from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
-import { vxEntityProps, vxObjectProps } from '@vxengine/types/objectStore';
+import { vxEntityProps, vxObjectProps, vxVirtualEntityProps } from '@vxengine/types/objectStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
-const LIST_ITEM_HEIGHT = 34
+const VirtualEntitiesList = () => {
 
-const ObjectList = () => {
     const vxObjects = useVXObjectStore(state => state.objects)
 
-    const vxEntities = useMemo(() => {
+    const vxVirtualEntities = useMemo(() => {
         const filteredRecord = Object.fromEntries(
-            Object.entries(vxObjects).filter(([key, vxObj]) => Boolean(vxObj.type === "entity"))
+            Object.entries(vxObjects).filter(([key, vxObj]) => vxObj.type === "virtualEntity")
         )
         return filteredRecord
     }, [vxObjects])
@@ -54,31 +53,31 @@ const ObjectList = () => {
     };
 
     const itemRenderer = (index: number) => {
-        const vxEntity = Object.values(vxEntities)[index];
-        const vxkey = vxEntity.vxkey
+        const vxVirtualEntity = Object.values(vxVirtualEntities)[index];
+        const vxkey = vxVirtualEntity.vxkey
         const isSelected = selectedObjectKeys?.includes(vxkey)
         const isHovered = hoveredObject?.vxkey === vxkey;
 
         return (
-            <div 
-                key={index} 
+            <div
+                key={index}
                 className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
                 ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
                 ${isHovered && `bg-neutral-900`}
                 ${isHovered && isSelected && " !bg-blue-800 !border-blue-600"} 
             `}
-                onClick={(event) => handleObjectClick(event, vxEntity, index)}
+                onClick={(event) => handleObjectClick(event, vxVirtualEntity, index)}
                 onMouseDown={(event) => event.preventDefault()}
-                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)"}}
+                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
             >
                 <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                        {(vxEntity as vxEntityProps).name}
+                    {(vxVirtualEntity as vxVirtualEntityProps).name}
                 </p>
                 <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
                     `${isSelected && "!text-neutral-400"}`}
                     style={{ fontSize: "11px" }}
                 >
-                    {vxEntity.ref?.current?.type}
+                    virtual entity
                 </p>
             </div>
         )
@@ -86,42 +85,44 @@ const ObjectList = () => {
 
     return (
         <CollapsiblePanel
-            title="Entities"
+            title="Virtual Entities"
         >
             <div className='text-xs flex flex-row text-neutral-400'>
-                {selectedObjectKeys.length === 1 && (
-                    <p 
-                        className=' text-neutral-400 font-light text-xs'
-                        style={{textShadow: "black 0px 0px 5px"}}
-                    >
-                        {selectedObjectKeys.length} object selected
-                    </p>
-                )}
-                {selectedObjectKeys.length > 1 && (
-                    <p className='text-neutral-400 font-light' style={{ fontSize: "12px" }}>{selectedObjectKeys.length} objects selected</p>
-                )}
-                <p className='ml-auto text-xs' style={{ fontSize: "10px" }}>{Object.entries(vxObjects).length} objects</p>
+                <p className='ml-auto text-xs' style={{ fontSize: "10px" }}>{Object.entries(vxVirtualEntities).length} virtual entities</p>
             </div>
             <div className='mt-2 max-h-96 rounded-lg overflow-hidden'>
-                <Virtuoso
-                    style={{
-                        height: 384,
-                    }}
-                    totalCount={Object.values(vxEntities).length}
-                    itemContent={index => itemRenderer(index)}
-                />
+                {Object.values(vxVirtualEntities).map((vxVirtualEntity, index) => {
+                    const vxkey = vxVirtualEntity.vxkey;
+                    const isSelected = selectedObjectKeys?.includes(vxkey)
+                    const isHovered = hoveredObject?.vxkey === vxkey;
+            
+                    return (
+                        <div
+                            key={vxkey}
+                            className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
+                            ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
+                            ${isHovered && `bg-neutral-900`}
+                            ${isHovered && isSelected && " !bg-blue-800 !border-blue-600"} 
+                        `}
+                            onClick={(event) => handleObjectClick(event, vxVirtualEntity, index)}
+                            onMouseDown={(event) => event.preventDefault()}
+                            style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
+                        >
+                            <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
+                                {(vxVirtualEntity as vxVirtualEntityProps).name}
+                            </p>
+                            <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
+                                `${isSelected && "!text-neutral-400"}`}
+                                style={{ fontSize: "11px" }}
+                            >
+                                virtual {vxVirtualEntity.ref?.current?.type}
+                            </p>
+                        </div>
+                    ) 
+                })}
             </div>
         </CollapsiblePanel>
     )
 }
 
-type ListItemProps = {
-    index: number
-    isSelected: boolean
-    isHovered: boolean
-    handleObjectClick: (event: any, vxobject: vxObjectProps, index: number) => void
-    vxobject: vxObjectProps
-
-}
-
-export default ObjectList
+export default VirtualEntitiesList

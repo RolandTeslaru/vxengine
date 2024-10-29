@@ -129,7 +129,7 @@ export const ObjectProperties = React.memo(() => {
 
   const threejsType = firstObjectSelected?.ref.current?.type
   const vxType = firstObjectSelected?.type
-  const isEntity = vxType === "entity" || vxType === "virtualEntity"
+  const isEntity = vxType === "entity" || vxType === "virtualEntity";
 
   if (!firstObjectSelected) return
 
