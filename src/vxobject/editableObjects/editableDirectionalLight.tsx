@@ -1,10 +1,9 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { memo, forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-import VXEntityWrapper from "../entityWrapper";
 
 import { DirectionalLight } from "three";
 import { DirectionalLightProps } from "@react-three/fiber";
@@ -13,20 +12,20 @@ export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLight
     settings?: {}
 };
 
-export const EditableDirectionalLight = forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
-    const {settings = {}, ...rest} = props;
+export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
+    const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
-    
+
     // INITIALIZE Settings
     const defaultSettingsForObject = {
         useSplinePath: false,
         ...settings
     }
     useEffect(() => {
-        if(currentTimelineID === undefined) return 
+        if (currentTimelineID === undefined) return
         const mergedSettingsForObject = {
             ...defaultSettingsForObject,
             ...currentSettingsForObject
@@ -52,3 +51,4 @@ export const EditableDirectionalLight = forwardRef<DirectionalLight, EditableDir
         <directionalLight ref={ref} {...props} />
     )
 })
+)

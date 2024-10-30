@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef } from "react";
+import React, {memo, forwardRef } from "react";
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
@@ -11,7 +11,7 @@ export type EditableLineLoopProps = EditableObjectProps<LineLoopProps> & {
     ref?: React.Ref<LineLoop>;
 };
 
-export const EditableLineLoop = forwardRef<LineLoop, EditableLineLoopProps>((props, ref) => {
+export const EditableLineLoop = memo(forwardRef<LineLoop, EditableLineLoopProps>((props, ref) => {
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
@@ -26,4 +26,4 @@ export const EditableLineLoop = forwardRef<LineLoop, EditableLineLoopProps>((pro
             <lineLoop ref={ref} />
         </VXEntityWrapper>
     );
-})
+}))

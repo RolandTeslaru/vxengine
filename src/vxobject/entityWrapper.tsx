@@ -28,7 +28,7 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     defaultAdditionalSettings?: {}
 }
 
-const VXEntityWrapper = forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
+const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
     ({
         children,
         vxkey,
@@ -129,6 +129,6 @@ const VXEntityWrapper = forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Ob
             )}
         </>;
     }
-);
+));
 
 export default VXEntityWrapper

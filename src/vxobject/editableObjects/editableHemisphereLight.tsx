@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { memo, forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
@@ -13,7 +13,7 @@ export type EditableHemisphereLightProps = EditableObjectProps<HemisphereLightPr
     settings?: {}
 };
 
-export const EditableHemisphereLight = forwardRef<HemisphereLight, EditableHemisphereLightProps>((props, ref) => {
+export const EditableHemisphereLight = memo(forwardRef<HemisphereLight, EditableHemisphereLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
     const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
@@ -51,4 +51,4 @@ export const EditableHemisphereLight = forwardRef<HemisphereLight, EditableHemis
     return (
         <hemisphereLight ref={ref} {...props} />
     )
-})
+}))

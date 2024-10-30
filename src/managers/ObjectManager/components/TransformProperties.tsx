@@ -11,7 +11,7 @@ import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";
 
-export const TransformProperties = () => {
+export const TransformProperties = React.memo(() => {
     const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
     const vxkey = firstObjectSelectedStored.vxkey
     const disabledParams = firstObjectSelectedStored.disabledParams;
@@ -100,9 +100,9 @@ export const TransformProperties = () => {
             </div>
         </CollapsiblePanel>
     );
-};
+});
 
-const SplineProgress = ({ vxkey }) => {
+const SplineProgress = React.memo(({ vxkey }: any) => {
     const [value, setValue] = useState(0);
     const propertyPath = "splineProgress"
     const trackKey = `${vxkey}.splineProgress`
@@ -142,9 +142,9 @@ const SplineProgress = ({ vxkey }) => {
             </div>
         </div>
     )
-}
+})
 
-const BTN_useSplinePath = ({ vxkey }) => {
+const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
 
@@ -175,7 +175,7 @@ const BTN_useSplinePath = ({ vxkey }) => {
             <UseSplinePathAlertDialog open={alertDialogOpen} setOpen={setAlertDialogOpen} alertType={alertType} vxkey={vxkey} />
         </div>
     )
-}
+})
 
 const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
     const getTracksForObject = useTimelineEditorAPI(state => state.getTracksForObject)

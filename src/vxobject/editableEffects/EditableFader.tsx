@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
 import { vxObjectProps } from '@vxengine/types/objectStore'
@@ -32,20 +32,20 @@ class FadeShaderEffectImpl extends Effect {
     }
 }
 
-export const EditableFadeEffect = forwardRef((props, ref) => {
+export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     const vxkey = "fadeEffect"
     const name = "Fade Effect"
 
     const { fadeIntensity } = props as any
 
-    const effect = useMemo(() => new FadeShaderEffectImpl({fadeIntensity}), [fadeIntensity])
+    const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
 
     const addObject = useVXObjectStore((state) => state.addObject);
     const removeObject = useVXObjectStore((state) => state.removeObject);
     const memoizedAddObject = useCallback(addObject, []);
     const memoizedRemoveObject = useCallback(removeObject, []);
 
-    const internalRef = useRef<any>(null); 
+    const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
     const animationEngine = useVXEngine((state) => state.animationEngine);
@@ -73,3 +73,4 @@ export const EditableFadeEffect = forwardRef((props, ref) => {
 
     return <primitive ref={internalRef} object={effect} dispose={null} />
 })
+)

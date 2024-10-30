@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect, useLayoutEffect } from "react";
+import React, { memo, forwardRef, useEffect, useLayoutEffect } from "react";
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
@@ -12,7 +12,7 @@ export type EditableMeshProps = EditableObjectProps<MeshProps> & {
     settings?: {}
 };
 
-export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => {
+export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, settings = {}, ...rest } = props;
 
     // INITIALIZE settigngs on object mount
@@ -37,4 +37,4 @@ export const EditableMesh = forwardRef<Mesh, EditableMeshProps>((props, ref) => 
             </mesh>
         </VXEntityWrapper>
     );
-});
+}));

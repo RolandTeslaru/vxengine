@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
+import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
@@ -23,7 +23,7 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
     settings?: {}
 };
 
-export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
+export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
     const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
@@ -107,4 +107,4 @@ export const EditablePerspectiveCamera = forwardRef<typeof PerspectiveCamera, Ed
             <PerspectiveCamera name="VXPerspectiveCamera" />
         </VXEntityWrapper>
     );
-});
+}));

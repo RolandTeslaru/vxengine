@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect } from "react";
+import React, { memo, forwardRef, useEffect } from "react";
 import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
@@ -15,9 +15,9 @@ export type EditableGroupProps = EditableObjectProps<GroupProps> & {
 };
 
 
-export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) => {
-    const {settings = {}, children: groupChildren, ...rest} = props;
-    
+export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, ref) => {
+    const { settings = {}, children: groupChildren, ...rest } = props;
+
     // INITIALIZE Settings
     const defaultSettingsForObject = {
         useSplinePath: false,
@@ -31,8 +31,8 @@ export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) 
 
 
     return (
-        <VXEntityWrapper 
-            ref={ref} 
+        <VXEntityWrapper
+            ref={ref}
             {...rest}
             defaultSettingsForObject={defaultSettingsForObject}
             defaultAdditionalSettings={defaultAdditionalSettings}
@@ -42,4 +42,4 @@ export const EditableGroup = forwardRef<Group, EditableGroupProps>((props, ref) 
             </group>
         </VXEntityWrapper>
     );
-})
+}))
