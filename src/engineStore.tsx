@@ -9,8 +9,8 @@ import { EffectComposer } from 'three-stdlib';
 interface VXEngineStoreState {
     onScreenTransform: boolean;
     setOnScreenTransform: (value: boolean) => void;
-    mountEngineUI: boolean;
-    setMountEngineUI: (value: boolean) => void;
+    mountCoreUI: boolean;
+    setMountCoreUI: (value: boolean) => void;
     composer: EffectComposer | null;
     animationEngine: AnimationEngine | null;
 }
@@ -18,8 +18,8 @@ interface VXEngineStoreState {
 export const useVXEngineStore = create<VXEngineStoreState>((set, get) => ({
     onScreenTransform: false,
     setOnScreenTransform: (value: boolean) => set({ onScreenTransform: value }),
-    mountEngineUI: true,
-    setMountEngineUI: (value: boolean) => set({ mountEngineUI: value }),
+    mountCoreUI: true,
+    setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
     composer: null,
     animationEngine: new AnimationEngine(),
 }));

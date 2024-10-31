@@ -140,9 +140,8 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 }
 
 const ViewButton = () => {
-
-    const mountEngineUI = useVXEngine(state => state.mountEngineUI);
-    const setMountEngineUI = useVXEngine(state => state.setMountEngineUI);
+    const mountCoreUI = useVXUiStore(state => state.mountCoreUI);
+    const setMountCoreUI = useVXUiStore(state => state.setMountCoreUI); 
 
     const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
     const setShowStateVisualizer = useVXUiStore(state => state.setShowStateVisualizer);
@@ -151,8 +150,8 @@ const ViewButton = () => {
         <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => setMountEngineUI(!mountEngineUI)}>
-                    Mount Engine UI <MenubarShortcut><CheckVisualizer show={mountEngineUI} /></MenubarShortcut>
+                <MenubarItem onClick={() => setMountCoreUI(!mountCoreUI)}>
+                    Mount Engine UI <MenubarShortcut><CheckVisualizer show={mountCoreUI} /></MenubarShortcut>
                 </MenubarItem>
                 <MenubarItem onClick={() => setShowStateVisualizer(!showStateVisualizer)}>
                     Show State Visualizer <MenubarShortcut><CheckVisualizer show={showStateVisualizer} /></MenubarShortcut>

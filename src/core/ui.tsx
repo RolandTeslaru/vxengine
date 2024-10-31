@@ -23,30 +23,37 @@ import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
 import VirtualEntitiesList from "@vxengine/managers/ObjectManager/components/VirtualEntitiesList"
 
 export const CoreUI = () => {
-    return (
-        <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
-            {/* Menubar */}
 
-            <LeftPanel />
-            <RightPanel />
+    const mountCoreUI = useVXUiStore(state => state.mountCoreUI);
 
-            <BottomRightBar />
+    if(mountCoreUI)
+        return (
+            <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
+                {/* Menubar */}
 
-            <FrequentStateVisualizer />
-            <StateVisualizer />
-            <CameraManagerUI /> 
+                <LeftPanel />
+                <RightPanel />
 
-            <a
-                className="fixed pointer-events-auto bottom-5 left-10"
-                href="https://vexr-labs.com/"
-                target="_blank"
-            >
-                <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
-                    VEXR<span className="font-thin">LABS</span>
-                </h1>
-            </a>
-        </div>
-    )
+                <BottomRightBar />
+
+                <FrequentStateVisualizer />
+                <StateVisualizer />
+                <CameraManagerUI /> 
+
+                <a
+                    className="fixed pointer-events-auto bottom-5 left-10"
+                    href="https://vexr-labs.com/"
+                    target="_blank"
+                >
+                    <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
+                        VEXR<span className="font-thin">LABS</span>
+                    </h1>
+                </a>
+            </div>
+        )
+    else {
+        return null;
+    }
 }
 
 

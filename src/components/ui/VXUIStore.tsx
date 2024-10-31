@@ -14,9 +14,15 @@ interface UiStoreStateProps {
 
     showStateVisualizer: boolean;
     setShowStateVisualizer: (value: boolean) => void;
+
+    mountCoreUI: boolean;
+    setMountCoreUI: (value: boolean) => void,
 }
 
 export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) => ({
+    mountCoreUI: false,
+    setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
+    
     timelineEditorAttached: true,
     setTimelineEditorAttached: (value: boolean) => set({ timelineEditorAttached: value} ),
     timelineEditorOpen: false,
@@ -30,4 +36,5 @@ export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) =
 
     showStateVisualizer: false,
     setShowStateVisualizer: (value: boolean) => set({ showStateVisualizer: value }),
+
 }))

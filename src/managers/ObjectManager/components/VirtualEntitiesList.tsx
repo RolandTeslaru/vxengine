@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
 import { vxEntityProps, vxObjectProps, vxVirtualEntityProps } from '@vxengine/types/objectStore';
@@ -51,37 +51,6 @@ const VirtualEntitiesList = () => {
         }
         setLastSelectedIndex(index);
     };
-
-    const itemRenderer = (index: number) => {
-        const vxVirtualEntity = Object.values(vxVirtualEntities)[index];
-        const vxkey = vxVirtualEntity.vxkey
-        const isSelected = selectedObjectKeys?.includes(vxkey)
-        const isHovered = hoveredObject?.vxkey === vxkey;
-
-        return (
-            <div
-                key={index}
-                className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
-                ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
-                ${isHovered && `bg-neutral-900`}
-                ${isHovered && isSelected && " !bg-blue-800 !border-blue-600"} 
-            `}
-                onClick={(event) => handleObjectClick(event, vxVirtualEntity, index)}
-                onMouseDown={(event) => event.preventDefault()}
-                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
-            >
-                <p className={'h-auto my-auto text-xs mr-auto text-neutral-200'}>
-                    {(vxVirtualEntity as vxVirtualEntityProps).name}
-                </p>
-                <p className={'h-auto my-auto text-xs ml-auto text-neutral-600 ' +
-                    `${isSelected && "!text-neutral-400"}`}
-                    style={{ fontSize: "11px" }}
-                >
-                    virtual entity
-                </p>
-            </div>
-        )
-    }
 
     return (
         <CollapsiblePanel

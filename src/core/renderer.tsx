@@ -62,7 +62,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           <VXEngineUtils />
           <EffectsManagerDriver>
             {/* <Noise opacity={0.02} /> */}
-            <Bloom mipmapBlur={true} intensity={3} kernelSize={5} />
+            {/* <Bloom mipmapBlur={true} intensity={3} kernelSize={5} /> */}
             <vx.fadeEffect />
           </EffectsManagerDriver>
           <ObjectManagerDriver/>

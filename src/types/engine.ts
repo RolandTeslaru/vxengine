@@ -2,7 +2,7 @@ import { EffectComposer } from "three-stdlib";
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
 
 export interface EngineContextProps {
-    mountEngineUI: boolean
+    mountCoreUI: boolean
     composer: React.MutableRefObject<EffectComposer | null>;
     animationEngine: AnimationEngine;
 }
@@ -14,8 +14,9 @@ export interface VXEngineProviderProps {
 }
 
 export interface VXEngineStoreProps {
-    mountEngineUI: boolean;
-    setMountEngineUI: (value: boolean) => void;
+    mountCoreRenderer: boolean;
+    setMountCoreRenderer: (value: boolean) => void;
+
     composer: React.MutableRefObject<EffectComposer | null>;
     animationEngine: AnimationEngine | null;
   }

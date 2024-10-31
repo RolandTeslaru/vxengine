@@ -51,8 +51,8 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   }
 
   VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
-    mountEngineUI: mount ?? true,  
-    setMountEngineUI: (value) => set({ mountEngineUI: value }),  
+    mountCoreRenderer: mount?? true,  
+    setMountCoreRenderer: (value) => set({ mountCoreRenderer: value }),
 
     composer: useRef<EffectComposer | null>(null),  
 
@@ -89,7 +89,6 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 });
 
 const VXEngineContent = ({children}: {children: React.ReactNode}) => {
-  const mountEngineUI = useVXEngine(state => state.mountEngineUI)
   const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
   return (
     <>
@@ -101,9 +100,7 @@ const VXEngineContent = ({children}: {children: React.ReactNode}) => {
           disableTransitionOnChange
         >
           <MenubarUI/>
-          {mountEngineUI && (
-            <VXEngineCoreUI />
-          )}
+          <VXEngineCoreUI />
           {showSyncPopup && (
             <DataSyncPopup />
           )}

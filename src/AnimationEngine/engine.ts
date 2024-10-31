@@ -28,6 +28,7 @@ import init, {
 } from '../wasm/pkg';
 
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
+import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -145,6 +146,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.setCurrentTimeline(firstTimelineID);
     
     console.log("VXEngine AnimationEngine: Loading timelines ", firstTimeline)
+
+    useVXUiStore.getState().setMountCoreUI(true);
     this._isReady = true;
   }
 

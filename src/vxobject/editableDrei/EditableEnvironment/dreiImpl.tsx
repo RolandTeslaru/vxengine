@@ -183,61 +183,9 @@ export function VXEnvironmentPortal({
     }
   )
 
-  // function getVxKeysFromChildren(children) {
-  //   const vxkeys = [];
-  //   React.Children.forEach(children, (child) => {
-  //     if (React.isValidElement(child)) {
-  //       const vxkey = (child.props as any).vxkey;
-  //       if (vxkey) {
-  //         vxkeys.push(vxkey);
-  //       }
-  //     }
-  //   });
-  //   return vxkeys;
-  // }
-
-  // const vxkeys = useMemo(() => getVxKeysFromChildren(children), [children]);
-
-  // // FIXME: HORRIBLE AND WAY TO COMPLEX IMPLEMENTATION
-  // const objects = useVXObjectStore(state => state.objects
-  // );
-  // const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings);
-
-  // console.log("RENDERING ENVIRONMENT ")
-
-  // const virtualMeshes = useMemo(() => {
-  //   const vxkeys = []
-
-  //   if(Array.isArray(children)){
-  //     children.forEach((child) => {
-  //       const vxkey = child.props.vxkey;
-  //       if(vxkey)
-  //         vxkeys.push(vxkey)
-  //     })
-  //   } else {
-  //     const vxkey = (children as any).props.vxkey;
-  //     if(vxkey)
-  //       vxkeys.push(vxkey)
-  //   }
-
-  //   const meshes = vxkeys.map(vxkey => {
-  //     const vxObject = objects[vxkey];
-  //     const isShowInScene = useObjectSettingsAPI.getState().additionalSettings[vxkey]?.["Show In Scene"];
-  //     if(vxObject && isShowInScene)
-  //       return vxObject.ref.current 
-  //   })
-
-  //   return meshes
-  // }, [children, objects, additionalSettings])
 
   return (
     <>
-      {/* {virtualMeshes.map(virtualMesh => {
-        if(virtualMesh)
-          return <primitive object={virtualMesh}/>
-        else 
-         return null
-      } )} */}
       {createPortal(
         <>
           {children}

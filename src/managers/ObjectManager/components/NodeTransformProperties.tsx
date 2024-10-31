@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
-import { Switch } from "@vxengine/components/shadcn/switch";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
 
 const NodeTransformProperties = () => {
