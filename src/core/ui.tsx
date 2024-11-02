@@ -21,6 +21,7 @@ import Params from "@vxengine/managers/ObjectManager/components/Params"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
 import VirtualEntitiesList from "@vxengine/managers/ObjectManager/components/VirtualEntitiesList"
+import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
 
 export const CoreUI = () => {
 
@@ -60,6 +61,9 @@ export const CoreUI = () => {
 const RightPanel = () => {
     const rightPanelAttached = useVXUiStore(state => state.rightPanelAttached)
     const setRightPanelAttached = useVXUiStore(state => state.setRightPanelAttached)
+
+    const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
+
     return (
         <VXUiPanelWrapper
             title="VXEngine: RightPanel"
@@ -71,11 +75,16 @@ const RightPanel = () => {
                             bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1
                             ${rightPanelAttached ? " top-32 right-6 " : " top-2 right-2"}
                             `}
-                id="VXEngineRightPanel">
+                id="VXEngineRightPanel"
+            >
                 <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll">
-                    <ObjectProperties />
-                    <Params />
-                    <SettingsList />
+                    {firstSelectedObject && (
+                        <>
+                            <ObjectProperties vxobject={firstSelectedObject} />
+                            <Params vxobject={firstSelectedObject}/>
+                            <SettingsList vxobject={firstSelectedObject}/>
+                        </>
+                    )}
                 </div>
                 <button className={" border bottom-1 right-1 absolute z-20 ml-auto text-xs p-1 h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 rounded-2xl cursor-pointer "}
                     onClick={() => setRightPanelAttached(!rightPanelAttached)}

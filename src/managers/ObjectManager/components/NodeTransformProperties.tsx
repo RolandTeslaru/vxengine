@@ -3,14 +3,16 @@ import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
+import { vxObjectProps } from "@vxengine/types/objectStore";
 
-const NodeTransformProperties = () => {
-    const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
-    const vxkey = firstObjectSelectedStored.vxkey
-    const disabledParams = firstObjectSelectedStored.disabledParams;
+interface Props {
+    vxobject: vxObjectProps
+}
+
+const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
+    const vxkey = vxobject.vxkey
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-
     const isUsingSplinePath = settings?.useSplinePath
 
     const renderInputs = (property, disabled = false) => {

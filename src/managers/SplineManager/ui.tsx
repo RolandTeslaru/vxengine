@@ -14,7 +14,7 @@ import { useTimelineEditorAPI } from '../TimelineManager'
 
 const SplineManagerUI = () => {
   const selectedSpline = useSplineManagerAPI(state => state.selectedSpline)
-  
+
   if (!selectedSpline) return
 
   return <SplineSettings />
@@ -26,20 +26,20 @@ const SplineSettings = () => {
   const vxkey = useSplineManagerAPI(state => state.selectedSpline.vxkey)
   const isShowingSpline = useObjectSettingsAPI(state => state.additionalSettings[vxkey].showPositionPath)
 
-  if (isShowingSpline)
-    return (
-      <CollapsiblePanel
-        title='Spline Manager'
-      >
-        <div className='gap-2 flex flex-col'>
-          <div className='w-auto mx-auto'>
-            <SplineSelect defaultSplineKey={vxkey} />
-          </div>
-          <SplineNodesScrollArea />
+  if (!isShowingSpline) return null;
+
+  return (
+    <CollapsiblePanel
+      title='Spline Manager'
+    >
+      <div className='gap-2 flex flex-col'>
+        <div className='w-auto mx-auto'>
+          <SplineSelect defaultSplineKey={vxkey} />
         </div>
-      </CollapsiblePanel>
-    )
-  return <></>
+        <SplineNodesScrollArea />
+      </div>
+    </CollapsiblePanel>
+  )
 }
 
 const SplineNodesScrollArea = () => {
@@ -87,7 +87,7 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
   const insertNode = useSplineManagerAPI(state => state.insertNode)
   const removeNode = useSplineManagerAPI(state => state.removeNode)
 
-  const isSelected = useMemo(() => { 
+  const isSelected = useMemo(() => {
     return selectedObjectKeys.includes(vxSplineNode?.vxkey)
   }, [vxSplineNode, selectedObjectKeys])
 
@@ -95,7 +95,7 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
     useObjectManagerAPI.getState().setTransformMode("translate");
     selectObject([nodeKey])
   }
-    
+
 
   return (
     <>
@@ -121,8 +121,8 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
               <ContextMenuItem
                 onMouseDown={(e) => {
                   e.preventDefault()
-                  e.stopPropagation(); 
-                }} 
+                  e.stopPropagation();
+                }}
               >
                 <p className=' text-neutral-300'>
                   Show Data

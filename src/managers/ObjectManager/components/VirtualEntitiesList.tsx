@@ -6,7 +6,6 @@ import { useVXObjectStore } from '@vxengine/vxobject';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 const VirtualEntitiesList = () => {
-
     const vxObjects = useVXObjectStore(state => state.objects)
 
     const vxVirtualEntities = useMemo(() => {

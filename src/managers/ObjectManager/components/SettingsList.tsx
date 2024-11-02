@@ -3,73 +3,63 @@ import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectManagerAPI } from '..'
+import { vxObjectProps } from '@vxengine/types/objectStore'
 
 const excludeSettingsKeys = [
     "useSplinePath",
     "showPositionPath"
 ]
 
-const SettingsList = () => {
-    const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey)
+interface Props {
+    vxobject: vxObjectProps
+}
+
+const SettingsList: React.FC<Props> = ({ vxobject }) => {
+    const vxkey = vxobject.vxkey
+
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
-    
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
     const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
-    if (settings === null || settings === undefined) return
+    if (!settings || !additionalSettings) return null
+
+    const RenderSetting = ({ settingKey, value, onClick }) => (
+        <div key={settingKey} className="flex flex-row py-1">
+            <p className="text-xs font-light text-neutral-500">{settingKey}</p>
+            <Switch
+                onClick={onClick}
+                checked={value}
+                className="ml-auto my-auto scale-[80%]"
+            />
+        </div>
+    )
+
+    const renderSettings = (settingsObj, toggleFunction) =>
+        Object.entries(settingsObj).map(([settingKey, value]) => (
+            !excludeSettingsKeys.includes(settingKey) && (
+                <RenderSetting
+                    key={settingKey}
+                    settingKey={settingKey}
+                    value={value}
+                    onClick={() => toggleFunction(vxkey, settingKey)}
+                />
+            )
+        ))
 
     return (
         <>
-            {Object.entries(settings).length > 0 && (
-                <CollapsiblePanel title={"Settings"}>
-                    <div className='flex flex-col'>
-                        {Object.entries(settings).map(([settingKey, value]) => {
-                            if (!excludeSettingsKeys.includes(settingKey)) {
-                                return (
-                                    <>
-                                        <div key={settingKey} className="flex flex-row py-1">
-                                            <p className="text-xs font-light text-neutral-500">{settingKey}</p>
-                                            <Switch
-                                                onClick={() => toggleSetting(vxkey, settingKey)}
-                                                checked={value}
-                                                className='ml-auto my-auto scale-[80%]'
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
-                            else return <></>
-                        }
-                        )}
-                    </div>
-                </CollapsiblePanel>
-            )}
+            <CollapsiblePanel title="Settings">
+                <div className="flex flex-col">
+                    {renderSettings(settings, toggleSetting)}
+                </div>
+            </CollapsiblePanel>
 
-            {Object.entries(additionalSettings).length > 0 && (
-                <CollapsiblePanel title={"Temporary Settings"}>
-                    <div className='flex flex-col'>
-                        {Object.entries(additionalSettings).map(([settingKey, value]) => {
-                            if (!excludeSettingsKeys.includes(settingKey)) {
-                                return (
-                                    <>
-                                        <div key={settingKey} className="flex flex-row py-1">
-                                            <p className="text-xs font-light text-neutral-500">{settingKey}</p>
-                                            <Switch
-                                                onClick={() => toggleAdditionalSetting(vxkey, settingKey)}
-                                                checked={value}
-                                                className='ml-auto my-auto scale-[80%]'
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
-                            else return <></>
-                        }
-                        )}
-                    </div>
-                </CollapsiblePanel>
-            )}
+            <CollapsiblePanel title="Temporary Settings">
+                <div className="flex flex-col">
+                    {renderSettings(additionalSettings, toggleAdditionalSetting)}
+                </div>
+            </CollapsiblePanel>
         </>
     )
 }

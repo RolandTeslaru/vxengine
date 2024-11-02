@@ -1,22 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useVXEngine } from '@vxengine/engine';
 import { EventTypes } from '../events';
 
 function useAnimationEngineEvent(
-  eventName: keyof EventTypes,
-  callback: (eventData: any) => void,
-  dependencies: any[] = []
+  eventName,
+  callback,
+  dependencies = []
 ) {
-  const animationEngine = useVXEngine(state => state.animationEngine)
+  const animationEngine = useVXEngine(state => state.animationEngine);
+  const callbackRef = useRef(callback);
+
   useEffect(() => {
-    // Register the event listener
-    animationEngine.on(eventName, callback);
+    callbackRef.current = callback;
+  }, [callback, ...dependencies]);
 
-    // Cleanup the event listener when the component unmounts or dependencies change
+  useEffect(() => {
+    const handler = (...args) => callbackRef.current(...args);
+
+    animationEngine.on(eventName, handler);
+
     return () => {
-      animationEngine.off(eventName, callback);
+      animationEngine.off(eventName, handler);
     };
-  }, [animationEngine, eventName, ...dependencies]);
+  }, [animationEngine, eventName]);
 }
-
 export default useAnimationEngineEvent

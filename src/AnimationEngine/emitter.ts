@@ -19,7 +19,7 @@ export class Emitter<EventTypes> {
 
     (events as string[]).forEach((name) => {
       if (!this.events[name]) {
-        throw new Error(`The event ${name} does not exist`);
+        throw new Error(`VXEngine AnimationEngine: The event ${name} does not exist`);
       }
       this.events[name].push(handler);
     });
@@ -29,7 +29,7 @@ export class Emitter<EventTypes> {
 
   trigger<K extends keyof EventTypes>(name: K, params: EventTypes[K]) {
     if (!(name in this.events)) {
-      throw new Error(`The event ${String(name)} cannot be triggered`);
+      throw new Error(`VXEngine AnimationEngine: The event ${String(name)} cannot be triggered`);
     }
 
     return this.events[name as string].reduce((r: boolean, e: CallableFunction) => e(params) !== false && r, true); // return false if at least one event is false
@@ -37,7 +37,7 @@ export class Emitter<EventTypes> {
 
   bind(name: string) {
     if (this.events[name]) {
-      throw new Error(`The event ${name} is already bound`);
+      throw new Error(`VXEngine AnimationEngine: The event ${name} is already bound`);
     }
 
     this.events[name] = [];

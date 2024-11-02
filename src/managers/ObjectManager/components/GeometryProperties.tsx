@@ -18,28 +18,31 @@ interface GeometryPropertiesProps {
 
 export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
 
-    if (geometry.parameters === undefined) {
-        return <></>
-    } else
+    const params = geometry.parameters
+    if (!params) return null;
+
+    const GeomPropRender = ({ _key, value}) => {
         return (
-            <CollapsiblePanel
-                title={geometry.type + " Params"}
-            >
-                <div className='flex flex-col'>
-                    {Object.entries(geometry?.parameters).map(([key, value]) => {
-                        return (
-                            <div key={key} className='flex flex-row py-1'>
-                                <p className='text-xs font-light text-neutral-500'>{key}</p>
-                                <PropInput
-                                    type="number"
-                                    className="ml-auto w-fit"
-                                    propertyPath={`geometry.parameters.${key}`}
-                                />
-                            </div>
-                        )
-                    })
-                    }
-                </div>
-            </CollapsiblePanel>
+            <div key={_key} className='flex flex-row py-1'>
+                <p className='text-xs font-light text-neutral-500'>{_key}</p>
+                <PropInput
+                    type="number"
+                    className="ml-auto w-fit"
+                    propertyPath={`geometry.parameters.${_key}`}
+                />
+            </div>
         )
+    }
+
+    return (
+        <CollapsiblePanel
+            title={geometry.type + " Params"}
+        >
+            <div className='flex flex-col'>
+                {Object.entries(params).map(
+                    ([key, value]) => <GeomPropRender _key={key} value={value} />
+                )}
+            </div>
+        </CollapsiblePanel>
+    )
 }

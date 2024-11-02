@@ -14,22 +14,12 @@ const base64FloorProjection = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4
 const CameraTarget = () => {
     const vxkey = "cameraTarget"
     const pointerTexture = useMemo(() => {
-        const tx = new TextureLoader().load(
-            base64Pointer,
-            () => console.log("VXEngine CameraManager: Pointer Texture loaded"),
-            undefined,
-            (err) => console.log("VXEngine CameraManager ERROR: Unable to load pointer texture", err)
-        );
+        const tx = new TextureLoader().load(base64Pointer);
         return tx;
     }, [])
 
     const floorProjectionTexture = useMemo(() => {
-        const tx = new TextureLoader().load(
-            base64FloorProjection,
-            () => console.log("VXEngine CameraManager: Floor Projection Texture loaded"),
-            undefined,
-            (err) => console.log("VXEngine CameraManager ERROR: Unable to load floor projection texture", err)
-        );
+        const tx = new TextureLoader().load(base64FloorProjection);
         return tx;
     }, [])
 

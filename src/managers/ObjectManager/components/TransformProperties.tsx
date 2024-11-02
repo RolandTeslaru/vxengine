@@ -10,14 +10,17 @@ import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";
+import { vxObjectProps } from "@vxengine/types/objectStore";
 
-export const TransformProperties = React.memo(() => {
-    const firstObjectSelectedStored = useObjectManagerAPI((state) => state.selectedObjects[0]);
-    const vxkey = firstObjectSelectedStored.vxkey
-    const disabledParams = firstObjectSelectedStored.disabledParams;
+interface Props {
+    vxobject: vxObjectProps
+}
+
+export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
+    const vxkey = vxobject.vxkey
+    const disabledParams = vxobject.disabledParams;
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
     const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
@@ -100,7 +103,7 @@ export const TransformProperties = React.memo(() => {
             </div>
         </CollapsiblePanel>
     );
-});
+}
 
 const SplineProgress = React.memo(({ vxkey }: any) => {
     const [value, setValue] = useState(0);
@@ -146,7 +149,6 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
 
 const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
 
     const [alertDialogOpen, setAlertDialogOpen] = useState(false);
     const [alertType, setAlertType] = useState<"addSpline" | "removeSpline">("addSpline")

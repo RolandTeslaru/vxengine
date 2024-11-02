@@ -2,7 +2,7 @@ import React from 'react'
 import { useCameraManagerAPI } from './store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/shadcn/tabs"
 
-const CameraManagerUI = React.memo(() => {
+const CameraManagerUI = () => {
     const mode = useCameraManagerAPI(state => state.mode)
     const setMode = useCameraManagerAPI(state => state.setMode)
 
@@ -15,13 +15,23 @@ const CameraManagerUI = React.memo(() => {
                     defaultValue={mode}
                 >
                     <TabsList>
-                        <TabsTrigger value="attached" onClick={() => setMode("attached")}>Attached</TabsTrigger>
-                        <TabsTrigger value="free" onClick={() => setMode("free")}>Free</TabsTrigger>
+                        <TabsTrigger 
+                            value="attached" 
+                            onClick={() => setMode("attached")}
+                        >
+                            Attached
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="free" 
+                            onClick={() => setMode("free")}
+                        >
+                            Free
+                        </TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
         </div>
     )
-})
+}
 
 export default CameraManagerUI

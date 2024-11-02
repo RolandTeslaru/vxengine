@@ -21,13 +21,13 @@ const TimelineArea = (() => {
 
   // Sync Cursor with Engine time
   useAnimationEngineEvent(
-    'timeUpdatedAutomatically',
+    'timeUpdatedByEngine',
     ({ time }) => {
       handleSetCursor({ time, rerender: false })
 
-      const scale = useTimelineEditorAPI.getState().scale
+      const { scale, clientWidth} = useTimelineEditorAPI.getState()
       
-      const autoScrollFrom = useTimelineEditorAPI.getState().clientWidth * 70 / 100;
+      const autoScrollFrom = clientWidth * 70 / 100;
       const left = time * (ONE_SECOND_UNIT_WIDTH / scale) + startLeft - autoScrollFrom;
       timelineAreaRef.current.scrollLeft = left;
       scrollLeftRef.current = left

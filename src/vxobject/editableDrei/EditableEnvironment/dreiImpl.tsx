@@ -169,8 +169,9 @@ export function VXEnvironmentPortal({
   let count = 1
 
   useAnimationEngineEvent(
-    'timeUpdatedAutomatically',
+    'timeUpdated',
     ({ time }) => {
+      console.log("TIME UPDATED ")
       camera.current.update(gl as any, virtualScene)
       count++ 
     }

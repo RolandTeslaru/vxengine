@@ -10,8 +10,9 @@ export class Events {
   constructor(handlers = {}) {
     this.handlers = {
       beforeSetTime: [],
-      timeSetManually: [],
-      timeUpdatedAutomatically: [],
+      timeUpdatedByEditor: [],
+      timeUpdatedByEngine: [],
+      timeUpdated: [],
       beforeSetPlayRate: [],
       afterSetPlayRate: [],
       setActiveActionIds: [],
@@ -35,13 +36,14 @@ export interface EventTypes {
    * @type {{ time: number, engine: AnimationEngine }}
    * @memberofEventTypes
    */
-  timeSetManually: { time: number; engine: AnimationEngine };
+  timeUpdatedByEditor: { time: number; engine: AnimationEngine };
   /**
    * After tick setting time
    * @type {{ time: number, engine: AnimationEngine }}
    * @memberofEventTypes
    */
-  timeUpdatedAutomatically: { time: number; engine: AnimationEngine };
+  timeUpdatedByEngine: { time: number; engine: AnimationEngine };
+  timeUpdated: { time: number }
   /**
   * Before setting the running rate
   * return false will prevent setting rate

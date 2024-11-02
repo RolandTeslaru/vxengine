@@ -44,15 +44,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _wasmReady: Promise<void>
   private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
-
   private _splinesCache: Record<string, any> = {}
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _currentTimeline: ITimeline;
-
+  private _cameraRequiresPerspectiveMatrixRecalculation;
   private _currentTime: number = 0;
-
   private _interpolateNumberFunction: Function;
+  private _propertiesRequiredToRecalculateCamera = ['fov', 'near', 'far', 'zoom']
 
   constructor() {
     super(new Events());
@@ -63,129 +62,181 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._currentTimeline = null
   }
 
+  
+
+
+
+
+  /**
+   * Initializes the WebAssembly module and sets the interpolation function.
+   */
+  private async _initializeWasm() {
+    console.log('AnimationEngine: Initializing WASM Driver with URL:', wasmUrl);
+    try {
+      await init(wasmUrl); // Wait for the WebAssembly module to initialize
+      this._isWasmInitialized = true;
+      this._interpolateNumberFunction = wasm_interpolateNumber;
+      console.log('AnimationEngine: WASM Driver initialized successfully');
+    } catch (error) {
+      console.error('AnimationEngine: Failed to initialize WASM Driver:', error);
+    }
+  }
+
+
+
+
+
+
   get timelines() { return useAnimationEngineAPI.getState().timelines; }
   get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
   get isPaused() { return !this.isPlaying; }
   get playRate() { return useAnimationEngineAPI.getState().playRate }
   get currentTimeline() { return this._currentTimeline }
 
-
-
-  /*   --------------   */
-  /*                    */
-  /*   Set is playing   */
-  /*                    */
-  /*   --------------   */
   setIsPlaying(value: boolean) { useAnimationEngineAPI.setState({ isPlaying: value }) }
 
 
 
-  /*   --------------------   */
-  /*                          */
-  /*   Set current Timeline   */
-  /*                          */
-  /*   --------------------   */
+
+
+
+  /**
+   * Sets the current timeline by updating the state, caching splines, and re-rendering.
+   * @param timelineId - The identifier of the timeline to set as current.
+   */
   setCurrentTimeline(timelineId: string) {
-    useAnimationEngineAPI.setState({ currentTimelineID: timelineId })
-    const selectedTimeline: ITimeline = this.timelines[timelineId]
+    // Update the current timeline ID in the state
+    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
 
-    if (!selectedTimeline)
-      throw new Error(`VXEngine AnimationEngine: Timeline with id ${timelineId} not found`);
+    const selectedTimeline: ITimeline = this.timelines[timelineId];
 
-    const { 
-      objects: rawObjects, 
-      splines: rawSplines 
-    } = selectedTimeline
+    if (!selectedTimeline) {
+      throw new Error(`AnimationEngine: Timeline with ID '${timelineId}' not found.`);
+    }
 
-    this._currentTimeline = selectedTimeline
+    const { objects, splines } = selectedTimeline;
 
-    this.cacheSplines(rawSplines);
-    this.reRender({ time: this._currentTime, force: true });
+    this._currentTimeline = selectedTimeline;
 
-    // set the editor data only when in the development environment
-    useTimelineEditorAPI.getState().setEditorData(rawObjects)
+    // Cache the splines asynchronously
+    this.cacheSplines(splines).then(() => {
+      // Re-render after splines are cached
+      this.reRender({ time: this._currentTime, force: true });
+    }).catch(error => {
+      console.error('AnimationEngine: Error caching splines:', error);
+    });
+
+    // Set the editor data
+    useTimelineEditorAPI.getState().setEditorData(objects);
   }
 
 
 
-  /*   ----------------   */
-  /*                      */
-  /*   Set Current Time   */
-  /*                      */
-  /*   ----------------   */
-  setCurrentTime(time: number, isTick?: boolean): boolean {
-    this._currentTime = time
-    // console.log("AnimationEngine: setCurrentTime IsTick:", isTick);
+
+
+
+  /**
+   * Sets the current time of the animation engine and triggers relevant events.
+   * @param time - The new current time.
+   * @param isTick - Indicates if the time update is part of the engine's tick.
+   */
+  setCurrentTime(time: number, isTick: boolean = false) {
+    this._currentTime = time;
 
     if (isTick) {
-      this.trigger('timeUpdatedAutomatically', { time, engine: this });
-      return;
+      this.trigger('timeUpdatedByEngine', { time, engine: this });
+    } else {
+      this._applyAllKeyframes(time, true);
+      this.trigger('timeUpdatedByEditor', { time, engine: this });
     }
-    else {
-      this._applyAllKeyframes(time);
-      this.trigger('timeSetManually', { time, engine: this });
-    }
+
+    // Always trigger a general time updated event
+    this.trigger('timeUpdated', { time });
   }
 
 
 
-  /*   --------------   */
-  /*                    */
-  /*   load Timelines   */
-  /*                    */
-  /*   --------------   */
+
+
+
+  /**
+  * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
+  * @param timelines - A record of timelines to load.
+  */
   loadTimelines(timelines: Record<string, ITimeline>) {
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
-    if (syncResult?.status === 'out_of_sync')
+    if (syncResult?.status === 'out_of_sync') {
       this.setIsPlaying(false);
+    }
 
     // Load the first timeline
-    const firstTimeline = Object.values(timelines)[0]
-    const firstTimelineID = firstTimeline.id
-    this.setCurrentTimeline(firstTimelineID);
-    
-    console.log("VXEngine AnimationEngine: Loading timelines ", firstTimeline)
+    const firstTimeline = Object.values(timelines)[0];
+    const firstTimelineID = firstTimeline.id;
 
+    this.setCurrentTimeline(firstTimelineID);
+
+    console.log('AnimationEngine: Loading timelines', firstTimeline);
+
+    // Initialize the core UI
     useVXUiStore.getState().setMountCoreUI(true);
     this._isReady = true;
   }
 
 
 
-  /*   -------   */
-  /*             */
-  /*   reRender  */
-  /*             */
-  /*   -------   */
-  reRender(params: {
-    time?: number,
-    force?: boolean,
-    cause?: string
-  } = {}) {
-    const { time, force, cause } = params
-    if (this.isPlaying && force === false)
-      return;
 
-    if (DEBUG_RERENDER)
-      console.log("VXEngine AnimationEngine: rerendering", " cause: ", cause)
+
+
+  /**
+  * Re-renders the animation by applying static properties and keyframes.
+  * @param params - An object containing optional parameters:
+  *   - time: The specific time to apply keyframes.
+  *   - force: Whether to force re-rendering even if the animation is playing.
+  *   - cause: A string describing the cause of the re-render.
+  */
+  reRender(params: {
+    time?: number;
+    force?: boolean;
+    cause?: string;
+  } = {}) {
+    const { time, force = false, cause } = params;
+
+    if (this.isPlaying && !force) {
+      return;
+    }
+
+    if (DEBUG_RERENDER) {
+      console.log('AnimationEngine: Re-rendering. Cause:', cause);
+    }
 
     this._applyAllStaticProps();
 
-    if (time !== undefined)
-      this._applyAllKeyframes(time);
-    else
-      this._applyAllKeyframes(this._currentTime)
+    const targetTime = time !== undefined ? time : this._currentTime;
+    this._applyAllKeyframes(targetTime);
   }
 
 
+
+
+
+
+  /**
+   * Starts playing the animation, optionally up to a specific time with an auto-end feature.
+   * @param param - An object containing optional parameters:
+   *   - toTime: The time to play up to.
+   *   - autoEnd: Whether to automatically end the animation when `toTime` is reached.
+   * @returns True if the animation starts playing, false otherwise.
+   */
   play(param: {
     toTime?: number;
     autoEnd?: boolean;
-  }): boolean {
+  } = {}): boolean {
     const { toTime, autoEnd } = param;
 
-    if (this.isPlaying || (toTime && toTime <= this._currentTime)) return false;
+    if (this.isPlaying || (toTime !== undefined && toTime <= this._currentTime)) {
+      return false;
+    }
 
     this.setIsPlaying(true);
 
@@ -193,12 +244,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._prev = time;
       this._tick({ now: time, autoEnd, to: toTime });
     });
+
+    return true;
   }
 
 
+
+
+
+
+  /**
+   * Pauses the animation playback and triggers a 'paused' event.
+   */
   pause() {
     if (this.isPlaying) {
-      this.setIsPlaying(false)
+      this.setIsPlaying(false);
       this.trigger('paused', { engine: this });
     }
     cancelAnimationFrame(this._timerId);
@@ -206,96 +266,156 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /*   -----------------   */ // When called, it initializes objects props
-  /*                       */ // During the animationEngine initialization, the engine loads the first timeline, 
-  /*   initObjectOnMount   */ // but it cant apply all keyframes and static props because the objects arent mounted at that point
-  /*                       */
-  /*   -----------------   */
+
+
+
+  /**
+   * Initializes object properties when the object is mounted.
+   * Applies initial tracks and static properties to the object.
+   * @param vxObject - The object to initialize.
+   */
   initObjectOnMount(vxObject: vxObjectProps) {
-    const vxkey = vxObject.vxkey
-    if (this._isReady === false)
-      return
+    const vxkey = vxObject.vxkey;
 
-    useTimelineEditorAPI.getState().addObjectToEditorData(vxObject)
+    if (!this._isReady) {
+      return;
+    }
 
-    // Cache the THREE.Object3D ref
-    const object3DRef = vxObject.ref.current
-    if(object3DRef)
-      this._object3DCache.set(vxObject.vxkey, object3DRef);
+    // Add object to editor data
+    this._addToEditorData(vxObject);
 
-    if(DEBUG_OBJECT_INIT) console.log("VXEngine AnimationEngine: Initializing vxobject", vxObject)
-      
-    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey)
+    // Cache the THREE.Object3D reference
+    const object3DRef = this._cacheObject3DRef(vxObject);
 
-    // Initialize the edObject if it doesnt exist
+    if (DEBUG_OBJECT_INIT) {
+      console.log('AnimationEngine: Initializing object', vxObject);
+    }
+
+    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+
+    // Initialize the raw object if it doesn't exist
     if (!rawObject) {
-      const newRawObject = {
+      rawObject = {
         vxkey: vxkey,
         tracks: [],
         staticProps: []
-      }
-      this.currentTimeline.objects.push(newRawObject)
-      return
+      };
+      this.currentTimeline.objects.push(rawObject);
     }
-    // Apply all initial properties controled by tracks
-    rawObject.tracks?.forEach(track => {
-      const propertyPath = track.propertyPath
-      const keyframes = track.keyframes
 
-      this._applyKeyframes(vxkey, propertyPath, keyframes, this._currentTime);
-    })
-
-     // Apply all initial properties controled by staticProps
-    rawObject.staticProps?.map(staticProp => {
-      this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
-    })
+    this._applyInitialTracks(rawObject, vxkey);
+    this._applyInitialStaticProps(rawObject, object3DRef);
   }
 
 
 
-  /*   ---------------   */ // Initializes the Web Assembly Module
-  /*                     */ // Sets the number interpolation function to the wasm one if succeded
-  /*   Initialize Wasm   */
-  /*                     */
-  /*   ---------------   */
-  private async _initializeWasm() {
-    console.log("VXEngine AnimationEngine: Initializing WASM Driver with url:", wasmUrl);
-    try {
-      await init(wasmUrl);  // Wait for the WebAssembly module to initialize
-      this._isWasmInitialized = true;
-      this._interpolateNumberFunction = wasm_interpolateNumber;
-      console.log("VXEngine AnimationEngine: WASM Driver initialized successfully");
-    } catch (error) {
-      console.error("VXEngine AnimationEngine Error: Failed to initialize WASM Driver", error);
-    }
+
+
+
+  /**
+   * Adds the vxObject to the editor's data.
+   * @param vxObject - The object to add.
+   */
+  private _addToEditorData(vxObject: vxObjectProps) {
+    useTimelineEditorAPI.getState().addObjectToEditorData(vxObject);
   }
 
 
 
-  /*   ----   */ //   Main Ticker function
-  /*          */ //   Calculates and applies all interpolated values for each track
-  /*   tick   */
-  /*          */
-  /*   ----   */
-  private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
-    if (this.isPaused)
+
+
+
+  /**
+   * Caches the THREE.Object3D reference of the vxObject.
+   * @param vxObject - The object whose reference is to be cached.
+   * @returns The cached THREE.Object3D instance or null if not available.
+   */
+  private _cacheObject3DRef(vxObject: vxObjectProps): THREE.Object3D | null {
+    const object3DRef = vxObject.ref.current;
+    if (object3DRef) {
+      this._object3DCache.set(vxObject.vxkey, object3DRef);
+      return object3DRef;
+    }
+    return null;
+  }
+
+
+
+
+
+
+  /**
+   * Applies initial track properties to the object.
+   * @param rawObject - The raw object containing tracks.
+   * @param vxkey - The unique key of the object.
+   */
+  private _applyInitialTracks(rawObject: RawObjectProps, vxkey: string) {
+    rawObject.tracks.forEach(track => {
+      this._applyKeyframes(vxkey, track.propertyPath, track.keyframes, this._currentTime);
+    });
+  }
+
+
+
+
+
+
+  /**
+   * Applies initial static properties to the object.
+   * @param rawObject - The raw object containing static properties.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
+   */
+  private _applyInitialStaticProps(
+    rawObject: RawObjectProps,
+    object3DRef: THREE.Object3D | null
+  ) {
+    if (!object3DRef) {
+      console.warn(`AnimationEngine: Object3D reference not found for '${rawObject.vxkey}'.`);
       return;
-    const { now, autoEnd, to } = data;
+    }
+    rawObject.staticProps.forEach(staticProp => {
+      this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value);
+    });
+  }
 
-    let newCurrentTime = this._currentTime + (Math.min(1000, now - this._prev) / 1000) * this.playRate;
+
+
+
+
+
+  /**
+   * Main ticker function that updates the animation state and schedules the next frame.
+   * @param data - An object containing:
+   *   - now: The current time from `requestAnimationFrame`.
+   *   - autoEnd: Whether to automatically end the animation at a certain time.
+   *   - to: The time to play up to.
+   */
+  private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
+    if (this.isPaused) {
+      return;
+    }
+
+    const { now, autoEnd = false, to } = data;
+
+    const deltaTime = Math.min(1000, now - this._prev) / 1000;
+    let newCurrentTime = this._currentTime + deltaTime * this.playRate;
     this._prev = now;
 
-    if (to && to <= newCurrentTime)
+    if (to !== undefined && to <= newCurrentTime) {
       newCurrentTime = to;
+    }
 
     this.setCurrentTime(newCurrentTime, true);
     this._applyAllKeyframes(newCurrentTime);
 
     // Determine whether to stop or continue the animation
-    if (to && to <= newCurrentTime)
+    if (to !== undefined && to <= newCurrentTime) {
       this._end();
+    }
 
-    if (this.isPaused) return;
+    if (this.isPaused) {
+      return;
+    }
 
     this._timerId = requestAnimationFrame((time) => {
       this._tick({ now: time, autoEnd, to });
@@ -304,72 +424,264 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /*   -------------------   */ //   Applies all keyframes for each trach for each object
-  /*                         */
-  /*   Apply all keyframes   */
-  /*                         */
-  /*   -------------------   */
-  private _applyAllKeyframes(currentTime: number) {
-    this.currentTimeline.objects.forEach(rawObject => {
-      const vxkey = rawObject.vxkey;
 
-      rawObject.tracks.forEach(track => {
-        const propertyPath = track.propertyPath
-        const keyframes = track.keyframes
 
-        this._applyKeyframes(vxkey, propertyPath, keyframes, currentTime);
-      })
-    })
+
+  /**
+   * Applies all keyframes for each object at the given time.
+   * @param currentTime - The current time to apply keyframes for.
+   * @param recalculateAll - Whether to recalculate all keyframes regardless of time bounds.
+   */
+  private _applyAllKeyframes(
+    currentTime: number,
+    recalculateAll: boolean = false
+  ) {
+    this.currentTimeline.objects.forEach(rawObject =>
+      this._applyAllKeyframesForObject(rawObject, currentTime, recalculateAll)
+    );
+    this._updateCameraIfNeeded();
   }
 
+
+
+
+
+
+  /**
+   * Applies all keyframes for a specific object.
+   * @param rawObject - The object to apply keyframes to.
+   * @param currentTime - The current time to apply keyframes for.
+   * @param recalculateAll - Whether to recalculate all keyframes regardless of time bounds.
+   */
+  private _applyAllKeyframesForObject(
+    rawObject: RawObjectProps,
+    currentTime: number,
+    recalculateAll: boolean
+  ) {
+    rawObject.tracks.forEach(track => {
+      this._applyKeyframes(
+        rawObject.vxkey,
+        track.propertyPath,
+        track.keyframes,
+        currentTime,
+        recalculateAll
+      );
+    });
+  }
+
+
+
+
+
+
+  /**
+   * Updates the camera's projection matrix if required.
+   */
+  private _updateCameraIfNeeded() {
+    if (!this._cameraRequiresPerspectiveMatrixRecalculation) {
+      return;
+    }
+
+    const camera = this._object3DCache.get('perspectiveCamera') as THREE.PerspectiveCamera;
+    if (camera) {
+      camera.updateProjectionMatrix();
+      this._cameraRequiresPerspectiveMatrixRecalculation = false;
+    } else {
+      console.warn('AnimationEngine: Perspective camera not found in object cache.');
+    }
+  }
+
+
+
+
+
+
+  /**
+   * Applies interpolated keyframe values to the specified object's property.
+   * @param vxkey - The unique identifier for the object.
+   * @param propertyPath - The path to the property to be updated.
+   * @param keyframes - An array of keyframes for interpolation.
+   * @param currentTime - The current time in the animation timeline.
+   * @param recalculateAll - Whether to recalculate outside keyframe bounds.
+   */
   private _applyKeyframes(
     vxkey: string,
     propertyPath: string,
     keyframes: IKeyframe[],
-    currentTime: number
+    currentTime: number,
+    recalculateAll: boolean = false
   ) {
     const object3DRef = this._object3DCache.get(vxkey);
-    if(!object3DRef) return
+    if (!object3DRef || keyframes.length === 0) return;
 
-    let interpolatedValue: number | THREE.Vector3;
+    const interpolatedValue = this._calculateInterpolatedValue(keyframes, currentTime, recalculateAll);
 
-    if (keyframes.length === 0) return
-
-    // Check if current time is before any keyframes for the track
-    if (currentTime < keyframes[0].time) {
-      interpolatedValue = keyframes[0].value;
-    } 
-    // If the current time is after all the keyframe for the track 
-    else if (currentTime > keyframes[keyframes.length - 1].time) {
-      interpolatedValue = keyframes[keyframes.length - 1].value;
-    } else {
-      interpolatedValue = this._interpolateKeyframes(keyframes, currentTime);
-      // This is used by the Object properties ui panel
-      // since its only used in the development server, we dont need it in production because it can slow down
-      useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue)
-    }
-    this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
-
-    if (propertyPath === "splineProgress") {
-      this._applySplinePosition(object3DRef, vxkey, interpolatedValue as number / 100)
+    if (interpolatedValue !== undefined) {
+      this._updateObjectProperties(vxkey, propertyPath, object3DRef, interpolatedValue);
     }
   }
 
 
 
-  /*   ---------------------   */
-  /*                           */
-  /*   Interpolate Keyframes   */
-  /*                           */
-  /*   ---------------------   */
-  private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number | THREE.Vector3 {
-    // Edge cases
-    if (currentTime <= keyframes[0].time) 
-      return keyframes[0].value;
-    if (currentTime >= keyframes[keyframes.length - 1].time) 
-      return keyframes[keyframes.length - 1].value;
 
-    // Binary search
+
+
+  /**
+   * Calculates the interpolated value for the given keyframes at the specified time.
+   * @param keyframes - An array of keyframes.
+   * @param currentTime - The current time in the animation timeline.
+   * @param recalculateAll - Whether to recalculate outside keyframe bounds.
+   * @returns The interpolated value 
+   */
+  private _calculateInterpolatedValue(
+    keyframes: IKeyframe[],
+    currentTime: number,
+    recalculateAll: boolean
+  ): number {
+    if (currentTime < keyframes[0].time && !recalculateAll) {
+      return keyframes[0].value;
+    }
+    if (currentTime > keyframes[keyframes.length - 1].time && !recalculateAll) {
+      return keyframes[keyframes.length - 1].value;
+    }
+    return this._interpolateKeyframes(keyframes, currentTime);
+  }
+
+
+
+
+
+
+  /**
+   * Updates the object's property with the interpolated value and handles special cases.
+   * @param vxkey - The unique identifier for the object.
+   * @param propertyPath - The path to the property to be updated.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
+   * @param interpolatedValue - The interpolated value to apply.
+   */
+  private _updateObjectProperties(
+    vxkey: string,
+    propertyPath: string,
+    object3DRef: THREE.Object3D,
+    interpolatedValue: number
+  ) {
+    if (DEBUG_OBJECT_INIT) console.log(`Updating property ${propertyPath} for ${vxkey} with value`, interpolatedValue);
+
+    const wasPropertySpecial = this._handleSpecialProperties(vxkey, propertyPath, object3DRef, interpolatedValue);
+
+    if (!wasPropertySpecial)
+      this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
+
+    this._checkCameraUpdateRequirement(vxkey, propertyPath);
+    useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue);
+  }
+
+
+
+
+
+
+  /**
+   * Checks if the camera's projection matrix needs to be recalculated based on property updates.
+   * @param vxkey - The unique identifier for the object.
+   * @param propertyPath - The property that was updated.
+   */
+  private _checkCameraUpdateRequirement(vxkey: string, propertyPath: string) {
+    if (
+      vxkey === 'perspectiveCamera' &&
+      this._propertiesRequiredToRecalculateCamera.includes(propertyPath)
+    ) {
+      this._cameraRequiresPerspectiveMatrixRecalculation = true;
+    }
+  }
+
+
+
+
+
+
+  /**
+   * Handles special properties that require custom logic.
+   * @param vxkey - The unique identifier for the object.
+   * @param propertyPath - The property path to check.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
+   * @param value - The value to apply.
+   * @returns True if a special property was handled, false otherwise.
+   */
+  private _handleSpecialProperties(
+    vxkey: string,
+    propertyPath: string,
+    object3DRef: THREE.Object3D,
+    value: number | THREE.Vector3
+  ): boolean {
+    switch (propertyPath) {
+      case 'splineProgress':
+        this._applySplinePosition(object3DRef, vxkey, (value as number) / 100);
+        return true;
+      // Add more special properties here if necessary
+      default:
+        return false;
+    }
+  }
+
+
+
+
+
+
+  /**
+   * Interpolates the value between keyframes based on the current time.
+   * @param keyframes - Array of keyframes sorted by time.
+   * @param currentTime - The current time in the animation timeline.
+   * @returns The interpolated value at the current time.
+   */
+  private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number {
+    // Handle edge cases where currentTime is outside the keyframe time range
+    if (currentTime <= keyframes[0].time) {
+      return keyframes[0].value;
+    }
+    if (currentTime >= keyframes[keyframes.length - 1].time) {
+      return keyframes[keyframes.length - 1].value;
+    }
+
+    // Find the index of the next keyframe after the current time
+    const rightIndex = this._findNextKeyframeIndex(keyframes, currentTime);
+    const leftIndex = rightIndex - 1;
+
+    const startKeyframe = keyframes[leftIndex];
+    const endKeyframe = keyframes[rightIndex];
+    const duration = endKeyframe.time - startKeyframe.time;
+
+    // Avoid division by zero
+    if (duration === 0) {
+      return startKeyframe.value;
+    }
+
+    // Calculate the normalized progress between the two keyframes
+    const progress = truncateToDecimals(
+      (currentTime - startKeyframe.time) / duration,
+      ENGINE_PRECISION + 1
+    );
+
+    // Interpolate the value using the progress
+    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
+
+    // Truncate the result to ensure precision
+    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
+  }
+
+
+
+
+
+
+  /**
+   * Finds the index of the next keyframe after the current time.
+   * @param keyframes - Array of keyframes sorted by time.
+   * @param currentTime - The current time in the animation timeline.
+   * @returns The index of the next keyframe.
+   */
+  private _findNextKeyframeIndex(keyframes: IKeyframe[], currentTime: number): number {
     let left = 0;
     let right = keyframes.length - 1;
 
@@ -382,28 +694,27 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       } else if (currentTime > midTime) {
         left = mid + 1;
       } else {
-        // Exact match
-        return keyframes[mid].value;
+        // Exact match found
+        return mid;
       }
     }
-    // left is now the index of the first keyframe with time greater than currentTime
-    const startKeyframe = keyframes[left - 1];
-    const endKeyframe = keyframes[left];
-    const duration = endKeyframe.time - startKeyframe.time;
-    const progress = truncateToDecimals((currentTime - startKeyframe.time) / duration, ENGINE_PRECISION + 1)
 
-    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
-    // Truncate the result to ensure precision
-    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
+    // Left is the index of the next keyframe after currentTime
+    return left;
   }
 
 
 
-  /*   ------------------   */
-  /*                        */
-  /*   Interpolate Number   */
-  /*                        */
-  /*   ------------------   */
+
+
+
+  /**
+   * Interpolates between two numeric keyframes using Bezier curves.
+   * @param startKeyframe - The starting keyframe.
+   * @param endKeyframe - The ending keyframe.
+   * @param progress - Normalized progress between the keyframes (0 to 1).
+   * @returns The interpolated numeric value.
+   */
   private _interpolateNumber(
     startKeyframe: IKeyframe,
     endKeyframe: IKeyframe,
@@ -412,11 +723,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const startValue = startKeyframe.value as number;
     const endValue = endKeyframe.value as number;
 
-    const startHandleX = startKeyframe.handles.out.x || 0.3
-    const startHandleY = startKeyframe.handles.out.y || 0.3
+    // Default handle positions for Bezier curve if not specified
+    const DEFAULT_IN_HANDLE = 0.3;
+    const DEFAULT_OUT_HANDLE = 0.7;
 
-    const endHandleX = endKeyframe.handles.in.x || 0.7
-    const endHandleY = endKeyframe.handles.in.y || 0.7
+    const startHandleX = startKeyframe.handles?.out?.x ?? DEFAULT_IN_HANDLE;
+    const startHandleY = startKeyframe.handles?.out?.y ?? DEFAULT_IN_HANDLE;
+
+    const endHandleX = endKeyframe.handles?.in?.x ?? DEFAULT_OUT_HANDLE;
+    const endHandleY = endKeyframe.handles?.in?.y ?? DEFAULT_OUT_HANDLE;
 
     return this._interpolateNumberFunction(
       startValue,
@@ -431,110 +746,160 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /*   ----------------------   */
-  /*                            */
-  /*   Apply all static props   */
-  /*                            */
-  /*   ----------------------   */
+
+
+
+  /**
+   * Applies all static properties to their respective objects.
+   */
   private _applyAllStaticProps() {
-    this.currentTimeline.objects.map(obj => {
-      const vxkey = obj.vxkey
+    this.currentTimeline.objects.forEach(obj => {
+      const vxkey = obj.vxkey;
+      const object3DRef = this._object3DCache.get(vxkey);
 
-      const object3DRef = this._object3DCache.get(vxkey)
-      if (!object3DRef) return
+      if (!object3DRef) {
+        console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found in cache.`);
+        return;
+      }
 
-      obj.staticProps.map(staticProp => {
-        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value)
-      })
-    })
+      obj.staticProps.forEach(staticProp => {
+        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value);
+      });
+    });
   }
 
 
 
-  /*   ---------------------    */
-  /*                            */
-  /*   Apply spline position    */
-  /*                            */
-  /*   ---------------------    */
+
+
+
+  /**
+   * Applies the spline position to the object based on the spline progress.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
+   * @param vxkey - The unique identifier for the object.
+   * @param splineProgress - The progress along the spline (0 to 1).
+   */
   private _applySplinePosition(object3DRef: THREE.Object3D, vxkey: string, splineProgress: number) {
-    const splineKey = `${vxkey}.spline`
-
-    if (!splineKey || !this._splinesCache[splineKey]) {
-      console.warn(`Spline ${splineKey} not found for ${vxkey}`);
-      return;
-    }
-
+    const splineKey = `${vxkey}.spline`;
     const spline = this._splinesCache[splineKey];
 
     const interpolatedPosition = spline.get_point(splineProgress);
 
     // Apply the interpolated position to the object
-    object3DRef.position.set(interpolatedPosition.x, interpolatedPosition.y, interpolatedPosition.z);
+    object3DRef.position.set(
+      interpolatedPosition.x,
+      interpolatedPosition.y,
+      interpolatedPosition.z
+    );
   }
 
-  getSplinePointAt(splineKey: string, progress: number) {
+
+
+
+
+
+  /**
+   * Retrieves a point on the spline at the specified progress.
+   * @param splineKey - The key identifying the spline.
+   * @param progress - The progress along the spline (0 to 1).
+   * @returns The point on the spline at the given progress.
+   */
+  getSplinePointAt(splineKey: string, progress: number): { x: number; y: number; z: number } | null {
     const spline = this._splinesCache[splineKey];
-
-    const point = spline.get_point(progress);
-    return point
+    return spline.get_point(progress);
   }
 
 
 
-  /*   ----------------------   */
-  /*                            */
-  /*   Update Object Property   */
-  /*                            */
-  /*   ----------------------   */
+
+
+
+  /**
+   * Updates a property of a THREE.Object3D instance using a property path.
+   * Utilizes a cached setter function for efficiency.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
+   * @param propertyPath - Dot-separated path to the property to update.
+   * @param newValue - The new value to set.
+   */
   private _updateObjectProperty(
     object3DRef: THREE.Object3D,
     propertyPath: string,
     newValue: number | THREE.Vector3
   ) {
-
-    // // Check if we have a cached setter function
     let setter = this._propertySetterCache.get(propertyPath);
 
-    if (!setter) { // Generate and cache the setter function
+    if (!setter) {
+      // Generate and cache the setter function if its not in the cache
       setter = this._generatePropertySetter(propertyPath);
       this._propertySetterCache.set(propertyPath, setter);
     }
 
+    // Use the cached setter function to update the property
     setter(object3DRef, newValue);
   }
 
 
 
-  /*   ------------------------   */ // Generate the setter function for a given property path
-  /*                              */
-  /*   Generate Property Setter   */
-  /*                              */
-  /*   ------------------------   */
-  private _generatePropertySetter(propertyPath: string): (target: any, newValue: any) => void {
+
+
+
+  /**
+   * Generates a setter function for a given property path.
+   * The setter function updates the property on the target object.
+   * @param propertyPath - Dot-separated path to the property.
+   * @returns A setter function that updates the specified property on a target object.
+   */
+  private _generatePropertySetter(
+    propertyPath: string
+  ): (targetObject: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
 
     return (targetObject: any, newValue: any) => {
       let target = targetObject;
 
+      // Traverse the property path
       for (let i = 0; i < propertyKeys.length - 1; i++) {
-        // Traverse the property path
         target = target[propertyKeys[i]];
-        if (target === undefined) return;
+        if (target === undefined) {
+          console.warn(
+            `AnimationEngine: Property '${propertyKeys[i]}' is undefined in path '${propertyPath}'.`
+          );
+          return;
+        }
       }
 
       const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
 
-      if (target instanceof Map) { // Handle Map-based properties (e.g., uniforms in post-processing effects)
-        target.get(finalPropertyKey).value = newValue
-      }
-      else if (target !== undefined) { // Regular object properties
+      if (target instanceof Map) {
+        // Handle Map-based properties (e.g., uniforms in post-processing effects)
+        const mapValue = target.get(finalPropertyKey);
+        if (mapValue) {
+          mapValue.value = newValue;
+        } else {
+          console.warn(
+            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`
+          );
+        }
+      } else if (target !== undefined) {
+        // Regular object properties
         target[finalPropertyKey] = newValue;
+      } else {
+        console.warn(
+          `AnimationEngine: Unable to set property '${finalPropertyKey}' on undefined target at path '${propertyPath}'.`
+        );
       }
     };
   }
 
 
-  /** Playback completed */
+
+
+
+
+  /**
+   * Handles the end of the animation playback.
+   * Pauses the animation and triggers the 'ended' event.
+   */
   private _end() {
     this.pause();
     this.trigger('ended', { engine: this });
@@ -542,27 +907,36 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /*   -------------   */
-  /*                   */
-  /*   Cache Splines   */
-  /*                   */
-  /*   -------------   */
+
+
+
+  /**
+   * Caches splines by initializing WebAssembly spline objects.
+   * @param splines - A record of splines to cache.
+   */
   async cacheSplines(splines: Record<string, ISpline>) {
     await this._wasmReady; // Ensure WASM is initialized
 
-    if (!splines) return
+    if (!splines) {
+      console.warn('AnimationEngine: No splines provided to cache.');
+      return;
+    }
 
-    Object.entries(splines).forEach(([key, spline]) => {
+    for (const [key, spline] of Object.entries(splines)) {
       const nodes = spline.nodes;
-      let wasmNodes = [];
-      nodes.forEach(node => {
-        const wasmNode = wasm_Vector3.new(node[0], node[1], node[2]);
-        wasmNodes.push(wasmNode);
-      });
-      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5); // Example args
+      const wasmNodes = nodes.map(node => wasm_Vector3.new(node[0], node[1], node[2]));
+
+      // Example arguments, adjust as needed
+      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5);
+
+      // Cache the WebAssembly spline object
       this._splinesCache[key] = wasmSpline;
-    });
+    }
   }
+
+
+
+
 
 
   //
@@ -570,321 +944,359 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   //
   // Used to synchronize the data strcture from the Timeline editor with animation engine data structure
 
-  /*   ------------------------   */
-  /*                              */
-  /*   Refresh Current Timeline   */
-  /*                              */
-  /*   ------------------------   */
-  refreshCurrentTimeline() {
-    if (!this.currentTimeline && DEBUG_REFRESHER) {
-      console.log("VXAnimationEngine Refresher: No timeline is currently loaded.");
-      return
-    }
-    const editorObjects = useTimelineEditorAPI.getState().editorObjects
-    const tracks = useTimelineEditorAPI.getState().tracks
-    const staticProps = useTimelineEditorAPI.getState().staticProps
-    const keyframes = useTimelineEditorAPI.getState().keyframes
-
-    if (DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing Current Timeline");
-
-    const currentObjectsMap = new Map(this.currentTimeline.objects.map(rawObject => [rawObject.vxkey, rawObject]));
-
-    // Update / Add objects in the currentTimeline based on the editorObjects
-    Object.keys(editorObjects).forEach(vxkey => {
-      const edObject = editorObjects[vxkey];
-
-      if (currentObjectsMap.has(vxkey)) {
-        const rawObject = currentObjectsMap.get(vxkey); // Refresh existing raw object
-
-        // Assign tracks to Object by converting from ITrack to RawTrackProps
-        rawObject.tracks = edObject.trackKeys.map(trackKey => {
-          const track = tracks[trackKey];
-
-          const sortedKeyframes = track.keyframes
-            .map(keyframeId => keyframes[keyframeId])
-            .sort((a, b) => a.time - b.time);
-
-          return {
-            propertyPath: track.propertyPath,
-            keyframes: sortedKeyframes // Sorted keyframes by time
-          } as RawTrackProps;
-        });
-
-        // Assign staticProps
-        rawObject.staticProps = edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]);
-
-      } else {
-        // Add new raw object to currentTimeline
-        const newRawObject: RawObjectProps = {
-          vxkey,
-          tracks: edObject.trackKeys.map(trackKey => {
-            const track = tracks[trackKey];
-            return {
-              propertyPath: track.propertyPath,
-              keyframes: track.keyframes.map(keyframeId => keyframes[keyframeId]) // Resolved keyframes
-            } as RawTrackProps;
-          }),
-          staticProps: edObject.staticPropKeys.map(staticPropKey => staticProps[staticPropKey]),
-        };
-
-        this.currentTimeline.objects.push(newRawObject);
-      }
-    });
-
-    // Remove rawObjects that are no longer in editorObjects
-    this.currentTimeline.objects = this.currentTimeline.objects.filter(rawObject => {
-      return editorObjects.hasOwnProperty(rawObject.vxkey);
-    });
-
-    // Re-render the timeline
-    this.reRender({ force: true, cause: "refresh currentTimeline" });
-
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
-  }
-
-
-
-  /*   -------------   */
-  /*                   */
-  /*   Refresh Track   */
-  /*                   */
-  /*   -------------   */
+  /**
+   * Refreshes a track in the animation engine's data structure and optionally re-renders.
+   * @param trackKey - The key identifying the track.
+   * @param action - The action to perform: 'create' or 'remove'.
+   * @param reRender - Whether to re-render after the refresh (default is true).
+   */
   refreshTrack(
     trackKey: string,
     action: 'create' | 'remove',
-    reRender = true,
+    reRender: boolean = true,
   ) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     const rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
-    if (DEBUG_REFRESHER)
-      console.log("VXAnimationEngine: Refreshing track on edObject:", vxkey)
+    if (!rawObject) {
+      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
+      return;
+    }
 
-    if (action === "create") {
-      const keyframesForTrack = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey);
-      const rawTrack: RawTrackProps = {
-        propertyPath: propertyPath,
-        keyframes: keyframesForTrack || []
+    if (DEBUG_REFRESHER) {
+      console.log(`AnimationEngine: Refreshing track on object '${vxkey}'.`);
+    }
+
+    switch (action) {
+      case 'create': {
+        const keyframesForTrack = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey) || [];
+        const rawTrack: RawTrackProps = {
+          propertyPath: propertyPath,
+          keyframes: keyframesForTrack,
+        };
+        rawObject.tracks.push(rawTrack);
+
+        if (DEBUG_REFRESHER) {
+          console.log(`AnimationEngine: Track '${trackKey}' was added to '${vxkey}'.`);
+        }
+        break;
       }
-      rawObject.tracks.push(rawTrack);
-      if (DEBUG_REFRESHER)
-        console.log(`VXAnimationEngine TrackRefresher: Track ${trackKey} was added to ${vxkey}`);
+
+      case 'remove': {
+        rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath);
+
+        if (DEBUG_REFRESHER) {
+          console.log(`AnimationEngine: Track '${trackKey}' was removed from '${vxkey}'.`);
+        }
+        break;
+      }
+
+      default: {
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshTrack.`);
+        return;
+      }
     }
 
-    else if (action === "remove") {
-      rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath)
-      if (DEBUG_REFRESHER)
-        console.log(`VXAnimationEngine TrackRefresher: Track ${trackKey} was removed from ${vxkey}`);
-    }
-
-    if (reRender)
+    if (reRender) {
       this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
+    }
 
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
+    // Save data to local storage
+    useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
 
 
-  /*   ----------------   */
-  /*                      */
-  /*   Refresh keyframe   */
-  /*                      */
-  /*   ----------------   */
+
+
+
+  /**
+   * Refreshes a keyframe in the animation engine's data structure and optionally re-renders.
+   * @param trackKey - The key identifying the track.
+   * @param action - The action to perform: 'create', 'update', or 'remove'.
+   * @param keyframeKey - The key identifying the keyframe.
+   * @param reRender - Whether to re-render after the refresh (default is true).
+   */
   refreshKeyframe(
     trackKey: string,
     action: 'create' | 'remove' | 'update',
     keyframeKey: string,
-    reRender = true
+    reRender: boolean = true
   ) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-    if (DEBUG_REFRESHER) console.log("VXAnimationEngine: Refreshing keyframe on trackKey:", trackKey)
+    if (DEBUG_REFRESHER) {
+      console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
+    }
 
-    this.currentTimeline.objects.forEach((object) => {
-      object.tracks.forEach((track) => {
-        if (track.propertyPath === propertyPath && object.vxkey === vxkey) {
+    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    if (!rawObject) {
+      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
+      return;
+    }
 
-          if (action === "create") {
-            const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
-            track.keyframes.push(edKeyframe);
-            track.keyframes.sort((a, b) => a.time - b.time);
+    const track = rawObject.tracks.find(t => t.propertyPath === propertyPath);
+    if (!track) {
+      console.warn(`AnimationEngine: Track with property path '${propertyPath}' not found on object '${vxkey}'.`);
+      return;
+    }
 
-            if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} added to track ${trackKey}`);
-          }
+    const keyframes = track.keyframes;
 
-          else if (action === "update") {
-            const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
-            track.keyframes = track.keyframes.map(kf => kf.id === keyframeKey ? edKeyframe : kf);
-            track.keyframes.sort((a, b) => a.time - b.time);
+    switch (action) {
+      case 'create': {
+        const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+        keyframes.push(edKeyframe);
+        keyframes.sort((a, b) => a.time - b.time);
 
-            if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} updated in track ${trackKey}`);
-          }
-
-          else if (action === "remove") {
-            track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
-
-            if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
-          }
-
+        if (DEBUG_REFRESHER) {
+          console.log(`AnimationEngine: Keyframe '${keyframeKey}' added to track '${trackKey}'.`);
         }
-      });
-    });
-    if (reRender)
-      this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
+        break;
+      }
 
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
+      case 'update': {
+        const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+        keyframes.forEach((kf, index) => {
+          if (kf.id === keyframeKey) {
+            keyframes[index] = edKeyframe;
+          }
+        });
+        keyframes.sort((a, b) => a.time - b.time);
+
+        if (DEBUG_REFRESHER) {
+          console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated in track '${trackKey}'.`);
+        }
+        break;
+      }
+
+      case "remove": {
+        track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
+
+        if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
+        break;
+      }
+
+      default: {
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshKeyframe.`);
+        return;
+      }
+    }
+
+    if (reRender) {
+      this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
+    }
+
+    // Save data to local storage
+    useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
 
 
-  /*   -------------------   */
-  /*                         */
-  /*   Refresh Static Prop   */
-  /*                         */
-  /*   -------------------   */
+
+
+
+  /**
+   * Refreshes a static property in the animation engine's data structure and optionally re-renders.
+   * @param action - The action to perform: 'create', 'update', or 'remove'.
+   * @param staticPropKey - The key identifying the static property.
+   * @param reRender - Whether to re-render after the refresh (default is true).
+   */
   refreshStaticProp(
     action: 'create' | 'remove' | 'update',
     staticPropKey: string,
-    reRender = true,
+    reRender: boolean = true,
   ) {
-    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
+    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
 
-    if (DEBUG_REFRESHER)
-      console.log("VXAnimationEngine: Refreshing static prop")
+    if (DEBUG_REFRESHER) {
+      console.log(`AnimationEngine: Refreshing static property '${staticPropKey}'.`);
+    }
 
-    // ONLY refresh the object that has the static prop
-    this.currentTimeline.objects.forEach((rawObject) => {
-      if (rawObject.vxkey === vxkey) {
+    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    if (!rawObject) {
+      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
+      return;
+    }
 
-        if (action === "create") {
-          const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
-          const propExists = rawObject.staticProps.some(
-            (prop) => prop.propertyPath === propertyPath
-          );
+    switch (action) {
+      case 'create': {
+        const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
+        const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
 
-          if (!propExists) {
-            rawObject.staticProps.push(staticProp);
-          }
+        if (!propExists) {
+          rawObject.staticProps.push(staticProp);
+        } else {
+          console.warn(`AnimationEngine: Static property '${propertyPath}' already exists on object '${vxkey}'.`);
         }
-
-        else if (action === "update") {
-          const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
-          rawObject.staticProps = rawObject.staticProps.map((prop) => {
-            if (prop.propertyPath === propertyPath)
-              return staticProp
-            else
-              return prop;
-          })
-        }
-
-        else if (action === "remove") {
-          rawObject.staticProps = rawObject.staticProps
-            .map((prop) => (prop.propertyPath === propertyPath ? null : prop))
-            .filter(Boolean);
-        }
-
-        return
+        break;
       }
-    });
 
-    if (reRender)
+      case 'update': {
+        const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
+        rawObject.staticProps = rawObject.staticProps.map(prop =>
+          prop.propertyPath === propertyPath ? staticProp : prop
+        );
+        break;
+      }
+
+      case 'remove': {
+        rawObject.staticProps = rawObject.staticProps.filter(prop => prop.propertyPath !== propertyPath);
+        break;
+      }
+
+      default: {
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshStaticProp.`);
+        return;
+      }
+    }
+
+    if (reRender) {
       this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
+    }
 
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
+    // Save data to local storage
+    useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
 
 
-  /*   --------------   */
-  /*                    */
-  /*   Refresh Spline   */
-  /*                    */
-  /*   --------------   */
+
+
+
+  /**
+   * Refreshes a spline in the animation engine's data structure and optionally re-renders.
+   * @param action - The action to perform: 'create', 'update', or 'remove'.
+   * @param splineKey - The key identifying the spline.
+   * @param reRender - Whether to re-render after the refresh (default is true).
+   */
   refreshSpline(
     action: 'create' | 'remove' | 'update',
     splineKey: string,
-    reRender = true,
+    reRender: boolean = true,
   ) {
 
-    if (action === "create") {
-      const spline = useSplineManagerAPI.getState().splines[splineKey];
-      if (!this.currentTimeline.splines)
-        this.currentTimeline.splines = {};
-      this.currentTimeline.splines[splineKey] = spline
+    const splineState = useSplineManagerAPI.getState().splines
 
-      // Create the WebAssembly spline object in the cache if not already created
-      if (!this._splinesCache[splineKey]) {
-        const wasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
-        this._splinesCache[splineKey] = wasmSpline;
-      }
-    }
-    else if (action === "remove") {
-      delete this.currentTimeline.splines[splineKey];
+    switch (action) {
+      case "update": {
+        const spline = splineState[splineKey];
 
-      // Free the WebAssembly object in the cache
-      if (this._splinesCache[splineKey]) {
-        this._splinesCache[splineKey].free();
-        delete this._splinesCache[splineKey];
-      }
-    }
-    else if (action === "update") {
-      const spline = useSplineManagerAPI.getState().splines[splineKey];
-      this.currentTimeline.splines = {
-        ...this.currentTimeline.splines,
-        [splineKey]: {
-          ...this.currentTimeline.splines[splineKey],
-          nodes: [...spline.nodes]  // Clone the nodes array
+        if (!spline) {
+          console.warn(`AnimationEngine: Spline '${splineKey}' not found in spline state.`);
+          return;
         }
-      };
 
-      // Free the old WebAssembly spline object in the cache and update it
-      if (this._splinesCache[splineKey]) {
-        this._splinesCache[splineKey].free();
+        // Update currentTimeline splines
+        this.currentTimeline.splines = {
+          ...this.currentTimeline.splines,
+          [splineKey]: {
+            ...this.currentTimeline.splines[splineKey],
+            nodes: [...spline.nodes] // Clone the nodes array
+          }
+        };
+
+        // Free the old WebAssembly spline object in the cache and update it
+        if (this._splinesCache[splineKey]) {
+          this._splinesCache[splineKey].free();
+        }
+
+        const newWasmSpline = new wasm_Spline(
+          spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])),
+          false,
+          0.5
+        );
+        this._splinesCache[splineKey] = newWasmSpline;
+        break;
       }
 
-      const newWasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
-      this._splinesCache[splineKey] = newWasmSpline;
+      case "create": {
+        const spline = splineState[splineKey];
+
+        // set the currentTimeline spline
+        if (!this.currentTimeline.splines) this.currentTimeline.splines = {};
+        this.currentTimeline.splines[splineKey] = spline;
+
+        // Create the WebAssembly spline object in the cache if not already created
+        if (!this._splinesCache[splineKey]) {
+          const wasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
+          this._splinesCache[splineKey] = wasmSpline;
+        }
+        break;
+      }
+
+      case "remove": {
+        delete this.currentTimeline.splines[splineKey];
+
+        // Free the WebAssembly object in the cache
+        if (this._splinesCache[splineKey]) {
+          this._splinesCache[splineKey].free();
+          delete this._splinesCache[splineKey];
+        }
+        break;
+      }
+
+      default: {
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSpline.`);
+        return;
+      }
     }
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
 
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
+    // Save data to local storage
+    useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
-  
 
-  /*   ---------------   */
-  /*                     */
-  /*   Refresh Setting   */
-  /*                     */
-  /*   ---------------   */
+
+
+
+
+  /**
+   * Refreshes settings for an object in the animation engine's data structure.
+   * @param action - The action to perform: 'set' or 'remove'.
+   * @param settingKey - The key identifying the setting.
+   * @param vxkey - The unique identifier for the object.
+   */
   refreshSettings(
     action: 'set' | 'remove',
     settingKey: string,
     vxkey: string,
   ) {
-    if (action === "set") {
-      const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey]
-      if (!this.currentTimeline.settings)
-        this.currentTimeline.settings = {}
-
-      if (!this.currentTimeline.settings[vxkey])
-        this.currentTimeline.settings[vxkey] = {}
-
-      this.currentTimeline.settings[vxkey][settingKey] = value;
-    }
-    else if (action === "remove") {
-      delete this.currentTimeline.settings?.[vxkey]?.[settingKey];
+    if (!this.currentTimeline.settings) {
+      this.currentTimeline.settings = {};
     }
 
-    const saveDataToLocalStorage = useSourceManagerAPI.getState().saveDataToLocalStorage
-    saveDataToLocalStorage();
+    if (!this.currentTimeline.settings[vxkey]) {
+      this.currentTimeline.settings[vxkey] = {};
+    }
+
+    switch (action) {
+      case 'set': {
+        const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey];
+        if (value === undefined) {
+          console.warn(`AnimationEngine: Setting '${settingKey}' not found for object '${vxkey}'.`);
+          return;
+        }
+        this.currentTimeline.settings[vxkey][settingKey] = value;
+        break;
+      }
+
+      case 'remove': {
+        delete this.currentTimeline.settings[vxkey][settingKey];
+        break;
+      }
+
+      default: {
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSettings.`);
+        return;
+      }
+    }
+
+    // Save data to local storage
+    useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 }
 

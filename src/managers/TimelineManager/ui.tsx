@@ -66,24 +66,24 @@ export const TimelineEditorUI = React.memo(() => {
     )
 })
 
-const MinimizeButton = React.memo(() => {
+const MinimizeButton = () => {
     const open = useVXUiStore(state => state.timelineEditorOpen);
     const setOpen = useVXUiStore(state => state.setTimelineEditorOpen)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
-    return (
-        <>
-            {timelineEditorAttached &&
-                <button className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
-                    onClick={() => setOpen(!open)}
-                >
-                    <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
-                </button>
-            }
-        </>
-    )
-})
 
-const TimelineEditorContent = React.memo(() => {
+    if (!timelineEditorAttached) return null;
+
+    return (
+        <button 
+            className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
+            onClick={() => setOpen(!open)}
+        >
+            <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
+        </button>
+    )
+}
+
+const TimelineEditorContent = () => {
     return (
         <ResizablePanelGroup
             className='relative flex flex-row w-full flex-grow overflow-hidden'
@@ -100,9 +100,9 @@ const TimelineEditorContent = React.memo(() => {
             </ResizablePanel>
         </ResizablePanelGroup>
     )
-})
+}
 
-const TimelineEditorFooter = React.memo(() => {
+const TimelineEditorFooter = () => {
     const snap = useTimelineEditorAPI(state => state.snap);
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
 
@@ -121,7 +121,7 @@ const TimelineEditorFooter = React.memo(() => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
-                    <ScaleSlider/>
+                    <ScaleSlider />
                     <div className='flex flex-row gap-2'>
                         <p className='text-xs h-auto my-auto'>Snap</p>
                         <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto scale-75' />
@@ -148,7 +148,7 @@ const TimelineEditorFooter = React.memo(() => {
             )}
         </AnimatePresence>
     )
-})
+}
 
 const ScaleSlider = () => {
     const scale = useTimelineEditorAPI(state => state.scale);
@@ -171,7 +171,7 @@ const ScaleSlider = () => {
     )
 }
 
-export const TimelineSelect = React.memo(() => {
+export const TimelineSelect = () => {
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
@@ -195,11 +195,11 @@ export const TimelineSelect = React.memo(() => {
             </SelectContent>
         </Select>
     )
-})
+}
 
 export const TimelineTools: React.FC<{
     visible: boolean,
-}> = React.memo(({ visible }) => {
+}> = ({ visible }) => {
     return (
         <AnimatePresence>
             {visible && (
@@ -234,4 +234,4 @@ export const TimelineTools: React.FC<{
             )}
         </AnimatePresence>
     )
-})
+}

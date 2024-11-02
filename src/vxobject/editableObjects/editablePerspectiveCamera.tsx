@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef } from "react";
+import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
@@ -11,10 +11,12 @@ import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
+import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent";
 
 declare module 'three' {
     interface PerspectiveCamera {
         localRotationZ?: number;
+        dummy_fov?: number
     }
 }
 
@@ -28,7 +30,9 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
 
-    const cameraTarget = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
+    console.log("CAMERA REF ", cameraRef.current)
+
+    const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
 
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
@@ -39,35 +43,23 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     //     cameraRef.current.localRotationZ = 0;
     // }, []);
 
-    // useAnimationEngineEvent("timeSetManually", () => {
-    //     if(cameraRef.current && targetPositionRef.current){
-    //         console.log("TimeSetManually: cameraRef.current:", cameraRef.current, " targetPositionRef", targetPositionRef.current);    
-    //         // Make the camera look at the target
-    //         cameraRef.current.lookAt(targetPositionRef.current);
-    
-    //         const localRotationZ = cameraRef.current?.localRotationZ || 0;
-    
-    //         // Rotate the camera around its local Z-axis (forward axis)
-    //         cameraRef.current.rotateZ(localRotationZ);
-    //     }
-    // })
+    const cameraUpdate = () => {
+        if(!cameraRef.current || !cameraTargetRef) return
 
-    useFrame(() => {
-        // cameraPositionRef.current = cameraRef.current?.position;
-        // targetPositionRef.current = cameraTarget?.position;
-        if (cameraRef.current && cameraTarget) {
-            const camera: THREE.PerspectiveCamera = cameraRef.current
-            const targetPosition: THREE.Vector3 = cameraTarget.position
+        const camera: THREE.PerspectiveCamera = cameraRef.current
+        const targetPosition: THREE.Vector3 = cameraTargetRef.position
+        
+        // Make the camera look at the target
+        camera.lookAt(targetPosition);
 
-            // Make the camera look at the target
-            camera.lookAt(targetPosition);
+        const localRotationZ = camera?.localRotationZ || 0;
 
-            const localRotationZ = camera?.localRotationZ || 0;
+        // Rotate the camera around its local Z-axis (forward axis)
+        camera.rotateZ(localRotationZ);
+    }
 
-            // Rotate the camera around its local Z-axis (forward axis)
-            camera.rotateZ(localRotationZ);
-        }
-    })
+    useFrame(cameraUpdate)
+
     // Show the camera helper only in free mode
     const mode = useCameraManagerAPI(state => state.mode)
     useHelper(cameraRef, mode === "free" && CameraHelper)

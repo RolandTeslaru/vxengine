@@ -21,8 +21,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     setIsPlaying(value: boolean): void;  
     setCurrentTimeline(timelineId: string): void;
     loadTimelines(timelines: Record<string, ITimeline>): void;
-    setCurrentTime(time: number, isTick?: boolean): boolean;
-    refreshCurrentTimeline(): void
+    setCurrentTime(time: number, isTick?: boolean);
 
     refreshTrack(
       trackKey: string ,
