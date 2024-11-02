@@ -23,7 +23,7 @@ export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
 
     const GeomPropRender = ({ _key, value}) => {
         return (
-            <div key={_key} className='flex flex-row py-1'>
+            <div className='flex flex-row py-1'>
                 <p className='text-xs font-light text-neutral-500'>{_key}</p>
                 <PropInput
                     type="number"
@@ -40,7 +40,7 @@ export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
         >
             <div className='flex flex-col'>
                 {Object.entries(params).map(
-                    ([key, value]) => <GeomPropRender _key={key} value={value} />
+                    ([key, value]) => <GeomPropRender key={key} _key={key} value={value} />
                 )}
             </div>
         </CollapsiblePanel>

@@ -1,3 +1,7 @@
+// VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
+// (c) 2024 VEXR Labs. All Rights Reserved.
+// See the LICENSE file in the root directory of this source tree for licensing information.
+
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
@@ -19,7 +23,7 @@ export const EditArea = () => {
 
   const scale = useTimelineEditorAPI(state => state.scale)
 
-  const editAreaRef =  useRefStore(state => state.editAreaRef);
+  const editAreaRef = useRefStore(state => state.editAreaRef);
   const trackListRef = useRefStore(state => state.trackListRef)
 
   const { dragLineData } = useDragLine();
@@ -48,7 +52,6 @@ export const EditArea = () => {
     if (track) {
       return (
         <Track
-          key={index}
           trackKey={track}
         />
       );
@@ -56,7 +59,6 @@ export const EditArea = () => {
     else {
       return (
         <div
-          key={index}
           style={{
             height: `${DEFAULT_ROW_HEIGHT}px`,
             backgroundPositionX: `0, ${startLeft}px`,
@@ -79,9 +81,9 @@ export const EditArea = () => {
   const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
     const scrollContainer = e.target;
 
-    if(!trackListRef.current) return;
+    if (!trackListRef.current) return;
 
-    if(scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
+    if (scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
 
     scrollSyncId.current = requestAnimationFrame(() => {
       // @ts-expect-error
@@ -90,7 +92,7 @@ export const EditArea = () => {
   }
 
   const scrollerRefCallback = useCallback((node) => {
-    if(node){
+    if (node) {
       editAreaRef.current = node;
 
       node.addEvent
@@ -98,10 +100,10 @@ export const EditArea = () => {
   }, [])
 
   const Scroller: Components['Scroller'] = React.forwardRef((props, ref) => {
-    const {children, ...rest} = props
-    return ( 
+    const { children, ...rest } = props
+    return (
       <div ref={ref} {...rest}>
-        <CursorLine/>
+        <CursorLine />
         {children}
       </div>
     )
@@ -119,7 +121,7 @@ export const EditArea = () => {
         scrollerRef={scrollerRefCallback}
         onScroll={handleOnScroll}
         components={{ Scroller }}
-      
+
       />
     </div>
   );

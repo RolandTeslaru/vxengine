@@ -62,7 +62,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._currentTimeline = null
   }
 
-  
+
 
 
 
@@ -291,16 +291,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log('AnimationEngine: Initializing object', vxObject);
     }
 
-    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
-    // Initialize the raw object if it doesn't exist
-    if (!rawObject) {
-      rawObject = {
-        vxkey: vxkey,
-        tracks: [],
-        staticProps: []
-      };
-      this.currentTimeline.objects.push(rawObject);
+    if (!rawObject) { 
+      return
     }
 
     this._applyInitialTracks(rawObject, vxkey);
@@ -376,6 +370,36 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     rawObject.staticProps.forEach(staticProp => {
       this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value);
     });
+  }
+
+
+
+
+
+
+  /**
+   * Initializes a new RawObjectProps and adds it to the current timeline's objects.
+   * Prevents duplicate entries by checking if an object with the same vxkey already exists.
+   * @param vxkey - The unique identifier for the object.
+   * @returns The newly created or existing RawObjectProps.
+   */
+  private _initRawObjectOnTimeline(vxkey: string): RawObjectProps {
+    // Check if an object with the same vxkey already exists
+    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    if (rawObject) {
+      console.warn(`AnimationEngine: Raw Object with vxkey '${vxkey}' already exists in the current timeline.`);
+      return rawObject;
+    }
+
+    rawObject = {
+      vxkey,
+      tracks: [],
+      staticProps: []
+    };
+
+    this.currentTimeline.objects.push(rawObject);
+
+    return rawObject;
   }
 
 
@@ -754,11 +778,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   private _applyAllStaticProps() {
     this.currentTimeline.objects.forEach(obj => {
+      if(obj.staticProps.length === 0){
+        return
+      }
+
       const vxkey = obj.vxkey;
       const object3DRef = this._object3DCache.get(vxkey);
 
       if (!object3DRef) {
-        console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found in cache.`);
+        // console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found in cache.`);
         return;
       }
 
@@ -956,11 +984,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender: boolean = true,
   ) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-    const rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
+    let rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
     if (!rawObject) {
-      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
-      return;
+      rawObject = this._initRawObjectOnTimeline(vxkey);
     }
 
     if (DEBUG_REFRESHER) {
@@ -1029,10 +1056,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
     }
 
-    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
     if (!rawObject) {
-      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
-      return;
+      rawObject = this._initRawObjectOnTimeline(vxkey);
     }
 
     const track = rawObject.tracks.find(t => t.propertyPath === propertyPath);
@@ -1113,10 +1139,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.log(`AnimationEngine: Refreshing static property '${staticPropKey}'.`);
     }
 
-    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
     if (!rawObject) {
-      console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found.`);
-      return;
+      rawObject = this._initRawObjectOnTimeline(vxkey);
     }
 
     switch (action) {

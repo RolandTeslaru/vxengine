@@ -61,7 +61,6 @@ const ObjectList = () => {
 
         return (
             <div 
-                key={index} 
                 className={`h-9 border my-2 flex flex-row p-2 rounded-xl bg-neutral-800 border-neutral-700 cursor-pointer hover:bg-neutral-900
                 ${isSelected && `!bg-blue-600 !border-neutral-200 hover:!bg-blue-800`} 
                 ${isHovered && `bg-neutral-900`}

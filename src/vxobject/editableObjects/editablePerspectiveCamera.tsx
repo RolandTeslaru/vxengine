@@ -30,8 +30,6 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
 
-    console.log("CAMERA REF ", cameraRef.current)
-
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
 
     // INITIALIZE Additional Settings

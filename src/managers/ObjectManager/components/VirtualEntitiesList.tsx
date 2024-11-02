@@ -3,7 +3,6 @@ import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../store';
 import { vxEntityProps, vxObjectProps, vxVirtualEntityProps } from '@vxengine/types/objectStore';
 import { useVXObjectStore } from '@vxengine/vxobject';
-import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
 
 const VirtualEntitiesList = () => {
     const vxObjects = useVXObjectStore(state => state.objects)

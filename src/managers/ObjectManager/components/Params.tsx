@@ -42,7 +42,7 @@ const Params: React.FC<Props> = ({ vxobject }) => {
         >
             <div className='flex flex-col'>
                 {params.map(
-                    (param, index) => <ParamRenderer param={param} index={index}/>
+                    (param, index) => <ParamRenderer param={param} index={index} key={index}/>
                 )}
             </div>
 

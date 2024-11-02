@@ -63,8 +63,6 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
             params: params || [],
         }
 
-        console.log("Editable Fade Effect internal Ref", internalRef)
-
         memoizedAddObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);
 

@@ -1,10 +1,14 @@
 import { createWithEqualityFn } from 'zustand/traditional';
 
 interface UiStoreStateProps {
-    timelineEditorAttached: boolean
-    setTimelineEditorAttached: (value: boolean) => void;
+    mountCoreUI: boolean;
+    setMountCoreUI: (value: boolean) => void,
+
     timelineEditorOpen: boolean;
     setTimelineEditorOpen: (value: boolean) => void;
+
+    timelineEditorAttached: boolean
+    setTimelineEditorAttached: (value: boolean) => void;
 
     leftPanelAttached: boolean
     setLeftPanelAttached: (value: boolean) => void;
@@ -15,18 +19,25 @@ interface UiStoreStateProps {
     showStateVisualizer: boolean;
     setShowStateVisualizer: (value: boolean) => void;
 
-    mountCoreUI: boolean;
-    setMountCoreUI: (value: boolean) => void,
+    mountLeftPanel: boolean;
+    setMountLeftPanel: (mountLeftPanel: boolean) => void
+
+    mountRightPanel: boolean;
+    setMountRightPanel: (mountRightPanel: boolean) => void
+
+    mountTimelineEditor: boolean;
+    setMountTimelineEditor: (mountTimelineEditor: boolean) => void;
 }
 
 export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) => ({
     mountCoreUI: false,
     setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
+
+    timelineEditorOpen: false,
+    setTimelineEditorOpen: (value: boolean) => set({ timelineEditorOpen: value}),
     
     timelineEditorAttached: true,
     setTimelineEditorAttached: (value: boolean) => set({ timelineEditorAttached: value} ),
-    timelineEditorOpen: false,
-    setTimelineEditorOpen: (value: boolean) => set({ timelineEditorOpen: value}),
 
     leftPanelAttached: true,
     setLeftPanelAttached: (value: boolean) => set({ leftPanelAttached: value }),
@@ -37,4 +48,12 @@ export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) =
     showStateVisualizer: false,
     setShowStateVisualizer: (value: boolean) => set({ showStateVisualizer: value }),
 
+    mountLeftPanel: true,
+    setMountLeftPanel: (mountLeftPanel: boolean) => set({ mountLeftPanel }),
+
+    mountRightPanel: true,
+    setMountRightPanel: (mountRightPanel: boolean) => set({ mountRightPanel }),
+
+    mountTimelineEditor: true,
+    setMountTimelineEditor: (mountTimelineEditor: boolean) => set({ mountTimelineEditor})
 }))

@@ -31,10 +31,10 @@ const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
                     const secondKeyframeKey = keyframeKey
                     return (
                         <TrackSegment
+                            key={`segment-${firstKeyframeKey}-${secondKeyframeKey}`}
                             firstKeyframeKey={firstKeyframeKey}
                             secondKeyframeKey={secondKeyframeKey}
                             trackKey={trackKey}
-                            key={index}
                         />
                     )
                 })}
@@ -44,13 +44,11 @@ const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
             {/* Render Keyframes */}
 
             {keyframes.map((keyframeKey: string, index) => (
-                <>
-                    <Keyframe
-                        key={index}
-                        track={useTimelineEditorAPI.getState().tracks[trackKey]}
-                        keyframeKey={keyframeKey}
-                    />
-                </>
+                <Keyframe
+                    key={`keyframe-${keyframeKey}`}
+                    track={useTimelineEditorAPI.getState().tracks[trackKey]}
+                    keyframeKey={keyframeKey}
+                />  
             ))}
         </div>
     );

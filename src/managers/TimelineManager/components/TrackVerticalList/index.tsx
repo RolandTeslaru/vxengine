@@ -90,7 +90,7 @@ const TrackVerticalList = () => {
 
         return (
             <div
-                key={groupKey}
+                key={`topLevel-${groupKey}`}
                 className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
             >
                 {isTrack ? (
@@ -143,7 +143,7 @@ const TrackVerticalList = () => {
     
             return (
                 <div
-                    key={groupKey}
+                    key={`level-${groupKey}`}
                     className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
                     style={{ paddingLeft: shouldIndent ? 16 : 0 }}
                 >
