@@ -11,7 +11,6 @@ interface Props {
 }
 
 const CollapsiblePanel: React.FC<Props> = ({ title, children, className, defaultOpen = true }) => {
-
     const [open, setOpen] = useState(defaultOpen);
 
     return (
@@ -39,7 +38,6 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
                     {children}
                 </motion.div>
             )}
-            {/* Contents */}
         </div>
     )
 }
