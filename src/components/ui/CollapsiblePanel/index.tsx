@@ -28,11 +28,13 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
                 </button>
                 <p className='text-center text-xs font-sans-menlo py-1'>{title}</p>
             </div>
-            <div className='text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400'
-                style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
-            >
-                {children}
-            </div>
+            {open && 
+                <div className='text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400'
+                    style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
+                >
+                    {children}
+                </div>
+            }
         </div>
     )
 }

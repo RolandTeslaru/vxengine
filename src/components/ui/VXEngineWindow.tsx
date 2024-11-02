@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
-interface VXUiPanelWrapperProps {
+interface VXEngineWindowProps {
     children: React.ReactNode;
     title: string;
     windowClasses: string;
@@ -9,7 +9,7 @@ interface VXUiPanelWrapperProps {
     setAttachedState: (value: boolean) => void;
 }
 
-const VXUiPanelWrapper: React.FC<VXUiPanelWrapperProps> = React.memo((props) => {
+const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) => {
     const { children, title, windowClasses, attachedState, setAttachedState } = props;
     
     const handleClose = useCallback(() => {
@@ -76,4 +76,4 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     return ReactDOM.createPortal(children, containerRef.current);
 };
 
-export default VXUiPanelWrapper;
+export default VXEngineWindow;

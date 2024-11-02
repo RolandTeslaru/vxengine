@@ -9,7 +9,7 @@ import { ObjectProperties, ObjectTransformControls } from "../managers/ObjectMan
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { AnimatePresence, motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectList"
-import VXUiPanelWrapper from "@vxengine/components/ui/VXUiPanelWrapper"
+import VXEngineWindow from "@vxengine/components/ui/VXEngineWindow"
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
 import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
@@ -69,7 +69,7 @@ const RightPanel = () => {
     const setMountRightPanel = useVXUiStore(state => state.setMountRightPanel)
 
     return (
-        <VXUiPanelWrapper
+        <VXEngineWindow
             title="VXEngine: RightPanel"
             windowClasses='width=256,height=702,right=200,top=200,resizable=0'
             attachedState={rightPanelAttached}
@@ -94,7 +94,7 @@ const RightPanel = () => {
                     </div>
                 </div>
             }
-        </VXUiPanelWrapper>
+        </VXEngineWindow>
     )
 }
 
@@ -107,7 +107,7 @@ const LeftPanel = () => {
 
 
     return (
-        <VXUiPanelWrapper
+        <VXEngineWindow
             title="VXEngine: LeftPanel"
             windowClasses='width=310,height=702,left=200,top=200,resizable=0'
             attachedState={leftPanelAttached}
@@ -140,7 +140,7 @@ const LeftPanel = () => {
                     </div>
                 }
             </AnimatePresence>
-        </VXUiPanelWrapper>
+        </VXEngineWindow>
     )
 }
 
@@ -152,7 +152,7 @@ const BottomRightBar = () => {
     const mountTimelineEditor = useVXUiStore(state => state.mountTimelineEditor);
     const setMountTimelineEditor = useVXUiStore(state => state.setMountTimelineEditor)
     return (
-        <VXUiPanelWrapper
+        <VXEngineWindow
             title="VXEngine: TimelineEditor"
             windowClasses='width=950,height=516,left=200,top=200'
             attachedState={timelineEditorAttached}
@@ -185,7 +185,7 @@ const BottomRightBar = () => {
                     />
                 </motion.div>
             }
-        </VXUiPanelWrapper>
+        </VXEngineWindow>
 
     )
 }

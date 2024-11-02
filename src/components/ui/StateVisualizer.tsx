@@ -1,5 +1,5 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import VXUiPanelWrapper from "./VXUiPanelWrapper";
+import VXEngineWindow from "./VXEngineWindow";
 import React, { useState } from "react";
 import { useVXObjectStore } from "@vxengine/vxobject";
 import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
@@ -290,7 +290,7 @@ const StateVisualizer = () => {
     }, [attachedState, activeData, refresh])
 
     return (
-        <VXUiPanelWrapper
+        <VXEngineWindow
             title="VXEngine: TimelineEditorDebug"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             attachedState={attachedState}
@@ -311,7 +311,7 @@ const StateVisualizer = () => {
                     {memoizedChildren}
                 </div>
             )}
-        </VXUiPanelWrapper>
+        </VXEngineWindow>
     )
 
 }
