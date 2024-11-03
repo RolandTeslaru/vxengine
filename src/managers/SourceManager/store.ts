@@ -74,8 +74,8 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         const savedTimelines = localStorage.getItem('timelines');
 
         if (!savedTimelines) {
-            // If no data in localStorage, initialize it with current timelines
-            console.log("VXEngine SourceManager: Initializing LocalStorage with timeline data.");
+            // If no data in localStorage, initialize it with current timelines from disk
+            console.log("VXEngine SourceManager: Initializing LocalStorage with disk data.");
             useAnimationEngineAPI.setState({ timelines: timelines })
             get().saveDataToLocalStorage();
 

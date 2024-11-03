@@ -15,7 +15,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     play(param: {
       toTime?: number;
       autoEnd?: boolean;
-    }): boolean;
+    });
     pause(): void;
   
     setIsPlaying(value: boolean): void;  

@@ -14,7 +14,7 @@ import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { useAnimationEngineAPI } from './AnimationStore';
+import { useAnimationEngineAPI } from './store';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
 import { js_interpolateNumber } from './utils/interpolateNumber';
@@ -33,8 +33,6 @@ import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
-
-export const ENGINE_PRECISION = 4;
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   /** requestAnimationFrame timerId */
@@ -62,7 +60,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._currentTimeline = null
   }
 
-
+  static ENGINE_PRECISION = 3
 
 
 
@@ -106,17 +104,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   setCurrentTimeline(timelineId: string) {
     // Update the current timeline ID in the state
-    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
-
     const selectedTimeline: ITimeline = this.timelines[timelineId];
 
     if (!selectedTimeline) {
       throw new Error(`AnimationEngine: Timeline with ID '${timelineId}' not found.`);
     }
 
-    const { objects, splines } = selectedTimeline;
+    // Set the states in the store
+    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
+    useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
 
     this._currentTimeline = selectedTimeline;
+
+    const { objects, splines } = selectedTimeline;
+
 
     // Cache the splines asynchronously
     this.cacheSplines(splines).then(() => {
@@ -164,6 +165,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * @param timelines - A record of timelines to load.
   */
   loadTimelines(timelines: Record<string, ITimeline>) {
+    console.log("VXEngine AnimationEngine: Validating timelines")
+    const errors = AnimationEngine.validateAndFixTimelines(timelines)
+    console.log(`VXEngine AnimationEngine: Found ${errors} errors in the timelines`)
+
     const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
     if (syncResult?.status === 'out_of_sync') {
@@ -231,11 +236,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   play(param: {
     toTime?: number;
     autoEnd?: boolean;
-  } = {}): boolean {
-    const { toTime, autoEnd } = param;
+  } = {}) {
+    let { toTime, autoEnd = true } = param;
+    if (toTime === undefined) {
+      toTime = this._currentTimeline.length;
+    }
 
-    if (this.isPlaying || (toTime !== undefined && toTime <= this._currentTime)) {
-      return false;
+    // Check if is already playing or the current time has exceeded the toTime
+    if (this.isPlaying
+      || (toTime !== undefined && toTime <= this._currentTime)
+    ) {
+      return;
     }
 
     this.setIsPlaying(true);
@@ -245,7 +256,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._tick({ now: time, autoEnd, to: toTime });
     });
 
-    return true;
   }
 
 
@@ -257,6 +267,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Pauses the animation playback and triggers a 'paused' event.
    */
   pause() {
+    console.log("AnimationEngine: Pause triggered")
     if (this.isPlaying) {
       this.setIsPlaying(false);
       this.trigger('paused', { engine: this });
@@ -293,7 +304,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
-    if (!rawObject) { 
+    if (!rawObject) {
       return
     }
 
@@ -568,6 +579,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (currentTime > keyframes[keyframes.length - 1].time && !recalculateAll) {
       return keyframes[keyframes.length - 1].value;
     }
+
     return this._interpolateKeyframes(keyframes, currentTime);
   }
 
@@ -682,16 +694,19 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     // Calculate the normalized progress between the two keyframes
-    const progress = truncateToDecimals(
+    const progress = AnimationEngine.truncateToDecimals(
       (currentTime - startKeyframe.time) / duration,
-      ENGINE_PRECISION + 1
+      AnimationEngine.ENGINE_PRECISION + 1
     );
 
     // Interpolate the value using the progress
     const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
 
     // Truncate the result to ensure precision
-    return truncateToDecimals(interpolatedValue, ENGINE_PRECISION);
+    return AnimationEngine.truncateToDecimals(
+      interpolatedValue,
+      AnimationEngine.ENGINE_PRECISION
+    );
   }
 
 
@@ -778,7 +793,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   private _applyAllStaticProps() {
     this.currentTimeline.objects.forEach(obj => {
-      if(obj.staticProps.length === 0){
+      if (obj.staticProps.length === 0) {
         return
       }
 
@@ -1323,10 +1338,75 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
-}
 
 
-function truncateToDecimals(num: number, decimals: number): number {
-  const factor = Math.pow(10, decimals);
-  return Math.trunc(num * factor) / factor;
+  static truncateToDecimals(num: number, decimals: number): number {
+    const factor = Math.pow(10, decimals);
+    return Math.trunc(num * factor) / factor;
+  }
+
+  /**
+   * Validates and corrects the precision of values in the given timelines.
+   * @param timelines - A record of timelines to validate and fix.
+   * @returns An array of validation error messages if any values needed correction.
+   */
+  static validateAndFixTimelines(timelines: Record<string, ITimeline>): string[] {
+    console.log("Valding timelines ", timelines)
+    const precision = AnimationEngine.ENGINE_PRECISION;
+    const errors: string[] = [];
+
+    const isValidPrecision = (value: number): boolean => {
+      const factor = Math.pow(10, precision);
+      return Math.round(value * factor) / factor === value;
+    };
+
+    Object.entries(timelines).forEach(([timelineId, timeline]) => {
+      // Validate and fix timeline length precision
+      if (!isValidPrecision(timeline.length)) {
+        errors.push(`Timeline "${timelineId}" has invalid length precision: ${timeline.length}`);
+        timeline.length = AnimationEngine.truncateToDecimals(timeline.length, precision);
+      }
+
+      // Validate and fix objects and their properties
+      timeline.objects?.forEach((object) => {
+        object.tracks.forEach(track => {
+          track.keyframes.forEach(keyframe => {
+            if (!isValidPrecision(keyframe.time)) {
+              errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
+              keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);
+            }
+            if (!isValidPrecision(keyframe.value)) {
+              errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
+              keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
+            }
+          });
+        });
+
+        object.staticProps.forEach(staticProp => {
+          if (!isValidPrecision(staticProp.value)) {
+            errors.push(`Static prop "${staticProp.propertyPath}" in "${object.vxkey}" has invalid precision: ${staticProp.value}`);
+            staticProp.value = AnimationEngine.truncateToDecimals(staticProp.value, precision);
+          }
+        });
+      });
+
+      // Validate and fix splines and nodes
+      if(timeline.splines)
+        Object.values(timeline.splines).forEach(spline => {
+          spline.nodes.forEach((node, index) => {
+            node.forEach((coord, coordIndex) => {
+              if (!isValidPrecision(coord)) {
+                errors.push(`Node ${index} in spline "${spline.splineKey}" has invalid precision for coordinate ${coordIndex}: ${coord}`);
+                node[coordIndex] = AnimationEngine.truncateToDecimals(coord, precision);
+              }
+            });
+          });
+        });
+
+    });
+
+    return errors;
+  }
+
 }
+

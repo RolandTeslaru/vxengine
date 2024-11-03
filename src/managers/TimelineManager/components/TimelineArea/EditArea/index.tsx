@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/store';
 import Track from './Track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';

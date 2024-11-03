@@ -1,2 +1,2 @@
 'use client'
-export { useAnimationEngineAPI } from "./AnimationStore";
+export { useAnimationEngineAPI } from "./store";

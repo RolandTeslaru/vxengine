@@ -194,28 +194,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     groupedPaths: {},
     keyframes: {},
 
-    setCollapsedGroups: (groupKey: string) => {
+    collapsedGroups: {},
+    setCollapsedGroups: ( groupKey: string) => {
         set(produce((state: TimelineEditorStoreProps) => {
-            const pathSegments = groupKey.split('/');
-            let currentGroup: GroupedPaths | PathGroup = state.groupedPaths;
-
-            // Bypass the root because currently currentGroup is of type GroupedPath
-            const rootPath = pathSegments[0]
-            // currentGroup is now PathGroup
-            currentGroup = currentGroup[rootPath] as PathGroup;
-
-            pathSegments.shift()
-            pathSegments.forEach((segment) => {
-                if (currentGroup.children[segment]) {
-                    currentGroup = currentGroup.children[segment]
-                }
-            });
-
-            if (currentGroup) {
-                currentGroup.isCollapsed = !currentGroup.isCollapsed;
-            }
-
-        }), false);
+            const value = state.collapsedGroups[groupKey]
+            state.collapsedGroups[groupKey] = !value
+        }), false)
     },
 
     setEditorData: (rawObjects: RawObjectProps[]) => {

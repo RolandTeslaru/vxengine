@@ -105,7 +105,6 @@ const LeftPanel = () => {
     const mountLeftPanel = useVXUiStore(state => state.mountLeftPanel)
     const setMountLeftPanel = useVXUiStore(state => state.setMountLeftPanel)
 
-
     return (
         <VXEngineWindow
             title="VXEngine: LeftPanel"
@@ -117,7 +116,7 @@ const LeftPanel = () => {
                 {mountLeftPanel && 
                     <div className={`absolute w-60 h-[686px] backdrop-blur-sm text-sm bg-neutral-900 
                                         bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl p-2 pt-3
-                                        ${leftPanelAttached ? "top-32 left-6" : "top-2 left-2"}
+                                        ${leftPanelAttached ? "top-[128px] left-[24px]" : "top-[8px] left-[8px]"}
                                         `}
                         id="VXEngineLeftPanel"
                     >

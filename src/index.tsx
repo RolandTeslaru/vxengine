@@ -12,4 +12,4 @@ export { useVXEngine } from "./engine"
 export { VXEngineCoreRenderer } from "./core"
 export { vx } from "./vxobject"
 
-export { useAnimationEngineAPI } from "./AnimationEngine/AnimationStore"
+export { useAnimationEngineAPI } from "./AnimationEngine/store"

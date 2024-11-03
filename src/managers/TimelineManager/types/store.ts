@@ -12,6 +12,7 @@ export interface TimelineEditorStoreProps {
 
     groupedPaths: GroupedPaths
 
+    collapsedGroups: Record<string, boolean>
     setCollapsedGroups: (groupKey: string) => void;
 
     scale: number;

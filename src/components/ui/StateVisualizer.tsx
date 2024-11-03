@@ -69,8 +69,7 @@ const StaticPropsComponent = () => {
 };
 
 const CurrentTimelineComponent = () => {
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentTimeline = useAnimationEngineAPI(state => state.timelines[currentTimelineID]);
+    const currentTimeline = useAnimationEngineAPI(state => state.currentTimeline);
     return (
         <pre
             style={{
@@ -78,7 +77,7 @@ const CurrentTimelineComponent = () => {
             }}
             className="text-xs"
         >
-            {"currentTimelineID: " + currentTimelineID}
+            {"currentTimeline id: " + currentTimeline.id}
             {JSON.stringify(currentTimeline, null, 2)}
         </pre>
     );
@@ -297,8 +296,8 @@ const StateVisualizer = () => {
             setAttachedState={setAttachedState}
         >
             {showStateVisualizer && (
-                <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-6 left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} text-sm bg-neutral-900 p-2 gap-2
-                bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}
+                <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-[24px] left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} 
+                                text-sm bg-neutral-900 p-2 gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col`}
                     style={{ minWidth: "500px" }}
                 >
 

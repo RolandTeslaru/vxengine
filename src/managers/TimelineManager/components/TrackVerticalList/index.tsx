@@ -18,8 +18,11 @@ import { Virtuoso } from "react-virtuoso";
 
 const TRACK_HEIGHT = 34;
 
+
+
 const TrackVerticalList = () => {
     const setCollapsedGroups = useTimelineEditorAPI(state => state.setCollapsedGroups)
+    const collapsedGroups = useTimelineEditorAPI(state => state.collapsedGroups);
     const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
 
@@ -30,22 +33,14 @@ const TrackVerticalList = () => {
 
     }
 
-    // const renderCollapsedKeyframeControl = ({edObject, group,}: {edObject: edObjectProps, group: PathGroup}) => {
-    //     let collapsedKeyframes: ITrack | null = null;
-    //     console.log("Attempting to render collapsed keyframe controls with group", group)
-    //     if(collapsedKeyframes){
-    //         return <>
-    //             <KeyframeControl
-    //                 track={collapsedKeyframes}
-    //                 propertyPath={collapsedKeyframes.propertyPath}
-    //                 edObject={edObject}
-    //             />
-    //         </>
-    //     } else 
-    //         return <></>
-    // }
+    interface RenderNormalPropertyProps {
+        propKey: string, 
+        isCollapsed: boolean, 
+        isCollapsible: boolean, 
+        groupKey: string
+    }
 
-    const RenderNormalProperty = ({ propKey, isCollapsed, isCollapsible, groupKey }: { propKey: string, isCollapsed: boolean, isCollapsible: boolean, groupKey: string }) => {
+    const RenderNormalProperty:React.FC<RenderNormalPropertyProps> = React.memo(({ propKey, isCollapsed, isCollapsible, groupKey }) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(propKey)
         return (
             <div
@@ -66,7 +61,7 @@ const TrackVerticalList = () => {
                 </p>
             </div>
         )
-    }
+    })
 
     const renderTopLevelGroupedPaths = (
         index: number
@@ -86,7 +81,7 @@ const TrackVerticalList = () => {
                               !isTrack;
 
         let groupKey = `${key}`;
-        const isCollapsed = group.isCollapsed || false;
+        const isCollapsed = collapsedGroups[groupKey]|| false;
 
         return (
             <div
@@ -107,71 +102,17 @@ const TrackVerticalList = () => {
                         isCollapsed={isCollapsed}
                     />
                 )}
-                {isPath && !isCollapsed && renderGroupedPaths(
-                    group.children,
-                    null,
-                    1,
-                    shouldIndentChildren,
-                    groupKey
-                )}
+                {isPath && !isCollapsed && <RenderGroupedPaths
+                    groupedPaths={group.children}
+                    edObject={null}
+                    depth={1}
+                    shouldIndent={shouldIndentChildren}
+                    parentPath={groupKey}
+                /> }
             </div>
         );
     };
     
-    const renderGroupedPaths = (
-        groupedPaths: Record<string, PathGroup>,
-        edObject: edObjectProps,
-        depth = 1,
-        shouldIndent = false,
-        parentPath = null
-    ) => {
-        return Object.entries(groupedPaths).map(([key, group]) => {
-            const childrenAllKeys = Object.keys(group.children);
-            const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1);
-            const isTrack = !!group.trackKey;
-            const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
-            const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
-
-            const maxDepth = group.maxDepth
-
-            const isCollapsible = (group.rowIndex !== group.prevRowIndex) && 
-                                  (group.rowIndex !== group.localFinalTrackIndex) && 
-                                  !isTrack;
-    
-            let groupKey = parentPath === null ? `${key}` : `${parentPath}/${key}`;
-            const isCollapsed = group.isCollapsed || false;
-    
-            return (
-                <div
-                    key={`level-${groupKey}`}
-                    className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
-                    style={{ paddingLeft: shouldIndent ? 16 : 0 }}
-                >
-                    {isTrack ? (
-                        <RenderFinalProperty
-                            propKey={key}
-                            trackKey={group.trackKey}
-                            isCollapsed={isCollapsed}
-                        />
-                    ) : (
-                        <RenderNormalProperty
-                            propKey={key}
-                            groupKey={groupKey}
-                            isCollapsible={isCollapsible}
-                            isCollapsed={isCollapsed}
-                        />
-                    )}
-                    {isPath && !isCollapsed && renderGroupedPaths(
-                        group.children,
-                        edObject,
-                        depth + 1,
-                        shouldIndentChildren,
-                        groupKey
-                    )}
-                </div>
-            );
-        });
-    };
 
     const scrollSyncId = useRefStore(state => state.scrollSyncId)
 
@@ -187,6 +128,82 @@ const TrackVerticalList = () => {
         })
 
     }
+
+    interface RenderGrouepdPathsProps {
+        groupedPaths: Record<string, PathGroup>,
+        edObject: edObjectProps,
+        depth: number,
+        shouldIndent: boolean,
+        parentPath: string
+    } 
+
+    const RenderGroupedPaths: React.FC<RenderGrouepdPathsProps> = React.memo(({
+        groupedPaths,
+        edObject,
+        depth = 1,
+        shouldIndent = false,
+        parentPath = null,
+      }) => {
+        const collapsedGroups = useTimelineEditorAPI((state) => state.collapsedGroups);
+        const setCollapsedGroups = useTimelineEditorAPI((state) => state.setCollapsedGroups);
+      
+        return (
+          <>
+            {Object.entries(groupedPaths).map(([key, group]: [key: string, group: PathGroup]) => {
+              const childrenAllKeys = Object.keys(group.children);
+              const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1);
+              const isTrack = !!group.trackKey;
+              const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
+              const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
+      
+              const isCollapsible =
+                group.rowIndex !== group.prevRowIndex &&
+                group.rowIndex !== group.localFinalTrackIndex &&
+                !isTrack;
+      
+              const groupKey = parentPath === null ? `${key}` : `${parentPath}/${key}`;
+              const isCollapsed = collapsedGroups[groupKey] || false;
+      
+              const handleCollapseClick = useCallback(() => {
+                setCollapsedGroups(groupKey);
+              }, [setCollapsedGroups, groupKey]);
+      
+              return (
+                <div
+                  key={`level-${groupKey}`}
+                  className={`w-full flex ${isNestedToPreviousPath ? 'flex-row' : 'flex-col'}`}
+                  style={{ paddingLeft: shouldIndent ? 16 : 0 }}
+                >
+                  {isTrack ? (
+                    <RenderFinalProperty
+                      propKey={key}
+                      trackKey={group.trackKey}
+                      isCollapsed={isCollapsed}
+                    />
+                  ) : (
+                    <RenderNormalProperty
+                      propKey={key}
+                      groupKey={groupKey}
+                      isCollapsible={isCollapsible}
+                      isCollapsed={isCollapsed}
+                      onCollapseClick={handleCollapseClick}
+                    />
+                  )}
+                  {isPath && !isCollapsed && (
+                    <RenderGroupedPaths
+                      groupedPaths={group.children}
+                      edObject={edObject}
+                      depth={depth + 1}
+                      shouldIndent={shouldIndentChildren}
+                      parentPath={groupKey}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </>
+        );
+      });
 
     const scrollerRefCallback = useCallback((node) => {
         if (node) {
@@ -212,7 +229,7 @@ const TrackVerticalList = () => {
     )
 };
 
-const RenderFinalProperty = ({ propKey, isCollapsed, trackKey }: { propKey: string, isCollapsed: boolean, trackKey: string }) => {
+const RenderFinalProperty = React.memo(({ propKey, isCollapsed, trackKey }: { propKey: string, isCollapsed: boolean, trackKey: string }) => {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
     return (
         <ContextMenu>
@@ -231,6 +248,6 @@ const RenderFinalProperty = ({ propKey, isCollapsed, trackKey }: { propKey: stri
             <FinalPropertyContextMenu vxkey={vxkey} propertyPath={propertyPath} />
         </ContextMenu>
     )
-}
+})
 
 export default TrackVerticalList;

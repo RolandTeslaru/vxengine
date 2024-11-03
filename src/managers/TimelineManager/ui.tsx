@@ -15,7 +15,7 @@ import TrackVerticalList from './components/TrackVerticalList';
 import TimelineArea from './components/TimelineArea';
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@vxengine/components/shadcn/Resizeable';
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/AnimationStore';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/store';
 import { Input } from '@vxengine/components/shadcn/input';
 import ProgressionControls from './components/ProgressionControls';
 
@@ -108,8 +108,7 @@ const TimelineEditorFooter = () => {
 
     const open = useVXUiStore(state => state.timelineEditorOpen)
 
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
+    const timelineLength = useAnimationEngineAPI(state => state.currentTimeline.length)
 
     return (
         <AnimatePresence>
