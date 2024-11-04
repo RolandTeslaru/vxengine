@@ -7,22 +7,12 @@
 import "./globals.css"
 
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { VXEngineCoreUI } from './core'
 import { EffectComposer } from 'three-stdlib'
 import { VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-import { type ThemeProviderProps } from "next-themes/dist/types"
 import { createStore, useStore, StoreApi } from 'zustand'
 import { useSourceManagerAPI } from './managers/SourceManager/store'
-import { DataSyncPopup } from './managers/SourceManager/ui'
-import ClientOnly from './components/ui/ClientOnly'
 import { AnimationEngine } from './AnimationEngine/engine'
-import { MenubarUI } from './components/ui/MenubarUI'
 import { setNodeEnv, getNodeEnv } from "./constants"
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
-}
 
 let animationEngineInstance: AnimationEngine | undefined
 
@@ -37,8 +27,8 @@ let areTimelinesLoaded = false;
 
 
 const createVXEngineStore = (props: VXEngineProviderProps) => {
-  const { 
-    mount, 
+  const {
+    mount,
     animations_json: diskUrl,
     nodeEnv
   } = props;
@@ -65,10 +55,10 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   }
 
   VXEngineStore = createStore<VXEngineStoreProps>((set) => ({
-    mountCoreRenderer: mount?? true,  
+    mountCoreRenderer: mount ?? true,
     setMountCoreRenderer: (value) => set({ mountCoreRenderer: value }),
 
-    composer: useRef<EffectComposer | null>(null),  
+    composer: useRef<EffectComposer | null>(null),
     animationEngine: animationEngineInstance,
 
     IS_DEVELOPMENT: nodeEnv === "development",
@@ -79,12 +69,16 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
 };
 
 
+let VXEngineCoreUI: React.FC | null = null;
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
   const { children, nodeEnv } = props;
 
   setNodeEnv(nodeEnv);
   const IS_DEVELOPMENT = nodeEnv === "development"
+
+  if(IS_DEVELOPMENT && !VXEngineCoreUI)
+    VXEngineCoreUI = require('./core').VXEngineCoreUI;
 
   // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
@@ -93,53 +87,23 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
 
   useEffect(() => {
-    if(IS_DEVELOPMENT)
+    if (IS_DEVELOPMENT)
       addBeforeUnloadListener()
 
     return () => {
-      if(IS_DEVELOPMENT)
+      if (IS_DEVELOPMENT)
         removeBeforeUnloadListener()
     }
   }, [])
 
   return (
     <VXEngineContext.Provider value={store}>
-      <VXEngineContent>
-        {children}
-      </VXEngineContent>
+      {IS_DEVELOPMENT && VXEngineCoreUI && <VXEngineCoreUI />}
+      {children}
     </VXEngineContext.Provider>
   );
 });
 
-
-
-const VXEngineContent = ({children}: {children: React.ReactNode}) => {
-  const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
-
-  const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT)
-
-  return (
-    <>
-      <ClientOnly>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {IS_DEVELOPMENT && <>
-            <MenubarUI/>
-            <VXEngineCoreUI />
-            {showSyncPopup && (
-              <DataSyncPopup />
-            )}
-          </>}
-        </ThemeProvider>
-      </ClientOnly>
-      {children}
-    </>
-  )
-}
 
 export function useVXEngine<T>(selector: (state: VXEngineStoreProps) => T) {
   const store = useContext(VXEngineContext);

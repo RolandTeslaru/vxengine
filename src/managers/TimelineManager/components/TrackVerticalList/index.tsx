@@ -164,10 +164,6 @@ const TrackVerticalList = () => {
               const groupKey = parentPath === null ? `${key}` : `${parentPath}/${key}`;
               const isCollapsed = collapsedGroups[groupKey] || false;
       
-              const handleCollapseClick = useCallback(() => {
-                setCollapsedGroups(groupKey);
-              }, [setCollapsedGroups, groupKey]);
-      
               return (
                 <div
                   key={`level-${groupKey}`}
@@ -186,7 +182,6 @@ const TrackVerticalList = () => {
                       groupKey={groupKey}
                       isCollapsible={isCollapsible}
                       isCollapsed={isCollapsed}
-                      onCollapseClick={handleCollapseClick}
                     />
                   )}
                   {isPath && !isCollapsed && (

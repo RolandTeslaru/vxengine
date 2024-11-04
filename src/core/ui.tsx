@@ -13,7 +13,7 @@ import VXEngineWindow from "@vxengine/components/ui/VXEngineWindow"
 import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
 import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
-import { SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
+import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
@@ -22,41 +22,41 @@ import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsLi
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
 import VirtualEntitiesList from "@vxengine/managers/ObjectManager/components/VirtualEntitiesList"
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
-import { Popover, PopoverTrigger, PopoverContent } from "@vxengine/components/shadcn/popover"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
+import { MenubarUI } from "@vxengine/components/ui/MenubarUI"
+import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 
 export const CoreUI = () => {
+    const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
 
-    const mountCoreUI = useVXUiStore(state => state.mountCoreUI);
+    return (
+        <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
+            <MenubarUI />
 
-    if (mountCoreUI)
-        return (
-            <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
-                {/* Menubar */}
+            <LeftPanel />
+            <RightPanel />
 
-                <LeftPanel />
-                <RightPanel />
+            <BottomRightBar />
 
-                <BottomRightBar />
+            <FrequentStateVisualizer />
+            <StateVisualizer />
+            <CameraManagerUI />
 
-                <FrequentStateVisualizer />
-                <StateVisualizer />
-                <CameraManagerUI />
+            <a
+                className="fixed pointer-events-auto bottom-5 left-10"
+                href="https://vexr-labs.com/"
+                target="_blank"
+            >
+                <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
+                    VEXR<span className="font-thin">LABS</span>
+                </h1>
+            </a>
 
-                <a
-                    className="fixed pointer-events-auto bottom-5 left-10"
-                    href="https://vexr-labs.com/"
-                    target="_blank"
-                >
-                    <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
-                        VEXR<span className="font-thin">LABS</span>
-                    </h1>
-                </a>
-            </div>
-        )
-    else {
-        return null;
-    }
+            {showSyncPopup && (
+                <DataSyncPopup />
+            )}
+        </div>
+    )
 }
 
 const RightPanel = () => {
@@ -113,7 +113,7 @@ const LeftPanel = () => {
             setAttachedState={setLeftPanelAttached}
         >
             <AnimatePresence>
-                {mountLeftPanel && 
+                {mountLeftPanel &&
                     <div className={`absolute w-60 h-[686px] backdrop-blur-sm text-sm bg-neutral-900 
                                         bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl p-2 pt-3
                                         ${leftPanelAttached ? "top-[128px] left-[24px]" : "top-[8px] left-[8px]"}

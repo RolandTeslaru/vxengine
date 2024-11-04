@@ -1,6 +1,7 @@
 import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
 import JavaScriptObfuscator from 'webpack-obfuscator';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -147,20 +148,19 @@ export default {
         ],
     },
     plugins: [
+        new BundleAnalyzerPlugin(),
         new MiniCssExtractPlugin({
             filename: 'mini.css',  // Specify the filename for the extracted CSS
         }),
+        // new JavaScriptObfuscator({
+        //     rotateStringArray: true,
+        //     stringArray: true,
+        //     stringArrayThreshold: 0.75,
+        // }, ['excluded_bundle.js']),
     ],
 
     optimization: {
         minimize: false,
         minimizer: [new TerserPlugin()],
-    }
-    // plugins: [
-    //     new JavaScriptObfuscator({
-    //         rotateStringArray: true,
-    //         stringArray: true,
-    //         stringArrayThreshold: 0.75,
-    //     }, ['excluded_bundle.js']),
-    // ],
+    },
 };
