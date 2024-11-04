@@ -159,7 +159,7 @@ const ScaleSlider = () => {
 }
 
 export const TimelineSelect = () => {
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimeline.id)
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
     const animationEngine = useVXEngine(state => state.animationEngine)

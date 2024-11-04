@@ -12,6 +12,7 @@ import { CameraHelper } from "three";
 
 import * as THREE from "three"
 import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent";
+import { getNodeEnv } from "@vxengine/constants";
 
 declare module 'three' {
     interface PerspectiveCamera {
@@ -26,6 +27,7 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
 };
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
+    const IS_DEVELOPMENT = getNodeEnv() === "development"
     const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
@@ -60,7 +62,8 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
 
     // Show the camera helper only in free mode
     const mode = useCameraManagerAPI(state => state.mode)
-    useHelper(cameraRef, mode === "free" && CameraHelper)
+    const showHelper = mode === "free" && IS_DEVELOPMENT
+    useHelper(cameraRef, showHelper && CameraHelper)
 
     const defaultSettingsForObject = {
         useSplinePath: false,

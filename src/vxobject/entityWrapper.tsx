@@ -40,7 +40,10 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         defaultAdditionalSettings = {},
         ...props
     }, ref) => {
-        if (vxkey === undefined) throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
+        if (vxkey === undefined) 
+            throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
+
+        const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT);
 
         const addObject = useVXObjectStore(state => state.addObject)
         const removeObject = useVXObjectStore(state => state.removeObject)
@@ -109,7 +112,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             // onPointerOver: handlePointerOver,
             // onPointerOut: handlePointerOut,
             onClick: () => {
-                if (disableClickSelect === false)
+                if (disableClickSelect === false && IS_DEVELOPMENT)
                     memoizedSelectObjects([vxkey])
             },
             onPointerDown: (e) => e.stopPropagation(),
@@ -122,7 +125,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
 
         return <>
             {modifiedChildren}
-            {vxObject && (
+            {vxObject && IS_DEVELOPMENT && (
                 <ObjectUtils vxkey={vxkey}>
                     {children}
                 </ObjectUtils>

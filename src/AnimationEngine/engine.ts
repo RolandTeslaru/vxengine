@@ -29,6 +29,8 @@ import init, {
 
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
+import { invalidate } from '@react-three/fiber';
+import { getNodeEnv, IS_DEVELOPMENT, IS_PRODUCTION } from '@vxengine/constants';
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -42,25 +44,40 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _wasmReady: Promise<void>
   private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
+
   private _splinesCache: Record<string, any> = {}
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
+
   private _currentTimeline: ITimeline;
-  private _cameraRequiresPerspectiveMatrixRecalculation;
   private _currentTime: number = 0;
   private _interpolateNumberFunction: Function;
-  private _propertiesRequiredToRecalculateCamera = ['fov', 'near', 'far', 'zoom']
 
-  constructor() {
+  private _cameraRequiresPerspectiveMatrixRecalculation;
+  private readonly _propertiesRequiredToRecalculateCamera = ['fov', 'near', 'far', 'zoom'];
+
+  private readonly _IS_DEVELOPMENT: boolean = false;
+  private readonly _IS_PRODUCTION: boolean = false;
+
+  static readonly ENGINE_PRECISION = 3
+
+  constructor(nodeEnv: "production" | "development" | "test") {
     super(new Events());
+
+    if(nodeEnv === "production"){
+      this._IS_PRODUCTION = true;
+    }
+    else if (nodeEnv === "development"){
+      this._IS_DEVELOPMENT = true;
+    }
+
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
     console.log("VXEngine AnimationEngine: Created instance with ID:", this._id);
-    this._wasmReady = this._initializeWasm();
+
     this._interpolateNumberFunction = js_interpolateNumber;
+    this._wasmReady = this._initializeWasm();
     this._currentTimeline = null
   }
-
-  static ENGINE_PRECISION = 3
 
 
 
@@ -149,6 +166,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     } else {
       this._applyAllKeyframes(time, true);
       this.trigger('timeUpdatedByEditor', { time, engine: this });
+
+      invalidate();
     }
 
     // Always trigger a general time updated event
@@ -165,15 +184,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * @param timelines - A record of timelines to load.
   */
   loadTimelines(timelines: Record<string, ITimeline>) {
-    console.log("VXEngine AnimationEngine: Validating timelines")
-    const errors = AnimationEngine.validateAndFixTimelines(timelines)
-    console.log(`VXEngine AnimationEngine: Found ${errors} errors in the timelines`)
-
-    const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
-
-    if (syncResult?.status === 'out_of_sync') {
-      this.setIsPlaying(false);
+    if(IS_DEVELOPMENT){
+      console.log("VXEngine AnimationEngine: Validating timelines")
+      const errors = AnimationEngine.validateAndFixTimelines(timelines)
+      console.log(`VXEngine AnimationEngine: Found ${errors} errors in the timelines`)
+  
+      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
+  
+      if (syncResult?.status === 'out_of_sync') {
+        this.setIsPlaying(false);
+      }
     }
+    else if(IS_PRODUCTION){
+      useAnimationEngineAPI.setState({ timelines: timelines })
+    } 
 
     // Load the first timeline
     const firstTimeline = Object.values(timelines)[0];
@@ -430,6 +454,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
     }
 
+    invalidate();
+
     const { now, autoEnd = false, to } = data;
 
     const deltaTime = Math.min(1000, now - this._prev) / 1000;
@@ -609,7 +635,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
 
     this._checkCameraUpdateRequirement(vxkey, propertyPath);
-    useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue);
+    
+    if(this._IS_DEVELOPMENT)
+      useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue);
   }
 
 

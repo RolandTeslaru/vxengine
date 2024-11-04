@@ -1,5 +1,5 @@
-import React, { useMemo, useLayoutEffect, DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from "react"
-import { useThree, createPortal, useFrame, extend, Object3DNode, Euler, applyProps } from '@react-three/fiber'
+import React, { useMemo, useLayoutEffect, DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES, useEffect } from "react"
+import { useThree, createPortal, useFrame, extend, Object3DNode, Euler, applyProps, invalidate } from '@react-three/fiber'
 import { WebGLCubeRenderTarget, Texture, Scene, CubeCamera, HalfFloatType, CubeTexture } from 'three'
 import { GroundProjectedEnv as GroundProjectedEnvImpl } from 'three-stdlib'
 import { PresetsType } from '@react-three/drei/helpers/environment-assets'
@@ -81,6 +81,8 @@ function setEnvProps(
     target.background = texture
   applyProps(target as any, sceneProps)
 
+  invalidate();
+
   return () => {
     if (background !== 'only') 
         target.environment = oldenv
@@ -92,8 +94,12 @@ function setEnvProps(
 
 export function VXEnvironmentMap({ scene, background = false, map, ...config }: EnvironmentProps) {
   const defaultScene = useThree((state) => state.scene)
-  useLayoutEffect(() => {
-    if (map) return setEnvProps(background, scene, defaultScene as any, map, config)
+  useEffect(() => {
+    if (map) {
+      const cleanup = setEnvProps(background, scene, defaultScene, map, config);
+      invalidate(); // Trigger a re-render
+      return cleanup;
+    }
   })
   return null
 }
@@ -112,7 +118,7 @@ export function VXEnvironmentCube({
   const texture = useEnvironment(rest)
   const defaultScene = useThree((state) => state.scene)
   useLayoutEffect(() => {
-    return setEnvProps(background, scene, defaultScene as any, texture as any, {
+    const cleanup =  setEnvProps(background, scene, defaultScene as any, texture as any, {
       blur,
       backgroundBlurriness,
       backgroundIntensity,
@@ -120,6 +126,10 @@ export function VXEnvironmentCube({
       environmentIntensity,
       environmentRotation,
     })
+
+    invalidate();
+
+    return cleanup
   })
   return null
 }
@@ -155,7 +165,14 @@ export function VXEnvironmentPortal({
   }, [resolution])
 
   useLayoutEffect(() => {
-    if (frames === 1) camera.current.update(gl as any, virtualScene)
+    camera.current.update(gl as any, virtualScene)
+  }, [])
+
+  useLayoutEffect(() => {
+    if (frames === 1) {
+      camera.current.update(gl as any, virtualScene)
+      invalidate();
+    }
     return setEnvProps(background, scene, defaultScene as any, fbo.texture, {
       blur,
       backgroundBlurriness,

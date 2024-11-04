@@ -6,20 +6,20 @@
 
 import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { Canvas, extend } from '@react-three/fiber'
-import { CameraControls, Grid, PerformanceMonitor } from '@react-three/drei'
+import { PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
-import { Bloom, DepthOfField, Noise } from '@react-three/postprocessing'
 import { EffectsManagerDriver} from '../managers/EffectsManager'
-import { ObjectManagerDriver} from '../managers/ObjectManager'
-import { RendererCoreProps } from '../types/core'
-import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline'
+import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { RenderPass } from 'three-stdlib'
+import { Stats } from '@react-three/drei'
 
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
 import { useVXObjectStore, vx } from '../vxobject'
 import CameraManagerDriver from '../managers/CameraManager/driver'
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
+import { useCameraManagerAPI } from '@vxengine/managers/CameraManager/store'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
@@ -31,14 +31,29 @@ declare module '@react-three/fiber' {
 let VXEngineUtils;
 VXEngineUtils = require('../utils/rendererUtils.tsx').default;
 
+import { CanvasProps } from "@react-three/fiber";
+import { getNodeEnv } from '@vxengine/constants'
+import { ObjectManagerDriver } from '@vxengine/managers/ObjectManager'
+
+export interface RendererCoreProps {
+    canvasProps?: CanvasProps;
+    children?: React.ReactNode;
+    mount?: boolean;
+    powerPreferences?: 'high-performance' | 'low-power';
+    effectsNode?: React.ReactElement
+}
+
 // VXEngineCoreRenderer
 export const CoreRenderer: React.FC<RendererCoreProps> = ({
   canvasProps = { gl: {}, dpr: {}, performance: {} },
   children,
-  powerPreferences = 'high-performance'
+  powerPreferences = 'high-performance',
+  effectsNode
 }) => {
   const [dpr_state, setDpr_state] = useState(0.6)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
+
+  const IS_DEVELOPMENT = getNodeEnv() === "development"
 
   return (
     <>
@@ -46,26 +61,40 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         gl={{
           logarithmicDepthBuffer: false,
           antialias: true,
-          preserveDrawingBuffer: true,
+          preserveDrawingBuffer: false,
           powerPreference: powerPreferences,
+          ...gl
         }}
         dpr={dpr_state}
         performance={{
           min: 0.1,
-          max: 0.4
+          max: 0.4,
+          ...performance
         }}
+        frameloop={"demand"}
       >
         <PerformanceMonitor
-          onChange={({ factor }) => setDpr_state(round(0.2 + 1.1 * factor, 1))}
+          onChange={({ factor }) => {
+            const isPlaying = useAnimationEngineAPI.getState().isPlaying;
+            const cameraMode = useCameraManagerAPI.getState().mode;
+            // When the animations are playing, chaning the dpr state can cause a slight flicker
+            if(!isPlaying && cameraMode === "attached"){
+              const value = round(0.2 + 1.1 * factor, 1)
+              setDpr_state(value)
+            }
+          }}
         >
           {/* <color attach="background" args={['gray']} /> */}
-          <VXEngineUtils />
-          <EffectsManagerDriver>
-            {/* <Noise opacity={0.02} /> */}
-            {/* <Bloom mipmapBlur={true} intensity={3} kernelSize={5} /> */}
+          {IS_DEVELOPMENT && <>
+              <VXEngineUtils/>
+              <ObjectManagerDriver/>
+          </>
+          }
+          <EffectsManagerDriver disableNormalPass={true}>
+            {effectsNode}
             <vx.fadeEffect />
           </EffectsManagerDriver>
-          <ObjectManagerDriver/>
+          
           <CameraManagerDriver/>
           
           {children}

@@ -18,15 +18,13 @@ import { DataSyncPopup } from './managers/SourceManager/ui'
 import ClientOnly from './components/ui/ClientOnly'
 import { AnimationEngine } from './AnimationEngine/engine'
 import { MenubarUI } from './components/ui/MenubarUI'
+import { setNodeEnv, getNodeEnv } from "./constants"
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
-let animationEngineInstance;
-if (typeof window !== 'undefined') {
-  animationEngineInstance = new AnimationEngine();
-}
+let animationEngineInstance: AnimationEngine | undefined
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
 
@@ -36,17 +34,33 @@ let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 // It prevents re-running the timeline loading logic during React Fast Refresh or re-renders.
 let areTimelinesLoaded = false;
 
+
+
 const createVXEngineStore = (props: VXEngineProviderProps) => {
-  const { mount, animations_json } = props;
+  const { 
+    mount, 
+    animations_json: diskUrl,
+    nodeEnv
+  } = props;
+
+  if (!nodeEnv) {
+    throw new Error("VXEngine: Missing required property 'nodeEnv'. Please provide the 'process.env.NODE_ENV'");
+  } else if (nodeEnv !== 'development' && nodeEnv !== 'production' && nodeEnv !== 'test') {
+    throw new TypeError(`Invalid value for 'nodeEnv': ${nodeEnv}. Expected 'development', 'production', or 'test'.`);
+  }
+
+  if (typeof window !== 'undefined' && !animationEngineInstance) {
+    animationEngineInstance = new AnimationEngine(nodeEnv);
+  }
 
   const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath;
-  setDiskFilePath(animations_json);
+  setDiskFilePath(diskUrl);
 
   // Ensure that timelines are loaded only once.
   // Without this flag, React Fast Refresh or component re-renders could repeatedly trigger
   // the `loadTimelines` function, leading to an infinite loop and unnecessary reinitializations.
   if (!areTimelinesLoaded) {
-    animationEngineInstance?.loadTimelines(animations_json);
+    animationEngineInstance?.loadTimelines(diskUrl);
     areTimelinesLoaded = true;  // Set the flag to true after the first load to prevent re-execution
   }
 
@@ -55,15 +69,22 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
     setMountCoreRenderer: (value) => set({ mountCoreRenderer: value }),
 
     composer: useRef<EffectComposer | null>(null),  
+    animationEngine: animationEngineInstance,
 
-    animationEngine: animationEngineInstance  
+    IS_DEVELOPMENT: nodeEnv === "development",
+    IS_PRODUCTION: nodeEnv === "production"
   }));
 
   return VXEngineStore;
 };
 
+
+
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
-  const { children, } = props;
+  const { children, nodeEnv } = props;
+
+  setNodeEnv(nodeEnv);
+  const IS_DEVELOPMENT = nodeEnv === "development"
 
   // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
@@ -72,10 +93,12 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
 
   useEffect(() => {
-    addBeforeUnloadListener()
+    if(IS_DEVELOPMENT)
+      addBeforeUnloadListener()
 
     return () => {
-      removeBeforeUnloadListener()
+      if(IS_DEVELOPMENT)
+        removeBeforeUnloadListener()
     }
   }, [])
 
@@ -88,8 +111,13 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   );
 });
 
+
+
 const VXEngineContent = ({children}: {children: React.ReactNode}) => {
   const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
+
+  const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT)
+
   return (
     <>
       <ClientOnly>
@@ -99,11 +127,13 @@ const VXEngineContent = ({children}: {children: React.ReactNode}) => {
           enableSystem
           disableTransitionOnChange
         >
-          <MenubarUI/>
-          <VXEngineCoreUI />
-          {showSyncPopup && (
-            <DataSyncPopup />
-          )}
+          {IS_DEVELOPMENT && <>
+            <MenubarUI/>
+            <VXEngineCoreUI />
+            {showSyncPopup && (
+              <DataSyncPopup />
+            )}
+          </>}
         </ThemeProvider>
       </ClientOnly>
       {children}

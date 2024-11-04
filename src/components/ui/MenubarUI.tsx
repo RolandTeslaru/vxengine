@@ -8,6 +8,7 @@ import { useVXObjectStore } from '../../vxobject/ObjectStore'
 import { Button } from '../shadcn/button'
 import { useVXEngine } from '@vxengine/engine'
 import { useVXUiStore } from './VXUIStore'
+import { invalidate } from '@react-three/fiber'
 
 export const MenubarUI = () => {
 
@@ -185,14 +186,7 @@ const SceneButton = () => {
         <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>Scene</p></MenubarTrigger>
             <MenubarContent>
-                <MenubarItem>
-                    New Tab <MenubarShortcut>⌘T</MenubarShortcut>
-                </MenubarItem>
-                <MenubarItem>New Window</MenubarItem>
-                <MenubarSeparator />
-                <MenubarItem>Share</MenubarItem>
-                <MenubarSeparator />
-                <MenubarItem>Print</MenubarItem>
+                <MenubarItem onClick={() => invalidate()}>Invalidate</MenubarItem>
             </MenubarContent>
         </MenubarMenu>
     )

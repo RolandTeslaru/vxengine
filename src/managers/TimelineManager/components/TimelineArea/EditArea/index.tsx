@@ -15,7 +15,7 @@ import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
 import { useRefStore } from '@vxengine/utils';
 
 export const EditArea = () => {
-  const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
+  const currentTimelineID = useAnimationEngineAPI(state => state.currentTimeline.id)
   const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
 
   const editorObjects = useTimelineEditorAPI(state => state.editorObjects);

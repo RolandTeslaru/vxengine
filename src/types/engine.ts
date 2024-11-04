@@ -11,6 +11,7 @@ export interface VXEngineProviderProps {
     children: React.ReactNode;
     mount?: boolean;
     animations_json: any;
+    nodeEnv: 'development' | 'production' | 'test';
 }
 
 export interface VXEngineStoreProps {
@@ -19,4 +20,7 @@ export interface VXEngineStoreProps {
 
     composer: React.MutableRefObject<EffectComposer | null>;
     animationEngine: AnimationEngine | null;
+
+    IS_DEVELOPMENT: boolean;
+    IS_PRODUCTION: boolean;
   }
