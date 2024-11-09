@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react';
-import { Square, ChevronLeft, ChevronRight } from '@geist-ui/icons';
+import Square from "@geist-ui/icons/square"
+import ChevronLeft from "@geist-ui/icons/chevronLeft"
+import ChevronRight from "@geist-ui/icons/chevronRight"
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 
@@ -13,6 +15,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
     const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
     const makePropertyTracked = useTimelineEditorAPI(state => state.makePropertyTracked)
+    const getKeyframesForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack);
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
     const keyframeKeysForTrack = useTimelineEditorAPI(state => state.tracks[propertyKey]?.keyframes)
@@ -20,7 +23,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     const keyframes = useTimelineEditorAPI(state => state.keyframes)
 
     const keyframesOnTrack = useMemo(() => {
-        return useTimelineEditorAPI.getState().getKeyframesForTrack(propertyKey);
+        return getKeyframesForTrack(propertyKey);
     }, [propertyKey, keyframeKeysForTrack, keyframes]);
 
     const isPropertyTracked = useMemo(() => {
@@ -32,7 +35,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
 
     const checkIfOnKeyframe = () => {
         if (propertyKey) {
-            const isCursorOnKeyframe = keyframesOnTrack.some((kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime);
+            const isCursorOnKeyframe = keyframesOnTrack.some(
+                (kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime
+            );
             setIsOnKeyframe(isCursorOnKeyframe);
         }
     };

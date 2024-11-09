@@ -1,91 +1,23 @@
-import { create } from 'zustand';
-import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
+import { START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
-import { IKeyframe, IStaticProps, ITimeline, ITrack, PathGroup, RawObjectProps, edObjectProps } from '@vxengine/AnimationEngine/types/track';
+import { IKeyframe, IStaticProps, ITrack, PathGroup, RawObjectProps } from '@vxengine/AnimationEngine/types/track';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { handleSetCursor } from './utils/handleSetCursor';
-import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
-import { useVXObjectStore, vx } from "@vxengine/vxobject";
 import { produce } from 'immer';
-import { computeGroupPathFromRawObject, computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { useObjectManagerAPI, useObjectPropertyAPI } from '../ObjectManager/store';
+import { computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
+import {  useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
-import { vxObjectProps } from '@vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
+import { useVXObjectStore } from '../ObjectManager';
+import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
-import { useRefStore } from '@vxengine/utils';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
 const DEBUG_REFRESHER = true;
 export const startLeft = 0;
 
-
-function processRawData(
-    rawObjects: RawObjectProps[]
-) {
-    const editorObjects: Record<string, EditorObjectProps> = {};
-    const tracks: Record<string, ITrack> = {};
-    const staticProps: Record<string, IStaticProps> = {};
-    const keyframes: Record<string, IKeyframe> = {};
-
-    // Create Records
-    rawObjects.forEach((rawObj) => {
-        const trackKeys: string[] = [];
-        const staticPropKeys: string[] = [];
-
-        // Create Track Record
-        rawObj.tracks.forEach((track) => {
-            const keyframeIds: string[] = [];
-            const trackKey = `${rawObj.vxkey}.${track.propertyPath}`;
-
-            // Create Keyframe Record
-            track.keyframes.forEach((kf) => {
-                const keyframeId = kf.id || `keyframe-${Date.now()}`;
-                const newKeyframe: IKeyframe = {
-                    id: keyframeId,
-                    vxkey: rawObj.vxkey,
-                    propertyPath: track.propertyPath,
-                    time: kf.time,
-                    value: kf.value,
-                    handles: kf.handles
-                }
-                keyframes[keyframeId] = newKeyframe
-                keyframeIds.push(keyframeId);
-            });
-
-            const newTrack: ITrack = {
-                keyframes: keyframeIds,
-                propertyPath: track.propertyPath,
-                vxkey: rawObj.vxkey,
-            };
-            trackKeys.push(trackKey);
-            tracks[trackKey] = newTrack;
-        });
-
-        // Create StaticProp Record 
-        rawObj.staticProps.forEach((prop) => {
-            const staticPropKey = `${rawObj.vxkey}.${prop.propertyPath}`;
-            staticPropKeys.push(staticPropKey);
-
-            const newStaticProp: IStaticProps = {
-                vxkey: rawObj.vxkey,
-                value: prop.value,
-                propertyPath: prop.propertyPath
-            };
-            staticProps[staticPropKey] = newStaticProp;
-        });
-
-        editorObjects[rawObj.vxkey] = {
-            vxkey: rawObj.vxkey,
-            trackKeys: trackKeys,
-            staticPropKeys: staticPropKeys,
-        };
-    });
-    const groupedPaths = computeGroupPaths(editorObjects)
-
-    return { editorObjects, tracks, staticProps, groupedPaths, keyframes };
-}
 
 function removeStaticPropLogic(state: TimelineEditorStoreProps, staticPropKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
@@ -187,12 +119,24 @@ function createTrackLogic(state: TimelineEditorStoreProps, trackKey: string, key
     state.tracks[trackKey] = newTrack;
 }
 
+
+
+
+
 export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
     staticProps: {},
     groupedPaths: {},
     keyframes: {},
+
+    currentTimelineLength: 0,
+    setCurrentTimelineLength: (length: number) => {
+        const currentTimeline = useAnimationEngineAPI.getState().currentTimeline
+        currentTimeline.length = length;
+
+        set({ currentTimelineLength: length })
+    },
 
     collapsedGroups: {},
     setCollapsedGroups: ( groupKey: string) => {
@@ -210,42 +154,32 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             staticProps,
             groupedPaths,
             keyframes,
-
         });
     },
 
     scale: 1,
+    setScale: (count) => set({ scale: count }),
+
     cursorTime: START_CURSOR_TIME,
-    width: Number.MAX_SAFE_INTEGER,
+    setCursorTime: (time: number) => set({ cursorTime: time }),
 
     activeTool: "mouse",
+    setActiveTool: (tool) => set({ activeTool: tool }),
+
     snap: true,
+    setSnap: (value) => set({ snap: value }),
+
+    searchQuery: "",
+    setSearchQuery: (query) => set({ searchQuery: query }),
 
     changes: 0,
-
-    clientHeight: 378,
-    clientWidth: 490,
-    scrollHeight: 270,
-
-    computeScrollLeft: (delta) => {
-        const scrollLeft = useRefStore.getState().scrollLeftRef.current
-        const data = scrollLeft + delta;
-
-        useRefStore.getState().scrollLeftRef.current = scrollLeft + delta
-    },
-
-    setScale: (count) => set({ scale: count }),
-    setWidth: (width) => set({ width }),
-
-    setActiveTool: (tool) => set({ activeTool: tool }),
-    setSnap: (value) => set({ snap: value }),
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
-    setCursorTime: (time: number) => set({ cursorTime: time }),
 
     selectedKeyframeKeys: [],
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
         state.selectedKeyframeKeys = keyframeKeys
     })),
+
     lastKeyframeSelectedIndex: null,
     setLastKeyframeSelectedIndex: (newIndex: number) => set({ lastKeyframeSelectedIndex: newIndex}),
 

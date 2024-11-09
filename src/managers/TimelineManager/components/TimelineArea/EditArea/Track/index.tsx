@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState, memo, useCallback } from 'react';
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserPixelToTime, parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
@@ -11,23 +11,24 @@ import KeyframeContextMenu from '../Keyframe/KeyframeContextMenu';
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
+    scale: number
 };
 
 const startLeft = 22
 
-const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
-    const keyframes = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
+const Track: FC<EditRowProps> = memo(({ trackKey, scale }) => {
+    const keyframeKeys = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
 
-    if (!keyframes) return
+    if (!keyframeKeys) return
     return (
         <div
             className='relative  py-4 border-y  border-neutral-900'
         >
             <ContextMenu>
-                {keyframes.map((keyframeKey: string, index: number) => {
+                {keyframeKeys.map((keyframeKey: string, index: number) => {
                     if (index === 0) return null;
 
-                    const firstKeyframeKey = keyframes[index - 1]
+                    const firstKeyframeKey = keyframeKeys[index - 1]
                     const secondKeyframeKey = keyframeKey
                     return (
                         <TrackSegment
@@ -43,12 +44,12 @@ const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
 
             {/* Render Keyframes */}
 
-            {keyframes.map((keyframeKey: string, index) => (
+            {keyframeKeys.map((keyframeKey: string, index) => (
                 <Keyframe
                     key={`keyframe-${keyframeKey}`}
                     track={useTimelineEditorAPI.getState().tracks[trackKey]}
                     keyframeKey={keyframeKey}
-                />  
+                />
             ))}
         </div>
     );
@@ -57,24 +58,28 @@ const Track: FC<EditRowProps> = React.memo(({ trackKey }) => {
 export default Track
 
 
-const TrackSegment = React.memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
+const TrackSegment = memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
     { firstKeyframeKey: string, secondKeyframeKey: string, trackKey: string }
 ) => {
-    const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey])
-    const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[secondKeyframeKey])
-    const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
-    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
-    const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
-    const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment)
+    const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey]);
+    const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[secondKeyframeKey]);
+    const isSelectedFromKeyframes = useTimelineEditorAPI(
+        state => state.selectedKeyframeKeys.includes(firstKeyframeKey) && state.selectedKeyframeKeys.includes(secondKeyframeKey)
+    );
+    const isSelectedFromTrackSegments = useTimelineEditorAPI(
+        state =>
+            state.selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey &&
+            state.selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
+    );
+    const scale = useTimelineEditorAPI(state => state.scale);
+    const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment);
+    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys);
 
-    const isSelectedFromKeyframes = selectedKeyframeKeys.includes(firstKeyframe.id) && selectedKeyframeKeys.includes(secondKeyframe.id)
-    const isSelectedFromTrackSegments = selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey && selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
 
     // When deleting a keyframe an issue appeasr with the endX where it cant read 
     // the time on the secondKeyframe becuase its deleted
     if (!firstKeyframe || !secondKeyframe) return
 
-    const scale = useTimelineEditorAPI(state => state.scale)
 
     const [startX, endX] = useMemo(() => {
         const startX = parserTimeToPixel(firstKeyframe.time, startLeft)
@@ -83,7 +88,7 @@ const TrackSegment = React.memo(({ firstKeyframeKey, secondKeyframeKey, trackKey
         return [startX, endX];
     }, [scale, firstKeyframe.time, secondKeyframe.time]);
 
-    const handleOnDrag = (data: { left: number, lastLeft: number }) => {
+    const handleOnDrag = useCallback((data: { left: number, lastLeft: number }) => {
         const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime
 
         const newTime = parserPixelToTime(data.left, startLeft)
@@ -98,12 +103,12 @@ const TrackSegment = React.memo(({ firstKeyframeKey, secondKeyframeKey, trackKey
 
         setKeyframeTime(firstKeyframeKey, parseFloat(newFirstKeyframeTime.toFixed(4)))
         setKeyframeTime(secondKeyframeKey, parseFloat(newSecondKeyframeTime.toFixed(4)))
-    }
+    }, [])
 
-    const handleOnClick = () => {
+    const handleOnClick = useCallback(() => {
         setSelectedKeyframeKeys([firstKeyframe.id, secondKeyframe.id])
         setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
-    }
+    }, [])
 
     return (
         <ContextMenuTrigger>

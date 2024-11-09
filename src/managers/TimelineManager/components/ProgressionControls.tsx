@@ -1,5 +1,11 @@
 import React from "react";
-import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
+
+import PlayFill from "@geist-ui/icons/playFill"
+import PauseFill from "@geist-ui/icons/pauseFill"
+import Square from "@geist-ui/icons/square"
+import SkipBack from "@geist-ui/icons/skipBack"
+import SkipForward from "@geist-ui/icons/skipForward"
+
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useVXEngine } from "@vxengine/engine";
 import TimeRender from "./TimeRender";

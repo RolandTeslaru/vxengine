@@ -28,8 +28,6 @@ export const vx = {
     environmentMap: VXEnvironmentMap
 };
 
-export { useVXObjectStore } from "./ObjectStore"
-
 // Same as vx namespace but an be used with theatrejs and also save to VXStore
 const vxe = {
 

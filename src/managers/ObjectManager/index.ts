@@ -6,4 +6,6 @@
 
 export { ObjectManagerDriver } from "./driver"
 export { ObjectManagerUI } from "./ui"
-export { useObjectManagerAPI } from "./store"
+export { useObjectManagerAPI } from "./stores/managerStore"
+export { useObjectSettingsAPI } from "./stores/settingsStore"
+export { useVXObjectStore } from "./stores/objectStore"

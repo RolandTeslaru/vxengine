@@ -1,6 +1,6 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
 import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { GroupedPaths } from "../store";
 
 export interface TimelineEditorStoreProps {
@@ -9,6 +9,9 @@ export interface TimelineEditorStoreProps {
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
     keyframes: Record<string, IKeyframe>
+
+    currentTimelineLength: number;
+    setCurrentTimelineLength: (length: number) => void;
 
     groupedPaths: GroupedPaths
 
@@ -19,8 +22,6 @@ export interface TimelineEditorStoreProps {
     setScale: (count: number) => void;
     cursorTime: number;
     setCursorTime: (time: number) => void;
-    width: number;
-    setWidth: (width: number) => void;
     activeTool: string;
     setActiveTool: (tool: string) => void;
     snap: boolean;
@@ -29,14 +30,11 @@ export interface TimelineEditorStoreProps {
     changes: number
     addChange: () => void
 
-    computeScrollLeft: (delta: number) => void;
+    searchQuery: string
+    setSearchQuery: (query: string) => void
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
     
-    clientWidth: number;
-    clientHeight: number;
-    scrollHeight: number;
-
     selectedKeyframeKeys: string[];
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;
 

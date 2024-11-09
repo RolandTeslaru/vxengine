@@ -4,14 +4,13 @@ import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallbac
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
-import { useVXObjectStore } from "../ObjectStore";
+import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
 
 import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
-import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent";
 import { getNodeEnv } from "@vxengine/constants";
 
 declare module 'three' {

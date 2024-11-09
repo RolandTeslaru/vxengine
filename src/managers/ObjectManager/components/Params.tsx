@@ -1,11 +1,10 @@
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import PropInput from '@vxengine/components/ui/PropInput'
-import { useVXObjectStore } from '@vxengine/vxobject'
 import React from 'react'
 import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
-import { vxObjectProps } from '@vxengine/types/objectStore'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 
 interface Props {
     vxobject: vxObjectProps

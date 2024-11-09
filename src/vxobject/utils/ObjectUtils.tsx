@@ -2,15 +2,14 @@
 
 import { ReactThreeFiber } from '@react-three/fiber'
 import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager'
-import { vxObjectProps } from '@vxengine/types/objectStore'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import React, { isValidElement, useEffect, useMemo } from 'react'
-import { useObjectSettingsAPI } from '../ObjectSettingsStore'
-import { Edges } from '@react-three/drei'
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import Spline from '@vxengine/managers/SplineManager/Spline'
 import PositionPath from './positionPath'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store'
-import { useVXObjectStore } from '../ObjectStore'
+import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { getVXEngineState } from '@vxengine/engine'
 import * as THREE from "three"
 

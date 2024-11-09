@@ -3,10 +3,10 @@
 import { TransformControls, useCamera } from "@react-three/drei";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "./store";
+import { useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/types/objectStore";
+import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 
 export const ObjectManagerDriver = () => {

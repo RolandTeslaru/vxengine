@@ -1,12 +1,12 @@
 'use client'
 
 import React, { memo, forwardRef, useEffect } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
-
 import { DirectionalLight } from "three";
 import { DirectionalLightProps } from "@react-three/fiber";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+
 export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLightProps> & {
     ref?: React.Ref<DirectionalLight>;
     settings?: {}

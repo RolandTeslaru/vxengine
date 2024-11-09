@@ -13,3 +13,6 @@ export { VXEngineCoreRenderer } from "./core"
 export { vx } from "./vxobject"
 
 export { useAnimationEngineAPI } from "./AnimationEngine/store"
+
+export { useCameraManagerAPI } from "./managers/CameraManager"
+export { useVXObjectStore } from "./managers/ObjectManager/stores/objectStore"

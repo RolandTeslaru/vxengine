@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react'
-import { useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store'
+import { useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { getNestedProperty, setNestedProperty } from '@vxengine/utils/nestedProperty'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/types/objectStore';
+import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 
 interface Props extends InputProps {

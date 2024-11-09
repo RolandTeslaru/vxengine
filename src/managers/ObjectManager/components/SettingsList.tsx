@@ -1,9 +1,8 @@
 import React from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
-import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore'
 import { Switch } from '@vxengine/components/shadcn/switch'
-import { useObjectManagerAPI } from '..'
-import { vxObjectProps } from '@vxengine/types/objectStore'
+import { useObjectSettingsAPI } from '..'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 
 const excludeSettingsKeys = [
     "useSplinePath",

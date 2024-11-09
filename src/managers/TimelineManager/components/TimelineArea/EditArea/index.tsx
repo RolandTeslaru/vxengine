@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ITrack, edObjectProps, PathGroup, IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/store';
@@ -13,21 +13,29 @@ import { CursorLine } from '../cursor';
 import { Virtuoso, Components } from 'react-virtuoso';
 import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
 import { useRefStore } from '@vxengine/utils';
+import { GroupedPaths } from '@vxengine/managers/TimelineManager/store';
 
 export const EditArea = () => {
-  const currentTimelineID = useAnimationEngineAPI(state => state.currentTimeline.id)
-  const timelineLength = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.length)
-
+  const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength);
   const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
   const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
-
   const scale = useTimelineEditorAPI(state => state.scale)
+  const searchQuery = useTimelineEditorAPI(state => state.searchQuery);
 
   const editAreaRef = useRefStore(state => state.editAreaRef);
   const trackListRef = useRefStore(state => state.trackListRef)
 
-  const { dragLineData } = useDragLine();
+  // Filtered paths based on the search query
+  const filteredGroupedPaths: GroupedPaths = useMemo(() => {
+    if (!searchQuery) return groupedPaths;
 
+    return Object.entries(groupedPaths).reduce((filteredPaths, [key, group]) => {
+      if (key && key.toLowerCase().includes(searchQuery.toLowerCase()))
+        filteredPaths[key] = group;
+      
+      return filteredPaths;
+    }, {});
+  }, [groupedPaths, searchQuery]);
 
   const startLeft = 22
 
@@ -37,15 +45,14 @@ export const EditArea = () => {
     const fillRows = ({ key, group }: { key: string, group: PathGroup }) => {
       const { rowIndex, trackKey } = group;
 
-      if (rowIndex !== undefined)
-        allRows[rowIndex] = trackKey
+      if (rowIndex !== undefined) allRows[rowIndex] = trackKey
 
       Object.entries(group.children).forEach(([key, group]) => fillRows({ key, group }));
     };
 
-    Object.entries(groupedPaths).forEach(([key, group]) => fillRows({ key, group }));
-    return allRows;
-  }, [editorObjects]);
+    Object.entries(filteredGroupedPaths).forEach(([key, group]) => fillRows({ key, group }));
+    return allRows.filter(item => item !== undefined);
+  }, [editorObjects, filteredGroupedPaths]);
 
   const renderRow = (index: number) => {
     const track = verticalRowList[index];
@@ -53,6 +60,7 @@ export const EditArea = () => {
       return (
         <Track
           trackKey={track}
+          scale={scale}
         />
       );
     }
@@ -72,7 +80,7 @@ export const EditArea = () => {
     }
   }
 
-  const timelineClientWidth = timelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
+  const timelineClientWidth = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
 
   const rows = verticalRowList.length;
 

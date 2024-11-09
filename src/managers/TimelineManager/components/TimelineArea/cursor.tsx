@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from '../../utils/cursorHandlers';
 import { RowDnd } from './EditArea/RowDnd';
+import { useTimelineEditorAPI } from '../..';
 
 export const CursorLine = () => {
   const cursorLineRef = useRefStore(state => state.cursorLineRef)
-  const left = parserTimeToPixel(0, cursorStartLeft)
+  const left = useMemo(() => parserTimeToPixel(0, cursorStartLeft), [])
+
+  const scale = useTimelineEditorAPI(state => state.scale);
+
+  useEffect(() => {
+    const cursorTime = useTimelineEditorAPI.getState().cursorTime;
+    const newLeft = parserTimeToPixel(cursorTime, cursorStartLeft);
+
+    cursorLineRef.current.updateLeft(newLeft);
+  }, [scale])
 
   return (
       <RowDnd
@@ -32,7 +42,16 @@ export const CursorLine = () => {
 
 export const CursorThumb = () => {
   const cursorThumbRef = useRefStore(state => state.cursorThumbRef)
-  const left = parserTimeToPixel(0, cursorStartLeft)
+  const left = useMemo(() => parserTimeToPixel(0, cursorStartLeft), [])
+
+  const scale = useTimelineEditorAPI(state => state.scale);
+
+  useEffect(() => {
+    const cursorTime = useTimelineEditorAPI.getState().cursorTime;
+    const newLeft = parserTimeToPixel(cursorTime, cursorStartLeft);
+
+    cursorThumbRef.current.updateLeft(newLeft);
+  }, [scale])
 
   return (
       <RowDnd

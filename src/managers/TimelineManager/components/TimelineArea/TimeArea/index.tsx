@@ -14,29 +14,23 @@ const maxScaleCount = 100;
 export const TimeArea = () => {
   const scale = useTimelineEditorAPI((state) => state.scale);
 
-  const currentTimelineID = useAnimationEngineAPI(
-    (state) => state.currentTimelineID
-  );
-  const timelineLength = useAnimationEngineAPI(
-    (state) => state.timelines[currentTimelineID]?.length
-  );
+  const currentTimelineLength = useTimelineEditorAPI((state) => state.currentTimelineLength);
 
-  
   const startLeft = 20;
-  const timelineClientWidth = startLeft + timelineLength * ONE_SECOND_UNIT_WIDTH / scale
+  const timelineClientWidth = startLeft + currentTimelineLength * ONE_SECOND_UNIT_WIDTH / scale
   
   const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
-  const totalUnits = OneSecondUnitSplitCount * timelineLength;
+  const totalUnits = OneSecondUnitSplitCount * currentTimelineLength;
 
   const handleOnClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = e.clientX - rect.x;
 
     const scrollLeft = useRefStore.getState().scrollLeftRef.current
-    const left = Math.max(position + scrollLeft, startLeft);
+    const left = Math.max(position, startLeft);
     if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + startLeft - scrollLeft) return;
 
-    const time = parserPixelToTime(left - scrollLeft, startLeft);
+    const time = parserPixelToTime(left, startLeft);
     handleSetCursor({ time });
   };
 

@@ -21,8 +21,13 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     setShowSyncPopup: (value: boolean) => set({ showSyncPopup: value }),
 
     saveDataToDisk: async () => {
-        if (DEBUG) console.log("VXEngine SourceManager: Saving data to disk");
+        const showSyncPopup = get().showSyncPopup; 
+
+        if(showSyncPopup) return;
+
         if(PAUSED_DISK_SAVING) return;
+
+        if (DEBUG) console.log("VXEngine SourceManager: Saving data to disk");
 
         const timelines = useAnimationEngineAPI.getState().timelines
         try {
@@ -43,6 +48,9 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         }
     },
     saveDataToLocalStorage: debounce(() => {
+        const showSyncPopup = get().showSyncPopup; 
+        if(showSyncPopup) return;
+
         if (DEBUG) console.log("VXEngine SourceManager: Saving Data To LocalStorage")
 
         const timelines = useAnimationEngineAPI.getState().timelines

@@ -6,14 +6,14 @@
 
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
-import { useVXObjectStore } from "@vxengine/vxobject";
-import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
+import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
+import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, useFrame } from '@react-three/fiber';
-import { vxObjectProps, vxObjectTypes } from "@vxengine/types/objectStore";
+import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/types/objectStore";
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
-import { useObjectSettingsAPI } from "./ObjectSettingsStore";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 
 export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;

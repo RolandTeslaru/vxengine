@@ -25,6 +25,7 @@ import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
 import { MenubarUI } from "@vxengine/components/ui/MenubarUI"
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
+import { useRefStore } from "@vxengine/utils"
 
 export const CoreUI = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
@@ -38,7 +39,6 @@ export const CoreUI = () => {
 
             <BottomRightBar />
 
-            <FrequentStateVisualizer />
             <StateVisualizer />
             <CameraManagerUI />
 
@@ -191,6 +191,7 @@ const BottomRightBar = () => {
 
 
 const FrequentStateVisualizer = () => {
+    const scrollLeft = useRefStore(state => state.scrollLeftRef.current);
     return (
         <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
                             gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">

@@ -2,15 +2,15 @@
 
 import { ThreeEvent } from '@react-three/fiber';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useObjectManagerAPI } from '../../ObjectManager';
+import { useObjectManagerAPI, useVXObjectStore } from '../../ObjectManager';
 import { useSplineManagerAPI } from '../store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '../../TimelineManager/store';
 import { useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
-import { useVXObjectStore } from '@vxengine/vxobject';
-import { vxObjectProps } from '@vxengine/types/objectStore';
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 export interface SplineKeyframeNode {
     splineKey: string,

@@ -7,16 +7,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as THREE from "three"
 import { createPortal } from 'react-dom'
-import { ChevronRight, Move } from '@geist-ui/icons'
-import { RefreshCcw } from '@geist-ui/icons'
+import Move from "@geist-ui/icons/move"
+import RefreshCcw from "@geist-ui/icons/refreshCcw"
 import { motion, AnimatePresence } from "framer-motion"
-import { useObjectManagerAPI, useObjectPropertyAPI } from './store'
+import { useObjectManagerAPI, useObjectPropertyAPI } from './stores/managerStore'
 import { TransformProperties } from './components/TransformProperties'
 import { GeometryProperties } from './components/GeometryProperties'
 import ObjectList from './components/ObjectList'
 import MaterialProperties from './components/MaterialProperties'
 import NodeTransformProperties from './components/NodeTransformProperties'
-import { vxObjectProps } from '@vxengine/types/objectStore'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 
 export const ObjectManagerUI = () => {
   const listMountOnId = 'VXEngineLeftPanel'

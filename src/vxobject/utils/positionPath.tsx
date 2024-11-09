@@ -4,7 +4,7 @@ import React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"
 import { IKeyframe } from "@vxengine/AnimationEngine/types/track";
-import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
+import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { shallow } from "zustand/shallow";
 import KeyframeNode from "./keyframeNode";

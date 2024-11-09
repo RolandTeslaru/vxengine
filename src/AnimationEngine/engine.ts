@@ -6,17 +6,17 @@
 
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
-import { vxObjectProps } from '@vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
 import { IKeyframe, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
-import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/store';
+import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore';
+import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 
 import wasmUrl from "../wasm/pkg/rust_bg.wasm"
@@ -128,8 +128,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     // Set the states in the store
-    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
     useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
+    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
 
     this._currentTimeline = selectedTimeline;
 
@@ -146,6 +146,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Set the editor data
     useTimelineEditorAPI.getState().setEditorData(objects);
+    useTimelineEditorAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
   }
 
 
@@ -1368,10 +1369,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+
+
+
+
+
+
   static truncateToDecimals(num: number, decimals: number): number {
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;
   }
+
+
+
+
+
 
   /**
    * Validates and corrects the precision of values in the given timelines.

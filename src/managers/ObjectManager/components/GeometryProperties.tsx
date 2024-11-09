@@ -1,11 +1,6 @@
-import { motion } from "framer-motion";
 import React, { useState } from "react";
-import { useEffect } from "react";
-import { ChevronRight } from "@geist-ui/icons";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
 import PropInput from "@vxengine/components/ui/PropInput";
-import { shallow } from "zustand/shallow";
 
 import * as THREE from "three"
 

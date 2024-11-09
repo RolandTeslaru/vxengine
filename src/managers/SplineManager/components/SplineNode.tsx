@@ -2,12 +2,11 @@
 
 // import { Html } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
-import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager';
+import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSplineManagerAPI } from '../store';
 import { Html } from '@react-three/drei';
-import { vxObjectProps } from '@vxengine/types/objectStore';
-import { useVXObjectStore } from '@vxengine/vxobject';
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 export interface SplineNodeProps {
     splineKey: string;

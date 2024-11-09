@@ -2,10 +2,12 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useEffect, useRef, useState } from 'react'
-import { RefreshCcw, PlayFill, PauseFill, Square, ChevronRight, Navigation2, SkipBack, SkipForward, ChevronLeft } from "@geist-ui/icons"
-import { AnimatePresence, motion, useTime } from "framer-motion"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
+import React from 'react'
+import ChevronRight from "@geist-ui/icons/chevronRight"
+import Navigation2 from "@geist-ui/icons/navigation2"
+
+import { AnimatePresence, motion } from "framer-motion"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
 import { Slider } from '@vxengine/components/shadcn/slider';
 import { Switch } from '@vxengine/components/shadcn/switch';
 import { useVXEngine } from '@vxengine/engine';
@@ -108,7 +110,12 @@ const TimelineEditorFooter = () => {
 
     const open = useVXUiStore(state => state.timelineEditorOpen)
 
-    const timelineLength = useAnimationEngineAPI(state => state.currentTimeline.length)
+    const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
+    const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
+    const handleTimelineLengthChange = (e: any) => {
+        const value = e.target.value;
+        setCurrentTimelineLength(value);
+    }
 
     return (
         <AnimatePresence>
@@ -121,13 +128,17 @@ const TimelineEditorFooter = () => {
                     <ScaleSlider />
                     <div className='flex flex-row gap-2'>
                         <p className='text-xs h-auto my-auto'>Snap</p>
-                        <Switch onClick={() => setSnap(!snap)} checked={snap} className='my-auto scale-75' />
+                        <Switch 
+                            className='my-auto scale-75' 
+                            onClick={() => setSnap(!snap)} 
+                            checked={snap} 
+                        />
                     </div>
                     <div className='flex flex-row h-fit text-xs gap-2'>
                         <p className='h-auto my-auto'>length</p>
                         <Input className='p-1 text-xs my-auto h-fit w-16'
-                            value={timelineLength}
-                            // onChange={handleLengthInputChange}
+                            value={currentTimelineLength}
+                            onChange={handleTimelineLengthChange}
                             type='number'
                         ></Input>
                     </div>
@@ -159,17 +170,21 @@ const ScaleSlider = () => {
 }
 
 export const TimelineSelect = () => {
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimeline.id)
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID);
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
     const animationEngine = useVXEngine(state => state.animationEngine)
+
+    console.log("CURRENT TIMELINE ID ", currentTimelineID)
 
     return (
         <Select
             defaultValue={currentTimelineID}
             onValueChange={(value) => {
                 animationEngine.setCurrentTimeline(value)
-            }}>
+            }}
+            value={currentTimelineID}
+        >
             <SelectTrigger className="w-[180px] h-7 my-auto">
                 <SelectValue placeholder="Select a Timeline" />
             </SelectTrigger>

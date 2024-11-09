@@ -1,4 +1,4 @@
-import { vxObjectProps } from "./objectStore";
+import { vxObjectProps } from "../managers/ObjectManager/types/objectStore";
 
 export interface ObjectEditorStoreProps {
     transformMode: "translate" | "rotate" | "scale";

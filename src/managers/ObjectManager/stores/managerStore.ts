@@ -2,12 +2,12 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import { useVXObjectStore } from "@vxengine/vxobject";
 import { ObjectEditorStoreProps } from '@vxengine/types/objectEditorStore';
-import { vxObjectProps } from '@vxengine/types/objectStore';
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
+import { useVXObjectStore } from './objectStore';
 
 const selectObjects = (state: ObjectEditorStoreProps, vxkeys: string[]): ObjectEditorStoreProps => {
     const objects = useVXObjectStore.getState().objects

@@ -2,11 +2,12 @@ import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } 
 import { IKeyframe, ITrack } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, memo, useCallback } from 'react'
 import KeyframeContextMenu from './KeyframeContextMenu';
 import { RowDnd } from '../RowDnd';
 import { DEFAULT_ROW_HEIGHT } from '@vxengine/AnimationEngine/interface/const';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
+import { shallow } from 'zustand/shallow';
 
 
 export type EditKeyframeProps = {
@@ -14,7 +15,7 @@ export type EditKeyframeProps = {
     keyframeKey: string;
 };
 
-const Keyframe: React.FC<EditKeyframeProps> = ({
+const Keyframe: React.FC<EditKeyframeProps> = memo(({
     keyframeKey,
     track,
 }) => {
@@ -24,10 +25,12 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
 
     const scale = useTimelineEditorAPI(state => state.scale)
     const snap = useTimelineEditorAPI(state => state.snap)
-    const selectedKeyframeKeys = useTimelineEditorAPI(state => state.selectedKeyframeKeys)
     const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys)
-    const lastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.lastKeyframeSelectedIndex)
     const setLastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.setLastKeyframeSelectedIndex)
+    const isSelected = useTimelineEditorAPI(
+        state => state.selectedKeyframeKeys.includes(keyframeKey),
+        shallow
+    );
 
     const startLeft = 12.5;
     const [left, setLeft] = useState(() => {
@@ -39,7 +42,9 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
     }, [keyframe.time, startLeft, scale]);
 
 
-    const handleOnDrag = (data: { left: number, lastLeft: number }) => {
+    const handleOnDrag = useCallback((data: { left: number, lastLeft: number }) => {
+        const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys;
+
         if (selectedKeyframeKeys.length == 0)
             setSelectedKeyframeKeys([keyframeKey])
         // Single Keyframe Drag
@@ -61,12 +66,13 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
                 }
             })
         }
-    }
+    }, [])
 
-    const handleOnClick = (event: React.MouseEvent) => {
+    const handleOnClick = useCallback((event: React.MouseEvent) => {
         event.preventDefault();
 
         const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys;
+        const lastKeyframeSelectedIndex = useTimelineEditorAPI.getState().lastKeyframeSelectedIndex;
 
         // Get the keyframe index from the keyframes object ( this is done here because of rerender)
         const keyframes = useTimelineEditorAPI.getState().keyframes;
@@ -96,7 +102,7 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
         }
 
         setLastKeyframeSelectedIndex(keyframeIndex)
-    }
+    }, [])
 
     return (
         <RowDnd
@@ -116,7 +122,7 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
         >
             <div
                 className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600
-                    ${selectedKeyframeKeys.includes(keyframe.id) && "!fill-yellow-300"} `
+                    ${isSelected && "!fill-yellow-300"} `
                 }
                 style={{
                     left: `${left}px`,
@@ -141,6 +147,6 @@ const Keyframe: React.FC<EditKeyframeProps> = ({
             </div>
         </RowDnd>
     );
-}
+})
 
 export default Keyframe

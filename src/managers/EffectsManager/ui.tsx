@@ -1,8 +1,8 @@
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
-import { useVXObjectStore } from '@vxengine/vxobject'
+import { useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import React from 'react'
 import { useObjectManagerAPI } from '../ObjectManager'
-import { vxObjectProps } from '@vxengine/types/objectStore'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 
 export const EffectsManagerUI = React.memo(() => {
   const vxobjects = useVXObjectStore(state => state.objects)

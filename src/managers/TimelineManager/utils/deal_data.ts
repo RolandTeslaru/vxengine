@@ -17,9 +17,9 @@ export function parserPixelToTime(
   data: number,
   startLeft: number
 ) {
-  const scale = useTimelineEditorAPI.getState().scale
-
-  return ((data - startLeft) / ONE_SECOND_UNIT_WIDTH) * scale;
+  const scale = useTimelineEditorAPI.getState().scale  
+  const value = ((data - startLeft) / ONE_SECOND_UNIT_WIDTH) * scale;
+  return value;
 }
 
 /** 位置 + 宽度 转 start + end */

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
-import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { useObjectSettingsAPI } from "../stores/settingsStore";
 
 interface Props {
     vxobject: vxObjectProps

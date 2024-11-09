@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react'
-import { useObjectManagerAPI, useObjectPropertyAPI } from '../store';
-import { shallow } from 'zustand/shallow';
 import * as THREE from "three"
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel';
 

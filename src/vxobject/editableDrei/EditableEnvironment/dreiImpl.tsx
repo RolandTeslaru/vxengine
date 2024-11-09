@@ -1,14 +1,12 @@
-import React, { useMemo, useLayoutEffect, DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES, useEffect } from "react"
-import { useThree, createPortal, useFrame, extend, Object3DNode, Euler, applyProps, invalidate } from '@react-three/fiber'
+import React, { useMemo, useLayoutEffect, useEffect } from "react"
+import { useThree, createPortal, extend, Object3DNode, Euler, applyProps, invalidate } from '@react-three/fiber'
 import { WebGLCubeRenderTarget, Texture, Scene, CubeCamera, HalfFloatType, CubeTexture } from 'three'
 import { GroundProjectedEnv as GroundProjectedEnvImpl } from 'three-stdlib'
 import { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import { EnvironmentLoaderProps, useEnvironment } from '@react-three/drei'
 import * as THREE from "three"
 import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
-import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils"
-import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore"
-import { useVXObjectStore } from "@vxengine/vxobject/ObjectStore"
+import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils/useTransformControlsEvent"
 
 export type EnvironmentProps = {
   children?: React.ReactNode

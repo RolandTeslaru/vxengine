@@ -1,5 +1,4 @@
-import { ChevronRight } from '@geist-ui/icons'
-import { motion } from "framer-motion";
+import ChevronRight from "@geist-ui/icons/chevronRight"
 import React, { useState } from 'react'
 import styles from "./styles.module.scss"
 

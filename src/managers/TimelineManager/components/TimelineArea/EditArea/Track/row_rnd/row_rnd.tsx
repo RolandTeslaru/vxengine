@@ -7,6 +7,7 @@ import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } fr
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useAutoScroll } from '../../RowDnd/hooks/useAutoScroll';
+import { computeScrollLeft } from '@vxengine/managers/TimelineManager/utils/computeScrollLeft';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -35,7 +36,6 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     },
     ref,
   ) => {
-    const computeScrollLeft = useTimelineEditorAPI(state => state.computeScrollLeft)
     const interactable = useRef<Interactable>();
     const deltaX = useRef(0);
     const isAdsorption = useRef(false);

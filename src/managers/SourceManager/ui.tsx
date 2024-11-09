@@ -41,9 +41,7 @@ export const DataSyncPopup = () => {
     const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData);
     const setShowSyncPopup = useSourceManagerAPI(state => state.setShowSyncPopup)
 
-    const localStorageData = useMemo(() => {
-        return JSON.parse(localStorage.getItem("timelines"))
-    }, [])
+    const localStorageData = useMemo(() => JSON.parse(localStorage.getItem("timelines")), [])
 
     const diskDataElementRef = useRef();
     const lsDataElementRef = useRef();

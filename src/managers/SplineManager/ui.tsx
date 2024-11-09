@@ -1,16 +1,13 @@
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useSplineManagerAPI } from './store'
-import { useObjectManagerAPI } from '../ObjectManager'
-import { useObjectSettingsAPI } from '@vxengine/vxobject/ObjectSettingsStore'
+import { useObjectManagerAPI, useObjectSettingsAPI, useVXObjectStore } from '../ObjectManager'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
-import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
-import styles from "./styles.module.scss"
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
-import { useVXObjectStore } from '@vxengine/vxobject'
-import { useTimelineEditorAPI } from '../TimelineManager'
+import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
 
+import styles from "./styles.module.scss"
 
 const SplineManagerUI = () => {
   const selectedSpline = useSplineManagerAPI(state => state.selectedSpline)

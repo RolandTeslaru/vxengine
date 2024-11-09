@@ -4,12 +4,12 @@
 import { ThreeEvent } from "@react-three/fiber";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { useRef } from "react";
-import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/store";
+import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import * as THREE from "three"
 import { Html } from "@react-three/drei";
-import { useVXObjectStore } from "../ObjectStore";
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
+import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];

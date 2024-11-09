@@ -11,7 +11,7 @@ import { extractVxKeyFromSplineKey } from './components/utils';
 import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
-import { useObjectPropertyAPI } from '../ObjectManager/store';
+import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>

@@ -5,12 +5,12 @@ import { Lightformer, LightProps, useHelper } from "@react-three/drei";
 import { createPortal as createR3FPortal } from "@react-three/fiber";
 import { EditableObjectProps } from "../types";
 import VXEntityWrapper from "../entityWrapper";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { BoxHelper } from "three";
 import * as THREE from "three"
 import VXVirtualEntityWrapper from "../virtualEntityWrapper";
 import { useThree } from "@react-three/fiber";
-import { useVXObjectStore } from "../ObjectStore";
+import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 
 export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     ref?: React.Ref<LightProps>;

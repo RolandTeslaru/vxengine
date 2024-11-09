@@ -1,7 +1,7 @@
 'use client'
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditableObjectProps } from "../types"
 
 import { PointLightHelper } from "three";

@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "../store";
+import { useObjectManagerAPI, useObjectPropertyAPI } from "../stores/managerStore";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
-import { useObjectSettingsAPI } from "@vxengine/vxobject/ObjectSettingsStore";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { useObjectSettingsAPI } from "../stores/settingsStore";
 
 interface Props {
     vxobject: vxObjectProps

@@ -5,9 +5,7 @@
 import { create } from 'zustand';
 import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
-import { getVXEngineState, useVXEngine } from '@vxengine/engine';
+import { getVXEngineState } from '@vxengine/engine';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>

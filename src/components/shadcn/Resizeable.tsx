@@ -1,6 +1,6 @@
 "use client"
 import React from "react"
-import { GripVertical } from "lucide-react"
+import GripVertical from "lucide-react/dist/esm/icons/grip-vertical"
 import * as ResizablePrimitive from "react-resizable-panels"
 
 import { cn } from "@vxengine/utils"

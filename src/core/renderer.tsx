@@ -16,7 +16,7 @@ import { Stats } from '@react-three/drei'
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
-import { useVXObjectStore, vx } from '../vxobject'
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import CameraManagerDriver from '../managers/CameraManager/driver'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useCameraManagerAPI } from '@vxengine/managers/CameraManager/store'
@@ -34,6 +34,7 @@ VXEngineUtils = require('../utils/rendererUtils.tsx').default;
 import { CanvasProps } from "@react-three/fiber";
 import { getNodeEnv } from '@vxengine/constants'
 import { ObjectManagerDriver } from '@vxengine/managers/ObjectManager'
+import { vx } from '@vxengine/vxobject'
 
 export interface RendererCoreProps {
     canvasProps?: CanvasProps;

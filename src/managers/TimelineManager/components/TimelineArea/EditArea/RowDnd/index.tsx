@@ -7,6 +7,7 @@ import { useRefStore } from '@vxengine/utils/useRefStore';
 import { Direction, RowRndApi, RowRndProps } from './row_rnd_interface';
 import { InteractComp } from './interactable';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { computeScrollLeft } from '@vxengine/managers/TimelineManager/utils/computeScrollLeft';
 
 export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
   (
@@ -35,7 +36,6 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     },
     ref,
   ) => {
-    const computeScrollLeft = useTimelineEditorAPI(state => state.computeScrollLeft)
     const interactable = useRef<Interactable>();
     const deltaX = useRef(0);
     const isAdsorption = useRef(false);

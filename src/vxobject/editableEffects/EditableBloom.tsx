@@ -1,15 +1,15 @@
 'use client'
 
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
-import { useObjectSettingsAPI } from "../ObjectSettingsStore";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useAnimationEngineAPI } from "../../AnimationEngine";
 import { EditableObjectProps } from "../types";
-import { useVXObjectStore } from "../ObjectStore";
+import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 
 import { SelectiveBloomProps } from "@react-three/postprocessing";
 import { Bloom } from "@react-three/postprocessing";
 import { BloomEffect } from "postprocessing";
-import { vxObjectProps } from "@vxengine/types/objectStore";
+import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { useVXEngine } from "@vxengine/engine";
 

@@ -3,11 +3,9 @@
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
-import { vxObjectProps } from '@vxengine/types/objectStore'
-import { useVXObjectStore } from '../ObjectStore'
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { useVXEngine } from '@vxengine/engine'
-import { useFrame } from '@react-three/fiber'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
