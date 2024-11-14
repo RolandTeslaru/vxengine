@@ -1,6 +1,6 @@
 import { Interactable } from '@interactjs/core/Interactable';
 import { DragEvent, ResizeEvent } from '@interactjs/types/index';
-import React, { ReactElement, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { ReactElement, useCallback, useEffect, useImperativeHandle, useRef, forwardRef, memo } from 'react';
 import { useAutoScroll } from './hooks/useAutoScroll';
 import { DEFAULT_ADSORPTION_DISTANCE, DEFAULT_MOVE_GRID, DEFAULT_START_LEFT } from '@vxengine/AnimationEngine/interface/const';
 import { useRefStore } from '@vxengine/utils/useRefStore';
@@ -9,7 +9,7 @@ import { InteractComp } from './interactable';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { computeScrollLeft } from '@vxengine/managers/TimelineManager/utils/computeScrollLeft';
 
-export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
+export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
   (
     {
       children,
@@ -53,7 +53,7 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       updateWidth: (width) => handleUpdateWidth(width, false),
       getLeft: handleGetLeft,
       getWidth: handleGetWidth,
-    }));
+    }), []);
 
     useEffect(() => {
       const target = interactable.current.target as HTMLElement;
@@ -89,12 +89,12 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     //#endregion
 
     //#region [rgba(188,188,120,0.05)] 回调api
-    const handleMoveStart = (e: DragEvent) => {
+    const handleMoveStart = useCallback((e: DragEvent) => {
       deltaX.current = 0;
       isAdsorption.current = false;
       initAutoScroll();
       onDragStart && onDragStart();
-    };
+    }, [])
 
     const move = (param: { preLeft: number; preWidth: number; scrollDelta?: number }) => {
       const { preLeft, preWidth, scrollDelta } = param;
@@ -147,7 +147,7 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       }
     };
 
-    const handleMove = (e: DragEvent) => {
+    const handleMove = useCallback((e: DragEvent) => {
       const target = e.target;
 
       if (editAreaRef.current) {
@@ -169,9 +169,9 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
 
       deltaX.current += e.dx;
       move({ preLeft, preWidth });
-    };
+    }, [])
 
-    const handleMoveStop = (e: DragEvent) => {
+    const handleMoveStop = useCallback((e: DragEvent) => {
       deltaX.current = 0;
       isAdsorption.current = false;
       stopAutoScroll();
@@ -179,7 +179,7 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       const target = e.target;
       let { left, width } = target.dataset;
       onDragEnd && onDragEnd({ left: parseFloat(left), width: parseFloat(width) });
-    };
+    }, []);
 
     const handleResizeStart = (e: ResizeEvent) => {
       deltaX.current = 0;
@@ -213,7 +213,7 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
             isAdsorption.current = true;
             curLeft = adsorption;
           } else {
-           //Control grid grid
+            //Control grid grid
             if ((curLeft - start) % grid !== 0) {
               curLeft = start + grid * Math.round((curLeft - start) / grid);
             }
@@ -366,4 +366,4 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       </InteractComp>
     );
   },
-);
+));

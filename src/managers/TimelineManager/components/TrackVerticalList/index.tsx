@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "
 import { edObjectProps, IKeyframe, ITrack, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { useRefStore } from "@vxengine/utils/useRefStore";
-import { ContextMenu, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
 import { useTimelineEditorAPI } from "../..";
 import FinalPropertyContextMenu from "./FinalPropertyContextMenu";
 import { extractDataFromTrackKey } from "../../utils/trackDataProcessing";
@@ -16,6 +16,7 @@ import { Virtuoso } from "react-virtuoso";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right"
 import ChevronDown from "lucide-react/dist/esm/icons/chevron-down"
 import { GroupedPaths } from "../../store";
+import TopLevelContextMenu from "./TopLevelContextMenu";
 
 const TRACK_HEIGHT = 34;
 
@@ -158,7 +159,6 @@ const RenderFinalProperty: React.FC<RenderFinalPropertyProps> = memo(
 const RenderTopLevelGroupedPaths = memo(({ propKey, group }: { propKey: string, group: PathGroup }
 ) => {
     const key = propKey;
-    const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
     const collapsedGroups = useTimelineEditorAPI(state => state.collapsedGroups);
 
     const childrenAllKeys = Object.keys(group.children);
@@ -177,31 +177,38 @@ const RenderTopLevelGroupedPaths = memo(({ propKey, group }: { propKey: string, 
     const isCollapsed = collapsedGroups[groupKey] || false;
 
     return (
-        <div
-            key={`topLevel-${groupKey}`}
-            className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
-        >
-            {isTrack ? (
-                <RenderFinalProperty
-                    propKey={key}
-                    trackKey={group.trackKey}
-                    isCollapsed={isCollapsed}
-                />
-            ) : (
-                <RenderNormalProperty
-                    propKey={key}
-                    groupKey={groupKey}
-                    isCollapsible={isCollapsible}
-                    isCollapsed={isCollapsed}
-                />
-            )}
-            {isPath && !isCollapsed && <RenderGroupedPaths
-                groupedPaths={group.children}
-                depth={1}
-                shouldIndent={shouldIndentChildren}
-                parentPath={groupKey}
-            />}
-        </div>
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <div
+                    key={`topLevel-${groupKey}`}
+                    className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
+                >
+                    {isTrack ? (
+                        <RenderFinalProperty
+                            propKey={key}
+                            trackKey={group.trackKey}
+                            isCollapsed={isCollapsed}
+                        />
+                    ) : (
+                        <RenderNormalProperty
+                            propKey={key}
+                            groupKey={groupKey}
+                            isCollapsible={isCollapsible}
+                            isCollapsed={isCollapsed}
+                        />
+                    )}
+                    {isPath && !isCollapsed && <RenderGroupedPaths
+                        groupedPaths={group.children}
+                        depth={1}
+                        shouldIndent={shouldIndentChildren}
+                        parentPath={groupKey}
+                    />}
+                </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent className="min-w-[0]">
+                <TopLevelContextMenu vxkey={propKey} />
+            </ContextMenuContent>
+        </ContextMenu>
     );
 });
 

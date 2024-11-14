@@ -44,6 +44,7 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     const externalWindow = useRef<Window | null>(null);
 
     useEffect(() => {
+        const htmlContent = '<html><head><title>' + title + '</title></head><body></body></html>';
         externalWindow.current = window.open('', '', windowClasses);
 
         if (externalWindow.current) {

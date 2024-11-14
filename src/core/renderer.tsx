@@ -16,7 +16,6 @@ import { Stats } from '@react-three/drei'
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import CameraManagerDriver from '../managers/CameraManager/driver'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useCameraManagerAPI } from '@vxengine/managers/CameraManager/store'
@@ -96,8 +95,8 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
             <vx.fadeEffect />
           </EffectsManagerDriver>
           
-          <CameraManagerDriver/>
           
+          <CameraManagerDriver/>
           {children}
         </PerformanceMonitor>
       </Canvas>

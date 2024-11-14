@@ -82,17 +82,17 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
-
-  const addBeforeUnloadListener = useSourceManagerAPI(state => state.addBeforeUnloadListener)
-  const removeBeforeUnloadListener = useSourceManagerAPI(state => state.removeBeforeUnloadListener)
-
+  
   useEffect(() => {
-    if (IS_DEVELOPMENT)
-      addBeforeUnloadListener()
+    const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
+
+    if (IS_DEVELOPMENT){
+      window.addEventListener('beforeunload', handleBeforeUnload)
+    }
 
     return () => {
       if (IS_DEVELOPMENT)
-        removeBeforeUnloadListener()
+        window.removeEventListener('beforeunload', handleBeforeUnload);
     }
   }, [])
 

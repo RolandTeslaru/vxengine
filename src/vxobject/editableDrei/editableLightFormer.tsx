@@ -38,16 +38,21 @@ export const EditableLightFormer = memo(
                 "Show In Scene": false,
             }
 
+            const params = [
+                "intensity"
+            ]
+
             return (
                 <>
                     <VXEntityWrapper
                         ref={internalRef}
+                        params={params}
                         defaultSettingsForObject={defaultSettingsForObject}
                         defaultAdditionalSettings={defaultAdditionalSettings}
                         isVirtual={true}
                         {...props}
                     >
-                        <Lightformer />
+                        <Lightformer/>
                     </VXEntityWrapper>
                 </>
             )

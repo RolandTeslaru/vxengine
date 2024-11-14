@@ -18,7 +18,5 @@ export interface SourceManagerAPIProps {
     overwriteLocalStorageData: (data: Record<string, ITimeline>) => void
     overwriteDiskData: (data: Record<string, ITimeline>) => void
 
-    addBeforeUnloadListener: () => void
-    removeBeforeUnloadListener: () => void
     handleBeforeUnload: (event: BeforeUnloadEvent) => void
 }

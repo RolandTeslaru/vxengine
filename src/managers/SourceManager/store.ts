@@ -5,6 +5,7 @@ import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
+import { useTimelineEditorAPI } from '../TimelineManager'
 
 const DEBUG = true;
 
@@ -20,7 +21,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     showSyncPopup: false,
     setShowSyncPopup: (value: boolean) => set({ showSyncPopup: value }),
 
-    saveDataToDisk: async () => {
+    saveDataToDisk: debounce(async () => {
         const showSyncPopup = get().showSyncPopup; 
 
         if(showSyncPopup) return;
@@ -46,7 +47,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         } catch (error) {
             console.error('VXEngine SourceManager ERROR: Unable to write timelines to disk:', error);
         }
-    },
+    }, 500),
     saveDataToLocalStorage: debounce(() => {
         const showSyncPopup = get().showSyncPopup; 
         if(showSyncPopup) return;
@@ -131,31 +132,14 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         }
     },
 
-    addBeforeUnloadListener: () => {
-        const handleBeforeUnload = (event) => {
-            get().saveDataToDisk();  // Call saveDataToDisk before closing
-            event.preventDefault();
-            event.returnValue = ''; // Necessary to trigger the dialog in some browsers
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // Cleanup when the component or context is no longer needed
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    },
-
     handleBeforeUnload: (event: BeforeUnloadEvent) => {
+        const changes = useTimelineEditorAPI.getState().changes
         const saveDataToDisk = get().saveDataToDisk;
 
-        saveDataToDisk();
-        event.preventDefault();
-        event.returnValue = '';
-    },
-
-    // Remove the event listener for beforeunload
-    removeBeforeUnloadListener: () => {
-        window.removeEventListener('beforeunload', get().handleBeforeUnload);
-    },
+        if(changes > 0){
+            saveDataToDisk();
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    }
 }))

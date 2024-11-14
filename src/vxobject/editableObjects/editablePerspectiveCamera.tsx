@@ -16,7 +16,7 @@ import { getNodeEnv } from "@vxengine/constants";
 declare module 'three' {
     interface PerspectiveCamera {
         localRotationZ?: number;
-        dummy_fov?: number
+        mouseInterference?: number;
     }
 }
 
@@ -42,19 +42,45 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     //     cameraRef.current.localRotationZ = 0;
     // }, []);
 
+    const mousePosition = useRef({ x: 0, y: 0 });
+
+
+    const cameraOrientationState = useRef(
+        {
+            pitchAngle: 0,
+            yawAngle: 0,
+            startingPitchAngleForCurrentCoordinates: 0,
+            startingYawAngleForCurrentCoordinates: 0,
+            previousPitchAngle: 0,
+            previousYawAngle: 0,
+            lastMouseMoveTime: 0,
+            movementDuration: 100,
+        }
+    )
+
+    const handleMouseMove = useCallback((e) => {
+        mousePosition.current.y = (e.clientX / window.innerWidth) * 2 - 1;  // Horizontal (yaw)
+        mousePosition.current.x = (e.clientY / window.innerHeight) * -2 + 1;  // Vertical (pitch)
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("mousemove", handleMouseMove);
+        return () => window.removeEventListener("mousemove", handleMouseMove);
+    })
+
     const cameraUpdate = () => {
-        if(!cameraRef.current || !cameraTargetRef) return
+        if (!cameraRef.current || !cameraTargetRef) return
 
         const camera: THREE.PerspectiveCamera = cameraRef.current
         const targetPosition: THREE.Vector3 = cameraTargetRef.position
-        
+
         // Make the camera look at the target
         camera.lookAt(targetPosition);
 
         const localRotationZ = camera?.localRotationZ || 0;
-
         // Rotate the camera around its local Z-axis (forward axis)
         camera.rotateZ(localRotationZ);
+
     }
 
     useFrame(cameraUpdate)
@@ -87,11 +113,11 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     ]
 
     return (
-        <VXEntityWrapper 
-            vxkey={vxkey} 
-            ref={cameraRef} 
-            params={params} 
-            disabledParams={disabledParams} 
+        <VXEntityWrapper
+            vxkey={vxkey}
+            ref={cameraRef}
+            params={params}
+            disabledParams={disabledParams}
             defaultSettingsForObject={defaultSettingsForObject}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}

@@ -277,6 +277,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         } else {
             console.error(`Track with key "${trackKey}" not found.`);
         }
+
+        get().addChange()
     },
 
     createTrack: (trackKey, keyframeKeys) => {
@@ -288,6 +290,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh only the track 
         animationEngine.refreshTrack(trackKey, "create")
+        get().addChange()
     },
 
     removeTrack: ({ trackKey, reRender }) => {
@@ -299,6 +302,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh only the track 
         animationEngine.refreshTrack(trackKey, "remove", reRender)
+        get().addChange()
     },
 
     createKeyframe: (props) => {
@@ -309,6 +313,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh Raw Data and ReRender
         animationEngine.refreshKeyframe(trackKey, 'create', keyframeKey, reRender)
+        get().addChange()
     },
 
     removeKeyframe: ({ trackKey, keyframeKey, reRender }) => {
@@ -317,6 +322,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "remove", keyframeKey, reRender)
+        get().addChange()
     },
 
     makePropertyTracked: (staticPropKey, reRender) => {
@@ -364,6 +370,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Refresh Raw Data and ReRender
         animationEngine.refreshKeyframe(trackKey, "create", keyframeKey, false)
         animationEngine.refreshTrack(trackKey, "create", true)
+        get().addChange()
     },
 
 
@@ -393,6 +400,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             animationEngine.refreshTrack(trackKey, "remove")
 
         animationEngine.refreshStaticProp("create", staticPropKey, true )
+        get().addChange()
     },
 
 
@@ -406,6 +414,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
+        get().addChange()
     },
 
 
@@ -421,6 +430,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
+        get().addChange()
     },
 
 
@@ -435,6 +445,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshKeyframe(trackKey, "update", keyframeKey, reRender)
+        get().addChange()
     },
 
 
@@ -448,6 +459,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshStaticProp("create", staticPropKey, reRender)
         }
+        get().addChange()
     },
 
     removeStaticProp: ({ staticPropKey, state, reRender }) => {
@@ -459,6 +471,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.refreshStaticProp("remove", staticPropKey, reRender)
         }
+        get().addChange()
     },
 
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender = true) => {
@@ -469,6 +482,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshStaticProp("update", staticPropKey, reRender)
+        get().addChange()
     },
 
     handlePropertyValueChange: (vxkey, propertyPath, newValue, reRender = true) => {
@@ -514,6 +528,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         }
 
         useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, newValue);
+        get().addChange()
     },
 
     removeProperty: (vxkey, propertyPath) => {
@@ -530,5 +545,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         if(doesStaticPropExist){
             get().removeStaticProp({staticPropKey: key, reRender: true})
         }
+        get().addChange()
     }
 }))

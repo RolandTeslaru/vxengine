@@ -16,8 +16,8 @@ const CameraTarget = () => {
     const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT)
 
     const vxkey = "cameraTarget"
-    const pointerTexture = useMemo(() => new TextureLoader().load(base64Pointer), [])
 
+    const pointerTexture = useMemo(() => new TextureLoader().load(base64Pointer), [])
     const floorProjectionTexture = useMemo(() => new TextureLoader().load(base64FloorProjection), [])
 
     const settings = {
@@ -74,7 +74,7 @@ const CameraTarget = () => {
                 verticalPlaneRef.current.getWorldPosition(FloorProjectionRef.current.position);
                 FloorProjectionRef.current.position.setY(0)
 
-                // Handle camera Pointer
+                // Handle camera Represenation
                 cameraPointerRef.current.position.set(
                     cameraPosition.x,
                     cameraPosition.y,
@@ -90,6 +90,7 @@ const CameraTarget = () => {
 
     return (
         <>
+            {/* Camera Target  */}
             <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={isVisible}>
                 {/* YZ Plane */}
                 <mesh ref={verticalPlaneRef}>
@@ -103,7 +104,7 @@ const CameraTarget = () => {
                     />
                 </mesh>
             </vx.group>
-            
+        
             {/* Floor Projection */}
             <mesh ref={FloorProjectionRef} visible={isVisible}>
                 <planeGeometry args={[20, 20]} />
@@ -116,6 +117,7 @@ const CameraTarget = () => {
                 />
             </mesh>
 
+            {/* Camera Representation */}
             <mesh ref={cameraPointerRef} visible={isVisible}>
                 <planeGeometry args={[10, 10]} />
                 <meshBasicMaterial

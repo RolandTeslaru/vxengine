@@ -1,6 +1,6 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import VXEngineWindow from "./VXEngineWindow";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { useVXUiStore } from "./VXUIStore";
 import { WindowControlDots } from "./WindowControlDots";
 import { useRefStore } from "@vxengine/utils";
+import { Switch } from "../shadcn/switch";
+import ReactJson from 'react-json-view';
+
 
 const EditorDataComponent = () => {
     const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
@@ -97,14 +100,6 @@ const PropertiesStoreComponent = () => {
     );
 };
 
-
-const replacer = (key, value) => {
-    if (key === 'ref') {
-        return '[ref omitted]';
-    }
-    return value;
-};
-
 const SettingsComponent = () => {
     const settings = useObjectSettingsAPI(state => state.settings);
     return (
@@ -149,6 +144,32 @@ const SplinesComponent = () => {
     )
 }
 
+const limitDepth = (obj, depth, seen = new WeakSet()) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    if (seen.has(obj)) {
+        return '[Circular]';
+    }
+    seen.add(obj);
+
+    if (depth === 0) {
+        return '[Max depth reached]';
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(item => limitDepth(item, depth - 1, seen));
+    }
+
+    const result = {};
+    for (const key in obj) {
+        result[key] = limitDepth(obj[key], depth - 1, seen);
+    }
+
+    seen.delete(obj);
+    return result;
+};
+
 const VxobjectsComponent = () => {
     const vxobjects = useVXObjectStore(state => state.objects);
 
@@ -156,17 +177,49 @@ const VxobjectsComponent = () => {
         return <div>No data available</div>;
     }
 
+    const [showRef, setShowRef] = useState(false);
+
+    useEffect(() => {
+        console.log("Show Ref change d ", showRef);
+    })
+
+    const dataToDisplay = useMemo(() => {
+        if (showRef)
+            return limitDepth(vxobjects, 4);
+        else
+            return JSON.parse(JSON.stringify(vxobjects, replacer));
+    }, [showRef, vxobjects])
+
     return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(vxobjects, replacer, 2)}
-        </pre>
+        <>
+
+            <div className="flex flex-row h-auto absolute right-2 top-10">
+                <p className="font-sans-menlo text-xs">Show Ref</p>
+                <Switch
+                    checked={showRef}
+                    onCheckedChange={() => setShowRef(!showRef)}
+                    className="ml-2 my-auto"
+                />
+            </div>
+            <ReactJson
+                src={dataToDisplay}
+                name={null}
+                theme="brewer"
+                collapsed={1}
+                enableClipboard={false}
+                displayDataTypes={false}
+                displayObjectSize={false}
+                style={{ fontSize: '12px' }}
+            />
+        </>
     );
+};
+
+const replacer = (key, value) => {
+    if (key === 'ref') {
+        return '[ref omitted]';
+    }
+    return value;
 };
 
 const TimelinesComponent = () => {
@@ -206,31 +259,31 @@ const RefStoreComponent = () => {
     const scrollLeftRef = useRefStore(state => state.scrollLeftRef);
     // State to hold and display the current scrollLeft value
     const [scrollLeft, setScrollLeft] = useState(scrollLeftRef.current);
-  
+
     useEffect(() => {
-      const interval = setInterval(() => {
-        // Check if scrollLeftRef.current has changed, then update the state
-        if (scrollLeftRef.current !== scrollLeft) {
-          setScrollLeft(scrollLeftRef.current);
-        }
-      }, 100); // Adjust the interval as needed
-  
-      // Cleanup the interval on component unmount
-      return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            // Check if scrollLeftRef.current has changed, then update the state
+            if (scrollLeftRef.current !== scrollLeft) {
+                setScrollLeft(scrollLeftRef.current);
+            }
+        }, 100); // Adjust the interval as needed
+
+        // Cleanup the interval on component unmount
+        return () => clearInterval(interval);
     }, [scrollLeftRef, scrollLeft]);
-  
+
     return (
-      <pre
-        style={{
-          overflowY: 'scroll',
-          whiteSpace: 'pre-wrap',
-        }}
-        className="text-xs"
-      >
-        scrollLeft: {scrollLeft}
-      </pre>
+        <pre
+            style={{
+                overflowY: 'scroll',
+                whiteSpace: 'pre-wrap',
+            }}
+            className="text-xs"
+        >
+            scrollLeft: {scrollLeft}
+        </pre>
     );
-  };
+};
 
 const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("editorObjects");
@@ -280,7 +333,7 @@ const StateVisualizer = () => {
             <>
                 <div className="w-full flex flex-row pb-1"
                 >
-                    <h1 className="text-left ml-2 font-sans-menlo">State Visualizer</h1>
+                    <h1 className="text-left ml-2 font-sans-menlo">Object Visualizer</h1>
                     <button className={" border right-2 absolute ml-auto text-xs p-[2px] h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 border-opacity-20 rounded-2xl cursor-pointer "}
                         onClick={() => setRefresh(refresh + 1)}
                     >
@@ -293,7 +346,7 @@ const StateVisualizer = () => {
                         onValueChange={(value) => {
                             setActiveData(value)
                         }}>
-                        <SelectTrigger className="w-[180px] h-7 my-auto">
+                        <SelectTrigger className="w-[180px] h-7 my-auto focus:outline-none">
                             <SelectValue placeholder="Select a Timeline" />
                         </SelectTrigger>
                         <SelectContent>
@@ -324,14 +377,14 @@ const StateVisualizer = () => {
 
     return (
         <VXEngineWindow
-            title="VXEngine: TimelineEditorDebug"
+            title="VXEngine: Object Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             attachedState={attachedState}
             setAttachedState={setAttachedState}
         >
             {showStateVisualizer && (
                 <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-[24px] left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} 
-                                text-sm bg-neutral-900 p-2 gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-xl flex flex-col`}
+                                text-sm bg-neutral-900 p-2 gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-2xl flex flex-col`}
                     style={{ minWidth: "500px" }}
                 >
 
