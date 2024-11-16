@@ -26,7 +26,7 @@ const ListItem = React.memo(({ vxEffect }: { vxEffect: vxObjectProps }) => {
   const selectObjects = useObjectManagerAPI(state => state.selectObjects)
 
   const handleOnClick = () => {
-    selectObjects([vxEffect.vxkey])
+    selectObjects([vxEffect.vxkey], "")
   }
 
   return (

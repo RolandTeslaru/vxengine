@@ -90,7 +90,7 @@ const SplineNodeListObject = ({ splineKey, position, index, }) => {
 
   const handleOnClick = () => {
     useObjectManagerAPI.getState().setTransformMode("translate");
-    selectObject([nodeKey])
+    selectObject([nodeKey], 'splineNode')
   }
 
 

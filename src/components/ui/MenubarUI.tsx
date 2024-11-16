@@ -85,11 +85,17 @@ const SelectButton = React.memo(() => {
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
-    const handleSelectAll = () => { selectObjects(Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey)) }
-    const handleSelectNone = () => { selectObjects([]) }
+    const handleSelectAll = () => { 
+        selectObjects(
+            Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey),
+            "entity",
+            false
+        )}
+    const handleSelectNone = () => { selectObjects([], "entity", false)}
     const handleSelectInvert = () => {
         const newKeys = selectedObjectKeys.filter((vxkey) => !selectedObjectKeys.includes(vxkey))
-        selectObjects(newKeys);
+        
+        selectObjects(newKeys, "entity", false);
     }
 
     return (

@@ -10,7 +10,6 @@ import { useVXUiStore } from "./VXUIStore";
 import { WindowControlDots } from "./WindowControlDots";
 import { useRefStore } from "@vxengine/utils";
 import { Switch } from "../shadcn/switch";
-import ReactJson from 'react-json-view';
 
 
 const EditorDataComponent = () => {
@@ -201,7 +200,7 @@ const VxobjectsComponent = () => {
                     className="ml-2 my-auto"
                 />
             </div>
-            <ReactJson
+            {/* <ReactJson
                 src={dataToDisplay}
                 name={null}
                 theme="brewer"
@@ -210,7 +209,7 @@ const VxobjectsComponent = () => {
                 displayDataTypes={false}
                 displayObjectSize={false}
                 style={{ fontSize: '12px' }}
-            />
+            /> */}
         </>
     );
 };

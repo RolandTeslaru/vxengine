@@ -15,6 +15,8 @@ interface refStoreProps {
     scrollLeftRef: React.MutableRefObject<number | null>
 
     transformControlsRef: React.MutableRefObject<TransformControls | null>
+
+    entityListRef: React.MutableRefObject<any>
 }
 
 export const useRefStore = create<refStoreProps>((set, get) => ({
@@ -27,5 +29,7 @@ export const useRefStore = create<refStoreProps>((set, get) => ({
     scrollSyncId: React.createRef<number>(),
     scrollLeftRef: React.createRef<number>(),
 
-    transformControlsRef: React.createRef<TransformControls>()
+    transformControlsRef: React.createRef<TransformControls>(),
+
+    entityListRef: React.createRef()
 }))

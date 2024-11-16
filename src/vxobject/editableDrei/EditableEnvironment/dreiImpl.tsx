@@ -242,7 +242,11 @@ function VXEnvironmentGround(props: EnvironmentProps) {
       <VXEnvironmentMap {...props} map={texture as any} />
       <mesh>
         <sphereGeometry args={[100, 100]}/>
-        <meshBasicMaterial map={texture} side={THREE.BackSide}/>
+        <meshBasicMaterial 
+        // @ts-expect-error
+          map={texture} 
+          side={THREE.BackSide}
+        />
       </mesh>
       {/* <groundProjectedEnvImpl args={args as any} scale={scale} height={height} radius={radius} /> */}
     </>

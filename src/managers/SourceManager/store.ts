@@ -6,6 +6,7 @@ import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
 import { useTimelineEditorAPI } from '../TimelineManager'
+import { AnimationEngine } from '@vxengine/AnimationEngine/engine'
 
 const DEBUG = true;
 
@@ -48,6 +49,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
             console.error('VXEngine SourceManager ERROR: Unable to write timelines to disk:', error);
         }
     }, 500),
+
     saveDataToLocalStorage: debounce(() => {
         const showSyncPopup = get().showSyncPopup; 
         if(showSyncPopup) return;
@@ -79,8 +81,12 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
      *  - `in_sync`: If the timelines are synchronized.
      */
     syncLocalStorage: (timelines: Record<string, ITimeline>) => {
-        if (DEBUG) console.log("VXEngine SourceManager: Validating LocalStorage")
+        if (DEBUG) 
+            console.log("VXEngine SourceManager: Validating LocalStorage")
+        
+        validateAndFixTimelines(timelines);
         const savedTimelines = localStorage.getItem('timelines');
+
 
         if (!savedTimelines) {
             // If no data in localStorage, initialize it with current timelines from disk
@@ -92,6 +98,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         } else {
             console.log("VXEngine SourceManager: Restoring timelines from LocalStorage");
             const restoredTimelines = JSON.parse(savedTimelines);
+            validateAndFixTimelines(restoredTimelines);
 
             const areTimelinesInSync = deepEqual(timelines, restoredTimelines);
 
@@ -120,7 +127,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ data })
+                body: JSON.stringify({ timelines: data })
             })
             if (response.ok) {
                 console.log('VXEngine SourceManager: Timelines overwritten successfully to disk.');
@@ -141,5 +148,64 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
             event.preventDefault();
             event.returnValue = '';
         }
-    }
+    },
+
 }))
+
+const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
+    const precision = AnimationEngine.ENGINE_PRECISION;
+    console.log("Valding timelines ", timelines, " with precision ", precision)
+    const errors: string[] = [];
+
+    const isValidPrecision = (value: number): boolean => {
+      const factor = Math.pow(10, precision);
+      return Math.round(value * factor) / factor === value;
+    };
+
+    Object.entries(timelines).forEach(([timelineId, timeline]) => {
+      // Validate and fix timeline length precision
+      if (!isValidPrecision(timeline.length)) {
+        errors.push(`Timeline "${timelineId}" has invalid length precision: ${timeline.length}`);
+        timeline.length = AnimationEngine.truncateToDecimals(timeline.length, precision);
+      }
+
+      // Validate and fix objects and their properties
+      timeline.objects?.forEach((object) => {
+        object.tracks.forEach(track => {
+          track.keyframes.forEach(keyframe => {
+            if (!isValidPrecision(keyframe.time)) {
+              errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
+              keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);
+            }
+            if (!isValidPrecision(keyframe.value)) {
+              errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
+              keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
+            }
+          });
+        });
+
+        object.staticProps.forEach(staticProp => {
+          if (!isValidPrecision(staticProp.value)) {
+            errors.push(`Static prop "${staticProp.propertyPath}" in "${object.vxkey}" has invalid precision: ${staticProp.value}`);
+            staticProp.value = AnimationEngine.truncateToDecimals(staticProp.value, precision);
+          }
+        });
+      });
+
+      // Validate and fix splines and nodes
+      if(timeline.splines)
+        Object.values(timeline.splines).forEach(spline => {
+          spline.nodes.forEach((node, index) => {
+            node.forEach((coord, coordIndex) => {
+              if (!isValidPrecision(coord)) {
+                errors.push(`Node ${index} in spline "${spline.splineKey}" has invalid precision for coordinate ${coordIndex}: ${coord}`);
+                node[coordIndex] = AnimationEngine.truncateToDecimals(coord, precision);
+              }
+            });
+          });
+        });
+
+    });
+
+    return errors;
+  }

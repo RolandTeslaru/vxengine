@@ -13,6 +13,8 @@ import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { RenderPass } from 'three-stdlib'
 import { Stats } from '@react-three/drei'
 
+import * as THREE from "three"
+
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
 import { Object3DNode, MaterialNode } from '@react-three/fiber'
@@ -34,6 +36,7 @@ import { CanvasProps } from "@react-three/fiber";
 import { getNodeEnv } from '@vxengine/constants'
 import { ObjectManagerDriver } from '@vxengine/managers/ObjectManager'
 import { vx } from '@vxengine/vxobject'
+import { EffectComposer, LensFlare } from '@react-three/postprocessing'
 
 export interface RendererCoreProps {
     canvasProps?: CanvasProps;
@@ -50,7 +53,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   powerPreferences = 'high-performance',
   effectsNode
 }) => {
-  const [dpr_state, setDpr_state] = useState(0.6)
+  const [dpr_state, setDpr_state] = useState(1)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
 
   const IS_DEVELOPMENT = getNodeEnv() === "development"
@@ -59,11 +62,13 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
     <>
       <Canvas
         gl={{
-          logarithmicDepthBuffer: false,
           antialias: true,
-          preserveDrawingBuffer: false,
-          powerPreference: powerPreferences,
-          ...gl
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.0,
+          outputEncoding: THREE.sRGBEncoding,
+          precision: 'highp',
+          dithering: true,
+        
         }}
         dpr={dpr_state}
         performance={{
@@ -90,10 +95,10 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
               <ObjectManagerDriver/>
           </>
           }
-          <EffectsManagerDriver disableNormalPass={true}>
+          <EffectComposer>
             {effectsNode}
             <vx.fadeEffect />
-          </EffectsManagerDriver>
+          </EffectComposer>
           
           
           <CameraManagerDriver/>

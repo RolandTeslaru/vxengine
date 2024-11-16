@@ -8,6 +8,7 @@ import PropInputContextMenu from './contextMenu'
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
+import { invalidate } from '@react-three/fiber'
 
 interface Props extends InputProps {
     propertyPath: string
@@ -95,6 +96,8 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             else if (vxType === "splineNode") {
                 handleSplineNodeChange(newValue);
             }
+
+            invalidate();
         };
 
         const handleEntityChange = (newValue: number) => {

@@ -113,7 +113,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             // onPointerOut: handlePointerOut,
             onClick: () => {
                 if (disableClickSelect === false && IS_DEVELOPMENT)
-                    memoizedSelectObjects([vxkey])
+                    memoizedSelectObjects([vxkey], "entity", true)
             },
             onPointerDown: (e) => e.stopPropagation(),
             ...props,

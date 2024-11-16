@@ -175,7 +175,7 @@ export const TimelineSelect = () => {
 
     const animationEngine = useVXEngine(state => state.animationEngine)
 
-    console.log("CURRENT TIMELINE ID ", currentTimelineID)
+    // console.log("CURRENT TIMELINE ID ", currentTimelineID)
 
     return (
         <Select

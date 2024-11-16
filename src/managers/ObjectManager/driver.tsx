@@ -15,10 +15,12 @@ export const ObjectManagerDriver = () => {
 
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const transformMode = useObjectManagerAPI(state => state.transformMode);
+  const transformSpace = useObjectManagerAPI(state => state.transformSpace)
 
   const firstObjectSelectedRef = firstSelectedObject?.ref.current;
 
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
+
 
   const handleTransformChange = (e) => {
     if (!firstSelectedObject) return
@@ -162,6 +164,7 @@ export const ObjectManagerDriver = () => {
           object={firstObjectSelectedRef}
           mode={transformMode}
           onObjectChange={handleTransformChange}
+          space={transformSpace}
         />
       )}
     </>

@@ -4,13 +4,21 @@ import { useObjectManagerAPI } from '../stores/managerStore';
 import { vxEntityProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import { Virtuoso, VirtuosoGrid } from 'react-virtuoso';
+import { useRefStore } from '@vxengine/utils';
 
 const LIST_ITEM_HEIGHT = 34
 
 const ObjectList = () => {
+    const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
+    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
+
     const vxObjects = useVXObjectStore(state => state.objects)
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+
+    const entityListRef = useRefStore(state => state.entityListRef);
 
     const vxEntities = useMemo(() => {
         const filteredRecord = Object.fromEntries(
@@ -19,13 +27,6 @@ const ObjectList = () => {
         )
         return filteredRecord
     }, [vxObjects, searchQuery]);
-
-    const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
-    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-    const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
-
-    const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
-
 
     const handleObjectClick = (event, vxobject: vxObjectProps, index: number) => {
         event.preventDefault();
@@ -114,6 +115,7 @@ const ObjectList = () => {
                     style={{
                         height: 384,
                     }}
+                    ref={entityListRef}
                     totalCount={Object.values(vxEntities).length}
                     itemContent={index => itemRenderer(index)}
                 />

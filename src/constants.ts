@@ -12,7 +12,7 @@ export const IS_DEVELOPMENT = () => getNodeEnv() === 'development';
 export const IS_PRODUCTION = () => getNodeEnv() === 'production';
 
 export const getNodeEnv = () => {
-    console.log("GETTING NODE_ENV ", NODE_ENV)
+    // console.log("GETTING NODE_ENV ", NODE_ENV)
     if (!NODE_ENV) {
         throw new Error("NODE_ENV is not set. Make sure to initialize it in VXEngineProvider.");
     }

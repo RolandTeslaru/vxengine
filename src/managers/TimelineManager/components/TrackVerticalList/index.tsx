@@ -78,7 +78,7 @@ const RenderGroupedPaths: React.FC<RenderGroupedPathsProps> = memo(({
                 const childrenKeys = Object.keys(group.children || {});
                 const hasMultipleChildren = childrenKeys.length > 1;
                 const isNestedToPreviousPath = !hasMultipleChildren;
-                const isTrack = Boolean(group.trackKey);
+                const isTrack = group.trackKey ? true : false;
                 const isPath = !isTrack && hasMultipleChildren;
                 const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
 
@@ -96,6 +96,7 @@ const RenderGroupedPaths: React.FC<RenderGroupedPathsProps> = memo(({
                         className={`w-full flex  ${isNestedToPreviousPath ? 'flex-row' : 'flex-col'}`}
                         style={{ paddingLeft: shouldIndent ? 16 : 0 }}
                     >
+                       
                         {isTrack ? (
                             <RenderFinalProperty
                                 propKey={key}
@@ -110,7 +111,7 @@ const RenderGroupedPaths: React.FC<RenderGroupedPathsProps> = memo(({
                                 isCollapsed={isCollapsed}
                             />
                         )}
-                        {isPath && !isCollapsed && (
+                        {!isCollapsed && (
                             <RenderGroupedPaths
                                 groupedPaths={group.children}
                                 depth={depth + 1}
@@ -163,7 +164,7 @@ const RenderTopLevelGroupedPaths = memo(({ propKey, group }: { propKey: string, 
 
     const childrenAllKeys = Object.keys(group.children);
     const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1);
-    const isTrack = !!group.trackKey;
+    const isTrack = Boolean(group.trackKey);
     const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
     const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
 
@@ -250,21 +251,6 @@ const TrackVerticalList = memo(() => {
 
     return (
         <div className="w-full h-full mr-2 px-4 flex flex-col bg-neutral-950 border border-neutral-800 border-opacity-70 rounded-2xl">
-
-            {/* <div className="flex flex-row h-[26px]">
-                <div className='flex flex-row gap-1 px-2 ml-auto mb-auto bg-neutral-950 border border-neutral-800 shadow-sm w-36 rounded-full'>
-                    <input
-                        className={`h-full py-[3px] w-full text-neutral-400 bg-transparent 
-                            placeholder-neutral-400 font-normal focus:outline-none`}
-                        type="text"
-                        placeholder='search'
-                        style={{ fontSize: "10px" }}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <svg className="h-auto my-auto" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 6.5C10 8.433 8.433 10 6.5 10C4.567 10 3 8.433 3 6.5C3 4.567 4.567 3 6.5 3C8.433 3 10 4.567 10 6.5ZM9.30884 10.0159C8.53901 10.6318 7.56251 11 6.5 11C4.01472 11 2 8.98528 2 6.5C2 4.01472 4.01472 2 6.5 2C8.98528 2 11 4.01472 11 6.5C11 7.56251 10.6318 8.53901 10.0159 9.30884L12.8536 12.1464C13.0488 12.3417 13.0488 12.6583 12.8536 12.8536C12.6583 13.0488 12.3417 13.0488 12.1464 12.8536L9.30884 10.0159Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                </div>
-            </div> */}
             <div className="h-[34px] flex flex-row">
                 <div className='flex flex-row gap-1 px-2 ml-auto my-auto bg-neutral-900 shadow-sm w-36 rounded-full'>
                     <input
