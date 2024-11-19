@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/sh
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
 
 import styles from "./styles.module.scss"
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar';
 
 const SplineManagerUI = () => {
   const selectedSpline = useSplineManagerAPI(state => state.selectedSpline)
@@ -179,5 +180,20 @@ const SplineSelect = ({ defaultSplineKey }) => {
         </SelectGroup>
       </SelectContent>
     </Select>
+  )
+}
+
+export const SplineManagerSubMenu = () => {
+  return (
+    <MenubarSub>
+      <MenubarSubTrigger>Spline Manager API</MenubarSubTrigger>
+      <MenubarSubContent>
+        <MenubarItem>Remove Spline</MenubarItem>
+        <MenubarItem>Set Spline Node Position</MenubarItem>
+        <MenubarItem>Change Spline Node Axis Value</MenubarItem>
+        <MenubarItem>Insert Node</MenubarItem>
+        <MenubarItem>Remove Node</MenubarItem>
+      </MenubarSubContent>
+    </MenubarSub>
   )
 }

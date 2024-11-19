@@ -86,9 +86,8 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   useEffect(() => {
     const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
 
-    if (IS_DEVELOPMENT){
+    if (IS_DEVELOPMENT)
       window.addEventListener('beforeunload', handleBeforeUnload)
-    }
 
     return () => {
       if (IS_DEVELOPMENT)

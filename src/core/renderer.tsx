@@ -65,10 +65,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
-          outputEncoding: THREE.sRGBEncoding,
-          precision: 'highp',
-          dithering: true,
-        
+          precision: 'highp',        
         }}
         dpr={dpr_state}
         performance={{

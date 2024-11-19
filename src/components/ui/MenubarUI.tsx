@@ -9,6 +9,13 @@ import { Button } from '../shadcn/button'
 import { useVXEngine } from '@vxengine/engine'
 import { useVXUiStore } from './VXUIStore'
 import { invalidate } from '@react-three/fiber'
+import { useSourceManagerAPI } from '@vxengine/managers/SourceManager'
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
+import { SourceManagerSubMenu } from '@vxengine/managers/SourceManager/ui'
+import { ObjectManagerSubMenu, ObjectPropertySubMenu, ObjectSettingsSubMenu } from '@vxengine/managers/ObjectManager/ui'
+import { SplineManagerSubMenu } from '@vxengine/managers/SplineManager/ui'
+import { EffectsManagerSubMenu } from '@vxengine/managers/EffectsManager/ui'
+import { TimelineManagerSubMenu } from '@vxengine/managers/TimelineManager/ui'
 
 export const MenubarUI = () => {
 
@@ -35,7 +42,7 @@ export const MenubarUI = () => {
                     <FileButton />
                     <EditButton />
                     <SelectButton />
-                    <AddButton />
+                    <ManagersButton />
                     <ViewButton />
                     <SceneButton />
                 </Menubar>
@@ -83,18 +90,19 @@ const EditButton = () => {
 
 const SelectButton = React.memo(() => {
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-    const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
-    const handleSelectAll = () => { 
+    const handleSelectAll = () => {
         selectObjects(
             Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey),
             "entity",
             false
-        )}
-    const handleSelectNone = () => { selectObjects([], "entity", false)}
+        )
+    }
+    const handleSelectNone = () => { selectObjects([], "entity", false) }
     const handleSelectInvert = () => {
+        const selectedObjectKeys = useObjectManagerAPI.getState().selectedObjectKeys
         const newKeys = selectedObjectKeys.filter((vxkey) => !selectedObjectKeys.includes(vxkey))
-        
+
         selectObjects(newKeys, "entity", false);
     }
 
@@ -108,8 +116,30 @@ const SelectButton = React.memo(() => {
             </MenubarContent>
         </MenubarMenu>
     )
+})
+
+const ManagersButton = () => {
+    return (
+        <MenubarMenu>
+            <MenubarTrigger><p className='font-sans-menlo'>Debug</p></MenubarTrigger>
+            <MenubarContent>
+
+                <ObjectManagerSubMenu/>
+                <ObjectSettingsSubMenu/>
+                <ObjectPropertySubMenu/>
+
+                <MenubarSeparator />
+
+                <SourceManagerSubMenu/>
+                <SplineManagerSubMenu/>
+                <EffectsManagerSubMenu/>
+                <TimelineManagerSubMenu/>
+            </MenubarContent>
+        </MenubarMenu>
+    )
 }
-)
+
+
 const AddButton = () => {
     return (
         <MenubarMenu>
@@ -148,7 +178,7 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 
 const ViewButton = () => {
     const mountCoreUI = useVXUiStore(state => state.mountCoreUI);
-    const setMountCoreUI = useVXUiStore(state => state.setMountCoreUI); 
+    const setMountCoreUI = useVXUiStore(state => state.setMountCoreUI);
 
     const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
     const setShowStateVisualizer = useVXUiStore(state => state.setShowStateVisualizer);
@@ -181,7 +211,7 @@ const ViewButton = () => {
                 <MenubarItem onClick={() => setShowStateVisualizer(!showStateVisualizer)}>
                     State Visualizer <MenubarShortcut><CheckVisualizer show={showStateVisualizer} /></MenubarShortcut>
                 </MenubarItem>
-                
+
             </MenubarContent>
         </MenubarMenu>
     )

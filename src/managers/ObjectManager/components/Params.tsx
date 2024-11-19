@@ -19,14 +19,14 @@ const Params: React.FC<Props> = ({ vxobject }) => {
     const threeObjectType = refObject.type
 
     const params = vxobject.params
-
+    if(!params) return
     if (params.length === 0) return
 
     const ParamRenderer = ({ param, index }) => {
         return (
             <div key={index} className='flex flex-row py-1'>
                 <p className='text-xs font-light'>{param}</p>
-                <PropInput
+                <PropInput 
                     type="number"
                     className="ml-auto w-fit"
                     propertyPath={param}

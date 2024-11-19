@@ -1,18 +1,37 @@
 'use client'
 
 import { TransformControls, useCamera } from "@react-three/drei";
-import React from "react";
+import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import { vxKeyframeNodeProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
+import { debounce, throttle } from "lodash";
+
+const axisMap = {
+  X: 'x',
+  Y: 'y',
+  Z: 'z',
+};
+
+const transformMap = {
+  translate: "position",
+  rotate: "rotation",
+  scale: "scale"
+}
+
+const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectProps) => {
+  const virtualEntityChangeEvent = new CustomEvent('virtualEntityChange', {
+    detail: { transformation: e, object: firstSelectedObject }
+  });
+
+  document.dispatchEvent(virtualEntityChangeEvent as any);
+}
 
 export const ObjectManagerDriver = () => {
-  const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange);
-  const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
-
+  const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
@@ -21,6 +40,21 @@ export const ObjectManagerDriver = () => {
 
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
+  // Create debounced functions for each axis using useMemo
+  const debouncedPropertyValueChangeFunctions = useMemo(() => ({
+    X: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
+    Y: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false),300,{ leading: false, trailing: true }),
+    Z: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false),300,{ leading: false, trailing: true }),
+  }), [handlePropertyValueChange]);
+
+  // Cleanup debounced functions on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debouncedPropertyValueChangeFunctions).forEach(
+        (debouncedFn) => debouncedFn.cancel()
+      );
+    };
+  }, [debouncedPropertyValueChangeFunctions]);
 
   const handleTransformChange = (e) => {
     if (!firstSelectedObject) return
@@ -31,12 +65,7 @@ export const ObjectManagerDriver = () => {
         break;
       case "virtualEntity": {
         handleEntiyChange(e)
-        // Create a new custom event each time
-        const virtualEntityChangeEvent = new CustomEvent('virtualEntityChange', {
-          detail: { transformation: e, object: firstSelectedObject }
-        });
-
-        document.dispatchEvent(virtualEntityChangeEvent as any);
+        dispatchVirtualEntityChangeEvent(e, firstSelectedObject);
         break;
       }
       case "keyframeNode":
@@ -47,68 +76,57 @@ export const ObjectManagerDriver = () => {
     }
   };
 
+
+  // 
+  //  Handle ENTITIES
+  // 
   const handleEntiyChange = (e) => {
-    if (!firstObjectSelectedRef) return
+    const firstObjectSelectedRef = firstSelectedObject?.ref.current;
+    if (!firstObjectSelectedRef)
+      return
     const controls = e.target;
     const axis = controls.axis;
-
     if (!axis) return
 
-    const vxkey = firstSelectedObject.vxkey;
+    const vxkey = firstSelectedObject?.vxkey;
 
-    // Map axis letters to property names
-    const axisMap = {
-      X: 'x',
-      Y: 'y',
-      Z: 'z',
-    };
-
-    // Determine which properties have changed based on the axis
     const axes = axis.split('');
+    const changes = {};
+
     axes.forEach((axisLetter: string) => {
       const propertyAxis = axisMap[axisLetter];
       if (!propertyAxis) return;
 
+      const propertyPath = `${transformMap[transformMode]}.${propertyAxis}`;
+      let newValue;
+
       switch (transformMode) {
-        case 'translate': {
-          const newValue = firstObjectSelectedRef.position[propertyAxis];
-          handlePropertyValueChange(
-            vxkey,
-            `position.${propertyAxis}`,
-            newValue,
-            false
-          );
+        case 'translate':
+          newValue = firstObjectSelectedRef.position[propertyAxis];
           break;
-        }
-
-        case 'rotate': {
-          const newValue = firstObjectSelectedRef.rotation[propertyAxis]
-          handlePropertyValueChange(
-            vxkey,
-            `rotation.${propertyAxis}`,
-            newValue,
-            false
-          );
+        case 'rotate':
+          newValue = firstObjectSelectedRef.rotation[propertyAxis]
           break;
-        }
-
-        case 'scale': {
-          const newValue = firstObjectSelectedRef.scale[propertyAxis]
-          handlePropertyValueChange(
-            vxkey,
-            `scale.${propertyAxis}`,
-            newValue,
-            false
-          );
+        case 'scale':
+          newValue = firstObjectSelectedRef.scale[propertyAxis]
           break;
-        }
       }
 
+      // Call the appropriate debounced function
+      debouncedPropertyValueChangeFunctions[axisLetter]?.(
+        vxkey,
+        propertyPath,
+        newValue
+      );
     });
   }
 
-  const handleKeyframeNodeChange = () => {
+  // 
+  //  Handle KEYFRAME Nodes 
+  // 
+  const handleKeyframeNodeChange = throttle(() => {
     const { data, ref } = (firstSelectedObject as vxKeyframeNodeProps);
+    const setKeyframeValue = useTimelineEditorAPI.getState().setKeyframeValue;
 
     (data.keyframeKeys as string[])?.forEach(
       (keyframeKey) => {
@@ -125,9 +143,11 @@ export const ObjectManagerDriver = () => {
         )
       }
     );
+  }, 300)
 
-  }
-
+  // 
+  //  Handle SPLINE Nodes 
+  // 
   const handleSplineNodeChange = () => {
     const { index, splineKey, ref } = firstSelectedObject as vxSplineNodeProps;
     const newPosition = ref.current.position
@@ -179,6 +199,4 @@ const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
   return 'x';
 };
 
-function useMemo(arg0: () => CustomEvent<unknown>, arg1: undefined[]) {
-  throw new Error("Function not implemented.");
-}
+

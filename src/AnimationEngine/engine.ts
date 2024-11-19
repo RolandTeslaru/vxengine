@@ -185,11 +185,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * @param timelines - A record of timelines to load.
   */
   loadTimelines(timelines: Record<string, ITimeline>) {
-    if(IS_DEVELOPMENT){
-      console.log("VXEngine AnimationEngine: Validating timelines")
-      const errors = AnimationEngine.validateAndFixTimelines(timelines)
-      console.log(`VXEngine AnimationEngine: Found ${errors} errors in the timelines`)
-  
+    if(IS_DEVELOPMENT){  
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
   
       if (syncResult?.status === 'out_of_sync') {

@@ -74,8 +74,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const inputRef = useRef<HTMLInputElement>(null);
 
         useEffect(() => {
-            if (!inputRef.current.value)
-                inputRef.current.value = getDefaultValue();
+            inputRef.current.value = getDefaultValue();
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
                 const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);

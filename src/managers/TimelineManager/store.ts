@@ -12,6 +12,8 @@ import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
 import { useVXObjectStore } from '../ObjectManager';
 import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
+import { debounce } from 'lodash';
+import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -157,7 +159,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         });
     },
 
-    scale: 1,
+    scale: 6,
     setScale: (count) => set({ scale: count }),
 
     cursorTime: START_CURSOR_TIME,
@@ -174,6 +176,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     changes: 0,
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
+
+    clipboard: {},
+    setClipboard: (keyframes: IKeyframe) => {},
 
     selectedKeyframeKeys: [],
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
@@ -305,8 +310,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         get().addChange()
     },
 
-    createKeyframe: (props) => {
-        const { trackKey, value, reRender = true } = props;
+    createKeyframe: ({ trackKey, value, reRender = true }) => {
+        console.log("Creating Keyframe ",trackKey)
         const keyframeKey = `keyframe-${Date.now()}`
 
         set(produce((state: TimelineEditorStoreProps) => createKeyframeLogic(state, trackKey, keyframeKey, value)))
@@ -405,6 +410,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     setKeyframeTime: (keyframeKey: string, newTime: number, reRender = true) => {
+        newTime = truncateToDecimals(newTime)
         set(produce((state: TimelineEditorStoreProps) => {
             state.keyframes[keyframeKey].time = newTime;
         }))
@@ -419,6 +425,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     setKeyframeValue: (keyframeKey, newValue, reRender = true) => {
+        newValue = truncateToDecimals(newValue);
         // console.log("TimelineEditorAPI: Setting", keyframeKey, " to value:", newValue)
         set(produce((state: TimelineEditorStoreProps) => {
             state.keyframes[keyframeKey].value = newValue;
@@ -450,6 +457,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     createStaticProp: ({ vxkey, propertyPath, value, reRender, state }) => {
+        value = truncateToDecimals(value);
         const staticPropKey = `${vxkey}.${propertyPath}`
 
         if (state)
@@ -475,6 +483,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender = true) => {
+        newValue = truncateToDecimals(newValue)
         set(produce((state: TimelineEditorStoreProps) => {
             state.staticProps[staticPropKey].value = newValue;
         }))
@@ -486,9 +495,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     handlePropertyValueChange: (vxkey, propertyPath, newValue, reRender = true) => {
+        newValue = truncateToDecimals(newValue);
         const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
         const track = get().getTrack(generalKey);
         const isPropertyTracked = !!track;
+        console.log("Handling Property value change ", generalKey, " isPropertyTracjed", isPropertyTracked, get().tracks)
 
         if (isPropertyTracked) {
             const trackKey = generalKey;
@@ -503,18 +514,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 }
                 return false;
             });
-
             // if keyframe exists, update its value
             // else create a new keyframe at cursortime
             if (targetedKeyframe)
                 get().setKeyframeValue(targetedKeyframe.id, newValue, reRender);
             else
-                get().createKeyframe({
-                    trackKey,
-                    value: newValue,
-                    reRender
-                });
-
+                get().createKeyframe({trackKey,value: newValue,reRender});
         } else {
             const staticPropKey = generalKey;
             // Check if the static prop exists
@@ -548,3 +553,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         get().addChange()
     }
 }))
+
+
+const truncateToDecimals = (value: number) => {
+    return AnimationEngine.truncateToDecimals(value, AnimationEngine.ENGINE_PRECISION)
+}
+

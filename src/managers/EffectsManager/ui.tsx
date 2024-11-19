@@ -3,6 +3,7 @@ import { useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import React from 'react'
 import { useObjectManagerAPI } from '../ObjectManager'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
 
 export const EffectsManagerUI = React.memo(() => {
   const vxobjects = useVXObjectStore(state => state.objects)
@@ -26,7 +27,7 @@ const ListItem = React.memo(({ vxEffect }: { vxEffect: vxObjectProps }) => {
   const selectObjects = useObjectManagerAPI(state => state.selectObjects)
 
   const handleOnClick = () => {
-    selectObjects([vxEffect.vxkey], "")
+    selectObjects([vxEffect.vxkey], "effect")
   }
 
   return (
@@ -46,3 +47,15 @@ const ListItem = React.memo(({ vxEffect }: { vxEffect: vxObjectProps }) => {
     </div>
   )
 })
+
+
+export const EffectsManagerSubMenu = () => {
+  return (
+    <MenubarSub>
+      <MenubarSubTrigger>Effects Manager API</MenubarSubTrigger>
+      <MenubarSubContent>
+        <MenubarItem>set Sellected Effect</MenubarItem>
+      </MenubarSubContent>
+    </MenubarSub>
+  )
+}

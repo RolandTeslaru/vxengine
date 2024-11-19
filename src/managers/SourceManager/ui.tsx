@@ -7,6 +7,7 @@ import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
 import { diff } from "deep-diff";
 import ReactDiffViewer from 'react-diff-viewer';
+import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger } from "@vxengine/components/shadcn/menubar"
 
 
 const defaultStyles = {
@@ -131,7 +132,8 @@ export const DataSyncPopup = () => {
     }
 
     const onClickLocalStorage = () => {
-        overwriteDiskData(localStorageData)
+        const data = JSON.parse(localStorage.getItem("timelines"))
+        overwriteDiskData(data)
         setShowSyncPopup(false);
     }
 
@@ -190,5 +192,32 @@ export const DataSyncPopup = () => {
                 </div>
             </div>
         </div>
+    )
+}
+
+
+export const SourceManagerSubMenu = () => {
+    const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)
+    const saveToLocalStorage = useSourceManagerAPI(state => state.saveDataToLocalStorage)
+    const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData)
+    const overwriteLocalStorage = useSourceManagerAPI(state => state.overwriteLocalStorageData)
+    return (
+        <MenubarSub>
+            <MenubarSubTrigger>Source Manager API</MenubarSubTrigger>
+            <MenubarSubContent>
+                <MenubarItem onClick={() => saveToDisk()}>Save Data to Disk</MenubarItem>
+                <MenubarItem onClick={() => saveToLocalStorage()}>Save Data to Local Storage</MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem onClick={() => {
+                    const timelines = useAnimationEngineAPI.getState().timelines
+                    overwriteDiskData(timelines)
+                }}>Override Disk</MenubarItem>
+                <MenubarItem onClick={() => {
+                    const timelines = useAnimationEngineAPI.getState().timelines
+                    overwriteLocalStorage(timelines)
+                }}
+                >Override Local Storage</MenubarItem>
+            </MenubarSubContent>
+        </MenubarSub>
     )
 }

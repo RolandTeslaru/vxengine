@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import ChevronRight from "@geist-ui/icons/chevronRight"
 import Navigation2 from "@geist-ui/icons/navigation2"
 
@@ -20,6 +20,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@vxengine/
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/store';
 import { Input } from '@vxengine/components/shadcn/input';
 import ProgressionControls from './components/ProgressionControls';
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar';
 
 export const scaleWidth = 160;
 export const scale = 5;
@@ -69,14 +70,14 @@ export const TimelineEditorUI = React.memo(() => {
 })
 
 const MinimizeButton = () => {
-    const open = useVXUiStore(state => state.timelineEditorOpen);
-    const setOpen = useVXUiStore(state => state.setTimelineEditorOpen)
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
+    const setOpen = useVXUiStore(state => state.setTimelineEditorOpen)
+    const open = useVXUiStore(state => state.timelineEditorOpen);
 
     if (!timelineEditorAttached) return null;
 
     return (
-        <button 
+        <button
             className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
             onClick={() => setOpen(!open)}
         >
@@ -105,17 +106,25 @@ const TimelineEditorContent = () => {
 }
 
 const TimelineEditorFooter = () => {
-    const snap = useTimelineEditorAPI(state => state.snap);
+    const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
+    const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
+    const snap = useTimelineEditorAPI(state => state.snap);
 
     const open = useVXUiStore(state => state.timelineEditorOpen)
 
-    const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
-    const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
     const handleTimelineLengthChange = (e: any) => {
         const value = e.target.value;
         setCurrentTimelineLength(value);
     }
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if((event.ctrlKey || event.metaKey) && event.key === "c"){
+                
+            }
+        }
+    }, [])
 
     return (
         <AnimatePresence>
@@ -128,10 +137,10 @@ const TimelineEditorFooter = () => {
                     <ScaleSlider />
                     <div className='flex flex-row gap-2'>
                         <p className='text-xs h-auto my-auto'>Snap</p>
-                        <Switch 
-                            className='my-auto scale-75' 
-                            onClick={() => setSnap(!snap)} 
-                            checked={snap} 
+                        <Switch
+                            className='my-auto scale-75'
+                            onClick={() => setSnap(!snap)}
+                            checked={snap}
                         />
                     </div>
                     <div className='flex flex-row h-fit text-xs gap-2'>
@@ -235,5 +244,63 @@ export const TimelineTools: React.FC<{
                 </motion.div>
             )}
         </AnimatePresence>
+    )
+}
+
+
+export const TimelineManagerSubMenu = () => {
+    return (
+        <MenubarSub>
+            <MenubarSubTrigger>Timeline Editor API</MenubarSubTrigger>
+            <MenubarSubContent>
+                {/* Keyframe sub menu */}
+                <MenubarSub>
+                    <MenubarSubTrigger>Keyframe</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem>Create Keyframe</MenubarItem>
+                        <MenubarItem>Set Keyframe Time</MenubarItem>
+                        <MenubarItem>Set Keyframe Value</MenubarItem>
+                        <MenubarItem>Remove Keyframe</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
+                {/* Static Prop Sub menu */}
+                <MenubarSub>
+                    <MenubarSubTrigger>StaticProp</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem>Create StaticProp</MenubarItem>
+                        <MenubarItem>Set StaticProp Value</MenubarItem>
+                        <MenubarItem>Remove StaticProp</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
+                {/* Get */}
+                <MenubarSub>
+                    <MenubarSubTrigger>Get</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem>get Track</MenubarItem>
+                        <MenubarItem>get Keyframe</MenubarItem>
+                        <MenubarItem>get StaticProp</MenubarItem>
+                        <MenubarItem>get Tracks For Object</MenubarItem>
+                        <MenubarItem>get StaticProps For Object</MenubarItem>
+                        <MenubarItem>get Keyframes For Track</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
+                {/* Move Cursor */}
+                <MenubarSub>
+                    <MenubarSubTrigger>Move Cursor</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem>Move To Next Keyframe</MenubarItem>
+                        <MenubarItem>Move To Previous Keyframe</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
+                {/* Make */}
+                <MenubarSub>
+                    <MenubarSubTrigger>Make</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem>Make Property Tracked</MenubarItem>
+                        <MenubarItem>Move Property Static</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
+            </MenubarSubContent>
+        </MenubarSub>
     )
 }

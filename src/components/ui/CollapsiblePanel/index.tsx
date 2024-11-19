@@ -1,5 +1,5 @@
 import ChevronRight from "@geist-ui/icons/chevronRight"
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import styles from "./styles.module.scss"
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
     className?: string
 }
 
-const CollapsiblePanel: React.FC<Props> = ({ title, children, className, defaultOpen = true }) => {
+const CollapsiblePanel: React.FC<Props> = memo(({ title, children, className, defaultOpen = true }) => {
     const [open, setOpen] = useState(defaultOpen);
 
     return (
@@ -36,6 +36,6 @@ const CollapsiblePanel: React.FC<Props> = ({ title, children, className, default
             }
         </div>
     )
-}
+})
 
 export default CollapsiblePanel

@@ -34,6 +34,9 @@ export interface TimelineEditorStoreProps {
     setSearchQuery: (query: string) => void
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
+
+    clipboard: {},
+    setClipboard: (keyframes: IKeyframe[]) => {}
     
     selectedKeyframeKeys: string[];
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;

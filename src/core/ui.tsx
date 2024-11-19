@@ -5,7 +5,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { ObjectProperties, ObjectTransformControls } from "../managers/ObjectManager/ui"
+import { ObjectPropertiesPanel, ObjectTransformControls } from "../managers/ObjectManager/ui"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { AnimatePresence, motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectList"
@@ -86,7 +86,7 @@ const RightPanel = () => {
                     <div className="w-full h-full flex flex-col gap-2 rounded-2xl  overflow-y-scroll">
                         {firstSelectedObject && (
                             <>
-                                <ObjectProperties vxobject={firstSelectedObject} />
+                                <ObjectPropertiesPanel vxobject={firstSelectedObject} />
                                 <Params vxobject={firstSelectedObject} />
                                 <SettingsList vxobject={firstSelectedObject} />
                             </>
@@ -131,7 +131,6 @@ const LeftPanel = () => {
                             <EffectsManagerUI />
                             <TrackSegmentProperties />
                             <SplineManagerUI />
-                            <SourceManagerUI />
                         </div>
 
                         <ObjectTransformControls />
