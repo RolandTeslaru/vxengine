@@ -108,6 +108,7 @@ const TimelineEditorContent = () => {
 const TimelineEditorFooter = () => {
     const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
     const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
+    const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe);
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
     const snap = useTimelineEditorAPI(state => state.snap);
 
@@ -119,12 +120,38 @@ const TimelineEditorFooter = () => {
     }
 
     useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
+        const handleCopy = (event: KeyboardEvent) => {
             if((event.ctrlKey || event.metaKey) && event.key === "c"){
-                
+                const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
+                const setClipboard = useTimelineEditorAPI.getState().setClipboard;
+                setClipboard(selectedKeyframeKeys);
             }
         }
+
+        window.addEventListener('keydown', handleCopy);
+        return () => window.removeEventListener("keydown", handleCopy);
     }, [])
+
+    useEffect(() => {
+        const handlePaste = (event: KeyboardEvent) => {
+            if((event.ctrlKey || event.metaKey) && event.key === "v"){
+                const clipboard = useTimelineEditorAPI.getState().clipboard;
+                const selectedKeyframes = clipboard.map((key, index) => {
+                    return useTimelineEditorAPI.getState().getKeyframe(key);
+                })
+                selectedKeyframes.forEach((keyframe) => {
+                    const {vxkey, propertyPath, value} = keyframe
+                    createKeyframe({
+                        trackKey: `${vxkey}.${propertyPath}`,
+                        value
+                    })
+                })
+            }
+        }
+
+        window.addEventListener("keydown", handlePaste);
+        return () => window.removeEventListener("keydown", handlePaste);
+    })
 
     return (
         <AnimatePresence>

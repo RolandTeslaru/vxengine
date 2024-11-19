@@ -35,8 +35,8 @@ export interface TimelineEditorStoreProps {
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
 
-    clipboard: {},
-    setClipboard: (keyframes: IKeyframe[]) => {}
+    clipboard: string[],
+    setClipboard: (keyframeKeys: string[]) => void
     
     selectedKeyframeKeys: string[];
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;

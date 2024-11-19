@@ -177,8 +177,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     changes: 0,
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
 
-    clipboard: {},
-    setClipboard: (keyframes: IKeyframe) => {},
+    clipboard: [],
+    setClipboard: (keyframeKeys: string[]) => set({ clipboard: keyframeKeys}),
 
     selectedKeyframeKeys: [],
     setSelectedKeyframeKeys: (keyframeKeys: string[]) => set(produce((state: TimelineEditorStoreProps) => {
