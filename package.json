@@ -87,6 +87,7 @@
     "react-resizable-panels": "^2.1.4",
     "react-virtuoso": "^4.12.0",
     "react-window": "^1.8.10",
+    "react18-json-view": "^0.2.8",
     "tslib": "^2.7.0"
   },
   "devDependencies": {

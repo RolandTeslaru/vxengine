@@ -2,7 +2,7 @@ import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import VXEngineWindow from "./VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
-import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
+import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
@@ -10,320 +10,58 @@ import { useVXUiStore } from "./VXUIStore";
 import { WindowControlDots } from "./WindowControlDots";
 import { useRefStore } from "@vxengine/utils";
 import { Switch } from "../shadcn/switch";
-
-
-const EditorDataComponent = () => {
-    const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
-    return (
-        <pre
-            style={{
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(editorObjects, null, 2)}
-        </pre>
-    );
-};
-
-const KeyframesComponent = () => {
-    const keyframes = useTimelineEditorAPI(state => state.keyframes);
-    return (
-        <pre
-            style={{
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(keyframes, null, 2)}
-        </pre>
-    );
-};
-
-const TracksComponent = () => {
-    const tracks = useTimelineEditorAPI(state => state.tracks);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(tracks, null, 2)}
-        </pre>
-    );
-};
-
-const StaticPropsComponent = () => {
-    const staticProps = useTimelineEditorAPI(state => state.staticProps);
-    return (
-        <pre
-            style={{
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(staticProps, null, 2)}
-        </pre>
-    );
-};
-
-const CurrentTimelineComponent = () => {
-    const currentTimeline = useAnimationEngineAPI(state => state.currentTimeline);
-    return (
-        <pre
-            style={{
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {"currentTimeline id: " + currentTimeline.id}
-            {JSON.stringify(currentTimeline, null, 2)}
-        </pre>
-    );
-};
-
-const PropertiesStoreComponent = () => {
-    const propertiesStore = useObjectPropertyAPI(state => state.properties);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(propertiesStore, null, 2)}
-        </pre>
-    );
-};
-
-const SettingsComponent = () => {
-    const settings = useObjectSettingsAPI(state => state.settings);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(settings, null, 2)}
-        </pre>
-    )
-}
-const AdditionalSettingsComponent = () => {
-    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(additionalSettings, null, 2)}
-        </pre>
-    )
-}
-
-const SplinesComponent = () => {
-    const splines = useSplineManagerAPI(state => state.splines);
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(splines, null, 2)}
-        </pre>
-    )
-}
-
-const limitDepth = (obj, depth, seen = new WeakSet()) => {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
-    if (seen.has(obj)) {
-        return '[Circular]';
-    }
-    seen.add(obj);
-
-    if (depth === 0) {
-        return '[Max depth reached]';
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map(item => limitDepth(item, depth - 1, seen));
-    }
-
-    const result = {};
-    for (const key in obj) {
-        result[key] = limitDepth(obj[key], depth - 1, seen);
-    }
-
-    seen.delete(obj);
-    return result;
-};
-
-const VxobjectsComponent = () => {
-    const vxobjects = useVXObjectStore(state => state.objects);
-
-    if (!vxobjects) {
-        return <div>No data available</div>;
-    }
-
-    const [showRef, setShowRef] = useState(false);
-
-    useEffect(() => {
-        console.log("Show Ref change d ", showRef);
-    })
-
-    const dataToDisplay = useMemo(() => {
-        if (showRef)
-            return limitDepth(vxobjects, 4);
-        else
-            return JSON.parse(JSON.stringify(vxobjects, replacer));
-    }, [showRef, vxobjects])
-
-    return (
-        <>
-
-            <div className="flex flex-row h-auto absolute right-2 top-10">
-                <p className="font-sans-menlo text-xs">Show Ref</p>
-                <Switch
-                    checked={showRef}
-                    onCheckedChange={() => setShowRef(!showRef)}
-                    className="ml-2 my-auto"
-                />
-            </div>
-            {/* <ReactJson
-                src={dataToDisplay}
-                name={null}
-                theme="brewer"
-                collapsed={1}
-                enableClipboard={false}
-                displayDataTypes={false}
-                displayObjectSize={false}
-                style={{ fontSize: '12px' }}
-            /> */}
-        </>
-    );
-};
-
-const replacer = (key, value) => {
-    if (key === 'ref') {
-        return '[ref omitted]';
-    }
-    return value;
-};
-
-const TimelinesComponent = () => {
-    const timelines = useAnimationEngineAPI(state => state.timelines)
-
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(timelines, null, 2)}
-        </pre>
-    )
-}
-
-const GroupedPathsComponent = () => {
-    const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            {JSON.stringify(groupedPaths, null, 2)}
-        </pre>
-    )
-}
-
-
-const RefStoreComponent = () => {
-    // Access scrollLeftRef from the store
-    const scrollLeftRef = useRefStore(state => state.scrollLeftRef);
-    // State to hold and display the current scrollLeft value
-    const [scrollLeft, setScrollLeft] = useState(scrollLeftRef.current);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            // Check if scrollLeftRef.current has changed, then update the state
-            if (scrollLeftRef.current !== scrollLeft) {
-                setScrollLeft(scrollLeftRef.current);
-            }
-        }, 100); // Adjust the interval as needed
-
-        // Cleanup the interval on component unmount
-        return () => clearInterval(interval);
-    }, [scrollLeftRef, scrollLeft]);
-
-    return (
-        <pre
-            style={{
-                overflowY: 'scroll',
-                whiteSpace: 'pre-wrap',
-            }}
-            className="text-xs"
-        >
-            scrollLeft: {scrollLeft}
-        </pre>
-    );
-};
+import JsonView from 'react18-json-view'
+import 'react18-json-view/src/style.css'
+import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
+import { useEffectsManagerAPI } from "@vxengine/managers/EffectsManager";
+import { useCameraManagerAPI } from "@vxengine/managers/CameraManager";
 
 const StateVisualizer = () => {
-    const [activeData, setActiveData] = useState("editorObjects");
+    const [activeData, setActiveData] = useState("ObjectManagerAPI");
     const [attachedState, setAttachedState] = useState(true);
 
     const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
     const setShowStateVisualzier = useVXUiStore(state => state.setShowStateVisualizer)
 
-    // Conditionally render the correct mini component
-    const renderActiveComponent = () => {
-        switch (activeData) {
-            case "editorObjects":
-                return <EditorDataComponent />;
-            case "keyframes":
-                return <KeyframesComponent />;
-            case "tracks":
-                return <TracksComponent />;
-            case "staticProps":
-                return <StaticPropsComponent />;
-            case "currentTimeline":
-                return <CurrentTimelineComponent />;
-            case "propertiesStore":
-                return <PropertiesStoreComponent />;
-            case "vxobjects":
-                return <VxobjectsComponent />;
-            case "settings":
-                return <SettingsComponent />
-            case "additionalSettings":
-                return <AdditionalSettingsComponent />
-            case "splines":
-                return <SplinesComponent />;
-            case "timelines":
-                return <TimelinesComponent />;
-            case "groupedPats":
-                return <GroupedPathsComponent />;
-            case "refStore":
-                return <RefStoreComponent />;
-            default:
-                return null;
-        }
-    };
+    const data = useMemo(() => {
+        const state = (() => {
+            switch (activeData) {
+                case "ObjectManagerAPI": {
+                    return useObjectManagerAPI.getState();
+                }
+                case "TimelineEditorAPI": {
+                    return useTimelineEditorAPI.getState()
+                }
+                case "SplineManagerAPI": {
+                    return useSplineManagerAPI.getState();
+                }
+                case "SourceManagerAPI": {
+                    return useSourceManagerAPI.getState();
+                }
+                case "EffectsManagerAPI": {
+                    return useEffectsManagerAPI.getState();
+                }
+                case "CameraManagerAPI": {
+                    return useCameraManagerAPI.getState();
+                }
+                case "ObjectPropertyAPI": {
+                    return useObjectPropertyAPI.getState()
+                }
+                case "ObjectSettingsAPI": {
+                    return useObjectSettingsAPI.getState();
+                }
+                default:
+                    return null;
+            }
+        })();
+    
+        if (!state || typeof state !== "object") return null;
+    
+        // Filter out functions
+        return Object.fromEntries(
+            Object.entries(state).filter(([key, value]) => typeof value !== "function")
+        );
+    }, [activeData]);
 
     const [refresh, setRefresh] = useState(0);
 
@@ -332,7 +70,9 @@ const StateVisualizer = () => {
             <>
                 <div className="w-full flex flex-row pb-1"
                 >
-                    <h1 className="text-left ml-2 font-sans-menlo">Object Visualizer</h1>
+                    <h1 className="text-left ml-2 font-sans-menlo">
+                        State Visualizer
+                    </h1>
                     <button className={" border right-2 absolute ml-auto text-xs p-[2px] h-fit w-fit flex hover:bg-neutral-800 border-neutral-600 border-opacity-20 rounded-2xl cursor-pointer "}
                         onClick={() => setRefresh(refresh + 1)}
                     >
@@ -350,25 +90,24 @@ const StateVisualizer = () => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value={"editorObjects"} >editorObjects</SelectItem>
-                                <SelectItem value={"keyframes"} >keyframes</SelectItem>
-                                <SelectItem value={"tracks"} >tracks</SelectItem>
-                                <SelectItem value={"staticProps"} >staticProps</SelectItem>
-                                <SelectItem value={"currentTimeline"} >currentTimeline</SelectItem>
-                                <SelectItem value={"propertiesStore"} >propertiesStore</SelectItem>
-                                <SelectItem value={"vxobjects"} >vxobjects</SelectItem>
-                                <SelectItem value={"settings"} >settings</SelectItem>
-                                <SelectItem value={"additionalSettings"} >additionalSettings</SelectItem>
-                                <SelectItem value={"splines"} >splines</SelectItem>
-                                <SelectItem value={"timelines"} >timelines</SelectItem>
-                                <SelectItem value={"groupedPats"} >groupedPats</SelectItem>
-                                <SelectItem value={"refStore"} >refStore</SelectItem>
+                                <SelectItem value={"ObjectManagerAPI"} >ObjectManagerAPI</SelectItem>
+                                <SelectItem value={"TimelineEditorAPI"} >TimelineEditorAPI</SelectItem>
+                                <SelectItem value={"SplineManagerAPI"} >SplineManagerAPI</SelectItem>
+                                <SelectItem value={"SourceManagerAPI"} >SourceManagerAPI</SelectItem>
+                                <SelectItem value={"EffectsManagerAPI"} >EffectsManagerAPI</SelectItem>
+                                <SelectItem value={"CameraManagerAPI"} >CameraManagerAPI</SelectItem>
+                                <SelectItem value={"ObjectPropertyAPI"} >ObjectPropertyAPI</SelectItem>
+                                <SelectItem value={"ObjectSettingsAPI"} >ObjectSettingsAPI</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
                 </div>
                 <div className={`${attachedState ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll	 mb-auto `}>
-                    <div>{renderActiveComponent()}</div>
+                    <JsonView
+                        src={data}
+                        collapsed={({ depth }) => depth > 1}
+                        dark={true}
+                    />
                 </div>
             </>
         )
