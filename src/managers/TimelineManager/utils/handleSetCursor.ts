@@ -1,6 +1,6 @@
 import { parserPixelToTime, parserTimeToPixel } from "./deal_data";
 import { DEFAULT_SCALE_WIDTH } from "@vxengine/AnimationEngine/interface/const";
-import { useTimelineEditorAPI } from "../store";
+import { truncateToDecimals, useTimelineEditorAPI } from "../store";
 import { useRefStore } from "@vxengine/utils/useRefStore";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
 
@@ -13,6 +13,7 @@ export const handleSetCursor = (param: {
     rerender?: boolean;
 } = { rerender: true }) => {
     let { left, time, rerender = true } = param;
+    time = truncateToDecimals(time);
     if (typeof left === 'undefined' && typeof time === 'undefined') return;
 
     const cursorThumbRef = useRefStore.getState().cursorThumbRef

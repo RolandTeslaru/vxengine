@@ -1371,7 +1371,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  static truncateToDecimals(num: number, decimals: number): number {
+  static truncateToDecimals(num: number, decimals?: number): number {
+    if(!decimals)
+      decimals = AnimationEngine.ENGINE_PRECISION;
+    
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;
   }

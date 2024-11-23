@@ -27,6 +27,9 @@ interface UiStoreStateProps {
 
     mountTimelineEditor: boolean;
     setMountTimelineEditor: (mountTimelineEditor: boolean) => void;
+
+    selectedWindow: string;
+    setSelectedWindow: (window: string) => void;
 }
 
 export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) => ({
@@ -55,5 +58,8 @@ export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) =
     setMountRightPanel: (mountRightPanel: boolean) => set({ mountRightPanel }),
 
     mountTimelineEditor: true,
-    setMountTimelineEditor: (mountTimelineEditor: boolean) => set({ mountTimelineEditor})
+    setMountTimelineEditor: (mountTimelineEditor: boolean) => set({ mountTimelineEditor}),
+
+    selectedWindow: "",
+    setSelectedWindow: (window: string) => set({ selectedWindow: window})
 }))

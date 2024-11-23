@@ -186,8 +186,7 @@ const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
     timeline.objects?.forEach((object) => {
       object.tracks.forEach(track => {
         track.keyframes.forEach(keyframe => {
-          console.trace("Keyframe object is frozen", keyframe);
-          console.log("Is keyframe frozen ? ", Object.isFrozen(keyframe));
+          // console.trace("Keyframe object is frozen", keyframe);
           if (!isValidPrecision(keyframe.time)) {
             errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
             keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);

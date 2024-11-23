@@ -28,21 +28,7 @@ export const scale = 5;
 
 export const TimelineEditorUI = React.memo(() => {
     const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
-
-    // TODO: Fix this length
-    // const handleLengthInputChange = (e) => {
-    //     const newValue = e.target.value;
-
-    //     const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
-
-    //     const newCurrentTimeline = {
-    //       ...currentTimeline,
-    //       length: newValue      
-    //     };
-
-    //     useAnimationEngineAPI.setState({ currentTimeline: newCurrentTimeline });
-    //   };
-
+    
     return (
         <>
             {/*  H E A D E R */}
@@ -105,6 +91,21 @@ const TimelineEditorContent = () => {
     )
 }
 
+const shouldIgnoreKeyEvent = (event: KeyboardEvent): boolean => {
+    const selectedWindow = useVXUiStore.getState().selectedWindow;
+
+    if (selectedWindow !== "VXEngineTimelinePanel") {
+        return true; 
+    }
+
+    const target = event.target as HTMLElement;
+    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return true; 
+    }
+
+    return false; 
+}
+
 const TimelineEditorFooter = () => {
     const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
     const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
@@ -121,7 +122,10 @@ const TimelineEditorFooter = () => {
 
     useEffect(() => {
         const handleCopy = (event: KeyboardEvent) => {
-            if((event.ctrlKey || event.metaKey) && event.key === "c"){
+            if(shouldIgnoreKeyEvent(event))
+                return
+
+            if ((event.ctrlKey || event.metaKey) && event.key === "c") {
                 const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
                 const setClipboard = useTimelineEditorAPI.getState().setClipboard;
                 setClipboard(selectedKeyframeKeys);
@@ -134,13 +138,16 @@ const TimelineEditorFooter = () => {
 
     useEffect(() => {
         const handlePaste = (event: KeyboardEvent) => {
-            if((event.ctrlKey || event.metaKey) && event.key === "v"){
+            if(shouldIgnoreKeyEvent(event))
+                return
+
+            if ((event.ctrlKey || event.metaKey) && event.key === "v") {
                 const clipboard = useTimelineEditorAPI.getState().clipboard;
                 const selectedKeyframes = clipboard.map((key, index) => {
                     return useTimelineEditorAPI.getState().getKeyframe(key);
                 })
                 selectedKeyframes.forEach((keyframe) => {
-                    const {vxkey, propertyPath, value} = keyframe
+                    const { vxkey, propertyPath, value } = keyframe
                     createKeyframe({
                         trackKey: `${vxkey}.${propertyPath}`,
                         value

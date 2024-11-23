@@ -57,14 +57,12 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
     ({ propertyPath, inputProps, isPropertyTracked }) => {
         const vxkey = useObjectManagerAPI((state) => state.selectedObjects[0].vxkey);
         const firstObjectSelected = useObjectManagerAPI((state) => state.selectedObjects[0]);
-        const firstObjectSelectedRef = firstObjectSelected?.ref.current;
+        const ref = firstObjectSelected?.ref.current;
+
+        const getProperty = useObjectPropertyAPI((state) => state.getProperty);
 
         const getDefaultValue = () => {
-            const val =
-                getNestedProperty(
-                    useObjectPropertyAPI.getState().properties[vxkey],
-                    propertyPath
-                ) || getNestedProperty(firstObjectSelectedRef, propertyPath);
+            const val = getProperty(vxkey, propertyPath) || getNestedProperty(ref, propertyPath);
 
             return val;
         };
@@ -75,12 +73,16 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         useEffect(() => {
             inputRef.current.value = getDefaultValue();
-            const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
-                const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
-                const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
+        }, [])
 
-                if (newValue !== prevValue && inputRef.current && inputRef.current.value !== newValue) {
-                    inputRef.current.value = newValue;
+        useEffect(() => {
+            const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
+                const newValue = state.getProperty(vxkey, propertyPath);
+
+                if(inputRef.current && newValue){
+                    if(newValue.toString() !== inputRef.current.value){
+                        inputRef.current.value = newValue.toString()
+                    }
                 }
             });
 
@@ -121,6 +123,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                     ref={inputRef}
                     // value={getDefaultValue()} // Removed to make input uncontrolled
                     onChange={handleChange}
+                    type='number'
                     className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-[40px]"
                     {...inputProps}
                     style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}

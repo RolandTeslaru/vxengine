@@ -1,21 +1,215 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import VXEngineWindow from "./VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
-import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
+import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
 import { useVXUiStore } from "./VXUIStore";
 import { WindowControlDots } from "./WindowControlDots";
-import { useRefStore } from "@vxengine/utils";
-import { Switch } from "../shadcn/switch";
 import JsonView from 'react18-json-view'
 import 'react18-json-view/src/style.css'
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
 import { useEffectsManagerAPI } from "@vxengine/managers/EffectsManager";
 import { useCameraManagerAPI } from "@vxengine/managers/CameraManager";
+import AlertTriangle from '@geist-ui/icons/alertTriangle'
+import Search from "./Search";
 
+
+const filterOutFunctions = (state: any) => {
+    if (!state || typeof state !== "object") return null;
+    return Object.fromEntries(
+        Object.entries(state).filter(([_, value]) => typeof value !== "function")
+    );
+};
+
+// Component for ObjectManagerAPI
+const State_ObjectManagerAPI = () => {
+    const state = useObjectManagerAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+
+// Component for TimelineEditorAPI
+const State_TimelineEditorAPI = () => {
+    const state = useTimelineEditorAPI();
+
+    const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+    // Properties you want to keep expanded initially
+    const propertiesToExpand = ["clipboard", "selectedKeyframeKeys", "collapsedGroups"];
+
+    const collapsedLogic = (indexOrName: string | number, path: (string | number)[], depth: number) => {
+        const fullPath = path?.join(".");
+        if (expandedPaths.has(fullPath)) return false;
+        if (typeof indexOrName === "string" && propertiesToExpand.includes(indexOrName)) return false;
+        return depth > 1;
+    };
+
+    const handleCollapseChange = (path: (string | number)[], isCollapsed: boolean) => {
+        const fullPath = path?.join(".");
+        setExpandedPaths((prev) => {
+            const updated = new Set(prev);
+            if (isCollapsed) {
+                updated.delete(fullPath);
+            } else {
+                updated.add(fullPath);
+            }
+            return updated;
+        });
+    };
+
+    const filteredState = Object.fromEntries(
+        Object.entries(state).filter(([_, value]) => typeof value !== "function")
+    );
+
+    return (
+        <JsonView
+            src={filteredState}
+            // @ts-expect-error
+            collapsed={({ indexOrName, path, depth }) => collapsedLogic(indexOrName, path, depth)}
+            dark={true}
+        />
+    );
+};
+
+// Component for SplineManagerAPI
+const State_SplineManagerAPI = () => {
+    const state = useSplineManagerAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+
+// Component for SourceManagerAPI
+const State_SourceManagerAPI = () => {
+    const state = useSourceManagerAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+
+// Component for EffectsManagerAPI
+const State_EffectsManagerAPI = () => {
+    const state = useEffectsManagerAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+
+// Component for CameraManagerAPI
+const State_CameraManagerAPI = () => {
+    const state = useCameraManagerAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+
+// Component for ObjectPropertyAPI
+const State_ObjectPropertyAPI = () => {
+    const state = useObjectPropertyAPI();
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Function to filter the state based on the search query
+    const filterProperties = (properties, query) => {
+        if (!properties || typeof properties !== "object") return {};
+        if (!query) return properties;
+    
+        const lowerQuery = query.toLowerCase();
+    
+        return Object.keys(properties)
+            .filter((key) => {
+                const object = properties[key];
+                // Check if the key or any nested property includes the query string
+                return (
+                    key.toLowerCase().includes(lowerQuery) ||
+                    JSON.stringify(object).toLowerCase().includes(lowerQuery)
+                );
+            })
+            .reduce((acc, key) => {
+                acc[key] = properties[key];
+                return acc;
+            }, {});
+    };
+
+    // Ensure filterOutFunctions(state) produces a valid object
+    const sanitizedState = filterOutFunctions(state) || {};
+    const filteredState = {
+        ...sanitizedState,
+        properties: filterProperties(sanitizedState.properties, searchQuery),
+    };
+
+
+    return (
+        <>
+            <div className="absolute right-4 top-10 flex flex-row gap-2 text-yellow-400">
+                <AlertTriangle className="" size={30} />
+                <div className="text-xs font-sans-menlo">
+                    <p>Highly volatile state!</p>
+                    <p>Rendering this will cause lag!</p>
+                </div>
+            </div>
+            
+            <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
+
+            <JsonView
+                src={filteredState}
+                collapsed={({ depth }) => depth > 4}
+                dark={true}
+            />
+        </>
+    );
+};
+
+// Component for ObjectSettingsAPI
+const State_ObjectSettingsAPI = () => {
+    const state = useObjectSettingsAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
+const State_UIStore = () => {
+    const state = useVXUiStore();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    );
+};
 const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
     const [attachedState, setAttachedState] = useState(true);
@@ -23,45 +217,30 @@ const StateVisualizer = () => {
     const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
     const setShowStateVisualzier = useVXUiStore(state => state.setShowStateVisualizer)
 
-    const data = useMemo(() => {
-        const state = (() => {
-            switch (activeData) {
-                case "ObjectManagerAPI": {
-                    return useObjectManagerAPI.getState();
-                }
-                case "TimelineEditorAPI": {
-                    return useTimelineEditorAPI.getState()
-                }
-                case "SplineManagerAPI": {
-                    return useSplineManagerAPI.getState();
-                }
-                case "SourceManagerAPI": {
-                    return useSourceManagerAPI.getState();
-                }
-                case "EffectsManagerAPI": {
-                    return useEffectsManagerAPI.getState();
-                }
-                case "CameraManagerAPI": {
-                    return useCameraManagerAPI.getState();
-                }
-                case "ObjectPropertyAPI": {
-                    return useObjectPropertyAPI.getState()
-                }
-                case "ObjectSettingsAPI": {
-                    return useObjectSettingsAPI.getState();
-                }
-                default:
-                    return null;
-            }
-        })();
-    
-        if (!state || typeof state !== "object") return null;
-    
-        // Filter out functions
-        return Object.fromEntries(
-            Object.entries(state).filter(([key, value]) => typeof value !== "function")
-        );
-    }, [activeData]);
+    const renderStateComponent = () => {
+        switch (activeData) {
+            case "ObjectManagerAPI":
+                return <State_ObjectManagerAPI />;
+            case "TimelineEditorAPI":
+                return <State_TimelineEditorAPI />;
+            case "SplineManagerAPI":
+                return <State_SplineManagerAPI />;
+            case "SourceManagerAPI":
+                return <State_SourceManagerAPI />;
+            case "EffectsManagerAPI":
+                return <State_EffectsManagerAPI />;
+            case "CameraManagerAPI":
+                return <State_CameraManagerAPI />;
+            case "ObjectPropertyAPI":
+                return <State_ObjectPropertyAPI />;
+            case "ObjectSettingsAPI":
+                return <State_ObjectSettingsAPI />;
+            case "UIStore":
+                return <State_UIStore />;
+            default:
+                return null;
+        }
+    };
 
     const [refresh, setRefresh] = useState(0);
 
@@ -98,16 +277,13 @@ const StateVisualizer = () => {
                                 <SelectItem value={"CameraManagerAPI"} >CameraManagerAPI</SelectItem>
                                 <SelectItem value={"ObjectPropertyAPI"} >ObjectPropertyAPI</SelectItem>
                                 <SelectItem value={"ObjectSettingsAPI"} >ObjectSettingsAPI</SelectItem>
+                                <SelectItem value={"UIStore"} >UIStore</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
                 </div>
                 <div className={`${attachedState ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll	 mb-auto `}>
-                    <JsonView
-                        src={data}
-                        collapsed={({ depth }) => depth > 1}
-                        dark={true}
-                    />
+                    {renderStateComponent()}
                 </div>
             </>
         )
@@ -121,7 +297,7 @@ const StateVisualizer = () => {
             setAttachedState={setAttachedState}
         >
             {showStateVisualizer && (
-                <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-[24px] left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} 
+                <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-[24px] max-w-96 left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} 
                                 text-sm bg-neutral-900 p-2 gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-2xl flex flex-col`}
                     style={{ minWidth: "500px" }}
                 >

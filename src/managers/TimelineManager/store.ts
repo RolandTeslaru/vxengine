@@ -41,6 +41,8 @@ function removeTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     const track = state.tracks[trackKey]
 
+    if(!track) return;
+
     // Remove all keyframes required by the track
     track.keyframes.forEach(keyframeKey => {
         removeKeyframeLogic(state, trackKey, keyframeKey)
@@ -60,14 +62,14 @@ function createKeyframeLogic(
     value?: number
 ) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-
-    if (!value) {
-        value = getNestedProperty(useVXObjectStore.getState().objects[vxkey].ref.current, propertyPath)
+    if (value === undefined || value === null) {
+        const vxobject = useVXObjectStore.getState().objects[vxkey]
+        value = getNestedProperty(vxobject.ref.current, propertyPath)
     }
-
+    
     const newKeyframe: IKeyframe = {
         id: keyframeKey,
-        time: state.cursorTime,
+        time: truncateToDecimals(state.cursorTime),
         value: value,
         vxkey: vxkey,
         propertyPath: propertyPath,
@@ -499,7 +501,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
         const track = get().getTrack(generalKey);
         const isPropertyTracked = !!track;
-        console.log("Handling Property value change ", generalKey, " isPropertyTracjed", isPropertyTracked, get().tracks)
 
         if (isPropertyTracked) {
             const trackKey = generalKey;
@@ -555,7 +556,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 }))
 
 
-const truncateToDecimals = (value: number) => {
+export const truncateToDecimals = (value: number) => {
     return AnimationEngine.truncateToDecimals(value, AnimationEngine.ENGINE_PRECISION)
 }
 

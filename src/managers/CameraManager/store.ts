@@ -7,9 +7,13 @@ import { create } from "zustand";
 interface CameraManagerAPIProps {
     mode: "attached" | "free",
     setMode: (newMode: "attached" | "free") => void,
+    raycasting: boolean,
+    setRaycasting: (value) => void
 }
 
 export const useCameraManagerAPI = create<CameraManagerAPIProps>((set, get) => ({
     mode: "attached",
-    setMode: (newMode) => set({mode: newMode })
+    setMode: (newMode) => set({mode: newMode }),
+    raycasting: true,
+    setRaycasting: (value) => set({raycasting: value})
 }))

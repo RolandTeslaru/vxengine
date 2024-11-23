@@ -72,22 +72,23 @@ export const useObjectPropertyAPI = createWithEqualityFn<ObjectPropertyStoreProp
     properties: {},
     updateProperty: (vxkey, propertyPath, value) => {
         set(
-            produce((state: ObjectPropertyStoreProps) => {
-                if (!state.properties[vxkey]) {
-                    state.properties[vxkey] = {};
-                }
-
-                const keys = propertyPath.split('.');
-                let target = state.properties[vxkey];
-
-                for (let i = 0; i < keys.length - 1; i++) {
-                    if (!target[keys[i]]) target[keys[i]] = {};
-                    target = target[keys[i]];
-                }
-
-                target[keys[keys.length - 1]] = value;
-            }),
-            false
+            produce((state) => {
+                const key = `${vxkey}.${propertyPath}`;
+                state.properties[key] = value;
+            })
+        );
+    },
+    getProperty: (vxkey, propertyPath) => {
+        const state = get();
+        const key = `${vxkey}.${propertyPath}`;
+        return state.properties[key];
+    },
+    deleteProperty: (vxkey, propertyPath) => {
+        set(
+            produce((state) => {
+                const key = `${vxkey}.${propertyPath}`;
+                delete state.properties[key]; 
+            })
         );
     },
 }))

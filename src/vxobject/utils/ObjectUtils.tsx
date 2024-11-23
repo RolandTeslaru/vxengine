@@ -46,7 +46,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
 
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
-    // Initialize the slpine object in the record when mount ( meaning its not there yet so i have to get it from the currentTimeline) 
+    // Initialize the spline object in the record when mount ( meaning its not there yet so i have to get it from the currentTimeline) 
     // also when the current timeline changes the 
     // if use spline path gets deactivated then it gets deleted
     useEffect(() => {
@@ -61,23 +61,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
                 addSpline(splineObjFromTimeline);
             }
             else {
-                const initialPosition = useVXObjectStore.getState().objects[vxkey].ref.current.position as THREE.Vector3;
-                const initialNode = [initialPosition.x, initialPosition.y, initialPosition.z];
-                const newNodes = [
-                    initialNode,
-                    [
-                    (Math.random() * 10),
-                    (Math.random() * 10),
-                    (Math.random() * 10)
-                    ],
-                    [
-                        (Math.random() * 10),
-                        (Math.random() * 10),
-                        (Math.random() * 10)
-                    ]
-                ]
-                // @ts-expect-error
-                createSpline(vxkey, splineKey, newNodes) // create and add spline
+                createSpline(vxkey, splineKey) // create and add spline
 
                 animationEngine.refreshSpline("create", splineKey, true)
             }

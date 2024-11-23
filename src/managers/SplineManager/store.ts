@@ -12,6 +12,8 @@ import { getVXEngineState, useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
 import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
+import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
+import { useVXObjectStore } from '../ObjectManager';
 
 interface SplineStoreProps {
     splines: Record<string, ISpline>
@@ -24,12 +26,46 @@ interface SplineStoreProps {
     changeSplineNodeAxisValue: (splineKey: string, nodeIndex, newValue: number, axis: "x" | "y" | "z") => void
     insertNode: (splineKey: string, index: number) => void;
     removeNode: (splineKey: string, index: number) => void;
-    createSpline: (vxkey: string, splineKey: string, nodes: [number, number, number][]) => void
+    createSpline: (vxkey: string, splineKey: string, nodes?: [number, number, number][]) => void
 }
 
 export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
     splines: {},
     createSpline: (vxkey, splineKey, nodes) => {
+        const animationEngine = getVXEngineState().getState().animationEngine
+        const createTrack = useTimelineEditorAPI.getState().createTrack;
+        const createKeyframe = useTimelineEditorAPI.getState().createKeyframe;
+
+        if (nodes) {
+            nodes.forEach(node => {
+                node[0] = AnimationEngine.truncateToDecimals(node[0])
+                node[1] = AnimationEngine.truncateToDecimals(node[1])
+                node[2] = AnimationEngine.truncateToDecimals(node[2])
+            })
+        }
+        else {
+            const initialPosition = useVXObjectStore.getState().objects[vxkey].ref.current.position as THREE.Vector3;
+            const initialNode = [
+                AnimationEngine.truncateToDecimals(initialPosition.x), 
+                AnimationEngine.truncateToDecimals(initialPosition.y), 
+                AnimationEngine.truncateToDecimals(initialPosition.z)
+            ];
+            nodes = [
+                // @ts-expect-error
+                initialNode,
+                [
+                    AnimationEngine.truncateToDecimals(Math.random() * 10),
+                    AnimationEngine.truncateToDecimals(Math.random() * 10),
+                    AnimationEngine.truncateToDecimals(Math.random() * 10)
+                ],
+                [
+                    AnimationEngine.truncateToDecimals(Math.random() * 10),
+                    AnimationEngine.truncateToDecimals(Math.random() * 10),
+                    AnimationEngine.truncateToDecimals(Math.random() * 10)
+                ]
+            ]
+        }
+
         const newSpline: ISpline = {
             splineKey,
             vxkey,
@@ -37,14 +73,14 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
         }
         get().addSpline(newSpline);
 
-        const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("create", splineKey, true)
-        const createTrack = useTimelineEditorAPI.getState().createTrack;
-        const createKeyframe = useTimelineEditorAPI.getState().createKeyframe;
-        
+
         const trackKey = `${vxkey}.splineProgress`
         createTrack(trackKey);
-        createKeyframe({trackKey, value: 0})
+        createKeyframe({ 
+            trackKey, 
+            value: 0 
+        })
     },
     addSpline: (spline: ISpline) => {
         const { vxkey } = spline
@@ -60,7 +96,9 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
 
         const trackKey = `${vxkey}.splineProgress`
         const removeTrack = useTimelineEditorAPI.getState().removeTrack;
-        removeTrack({trackKey, reRender: true})
+        removeTrack({ trackKey, reRender: true })
+
+        useObjectPropertyAPI.getState().deleteProperty(vxkey, "splineProgress");
 
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("remove", splineKey, true)
@@ -81,30 +119,30 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
 
         const vxNodeKey = `${splineKey}.node${nodeIndex}`
 
-        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.x', newPosition.x )
-        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.y', newPosition.y )
-        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.z', newPosition.z )
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.x', newPosition.x)
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.y', newPosition.y)
+        useObjectPropertyAPI.getState().updateProperty(vxNodeKey, 'position.z', newPosition.z)
     },
     changeSplineNodeAxisValue: (
         splineKey: string,
-        nodeIndex: number, 
-        newValue: number, 
+        nodeIndex: number,
+        newValue: number,
         axis: "x" | "y" | "z"
     ) => {
         set(produce((state: SplineStoreProps) => {
             const newNode = state.splines[splineKey].nodes[nodeIndex];
-    
+
             if (axis === "x") {
                 newNode[0] = newValue;
             } else if (axis === "y") {
-                newNode[1] = newValue; 
+                newNode[1] = newValue;
             } else if (axis === "z") {
-                newNode[2] = newValue; 
+                newNode[2] = newValue;
             }
-    
+
             state.splines[splineKey].nodes[nodeIndex] = [newNode[0], newNode[1], newNode[2]];
         }));
-    
+
         // Call the animation engine to refresh the spline after the update
         const animationEngine = getVXEngineState().getState().animationEngine;
         animationEngine.refreshSpline("update", splineKey, true);
@@ -115,13 +153,13 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
             state.selectedSpline = state.splines[splineKey]
         }))
     },
-    insertNode: (splineKey, index ) => {
+    insertNode: (splineKey, index) => {
         set(produce((state: SplineStoreProps) => {
             const spline = state.splines[splineKey];
             const nodes = spline.nodes;
             const prevNode = nodes[index];
             let nextNode = nodes[index + 1];
-    
+
             if (!nextNode) {
                 nextNode = [
                     (Math.random() * 10 - 5),
@@ -137,9 +175,9 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
                 ];
                 nodes.splice(index + 1, 0, interPoint);
             }
-    
+
             state.splines[splineKey] = { ...spline, nodes: [...nodes] };
-    
+
             if (state.selectedSpline?.splineKey === splineKey) {
                 state.selectedSpline = { ...spline, nodes: [...nodes] };
             }
@@ -151,12 +189,12 @@ export const useSplineManagerAPI = create<SplineStoreProps>((set, get) => ({
     removeNode: (splineKey, index) => {
         set(produce((state: SplineStoreProps) => {
             const spline = state.splines[splineKey];
-            
-            if(spline.nodes.length === 2) return
+
+            if (spline.nodes.length === 2) return
 
             // Directly modify the nodes array
             spline.nodes.splice(index, 1);
-    
+
             // Update selectedSpline if it's the one being modified
             if (state.selectedSpline?.splineKey === splineKey) {
                 state.selectedSpline = spline;

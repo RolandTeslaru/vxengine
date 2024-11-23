@@ -30,6 +30,30 @@ const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectP
   document.dispatchEvent(virtualEntityChangeEvent as any);
 }
 
+
+/**
+ * ObjectManagerDriver Component
+ *
+ * Description:
+ * This component manages transformations (translate, rotate, scale) for objects in a Three.js scene 
+ * using `TransformControls`. It handles updates to the selected object's properties, supports debounced
+ * updates for performance, and manages specific logic for different types of objects, such as 
+ * entities, keyframe nodes, and spline nodes.
+ *
+ * How it works:
+ * 1. **State Initialization**: Access relevant state and APIs from Zustand stores (object manager, timeline editor, etc.).
+ * 2. **Debounced Updates**: Use `lodash.debounce` to batch property updates for smoother performance.
+ * 3. **Transform Change Handling**: Listen for changes via `TransformControls` and update object properties accordingly.
+ * 4. **Type-Specific Logic**:
+ *    - **Entities**: Update position, rotation, or scale properties.
+ *    - **Virtual Entities**: Same as entities, but also dispatch a custom DOM event.
+ *    - **Keyframe Nodes**: Update keyframe values and synchronize them with the timeline store.
+ *    - **Spline Nodes**: Update node positions in the spline manager.
+ * 5. **Axis Configuration**: Dynamically configure which transformation axes (X, Y, Z) are visible based on the object type.
+ * 6. **TransformControls Integration**: Attach `TransformControls` to the selected object and bind event handlers.
+ * 7. **Lifecycle Management**: Clean up debounced functions on component unmount and ensure proper state cleanup.
+ */
+
 export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
@@ -111,7 +135,6 @@ export const ObjectManagerDriver = () => {
           newValue = firstObjectSelectedRef.scale[propertyAxis]
           break;
       }
-
       // Call the appropriate debounced function
       debouncedPropertyValueChangeFunctions[axisLetter]?.(
         vxkey,

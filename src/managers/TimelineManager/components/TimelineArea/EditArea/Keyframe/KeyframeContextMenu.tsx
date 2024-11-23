@@ -27,11 +27,6 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
                 </PopoverTrigger>
                 <ShowDataPopover trackKey={trackKey} keyframeKey={keyframeKey} />
             </Popover>
-            <ContextMenuItem>
-                <p className='font-sans-menlo text-xs'>
-                    Show Handles
-                </p>
-            </ContextMenuItem>
             <ContextMenuItem
                 onClick={() => {
                     removeKeyframe({

@@ -67,7 +67,7 @@ const RightPanel = () => {
 
     const mountRightPanel = useVXUiStore(state => state.mountRightPanel);
     const setMountRightPanel = useVXUiStore(state => state.setMountRightPanel)
-
+    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow)
     return (
         <VXEngineWindow
             title="VXEngine: RightPanel"
@@ -80,6 +80,7 @@ const RightPanel = () => {
                             bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl p-2 pt-3
                             ${rightPanelAttached ? " top-32 right-6 " : " top-2 right-2"}
                             `}
+                    onClick={() => setSelectedWindow("VXEngineRightPanel")}
                     id="VXEngineRightPanel"
                 >
                     <WindowControlDots isAttached={rightPanelAttached} setAttach={setRightPanelAttached} setMount={setMountRightPanel} />
@@ -104,6 +105,7 @@ const LeftPanel = () => {
 
     const mountLeftPanel = useVXUiStore(state => state.mountLeftPanel)
     const setMountLeftPanel = useVXUiStore(state => state.setMountLeftPanel)
+    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow);
 
     return (
         <VXEngineWindow
@@ -119,6 +121,7 @@ const LeftPanel = () => {
                                         ${leftPanelAttached ? "top-[128px] left-[24px]" : "top-[8px] left-[8px]"}
                                         `}
                         id="VXEngineLeftPanel"
+                        onClick={() => setSelectedWindow("VXEngineLeftPanel")}
                     >
                         <WindowControlDots
                             isAttached={leftPanelAttached}
@@ -149,6 +152,8 @@ const BottomRightBar = () => {
 
     const mountTimelineEditor = useVXUiStore(state => state.mountTimelineEditor);
     const setMountTimelineEditor = useVXUiStore(state => state.setMountTimelineEditor)
+    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow);
+    
     return (
         <VXEngineWindow
             title="VXEngine: TimelineEditor"
@@ -161,6 +166,7 @@ const BottomRightBar = () => {
                                         bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
                                         ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
                                         `}
+                    onClick={() => setSelectedWindow("VXEngineTimelinePanel")}
                     id="VXEngineTimelinePanel"
                     style={{
                         boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
@@ -185,29 +191,6 @@ const BottomRightBar = () => {
             }
         </VXEngineWindow>
 
-    )
-}
-
-
-const FrequentStateVisualizer = () => {
-    const scrollLeft = useRefStore(state => state.scrollLeftRef.current);
-    return (
-        <div className="fixed left-[300px] top-[100px] w-60  text-sm bg-neutral-900 
-                            gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-lg p-2 ">
-            <div className="flex flex-row">
-                STATE_cursorTime &nbsp;&nbsp;
-                <CursorTimeVisualzier />
-            </div>
-        </div>
-    )
-}
-
-const CursorTimeVisualzier = () => {
-    const cursorTime = useTimelineEditorAPI(state => state.cursorTime)
-    return (
-        <p>
-            {cursorTime.toFixed(2)}
-        </p>
     )
 }
 

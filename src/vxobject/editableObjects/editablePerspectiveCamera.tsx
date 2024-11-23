@@ -58,15 +58,16 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
         }
     )
 
-    const handleMouseMove = useCallback((e) => {
-        mousePosition.current.y = (e.clientX / window.innerWidth) * 2 - 1;  // Horizontal (yaw)
-        mousePosition.current.x = (e.clientY / window.innerHeight) * -2 + 1;  // Vertical (pitch)
-    }, []);
+    // const handleMouseMove = useCallback((e) => {
+    //     console.log("CAmera Ref curret ", cameraRef.current)
+    //     mousePosition.current.y = (e.clientX / window.innerWidth) * 2 - 1;  // Horizontal (yaw)
+    //     mousePosition.current.x = (e.clientY / window.innerHeight) * -2 + 1;  // Vertical (pitch)
+    // }, []);
 
-    useEffect(() => {
-        window.addEventListener("mousemove", handleMouseMove);
-        return () => window.removeEventListener("mousemove", handleMouseMove);
-    })
+    // useEffect(() => {
+    //     window.addEventListener("mousemove", handleMouseMove);
+    //     return () => window.removeEventListener("mousemove", handleMouseMove);
+    // })
 
     const cameraUpdate = () => {
         if (!cameraRef.current || !cameraTargetRef) return

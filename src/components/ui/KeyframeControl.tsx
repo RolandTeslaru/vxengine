@@ -18,20 +18,15 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     const getKeyframesForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack);
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
-    const keyframeKeysForTrack = useTimelineEditorAPI(state => state.tracks[propertyKey]?.keyframes)
+    const track = useTimelineEditorAPI(state => state.tracks[propertyKey]);
+    const isPropertyTracked = !!track;
+    const keyframeKeysForTrack = track?.keyframes;
 
     const keyframes = useTimelineEditorAPI(state => state.keyframes)
 
     const keyframesOnTrack = useMemo(() => {
         return getKeyframesForTrack(propertyKey);
     }, [propertyKey, keyframeKeysForTrack, keyframes]);
-
-    const isPropertyTracked = useMemo(() => {
-        if (keyframesOnTrack.length > 0)
-            return true
-        else
-            return false
-    }, [keyframesOnTrack])
 
     const checkIfOnKeyframe = () => {
         if (propertyKey) {

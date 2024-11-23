@@ -9,7 +9,7 @@ import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle,
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { getVXEngineState, useVXEngine } from "@vxengine/engine";
-import { ReactThreeFiber, useFrame } from '@react-three/fiber';
+import { ReactThreeFiber, ThreeEvent, useFrame } from '@react-three/fiber';
 import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/types/objectStore";
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
@@ -107,15 +107,19 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         const handlePointerOver = () => setHoveredObject(vxObject);
         const handlePointerOut = () => setHoveredObject(null);
 
+        const onClick = useCallback(() => {
+            if (disableClickSelect === false && IS_DEVELOPMENT)
+                memoizedSelectObjects([vxkey], "entity", true)
+        }, [])
+        
+        const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+            e.stopPropagation()
+        }, [])
+
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
-            // onPointerOver: handlePointerOver,
-            // onPointerOut: handlePointerOut,
-            onClick: () => {
-                if (disableClickSelect === false && IS_DEVELOPMENT)
-                    memoizedSelectObjects([vxkey], "entity", true)
-            },
-            onPointerDown: (e) => e.stopPropagation(),
+            onClick,
+            onPointerDown,
             ...props,
         },
             <>

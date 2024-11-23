@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "../stores/managerStore";
 import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
@@ -11,6 +11,7 @@ import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSettingsAPI } from "../stores/settingsStore";
+import { invalidate } from "@react-three/fiber";
 
 interface Props {
     vxobject: vxObjectProps
@@ -96,7 +97,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                     {"useSplinePath" in settings && <>
                         <BTN_useSplinePath vxkey={vxkey} />
                         {settings.useSplinePath &&
-                            <SplineProgress vxkey={vxkey}/>
+                            <SplineProgress vxkey={vxkey} />
                         }
                     </>}
                 </>}
@@ -105,17 +106,28 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     );
 }
 
+const getDefaultValue = ({vxkey, propertyPath}: {vxkey: string, propertyPath: string}) => {
+    const getProperty = useObjectPropertyAPI.getState().getProperty;
+    const val = getProperty(vxkey, propertyPath) 
+    return val;
+}
+
 const SplineProgress = React.memo(({ vxkey }: any) => {
-    const [value, setValue] = useState(0);
     const propertyPath = "splineProgress"
     const trackKey = `${vxkey}.splineProgress`
+    const inputRef = useRef();
+    const [value, setValue] = useState(getDefaultValue({vxkey, propertyPath}));
+
+    useEffect(() => {
+        console.log("VALUE ", value)
+    }, [value])
 
     useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
-            const newValue = getNestedProperty(state.properties[vxkey], propertyPath);
-            const prevValue = getNestedProperty(prevState.properties[vxkey], propertyPath);
+            const newValue = state.getProperty(vxkey, propertyPath);
+            const prevValue = prevState.getProperty(vxkey, propertyPath);
 
-            if (newValue !== prevValue) {
+            if (newValue !== undefined) {
                 setValue(newValue);
             }
         })
@@ -126,6 +138,7 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
     const handleChange = (newValue) => {
         useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
         setValue(newValue);
+        invalidate();
     }
 
     return (
@@ -133,7 +146,6 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
             <p className="text-xs font-light text-neutral-500">spline progress</p>
             <div className="w-full flex flex-row">
                 <Slider
-                    defaultValue={[value]}
                     max={100}
                     step={0.5}
                     min={0}
@@ -189,7 +201,9 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
     const staticProps = getStaticPropsForObject(vxkey);
 
     const setSetting = useObjectSettingsAPI(state => state.setSetting)
-    const removeSpline = useSplineManagerAPI(state => state.removeSpline)
+
+    const removeSpline = useSplineManagerAPI(state => state.removeSpline);
+    const createSpline = useSplineManagerAPI(state => state.createSpline);
 
     const splineKey = `${vxkey}.spline`
 
@@ -217,13 +231,13 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
                     removeStaticProp({ staticPropKey, reRender: true });
                 }
             });
-
+            createSpline(vxkey, splineKey)
             setSetting(vxkey, "useSplinePath", true)
 
         }
         else if (alertType === "removeSpline") {
-            setSetting(vxkey, "useSplinePath", false)
             removeSpline(splineKey);
+            setSetting(vxkey, "useSplinePath", false)
         }
     }
 
@@ -262,6 +276,11 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
                                 <p>Disabling the spline path will remove the current spline and allow position tracks and keyframes to be created. </p>
                                 <br />
                                 <p>Spline <span className="text-red-600">{`${vxkey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
+                                {tracks.map((track, index) => {
+                                    return (<p className="h-auto" key={index}>
+                                        <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${track.keyframes.length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                    </p>)
+                                })}
                             </>}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
