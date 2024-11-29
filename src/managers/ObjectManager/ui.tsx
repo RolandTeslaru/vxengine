@@ -19,6 +19,8 @@ import NodeTransformProperties from './components/NodeTransformProperties'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import Globe from '@geist-ui/icons/globe'
 import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
+import { useUIManagerAPI } from '../UIManager/store'
+import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 
 
 export const ObjectManagerUI = () => {
@@ -188,12 +190,13 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
 
 
 export const ObjectManagerSubMenu = () => {
+  const showDialog = useUIManagerAPI(state => state.showDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Manager API</MenubarSubTrigger>
       <MenubarSubContent>
-        <MenubarItem>set Transform Mode</MenubarItem>
-        <MenubarItem>set Transform Space</MenubarItem>
+        <MenubarItem onClick={() => showDialog(<DIALOG_setTransformMode/>)}>set Transform Mode</MenubarItem>
+        <MenubarItem onClick={() => showDialog(<DIALOG_setTransformSpace/>)}>set Transform Space</MenubarItem>
         <MenubarItem>select Objects</MenubarItem>
       </MenubarSubContent>
     </MenubarSub>
@@ -201,6 +204,7 @@ export const ObjectManagerSubMenu = () => {
 }
 
 export const ObjectSettingsSubMenu = () => {
+  const showDialog = useUIManagerAPI(state => state.showDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Settings API</MenubarSubTrigger>
@@ -215,6 +219,7 @@ export const ObjectSettingsSubMenu = () => {
 }
 
 export const ObjectPropertySubMenu = () => {
+  const showDialog = useUIManagerAPI(state => state.showDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Property API</MenubarSubTrigger>

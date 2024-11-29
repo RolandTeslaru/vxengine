@@ -28,7 +28,7 @@ import init, {
 } from '../wasm/pkg';
 
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
-import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
 import { getNodeEnv, IS_DEVELOPMENT, IS_PRODUCTION } from '@vxengine/constants';
 
@@ -205,7 +205,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     console.log('AnimationEngine: Loading timelines', firstTimeline);
 
     // Initialize the core UI
-    useVXUiStore.getState().setMountCoreUI(true);
+    useUIManagerAPI.getState().setMountCoreUI(true);
     this._isReady = true;
   }
 

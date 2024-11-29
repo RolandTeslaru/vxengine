@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ChevronRight from "@geist-ui/icons/chevronRight"
 import Navigation2 from "@geist-ui/icons/navigation2"
 
@@ -12,23 +12,23 @@ import { Slider } from '@vxengine/components/shadcn/slider';
 import { Switch } from '@vxengine/components/shadcn/switch';
 import { useVXEngine } from '@vxengine/engine';
 import { useTimelineEditorAPI } from './store';
-import { shallow } from 'zustand/shallow';
 import TrackVerticalList from './components/TrackVerticalList';
 import TimelineArea from './components/TimelineArea';
-import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@vxengine/components/shadcn/Resizeable';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine/store';
 import { Input } from '@vxengine/components/shadcn/input';
 import ProgressionControls from './components/ProgressionControls';
 import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar';
+import { DIALOG_createKeyframe, DIALOG_createStaticProp, DIALOG_makePropertyStatic, DIALOG_makePropertyTracked, DIALOG_moveToNextKeyframe, DIALOG_moveToPreviousKeyframe, DIALOG_removeKeyframe, DIALOG_removeStaticProp, DIALOG_setKeyframeTime, DIALOG_setKeyframeValue, DIALOG_setStaticPropValue } from './components/dialogs';
 
 export const scaleWidth = 160;
 export const scale = 5;
 
 
 export const TimelineEditorUI = React.memo(() => {
-    const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
-    
+    const timelineEditorAttached = useUIManagerAPI(state => state.timelineEditorAttached)
+
     return (
         <>
             {/*  H E A D E R */}
@@ -56,9 +56,9 @@ export const TimelineEditorUI = React.memo(() => {
 })
 
 const MinimizeButton = () => {
-    const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached)
-    const setOpen = useVXUiStore(state => state.setTimelineEditorOpen)
-    const open = useVXUiStore(state => state.timelineEditorOpen);
+    const timelineEditorAttached = useUIManagerAPI(state => state.timelineEditorAttached)
+    const setOpen = useUIManagerAPI(state => state.setTimelineEditorOpen)
+    const open = useUIManagerAPI(state => state.timelineEditorOpen);
 
     if (!timelineEditorAttached) return null;
 
@@ -92,18 +92,18 @@ const TimelineEditorContent = () => {
 }
 
 const shouldIgnoreKeyEvent = (event: KeyboardEvent): boolean => {
-    const selectedWindow = useVXUiStore.getState().selectedWindow;
+    const selectedWindow = useUIManagerAPI.getState().selectedWindow;
 
     if (selectedWindow !== "VXEngineTimelinePanel") {
-        return true; 
+        return true;
     }
 
     const target = event.target as HTMLElement;
     if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
-        return true; 
+        return true;
     }
 
-    return false; 
+    return false;
 }
 
 const TimelineEditorFooter = () => {
@@ -113,7 +113,7 @@ const TimelineEditorFooter = () => {
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
     const snap = useTimelineEditorAPI(state => state.snap);
 
-    const open = useVXUiStore(state => state.timelineEditorOpen)
+    const open = useUIManagerAPI(state => state.timelineEditorOpen)
 
     const handleTimelineLengthChange = (e: any) => {
         const value = e.target.value;
@@ -122,7 +122,7 @@ const TimelineEditorFooter = () => {
 
     useEffect(() => {
         const handleCopy = (event: KeyboardEvent) => {
-            if(shouldIgnoreKeyEvent(event))
+            if (shouldIgnoreKeyEvent(event))
                 return
 
             if ((event.ctrlKey || event.metaKey) && event.key === "c") {
@@ -138,7 +138,7 @@ const TimelineEditorFooter = () => {
 
     useEffect(() => {
         const handlePaste = (event: KeyboardEvent) => {
-            if(shouldIgnoreKeyEvent(event))
+            if (shouldIgnoreKeyEvent(event))
                 return
 
             if ((event.ctrlKey || event.metaKey) && event.key === "v") {
@@ -283,6 +283,8 @@ export const TimelineTools: React.FC<{
 
 
 export const TimelineManagerSubMenu = () => {
+    const showDialog = useUIManagerAPI(state => state.showDialog);
+
     return (
         <MenubarSub>
             <MenubarSubTrigger>Timeline Editor API</MenubarSubTrigger>
@@ -291,19 +293,27 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Keyframe</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem>Create Keyframe</MenubarItem>
-                        <MenubarItem>Set Keyframe Time</MenubarItem>
-                        <MenubarItem>Set Keyframe Value</MenubarItem>
-                        <MenubarItem>Remove Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_createKeyframe />)}>Create Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_setKeyframeTime />)}>Set Keyframe Time</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_setKeyframeValue />)}>Set Keyframe Value</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_removeKeyframe />)}>Remove Keyframe</MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Static Prop Sub menu */}
                 <MenubarSub>
                     <MenubarSubTrigger>StaticProp</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem>Create StaticProp</MenubarItem>
-                        <MenubarItem>Set StaticProp Value</MenubarItem>
-                        <MenubarItem>Remove StaticProp</MenubarItem>
+                        <MenubarSubContent>
+                            <MenubarItem onClick={() => showDialog(<DIALOG_createStaticProp />)}>
+                                Create StaticProp
+                            </MenubarItem>
+                            <MenubarItem onClick={() => showDialog(<DIALOG_setStaticPropValue />)}>
+                                Set StaticProp Value
+                            </MenubarItem>
+                            <MenubarItem onClick={() => showDialog(<DIALOG_removeStaticProp />)}>
+                                Remove StaticProp
+                            </MenubarItem>
+                        </MenubarSubContent>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Get */}
@@ -322,16 +332,24 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Move Cursor</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem>Move To Next Keyframe</MenubarItem>
-                        <MenubarItem>Move To Previous Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_moveToNextKeyframe />)}>
+                            Move To Next Keyframe
+                        </MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_moveToPreviousKeyframe />)}>
+                            Move To Previous Keyframe
+                        </MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Make */}
                 <MenubarSub>
                     <MenubarSubTrigger>Make</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem>Make Property Tracked</MenubarItem>
-                        <MenubarItem>Move Property Static</MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_makePropertyTracked />)}>
+                            Make Property Tracked
+                        </MenubarItem>
+                        <MenubarItem onClick={() => showDialog(<DIALOG_makePropertyStatic />)}>
+                            Make Property Static
+                        </MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
             </MenubarSubContent>

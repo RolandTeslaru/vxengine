@@ -119,10 +119,6 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
     const [value, setValue] = useState(getDefaultValue({vxkey, propertyPath}));
 
     useEffect(() => {
-        console.log("VALUE ", value)
-    }, [value])
-
-    useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
             const newValue = state.getProperty(vxkey, propertyPath);
             const prevValue = prevState.getProperty(vxkey, propertyPath);

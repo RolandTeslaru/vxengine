@@ -313,7 +313,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     createKeyframe: ({ trackKey, value, reRender = true }) => {
-        console.log("Creating Keyframe ",trackKey)
         const keyframeKey = `keyframe-${Date.now()}`
 
         set(produce((state: TimelineEditorStoreProps) => createKeyframeLogic(state, trackKey, keyframeKey, value)))
@@ -323,7 +322,12 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         get().addChange()
     },
 
-    removeKeyframe: ({ trackKey, keyframeKey, reRender }) => {
+    removeKeyframe: ({ keyframeKey, reRender }) => {
+        const keyframe = get().keyframes[keyframeKey];
+        const vxkey = keyframe.vxkey;
+        const propertyPath = keyframe.propertyPath;
+        const trackKey = `${vxkey}.${propertyPath}`
+        
         set(produce((state: TimelineEditorStoreProps) => removeKeyframeLogic(state, trackKey, keyframeKey)))
         // Only refreshe the currentTimeline if removeKeyframe is not used inside a nested immer produce
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called

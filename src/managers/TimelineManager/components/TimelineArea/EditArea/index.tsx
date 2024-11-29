@@ -11,7 +11,7 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useDragLine } from '@vxengine/managers/TimelineManager/hooks/use_drag_line';
 import { CursorLine } from '../cursor';
 import { Virtuoso, Components } from 'react-virtuoso';
-import { useVXUiStore } from '@vxengine/components/ui/VXUIStore';
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { useRefStore } from '@vxengine/utils';
 import { GroupedPaths } from '@vxengine/managers/TimelineManager/store';
 
@@ -129,7 +129,7 @@ export const EditArea = () => {
         scrollerRef={scrollerRefCallback}
         onScroll={handleOnScroll}
         components={{ Scroller }}
-
+        overscan={5}
       />
     </div>
   );

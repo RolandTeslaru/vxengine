@@ -7,7 +7,7 @@ import { shallow } from 'zustand/shallow'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { Button } from '../shadcn/button'
 import { useVXEngine } from '@vxengine/engine'
-import { useVXUiStore } from './VXUIStore'
+import { useUIManagerAPI } from '../../managers/UIManager/store'
 import { invalidate } from '@react-three/fiber'
 import { useSourceManagerAPI } from '@vxengine/managers/SourceManager'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
@@ -177,20 +177,20 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 }
 
 const ViewButton = () => {
-    const mountCoreUI = useVXUiStore(state => state.mountCoreUI);
-    const setMountCoreUI = useVXUiStore(state => state.setMountCoreUI);
+    const mountCoreUI = useUIManagerAPI(state => state.mountCoreUI);
+    const setMountCoreUI = useUIManagerAPI(state => state.setMountCoreUI);
 
-    const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
-    const setShowStateVisualizer = useVXUiStore(state => state.setShowStateVisualizer);
+    const showStateVisualizer = useUIManagerAPI(state => state.showStateVisualizer)
+    const setShowStateVisualizer = useUIManagerAPI(state => state.setShowStateVisualizer);
 
-    const mountLeftPanel = useVXUiStore(state => state.mountLeftPanel)
-    const setMountLeftPanel = useVXUiStore(state => state.setMountLeftPanel)
+    const mountLeftPanel = useUIManagerAPI(state => state.mountLeftPanel)
+    const setMountLeftPanel = useUIManagerAPI(state => state.setMountLeftPanel)
 
-    const mountRightPanel = useVXUiStore(state => state.mountRightPanel);
-    const setMountRightPanel = useVXUiStore(state => state.setMountRightPanel)
+    const mountRightPanel = useUIManagerAPI(state => state.mountRightPanel);
+    const setMountRightPanel = useUIManagerAPI(state => state.setMountRightPanel)
 
-    const mountTimelineEditor = useVXUiStore(state => state.mountTimelineEditor);
-    const setMountTimelineEditor = useVXUiStore(state => state.setMountTimelineEditor)
+    const mountTimelineEditor = useUIManagerAPI(state => state.mountTimelineEditor);
+    const setMountTimelineEditor = useUIManagerAPI(state => state.setMountTimelineEditor)
 
     return (
         <MenubarMenu>

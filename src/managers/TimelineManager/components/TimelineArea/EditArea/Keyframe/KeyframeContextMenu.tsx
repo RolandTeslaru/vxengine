@@ -11,6 +11,7 @@ interface Props {
 
 const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey }) => {
     const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
+    const selectedKeyframeKeysLength = useTimelineEditorAPI(state => state.selectedKeyframeKeys.length)
 
     return (
         <ContextMenuContent>
@@ -29,15 +30,20 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
             </Popover>
             <ContextMenuItem
                 onClick={() => {
-                    removeKeyframe({
-                        trackKey,
-                        keyframeKey,
-                        reRender: true
+                    const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
+                    selectedKeyframeKeys.forEach(keyframeKey => {
+                        removeKeyframe({
+                            keyframeKey,
+                            reRender: true
+                        })
                     })
                 }}
             >
                 <p className='font-sans-menlo text-xs text-red-600'>
-                    Delete Keyframe
+                    {selectedKeyframeKeysLength < 2 
+                    ? <>Delete Keyframe</>
+                    : <>Delete Keyframes</>    
+                    }
                 </p>
             </ContextMenuItem>
         </ContextMenuContent>

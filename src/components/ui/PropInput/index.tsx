@@ -73,7 +73,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         useEffect(() => {
             inputRef.current.value = getDefaultValue();
-        }, [])
+        }, [vxkey, propertyPath, isPropertyTracked])
 
         useEffect(() => {
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {

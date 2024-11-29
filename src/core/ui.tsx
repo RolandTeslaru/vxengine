@@ -10,7 +10,7 @@ import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { AnimatePresence, motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectList"
 import VXEngineWindow from "@vxengine/components/ui/VXEngineWindow"
-import { useVXUiStore } from "@vxengine/components/ui/VXUIStore"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
 import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
 import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
@@ -26,6 +26,7 @@ import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
 import { MenubarUI } from "@vxengine/components/ui/MenubarUI"
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { useRefStore } from "@vxengine/utils"
+import UIManagerDialog from "@vxengine/managers/UIManager/ui"
 
 export const CoreUI = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
@@ -41,6 +42,8 @@ export const CoreUI = () => {
 
             <StateVisualizer />
             <CameraManagerUI />
+
+            <UIManagerDialog/>
 
             <a
                 className="fixed pointer-events-auto bottom-5 left-10"
@@ -60,14 +63,14 @@ export const CoreUI = () => {
 }
 
 const RightPanel = () => {
-    const rightPanelAttached = useVXUiStore(state => state.rightPanelAttached)
-    const setRightPanelAttached = useVXUiStore(state => state.setRightPanelAttached)
+    const rightPanelAttached = useUIManagerAPI(state => state.rightPanelAttached)
+    const setRightPanelAttached = useUIManagerAPI(state => state.setRightPanelAttached)
 
     const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
 
-    const mountRightPanel = useVXUiStore(state => state.mountRightPanel);
-    const setMountRightPanel = useVXUiStore(state => state.setMountRightPanel)
-    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow)
+    const mountRightPanel = useUIManagerAPI(state => state.mountRightPanel);
+    const setMountRightPanel = useUIManagerAPI(state => state.setMountRightPanel)
+    const setSelectedWindow = useUIManagerAPI(state => state.setSelectedWindow)
     return (
         <VXEngineWindow
             title="VXEngine: RightPanel"
@@ -100,12 +103,12 @@ const RightPanel = () => {
 }
 
 const LeftPanel = () => {
-    const leftPanelAttached = useVXUiStore(state => state.leftPanelAttached)
-    const setLeftPanelAttached = useVXUiStore(state => state.setLeftPanelAttached)
+    const leftPanelAttached = useUIManagerAPI(state => state.leftPanelAttached)
+    const setLeftPanelAttached = useUIManagerAPI(state => state.setLeftPanelAttached)
 
-    const mountLeftPanel = useVXUiStore(state => state.mountLeftPanel)
-    const setMountLeftPanel = useVXUiStore(state => state.setMountLeftPanel)
-    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow);
+    const mountLeftPanel = useUIManagerAPI(state => state.mountLeftPanel)
+    const setMountLeftPanel = useUIManagerAPI(state => state.setMountLeftPanel)
+    const setSelectedWindow = useUIManagerAPI(state => state.setSelectedWindow);
 
     return (
         <VXEngineWindow
@@ -146,13 +149,13 @@ const LeftPanel = () => {
 }
 
 const BottomRightBar = () => {
-    const timelineEditorOpen = useVXUiStore(state => state.timelineEditorOpen)
-    const timelineEditorAttached = useVXUiStore(state => state.timelineEditorAttached);
-    const setTimelineEditorAttached = useVXUiStore(state => state.setTimelineEditorAttached);
+    const timelineEditorOpen = useUIManagerAPI(state => state.timelineEditorOpen)
+    const timelineEditorAttached = useUIManagerAPI(state => state.timelineEditorAttached);
+    const setTimelineEditorAttached = useUIManagerAPI(state => state.setTimelineEditorAttached);
 
-    const mountTimelineEditor = useVXUiStore(state => state.mountTimelineEditor);
-    const setMountTimelineEditor = useVXUiStore(state => state.setMountTimelineEditor)
-    const setSelectedWindow = useVXUiStore(state => state.setSelectedWindow);
+    const mountTimelineEditor = useUIManagerAPI(state => state.mountTimelineEditor);
+    const setMountTimelineEditor = useUIManagerAPI(state => state.setMountTimelineEditor)
+    const setSelectedWindow = useUIManagerAPI(state => state.setSelectedWindow);
     
     return (
         <VXEngineWindow

@@ -118,8 +118,6 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
 
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
-            onClick,
-            onPointerDown,
             ...props,
         },
             <>

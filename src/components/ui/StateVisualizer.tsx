@@ -5,7 +5,7 @@ import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
-import { useVXUiStore } from "./VXUIStore";
+import { useUIManagerAPI } from "../../managers/UIManager/store";
 import { WindowControlDots } from "./WindowControlDots";
 import JsonView from 'react18-json-view'
 import 'react18-json-view/src/style.css'
@@ -200,7 +200,7 @@ const State_ObjectSettingsAPI = () => {
     );
 };
 const State_UIStore = () => {
-    const state = useVXUiStore();
+    const state = useUIManagerAPI();
     const filteredState = filterOutFunctions(state);
     return (
         <JsonView
@@ -214,8 +214,8 @@ const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
     const [attachedState, setAttachedState] = useState(true);
 
-    const showStateVisualizer = useVXUiStore(state => state.showStateVisualizer)
-    const setShowStateVisualzier = useVXUiStore(state => state.setShowStateVisualizer)
+    const showStateVisualizer = useUIManagerAPI(state => state.showStateVisualizer)
+    const setShowStateVisualzier = useUIManagerAPI(state => state.setShowStateVisualizer)
 
     const renderStateComponent = () => {
         switch (activeData) {

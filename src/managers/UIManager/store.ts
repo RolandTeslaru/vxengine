@@ -1,6 +1,7 @@
+import React from 'react';
 import { createWithEqualityFn } from 'zustand/traditional';
 
-interface UiStoreStateProps {
+interface UIManagerProps {
     mountCoreUI: boolean;
     setMountCoreUI: (value: boolean) => void,
 
@@ -30,9 +31,15 @@ interface UiStoreStateProps {
 
     selectedWindow: string;
     setSelectedWindow: (window: string) => void;
+    
+
+    isDialogOpen: boolean;
+    dialogContent: React.ReactNode;
+    showDialog: (content: React.ReactNode) => void;
+    closeDialog: () => void;
 }
 
-export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) => ({
+export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>((set, get) => ({
     mountCoreUI: false,
     setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
 
@@ -61,5 +68,15 @@ export const useVXUiStore = createWithEqualityFn<UiStoreStateProps>((set, get) =
     setMountTimelineEditor: (mountTimelineEditor: boolean) => set({ mountTimelineEditor}),
 
     selectedWindow: "",
-    setSelectedWindow: (window: string) => set({ selectedWindow: window})
+    setSelectedWindow: (window: string) => set({ selectedWindow: window}),
+
+    isDialogOpen: false,
+    dialogContent: null,
+    showDialog: (content) => set({
+        isDialogOpen: true,
+        dialogContent: content
+    }),
+    closeDialog: () => set({
+        isDialogOpen: false,
+    })
 }))
