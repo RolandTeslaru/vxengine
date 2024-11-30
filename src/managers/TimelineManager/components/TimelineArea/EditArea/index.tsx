@@ -129,7 +129,7 @@ export const EditArea = () => {
         scrollerRef={scrollerRefCallback}
         onScroll={handleOnScroll}
         components={{ Scroller }}
-        overscan={5}
+        overscan={10}
       />
     </div>
   );

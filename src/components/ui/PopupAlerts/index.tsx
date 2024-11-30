@@ -9,59 +9,37 @@ interface Props {
 }
 
 
-export const ALERT_MakePropertyStatic:React.FC<Props> = ({vxkey, propertyPath}) => {
+export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const key = vxkey + "." + propertyPath
-    const [show, setShow] = useState(false);
 
     const makePropertyStatic = useTimelineEditorAPI(state => state.makePropertyStatic)
     const keyframeLengthForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack(key)?.length)
 
     return (
-        <AlertDialog open={show} onOpenChange={(open) => setShow(open)}>
-            <AlertDialogTrigger>
-                <ContextMenuItem
-                    onClick={(e) => {
-                        e.preventDefault();
-                        setShow(true);
-                    }}
-                >
-                    <p className=' text-red-600'>
-                        Make Property Static
-                    </p>
-                </ContextMenuItem>
-            </AlertDialogTrigger>
-            <AlertDialogContent className='flex flex-row'>
-                {/* <HazardStripes opacity={0.05}/> */}
-                <div className='flex ml-2 h-auto mx-5 my-auto'>
-                    <svg className='animate-ping absolute fill-yellow-400' width="60" height="60" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4449 0.608765C8.0183 -0.107015 6.9817 -0.107015 6.55509 0.608766L0.161178 11.3368C-0.275824 12.07 0.252503 13 1.10608 13H13.8939C14.7475 13 15.2758 12.07 14.8388 11.3368L8.4449 0.608765ZM7.4141 1.12073C7.45288 1.05566 7.54712 1.05566 7.5859 1.12073L13.9798 11.8488C14.0196 11.9154 13.9715 12 13.8939 12H1.10608C1.02849 12 0.980454 11.9154 1.02018 11.8488L7.4141 1.12073ZM6.8269 4.48611C6.81221 4.10423 7.11783 3.78663 7.5 3.78663C7.88217 3.78663 8.18778 4.10423 8.1731 4.48612L8.01921 8.48701C8.00848 8.766 7.7792 8.98664 7.5 8.98664C7.2208 8.98664 6.99151 8.766 6.98078 8.48701L6.8269 4.48611ZM8.24989 10.476C8.24989 10.8902 7.9141 11.226 7.49989 11.226C7.08567 11.226 6.74989 10.8902 6.74989 10.476C6.74989 10.0618 7.08567 9.72599 7.49989 9.72599C7.9141 9.72599 8.24989 10.0618 8.24989 10.476Z" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                    <svg className=' fill-yellow-400' width="60" height="60" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4449 0.608765C8.0183 -0.107015 6.9817 -0.107015 6.55509 0.608766L0.161178 11.3368C-0.275824 12.07 0.252503 13 1.10608 13H13.8939C14.7475 13 15.2758 12.07 14.8388 11.3368L8.4449 0.608765ZM7.4141 1.12073C7.45288 1.05566 7.54712 1.05566 7.5859 1.12073L13.9798 11.8488C14.0196 11.9154 13.9715 12 13.8939 12H1.10608C1.02849 12 0.980454 11.9154 1.02018 11.8488L7.4141 1.12073ZM6.8269 4.48611C6.81221 4.10423 7.11783 3.78663 7.5 3.78663C7.88217 3.78663 8.18778 4.10423 8.1731 4.48612L8.01921 8.48701C8.00848 8.766 7.7792 8.98664 7.5 8.98664C7.2208 8.98664 6.99151 8.766 6.98078 8.48701L6.8269 4.48611ZM8.24989 10.476C8.24989 10.8902 7.9141 11.226 7.49989 11.226C7.08567 11.226 6.74989 10.8902 6.74989 10.476C6.74989 10.0618 7.08567 9.72599 7.49989 9.72599C7.9141 9.72599 8.24989 10.0618 8.24989 10.476Z" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                </div>
-                <div className='flex flex-col gap-4'>
-                    <AlertDialogHeader className='flex flex-col'>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
+        <>
+            <div className='flex flex-col gap-4'>
+                <AlertDialogHeader className='flex flex-col'>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
                     <p className='text-neutral-600 text-opacity-40 text-sm font-sans-menlo mr-auto my-auto '>{`MakePropertyStatic()`}</p>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            //@ts-expect-error
-                            type="warning"
-                            onClick={() => makePropertyStatic(key)}
-                        >Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </div>
-                {/* <HazardStripes opacity={0.05} /> */}
-            </AlertDialogContent>
-        </AlertDialog>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        //@ts-expect-error
+                        type="warning"
+                        onClick={() => makePropertyStatic(key)}
+                    >Continue</AlertDialogAction>
+                </AlertDialogFooter>
+            </div>
+        </>
     )
 }
 
-export const ALERT_ResetProperty:React.FC<Props> = ({vxkey, propertyPath}) => {
+export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const key = vxkey + "." + propertyPath
-    const [show, setShow] = useState(false);
 
     const track = useTimelineEditorAPI(state => state.tracks[key])
     const staticProp = useTimelineEditorAPI(state => state.staticProps[key])
@@ -70,58 +48,37 @@ export const ALERT_ResetProperty:React.FC<Props> = ({vxkey, propertyPath}) => {
     const keyframeLengthForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack(key)?.length)
 
     return (
-        <AlertDialog open={show} onOpenChange={(open) => setShow(open)}>
-            <AlertDialogTrigger>
-                <ContextMenuItem
-                    onClick={(e) => {
-                        e.preventDefault();
-                        setShow(true);
-                    }}
-                >
-                    <p className=' text-red-600'>
-                        Remove Property
-                    </p>
-                </ContextMenuItem>
-            </AlertDialogTrigger>
-            <AlertDialogContent className='flex flex-row'>
-                {/* <HazardStripes opacity={0.05}/> */}
-                <div className='flex ml-2 h-auto mx-5 my-auto'>
-                    <svg className='animate-ping absolute fill-yellow-400' width="60" height="60" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4449 0.608765C8.0183 -0.107015 6.9817 -0.107015 6.55509 0.608766L0.161178 11.3368C-0.275824 12.07 0.252503 13 1.10608 13H13.8939C14.7475 13 15.2758 12.07 14.8388 11.3368L8.4449 0.608765ZM7.4141 1.12073C7.45288 1.05566 7.54712 1.05566 7.5859 1.12073L13.9798 11.8488C14.0196 11.9154 13.9715 12 13.8939 12H1.10608C1.02849 12 0.980454 11.9154 1.02018 11.8488L7.4141 1.12073ZM6.8269 4.48611C6.81221 4.10423 7.11783 3.78663 7.5 3.78663C7.88217 3.78663 8.18778 4.10423 8.1731 4.48612L8.01921 8.48701C8.00848 8.766 7.7792 8.98664 7.5 8.98664C7.2208 8.98664 6.99151 8.766 6.98078 8.48701L6.8269 4.48611ZM8.24989 10.476C8.24989 10.8902 7.9141 11.226 7.49989 11.226C7.08567 11.226 6.74989 10.8902 6.74989 10.476C6.74989 10.0618 7.08567 9.72599 7.49989 9.72599C7.9141 9.72599 8.24989 10.0618 8.24989 10.476Z" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                    <svg className=' fill-yellow-400' width="60" height="60" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4449 0.608765C8.0183 -0.107015 6.9817 -0.107015 6.55509 0.608766L0.161178 11.3368C-0.275824 12.07 0.252503 13 1.10608 13H13.8939C14.7475 13 15.2758 12.07 14.8388 11.3368L8.4449 0.608765ZM7.4141 1.12073C7.45288 1.05566 7.54712 1.05566 7.5859 1.12073L13.9798 11.8488C14.0196 11.9154 13.9715 12 13.8939 12H1.10608C1.02849 12 0.980454 11.9154 1.02018 11.8488L7.4141 1.12073ZM6.8269 4.48611C6.81221 4.10423 7.11783 3.78663 7.5 3.78663C7.88217 3.78663 8.18778 4.10423 8.1731 4.48612L8.01921 8.48701C8.00848 8.766 7.7792 8.98664 7.5 8.98664C7.2208 8.98664 6.99151 8.766 6.98078 8.48701L6.8269 4.48611ZM8.24989 10.476C8.24989 10.8902 7.9141 11.226 7.49989 11.226C7.08567 11.226 6.74989 10.8902 6.74989 10.476C6.74989 10.0618 7.08567 9.72599 7.49989 9.72599C7.9141 9.72599 8.24989 10.0618 8.24989 10.476Z" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                </div>
-                <div className='flex flex-col gap-4'>
-                    <AlertDialogHeader className='flex flex-col'>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {track && (
-                                <>
-                                    Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
-                                </>
-                            )}
-                            {staticProp && (
-                                <>
-                                    StaticProp <span className='text-yellow-500'>{key}</span> will be deleted!
-                                </>
-                            )}
-                            {!track && !staticProp && (
-                                <>
-                                    Property path <span className='text-yellow-500'>{key}</span> isnt a track nor a staticProp. Nothing to reset!
-                                </>
-                            )}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <p className='text-neutral-600 text-opacity-40 text-sm font-sans-menlo mr-auto my-auto '>{`RemoveProperty()`}</p>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            //@ts-expect-error
-                            type="warning"
-                            onClick={() => removeProperty(vxkey, propertyPath)}
-                        >Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </div>
-                {/* <HazardStripes opacity={0.05} /> */}
-            </AlertDialogContent>
-        </AlertDialog>
+
+        <div className='flex flex-col gap-4'>
+            <AlertDialogHeader className='flex flex-col'>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    {track && (
+                        <>
+                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
+                        </>
+                    )}
+                    {staticProp && (
+                        <>
+                            StaticProp <span className='text-yellow-500'>{key}</span> will be deleted!
+                        </>
+                    )}
+                    {!track && !staticProp && (
+                        <>
+                            Property path <span className='text-yellow-500'>{key}</span> isnt a track nor a staticProp. Nothing to reset!
+                        </>
+                    )}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <p className='text-neutral-600 text-opacity-40 text-sm font-sans-menlo mr-auto my-auto '>{`RemoveProperty()`}</p>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                    //@ts-expect-error
+                    type="warning"
+                    onClick={() => removeProperty(vxkey, propertyPath)}
+                >Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </div>
     )
 }

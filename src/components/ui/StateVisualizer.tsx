@@ -205,7 +205,7 @@ const State_UIStore = () => {
     return (
         <JsonView
             src={filteredState}
-            collapsed={({ depth }) => depth > 1}
+            collapsed={({ depth }) => depth > 2}
             dark={true}
         />
     );

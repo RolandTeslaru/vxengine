@@ -3,7 +3,9 @@ import { useTimelineEditorAPI } from '..';
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/components/shadcn/dialog';
 import { Button } from '@vxengine/components/shadcn/button';
 import { Input } from '@vxengine/components/shadcn/input';
-import { Label } from '@vxengine/components/shadcn/Label';
+import { Label } from '@vxengine/components/shadcn/label';
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
+import { ALERT_ResetProperty } from '@vxengine/components/ui/PopupAlerts';
 
 export const DIALOG_createKeyframe = () => {
     const tracks = useTimelineEditorAPI((state) => state.tracks);
@@ -35,6 +37,8 @@ export const DIALOG_createKeyframe = () => {
         // Call the createKeyframe function
         createKeyframe({ trackKey, value });
     };
+
+    const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     return (
         <>
@@ -80,6 +84,8 @@ export const DIALOG_createKeyframe = () => {
                         <Button type="submit">Execute</Button>
                     </DialogFooter>
                 </form>
+                <Button onClick={() => pushDialog(<DIALOG_createKeyframe/>, "normal")}>OpenDialog</Button>
+                <Button variant="warning" onClick={() => pushDialog(<ALERT_ResetProperty vxkey="dasd" propertyPath="dad"/>, "alert")}>Alert OpenDialog</Button>
             </DialogHeader>
         </>
     );

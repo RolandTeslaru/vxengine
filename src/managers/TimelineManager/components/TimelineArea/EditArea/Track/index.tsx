@@ -120,7 +120,7 @@ const TrackSegment = memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
             >
                 <div
                     key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
-                    className={`absolute bg-white h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
+                    className={`absolute bg-white hover:bg-neutral-300 h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
                     style={{
                         top: `calc(50% - 3px)`,
                     }}

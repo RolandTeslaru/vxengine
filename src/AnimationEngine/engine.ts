@@ -59,7 +59,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private readonly _IS_DEVELOPMENT: boolean = false;
   private readonly _IS_PRODUCTION: boolean = false;
 
-  static readonly ENGINE_PRECISION = 3
+  static readonly ENGINE_PRECISION = 4
 
   constructor(nodeEnv: "production" | "development" | "test") {
     super(new Events());

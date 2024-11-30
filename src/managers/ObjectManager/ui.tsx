@@ -190,13 +190,13 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
 
 
 export const ObjectManagerSubMenu = () => {
-  const showDialog = useUIManagerAPI(state => state.showDialog)
+  const pushDialog = useUIManagerAPI(state => state.pushDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Manager API</MenubarSubTrigger>
       <MenubarSubContent>
-        <MenubarItem onClick={() => showDialog(<DIALOG_setTransformMode/>)}>set Transform Mode</MenubarItem>
-        <MenubarItem onClick={() => showDialog(<DIALOG_setTransformSpace/>)}>set Transform Space</MenubarItem>
+        <MenubarItem onClick={() => pushDialog(<DIALOG_setTransformMode/>, "normal")}>set Transform Mode</MenubarItem>
+        <MenubarItem onClick={() => pushDialog(<DIALOG_setTransformSpace/>, "normal")}>set Transform Space</MenubarItem>
         <MenubarItem>select Objects</MenubarItem>
       </MenubarSubContent>
     </MenubarSub>
@@ -204,7 +204,7 @@ export const ObjectManagerSubMenu = () => {
 }
 
 export const ObjectSettingsSubMenu = () => {
-  const showDialog = useUIManagerAPI(state => state.showDialog)
+  const pushDialog = useUIManagerAPI(state => state.pushDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Settings API</MenubarSubTrigger>
@@ -219,7 +219,7 @@ export const ObjectSettingsSubMenu = () => {
 }
 
 export const ObjectPropertySubMenu = () => {
-  const showDialog = useUIManagerAPI(state => state.showDialog)
+  const pushDialog = useUIManagerAPI(state => state.pushDialog)
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Property API</MenubarSubTrigger>

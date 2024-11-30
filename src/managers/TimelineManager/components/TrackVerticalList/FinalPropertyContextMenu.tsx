@@ -1,6 +1,8 @@
 import React from 'react'
-import { ContextMenuContent } from '@vxengine/components/shadcn/contextMenu'
+import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn/contextMenu'
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '@vxengine/components/ui/PopupAlerts'
+import { MenubarItem } from '@vxengine/components/shadcn/menubar'
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 
 interface Props {
     vxkey: string,
@@ -9,10 +11,23 @@ interface Props {
 
 
 const FinalPropertyContextMenu: React.FC<Props> = ({ vxkey, propertyPath }) => {
+    const pushDialog = useUIManagerAPI(state => state.pushDialog)
     return (
         <ContextMenuContent className='flex flex-col'>
-            <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />
-            <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath}/>
+            <ContextMenuItem 
+                onClick={() => pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
+            >
+                <p className=' text-red-600'>
+                    Make Property Static
+                </p>
+            </ContextMenuItem>
+            <ContextMenuItem 
+                onClick={() => pushDialog(<ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
+            >
+                <p className=' text-red-600'>
+                    Remove Property
+                </p>
+            </ContextMenuItem>
         </ContextMenuContent>
     )
 }

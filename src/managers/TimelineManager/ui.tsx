@@ -218,8 +218,6 @@ export const TimelineSelect = () => {
 
     const animationEngine = useVXEngine(state => state.animationEngine)
 
-    // console.log("CURRENT TIMELINE ID ", currentTimelineID)
-
     return (
         <Select
             defaultValue={currentTimelineID}
@@ -283,7 +281,7 @@ export const TimelineTools: React.FC<{
 
 
 export const TimelineManagerSubMenu = () => {
-    const showDialog = useUIManagerAPI(state => state.showDialog);
+    const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     return (
         <MenubarSub>
@@ -293,27 +291,25 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Keyframe</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_createKeyframe />)}>Create Keyframe</MenubarItem>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_setKeyframeTime />)}>Set Keyframe Time</MenubarItem>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_setKeyframeValue />)}>Set Keyframe Value</MenubarItem>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_removeKeyframe />)}>Remove Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_createKeyframe/>, "normal")}>Create Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeTime/>, "normal")}>Set Keyframe Time</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeValue/>, "normal")}>Set Keyframe Value</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeKeyframe/>, "normal")}>Remove Keyframe</MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Static Prop Sub menu */}
                 <MenubarSub>
                     <MenubarSubTrigger>StaticProp</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarSubContent>
-                            <MenubarItem onClick={() => showDialog(<DIALOG_createStaticProp />)}>
-                                Create StaticProp
-                            </MenubarItem>
-                            <MenubarItem onClick={() => showDialog(<DIALOG_setStaticPropValue />)}>
-                                Set StaticProp Value
-                            </MenubarItem>
-                            <MenubarItem onClick={() => showDialog(<DIALOG_removeStaticProp />)}>
-                                Remove StaticProp
-                            </MenubarItem>
-                        </MenubarSubContent>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_createStaticProp/>, "normal")}>
+                            Create StaticProp
+                        </MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setStaticPropValue/>, "normal")}>
+                            Set StaticProp Value
+                        </MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeStaticProp/>, "normal")}>
+                            Remove StaticProp
+                        </MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Get */}
@@ -332,10 +328,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Move Cursor</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_moveToNextKeyframe />)}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToNextKeyframe/>, "normal")}>
                             Move To Next Keyframe
                         </MenubarItem>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_moveToPreviousKeyframe />)}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToPreviousKeyframe/>, "normal")}>
                             Move To Previous Keyframe
                         </MenubarItem>
                     </MenubarSubContent>
@@ -344,10 +340,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Make</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_makePropertyTracked />)}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyTracked/>, "normal")}>
                             Make Property Tracked
                         </MenubarItem>
-                        <MenubarItem onClick={() => showDialog(<DIALOG_makePropertyStatic />)}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyStatic/>, "normal")}>
                             Make Property Static
                         </MenubarItem>
                     </MenubarSubContent>

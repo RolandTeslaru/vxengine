@@ -2,7 +2,6 @@ import React from 'react'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/components/shadcn/dialog';
 import { Button } from '@vxengine/components/shadcn/button';
 import { Input } from '@vxengine/components/shadcn/input';
-import { Label } from '@vxengine/components/shadcn/Label';
 import { Tabs, TabsList, TabsTrigger } from '@vxengine/components/shadcn/tabs';
 import { useObjectManagerAPI } from '../stores/managerStore';
 import Move from '@geist-ui/icons/move';
