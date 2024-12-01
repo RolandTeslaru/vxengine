@@ -48,6 +48,7 @@ function setEnvProps(
   texture: Texture,
   sceneProps: Partial<EnvironmentProps> = {}
 ) {
+  console.log("Set Env Props, scene:", scene, "  defaultScene:", defaultScene)
   // defaults
   sceneProps = {
     backgroundBlurriness: sceneProps.blur ?? 0,
@@ -156,6 +157,7 @@ export function VXEnvironmentPortal({
   const defaultScene = useThree((state) => state.scene)
   const camera = React.useRef<CubeCamera>(null!)
   const [virtualScene] = React.useState(() => new Scene())
+
   const fbo = useMemo(() => {
     const fbo = new WebGLCubeRenderTarget(resolution)
     fbo.texture.type = HalfFloatType
@@ -214,6 +216,15 @@ export function VXEnvironmentPortal({
         </>,
         virtualScene as any
       )}
+      {/* <scene>
+        {children}
+        <cubeCamera ref={camera} args={[near, far, fbo]} />
+          {files || preset ? (
+            <VXEnvironmentCube background files={files} preset={preset} path={path} extensions={extensions} />
+          ) : map ? (
+            <VXEnvironmentMap background map={map} extensions={extensions} />
+          ) : null}
+      </scene> */}
     </>
   )
 }

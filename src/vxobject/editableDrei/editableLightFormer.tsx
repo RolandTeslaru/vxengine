@@ -44,16 +44,15 @@ export const EditableLightFormer = memo(
 
             return (
                 <>
-                    <VXEntityWrapper
+                    <VXVirtualEntityWrapper
                         ref={internalRef}
                         params={params}
                         defaultSettingsForObject={defaultSettingsForObject}
                         defaultAdditionalSettings={defaultAdditionalSettings}
-                        isVirtual={true}
                         {...props}
                     >
                         <Lightformer/>
-                    </VXEntityWrapper>
+                    </VXVirtualEntityWrapper>
                 </>
             )
         }))

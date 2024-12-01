@@ -1,5 +1,7 @@
 import { EffectComposer } from "three-stdlib";
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
+import { ThreeElements } from "@react-three/fiber";
+import { Scene } from "three";
 
 export interface EngineContextProps {
     mountCoreUI: boolean
@@ -10,6 +12,7 @@ export interface EngineContextProps {
 export interface VXEngineProviderProps {
     children: React.ReactNode;
     mount?: boolean;
+    scene: Scene;
     animations_json: any;
     nodeEnv: 'development' | 'production' | 'test';
 }

@@ -1,7 +1,7 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import VXEngineWindow from "./VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
@@ -35,6 +35,18 @@ const State_ObjectManagerAPI = () => {
         />
     );
 };
+
+const State_VXObjectStore = () => {
+    const state = useVXObjectStore();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 1}
+            dark={true}
+        />
+    )
+}
 
 // Component for TimelineEditorAPI
 const State_TimelineEditorAPI = () => {
@@ -235,6 +247,8 @@ const StateVisualizer = () => {
                 return <State_ObjectPropertyAPI />;
             case "ObjectSettingsAPI":
                 return <State_ObjectSettingsAPI />;
+            case "VXObjectStore":
+                return <State_VXObjectStore />;
             case "UIStore":
                 return <State_UIStore />;
             default:
@@ -277,6 +291,7 @@ const StateVisualizer = () => {
                                 <SelectItem value={"CameraManagerAPI"} >CameraManagerAPI</SelectItem>
                                 <SelectItem value={"ObjectPropertyAPI"} >ObjectPropertyAPI</SelectItem>
                                 <SelectItem value={"ObjectSettingsAPI"} >ObjectSettingsAPI</SelectItem>
+                                <SelectItem value={"VXObjectStore"} >VXObjectStore</SelectItem>
                                 <SelectItem value={"UIStore"} >UIStore</SelectItem>
                             </SelectGroup>
                         </SelectContent>

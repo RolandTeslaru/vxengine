@@ -4,11 +4,11 @@
 
 "use client"
 
-import React, { Suspense, useContext, useEffect, useRef, useState } from 'react'
-import { Canvas, extend } from '@react-three/fiber'
+import React, { Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Canvas, extend, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
-import { EffectsManagerDriver} from '../managers/EffectsManager'
+import { EffectsManagerDriver } from '../managers/EffectsManager'
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { RenderPass } from 'three-stdlib'
 import { Stats } from '@react-three/drei'
@@ -34,16 +34,18 @@ VXEngineUtils = require('../utils/rendererUtils.tsx').default;
 
 import { CanvasProps } from "@react-three/fiber";
 import { getNodeEnv } from '@vxengine/constants'
-import { ObjectManagerDriver } from '@vxengine/managers/ObjectManager'
+import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vx } from '@vxengine/vxobject'
 import { EffectComposer, LensFlare } from '@react-three/postprocessing'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { useVXEngine } from '@vxengine/engine'
 
 export interface RendererCoreProps {
-    canvasProps?: CanvasProps;
-    children?: React.ReactNode;
-    mount?: boolean;
-    powerPreferences?: 'high-performance' | 'low-power';
-    effectsNode?: React.ReactElement
+  canvasProps?: CanvasProps;
+  children?: React.ReactNode;
+  mount?: boolean;
+  powerPreferences?: 'high-performance' | 'low-power';
+  effectsNode?: React.ReactElement
 }
 
 // VXEngineCoreRenderer
@@ -65,7 +67,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
-          precision: 'highp',        
+          precision: 'highp',
         }}
         dpr={dpr_state}
         performance={{
@@ -75,12 +77,13 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         }}
         frameloop={"demand"}
       >
+        <SceneDriver/>
         <PerformanceMonitor
           onChange={({ factor }) => {
             const isPlaying = useAnimationEngineAPI.getState().isPlaying;
             const cameraMode = useCameraManagerAPI.getState().mode;
             // When the animations are playing, chaning the dpr state can cause a slight flicker
-            if(!isPlaying && cameraMode === "attached"){
+            if (!isPlaying && cameraMode === "attached") {
               const value = round(0.2 + 1.1 * factor, 1)
               setDpr_state(value)
             }
@@ -88,20 +91,68 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
         >
           {/* <color attach="background" args={['gray']} /> */}
           {IS_DEVELOPMENT && <>
-              <VXEngineUtils/>
-              <ObjectManagerDriver/>
+            <VXEngineUtils />
+            <ObjectManagerDriver />
           </>
           }
           <EffectComposer>
             {effectsNode}
             <vx.fadeEffect />
           </EffectComposer>
-          
-          
-          <CameraManagerDriver/>
+
+
+          <CameraManagerDriver />
           {children}
         </PerformanceMonitor>
       </Canvas>
     </>
   )
+}
+
+const SceneDriver = () => {
+  const scene = useThree(state => state.scene);
+
+  const animationEngine = useVXEngine(state => state.animationEngine)
+
+  const addObject = useVXObjectStore(state => state.addObject)
+  const removeObject = useVXObjectStore(state => state.removeObject)
+
+  const memoizedAddObject = useCallback(addObject, []);
+  const memoizedRemoveObject = useCallback(removeObject, []);
+  useLayoutEffect(() => {
+    console.log("SCENE ", scene);
+    const sceneRef = {
+      current: scene
+    }
+
+    const vxkey = "scene"
+
+    const params = [
+      "environmentIntensity",
+      "backgroundBlurriness",
+      "backgroundIntensity",
+    ]
+
+    const disabledParams = [
+      "position",
+      "rotation",
+      "scale"
+    ]
+
+    const newSceneEntity: vxObjectProps = {
+      type: "entity",
+      ref: sceneRef,
+      vxkey,
+      name: "Scene",
+      params,
+      disabledParams
+    }
+    memoizedAddObject(newSceneEntity);
+    animationEngine.initObjectOnMount(newSceneEntity);
+
+    return () => {
+      memoizedRemoveObject(vxkey);
+    };
+  }, [memoizedAddObject, memoizedRemoveObject])
+  return null;
 }
