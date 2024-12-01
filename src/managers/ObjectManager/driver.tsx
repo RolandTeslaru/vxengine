@@ -9,6 +9,7 @@ import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
+import * as THREE from "three";
 
 const axisMap = {
   X: 'x',
@@ -56,11 +57,14 @@ const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectP
 
 export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
+ 
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
 
-  const firstObjectSelectedRef = firstSelectedObject?.ref.current;
+  const firstObjectSelectedRef: THREE.Object3D = firstSelectedObject?.ref.current;
+  const type = firstObjectSelectedRef?.type
+  const isValid = type === "Mesh" || type === "Group";
 
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
@@ -201,7 +205,7 @@ export const ObjectManagerDriver = () => {
   return (
     <>
       {/* Object Transform Controls */}
-      {firstObjectSelectedRef && (
+      {firstObjectSelectedRef && isValid && (
         <TransformControls
           ref={transformControlsRef}
           object={firstObjectSelectedRef}

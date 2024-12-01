@@ -26,8 +26,14 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
     const isUsingSplinePath = settings?.useSplinePath
+
+    const isPositionDisabled = disabledParams?.includes("position") || isUsingSplinePath;
     const isRotationDisabled = disabledParams?.includes("rotation");
     const isScaleDisabled = disabledParams?.includes("scale");
+
+    const isPanelDisabled = isPositionDisabled && isRotationDisabled && isScaleDisabled
+
+    if(isPanelDisabled) return;
 
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
@@ -60,7 +66,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                 <div className='flex flex-row'>
                     <p className="text-xs font-light text-neutral-500" >position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
-                        {renderInputs('position', isUsingSplinePath)}
+                        {renderInputs('position', isPositionDisabled)}
                     </div>
                 </div>
 
@@ -106,9 +112,9 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     );
 }
 
-const getDefaultValue = ({vxkey, propertyPath}: {vxkey: string, propertyPath: string}) => {
+const getDefaultValue = ({ vxkey, propertyPath }: { vxkey: string, propertyPath: string }) => {
     const getProperty = useObjectPropertyAPI.getState().getProperty;
-    const val = getProperty(vxkey, propertyPath) 
+    const val = getProperty(vxkey, propertyPath)
     return val;
 }
 
@@ -116,7 +122,7 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
     const propertyPath = "splineProgress"
     const trackKey = `${vxkey}.splineProgress`
     const inputRef = useRef();
-    const [value, setValue] = useState(getDefaultValue({vxkey, propertyPath}));
+    const [value, setValue] = useState(getDefaultValue({ vxkey, propertyPath }));
 
     useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
