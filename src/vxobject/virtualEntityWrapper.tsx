@@ -17,7 +17,7 @@ export interface VXVirtualEntityWrapperProps<T extends THREE.Object3D> {
     disabledParams?: string[]
     disableClickSelect?: boolean
 
-    defaultSettingsForObject?: {},
+    defaultSettings?: {},
     defaultAdditionalSettings?: {}
 }
 

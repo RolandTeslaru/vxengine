@@ -27,7 +27,7 @@ export const EditableLightFormer = memo(
             useImperativeHandle(ref, () => internalRef.current);
 
             // INITIALIZE Settings
-            const defaultSettingsForObject = {
+            const defaultSettings = {
                 useSplinePath: false,
                 ...settings
             }
@@ -47,7 +47,7 @@ export const EditableLightFormer = memo(
                     <VXVirtualEntityWrapper
                         ref={internalRef}
                         params={params}
-                        defaultSettingsForObject={defaultSettingsForObject}
+                        defaultSettings={defaultSettings}
                         defaultAdditionalSettings={defaultAdditionalSettings}
                         {...props}
                     >

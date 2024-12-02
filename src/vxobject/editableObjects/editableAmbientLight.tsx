@@ -14,6 +14,10 @@ export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> &
     settings?: {}
 };
 
+export const defaultSettings_AmbientLight = {
+    useSplinePath: false,
+}
+
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     
@@ -22,8 +26,8 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
     useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
-    const defaultSettingsForObject = {
-        useSplinePath: false,
+    const mergeddefaultSettings = {
+        ...defaultSettings_AmbientLight,
         ...settings
     }
     // INITIALIZE Additional Settings
@@ -39,7 +43,7 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
         <VXEntityWrapper 
             ref={internalRef} 
             params={params}
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={mergeddefaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...rest}
         >

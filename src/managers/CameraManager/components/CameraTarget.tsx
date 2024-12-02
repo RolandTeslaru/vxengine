@@ -41,14 +41,14 @@ const CameraTarget = () => {
         combinedQuat,
         axisX,
         axisY
-      } = useMemo(() => ({
+    } = useMemo(() => ({
         eulerRotation: new THREE.Euler(),
         initialRotation: new THREE.Quaternion(),
         yawRotation: new THREE.Quaternion(),
         combinedQuat: new THREE.Quaternion(),
         axisX: new THREE.Vector3(1, 0, 0),
         axisY: new THREE.Vector3(0, 1, 0),
-      }), []);
+    }), []);
 
     useFrame(() => {
         if (isVisible)
@@ -104,7 +104,7 @@ const CameraTarget = () => {
                     />
                 </mesh>
             </vx.group>
-        
+
             {/* Floor Projection */}
             <mesh ref={FloorProjectionRef} visible={isVisible}>
                 <planeGeometry args={[20, 20]} />

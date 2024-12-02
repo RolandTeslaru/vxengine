@@ -17,6 +17,10 @@ export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
     settings?: {}
 };
 
+export const defaultSettings_pointLight = {
+    useSplinePath: false,
+}
+
 export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
@@ -25,8 +29,8 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
-    const defaultSettingsForObject = {
-        useSplinePath: false,
+    const defaultSettings = {
+        ...defaultSettings_pointLight,
         ...settings
     }
     
@@ -49,7 +53,7 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
         <VXEntityWrapper 
             ref={internalRef} 
             params={params}
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >

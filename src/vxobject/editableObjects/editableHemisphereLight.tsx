@@ -22,14 +22,14 @@ export const EditableHemisphereLight = memo(forwardRef<HemisphereLight, Editable
     
 
     // INITIALIZE Settings
-    const defaultSettingsForObject = {
+    const defaultSettings = {
         useSplinePath: false,
         ...settings
     }
     useEffect(() => {
         if(currentTimelineID === undefined) return 
         const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
+            ...defaultSettings,
             ...currentSettingsForObject
         }
         Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {

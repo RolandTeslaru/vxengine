@@ -14,13 +14,16 @@ export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     settings?: {},
 };
 
+export const defaultSettings_group = {
+    useSplinePath: false,
+}
 
 export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, ref) => {
     const { settings = {}, children: groupChildren, ...rest } = props;
 
     // INITIALIZE Settings
-    const defaultSettingsForObject = {
-        useSplinePath: false,
+    const defaultSettings = {
+        ...defaultSettings_group,
         ...settings
     }
 
@@ -29,12 +32,11 @@ export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, 
         showPositionPath: false,
     }
 
-
     return (
         <VXEntityWrapper
             ref={ref}
             {...rest}
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
         >
             <group ref={ref} {...rest} >

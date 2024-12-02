@@ -12,6 +12,10 @@ export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLight
     settings?: {}
 };
 
+const defaultSettings_DirectionalLight = {
+    showPositionPath: false,
+}
+
 export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
     const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
@@ -20,14 +24,14 @@ export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, Editab
     const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
 
     // INITIALIZE Settings
-    const defaultSettingsForObject = {
+    const mergeddefaultSettings = {
         useSplinePath: false,
         ...settings
     }
     useEffect(() => {
         if (currentTimelineID === undefined) return
         const mergedSettingsForObject = {
-            ...defaultSettingsForObject,
+            ...mergeddefaultSettings,
             ...currentSettingsForObject
         }
         Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {

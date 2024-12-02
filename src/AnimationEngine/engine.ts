@@ -1325,7 +1325,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param settingKey - The key identifying the setting.
    * @param vxkey - The unique identifier for the object.
    */
-  refreshSettings(
+  refreshSetting(
     action: 'set' | 'remove',
     settingKey: string,
     vxkey: string,
@@ -1351,11 +1351,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       case 'remove': {
         delete this.currentTimeline.settings[vxkey][settingKey];
+        // Remove the object if no settings remain;
+        if(Object.keys(this.currentTimeline.settings[vxkey]).length === 0){
+          delete this.currentTimeline.settings[vxkey];
+        }
         break;
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSettings.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSetting.`);
         return;
       }
     }

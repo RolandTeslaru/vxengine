@@ -17,6 +17,10 @@ export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
     settings?: {}
 };
 
+export const defaultSettings_spotlight = {
+    useSplinePath: false,
+}
+
 export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;
     const vxkey = rest.vxkey;
@@ -27,8 +31,8 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
     //
     // Settings
     //
-    const defaultSettingsForObject = {
-        useSplinePath: false,
+    const defaultSettings = {
+        ...defaultSettings_spotlight,
         ...settings
     }
 
@@ -52,7 +56,7 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
         <VXEntityWrapper 
             ref={internalRef} 
             params={params}
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >

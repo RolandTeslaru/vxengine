@@ -25,6 +25,11 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
     settings?: {}
 };
 
+export const defaultSettings_perspectiveCamera = {
+    useSplinePath: false,
+    setingPerspectiveCamera: true,
+}
+
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
     const IS_DEVELOPMENT = getNodeEnv() === "development"
     const { settings = {}, ...rest } = props;
@@ -32,11 +37,6 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const cameraRef = useRef(null)
 
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
-
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    };
 
     // useEffect(() => {
     //     cameraRef.current.localRotationZ = 0;
@@ -91,9 +91,14 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const showHelper = mode === "free" && IS_DEVELOPMENT
     useHelper(cameraRef, showHelper && CameraHelper)
 
-    const defaultSettingsForObject = {
-        useSplinePath: false,
-        setingMeshProp1: true,
+    // INITIALIZE Additional Settings
+    const defaultAdditionalSettings = {
+        showPositionPath: false,
+    };
+
+
+    const defaultSettings = {
+        ...defaultSettings_perspectiveCamera,
         ...settings
     }
 
@@ -119,7 +124,7 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
             ref={cameraRef}
             params={params}
             disabledParams={disabledParams}
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >

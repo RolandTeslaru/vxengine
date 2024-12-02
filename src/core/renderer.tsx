@@ -109,7 +109,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   )
 }
 
-const SceneDriver = () => {
+const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);
 
   const animationEngine = useVXEngine(state => state.animationEngine)
@@ -119,8 +119,8 @@ const SceneDriver = () => {
 
   const memoizedAddObject = useCallback(addObject, []);
   const memoizedRemoveObject = useCallback(removeObject, []);
+  
   useLayoutEffect(() => {
-    console.log("SCENE ", scene);
     const sceneRef = {
       current: scene
     }
@@ -153,6 +153,6 @@ const SceneDriver = () => {
     return () => {
       memoizedRemoveObject(vxkey);
     };
-  }, [memoizedAddObject, memoizedRemoveObject])
+  }, [])
   return null;
-}
+})

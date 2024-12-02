@@ -24,7 +24,7 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     disableClickSelect?: boolean
     isVirtual?: boolean
 
-    defaultSettingsForObject?: {},
+    defaultSettings?: {},
     defaultAdditionalSettings?: {}
 }
 
@@ -36,13 +36,14 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         disabledParams,
         disableClickSelect = false,
         isVirtual = false,
-        defaultSettingsForObject = {},
+        defaultSettings = {},
         defaultAdditionalSettings = {},
         ...props
     }, ref) => {
         if (vxkey === undefined) 
             throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
 
+        const animationEngine = useVXEngine(state => state.animationEngine)
         const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT);
 
         const addObject = useVXObjectStore(state => state.addObject)
@@ -51,8 +52,6 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
 
         const selectObjects = useObjectManagerAPI(state => state.selectObjects)
         const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
-
-        const animationEngine = useVXEngine(state => state.animationEngine)
 
         // Initialize settings
         const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
@@ -70,12 +69,10 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         useLayoutEffect(() => {
             if (currentTimelineID === undefined) return
             const mergedSettingsForObject = {
-                ...defaultSettingsForObject,
+                ...defaultSettings,
                 ...currentSettingsForObject
             }
-            Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-                useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-            })
+            useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, defaultSettings)
         }, [currentTimelineID])
 
 
@@ -99,9 +96,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             memoizedAddObject(newVXEntity);
             animationEngine.initObjectOnMount(newVXEntity);
 
-            return () => {
-                memoizedRemoveObject(vxkey);
-            };
+            return () => memoizedRemoveObject(vxkey);
         }, [memoizedAddObject, memoizedRemoveObject]);
 
         const handlePointerOver = () => setHoveredObject(vxObject);

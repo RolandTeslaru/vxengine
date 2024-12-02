@@ -12,6 +12,11 @@ export type EditableMeshProps = EditableObjectProps<MeshProps> & {
     settings?: {}
 };
 
+const defaultSettings_mesh = {
+    useSplinePath: false,
+    setingMeshProp1: true,
+}
+
 export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, settings = {}, ...rest } = props;
 
@@ -19,16 +24,15 @@ export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref
     const defaultAdditionalSettings = {
         showPositionPath: false,
     }
-    const defaultSettingsForObject = {
-        useSplinePath: false,
-        setingMeshProp1: true,
+    const defaultSettings = {
+        ...defaultSettings_mesh,
         ...settings
     }
 
     return (
         <VXEntityWrapper 
             ref={ref} 
-            defaultSettingsForObject={defaultSettingsForObject}
+            defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...rest}
         >
