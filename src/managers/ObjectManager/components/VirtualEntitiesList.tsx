@@ -2,13 +2,15 @@ import React, { useMemo, useState } from 'react'
 import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
 import { useObjectManagerAPI } from '../stores/managerStore';
 import { vxEntityProps, vxObjectProps, vxVirtualEntityProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
+import { useObjectSettingsAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import Search from '@vxengine/components/ui/Search';
+import { Switch } from '@vxengine/components/shadcn/switch';
 
 const VirtualEntitiesList = () => {
     const vxObjects = useVXObjectStore(state => state.objects)
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [viewAll, setViewAll] = useState(false); 
 
     const vxVirtualEntities = useMemo(() => {
         const filteredRecord = Object.fromEntries(
@@ -53,6 +55,14 @@ const VirtualEntitiesList = () => {
         setLastSelectedIndex(index);
     };
 
+    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
+
+    const handleViewAllToggle = () => {
+        setViewAll(!viewAll); // Toggle the state
+        Object.keys(vxVirtualEntities).forEach(vxkey => {
+            setAdditionalSetting(vxkey, "Show In Scene", !viewAll); // Update the setting for all entities
+        });
+    };
 
     return (
         <CollapsiblePanel
@@ -95,6 +105,18 @@ const VirtualEntitiesList = () => {
                         </div>
                     )
                 })}
+            </div>
+            <div className='flex flex-row w-full mt-2 mx-2'>
+                <div className='flex flex-row gap-2'>
+                    <p className='text-xs font-sans-menlo'>
+                        View All
+                    </p>
+                    <Switch
+                        checked={viewAll}
+                        onClick={handleViewAllToggle}
+                        className='scale-[80%]'
+                    />
+                </div>
             </div>
         </CollapsiblePanel>
     )

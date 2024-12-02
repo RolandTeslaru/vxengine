@@ -254,7 +254,6 @@ function VXEnvironmentGround(props: EnvironmentProps) {
       <mesh>
         <sphereGeometry args={[100, 100]}/>
         <meshBasicMaterial 
-        // @ts-expect-error
           map={texture} 
           side={THREE.BackSide}
         />
