@@ -17,6 +17,7 @@ interface ObjectSettingsStoreProps {
     toggleSetting: (vxkey: string, settingKey: string) => void
 
     initSettingsForObject: (vxkey: string, newSettings: {}, defaultSettingsForObject: {}) => void;
+    initAdditionalSettingsForObject: (vxkey: string, newSettings: {}) => void;
 
     additionalSettings: Record<string, IAdditionalSettingsProps>
     setAdditionalSetting: (vxkey: string, settingKey: string, settingValue: boolean | string) => void
@@ -87,6 +88,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             // Add change to the timelineEditorAPI so that it triggers the disk write
             useTimelineEditorAPI.getState().addChange();
         },
+        
         initSettingsForObject: (vxkey, newSettings, defaultSettingsForObject) => {
             set(produce((state: ObjectSettingsStoreProps) => {
                 state.defaultSettings[vxkey] = defaultSettingsForObject;
@@ -94,6 +96,11 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
                 state.settings[vxkey] = newSettings;
             }))
         },
+        initAdditionalSettingsForObject: (vxkey, newSettings) => {
+            set(produce((state: ObjectSettingsStoreProps) => {
+                state.additionalSettings[vxkey] = newSettings;
+            }))
+        }, 
 
         additionalSettings: {},
         setAdditionalSetting: (vxkey, settingKey, settingValue) => {

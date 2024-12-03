@@ -7,6 +7,8 @@ import { EnvironmentLoaderProps, useEnvironment } from '@react-three/drei'
 import * as THREE from "three"
 import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
 import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils/useTransformControlsEvent"
+import { vx } from "@vxengine/vxobject"
+
 
 export type EnvironmentProps = {
   children?: React.ReactNode
@@ -205,9 +207,9 @@ export function VXEnvironmentPortal({
     <>
       {createPortal(
         <>
+          <vx.cubeCamera vxkey="environmentCamera" name="EnvCamera" isVirtual={true} ref={camera} args={[near, far, fbo]}/>
           {children}
           {/* @ts-ignore */}
-          <cubeCamera ref={camera} args={[near, far, fbo]} />
           {files || preset ? (
             <VXEnvironmentCube background files={files} preset={preset} path={path} extensions={extensions} />
           ) : map ? (

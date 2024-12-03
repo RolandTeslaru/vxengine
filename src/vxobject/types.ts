@@ -7,4 +7,5 @@ export interface VXEntityWrapperProps {
 export type EditableObjectProps<T> = Omit<T, 'ref'> & {
     vxkey: string;
     ref?: React.Ref<unknown>;
+    isVirtual?: boolean
 };

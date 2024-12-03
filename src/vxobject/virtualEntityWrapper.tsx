@@ -25,8 +25,6 @@ const VXVirtualEntityWrapper = forwardRef<THREE.Object3D, VXVirtualEntityWrapper
     (props, ref) => {
         const { children, ...rest } = props
 
-        const originalScene = useThree(state => state.gl);
-
         const internalRef = useRef<THREE.Object3D | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
 
@@ -36,12 +34,6 @@ const VXVirtualEntityWrapper = forwardRef<THREE.Object3D, VXVirtualEntityWrapper
 
         return (
             <>
-                {/* {createPortal(
-                    <>
-                        <primitive object={internalRef.current}/>
-                    </>, 
-                    scene 
-                )} */}
                 <VXEntityWrapper ref={internalRef} {...rest} isVirtual={true}>
                     {children}
                 </VXEntityWrapper>

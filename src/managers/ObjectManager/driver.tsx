@@ -64,7 +64,7 @@ export const ObjectManagerDriver = () => {
 
   const firstObjectSelectedRef: THREE.Object3D = firstSelectedObject?.ref.current;
   const type = firstObjectSelectedRef?.type
-  const isValid = type === "Mesh" || type === "Group";
+  const isValid = type === "Mesh" || type === "Group" || type === "PerspectiveCamera" || type === "CubeCamera";
 
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 

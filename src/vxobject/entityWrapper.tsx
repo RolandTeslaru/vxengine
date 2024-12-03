@@ -58,10 +58,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
 
         useLayoutEffect(() => {
-            Object.entries(defaultAdditionalSettings).forEach(
-                ([settingKey, value]: [settingKey: string, value: any]) => {
-                    useObjectSettingsAPI.getState().setAdditionalSetting(vxkey, settingKey, value)
-                })
+            useObjectSettingsAPI.getState().initAdditionalSettingsForObject(vxkey, defaultAdditionalSettings)
         }, [])
 
 
