@@ -103,10 +103,7 @@ export interface RawKeyframeProps {
     id: string
     time: number; 
     value: number;
-    handles: {
-        in: VXVector2,
-        out: VXVector2,
-    }
+    handles: [number, number, number, number]
 }
 
 export interface RawStaticPropProps {

@@ -791,11 +791,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const DEFAULT_IN_HANDLE = 0.3;
     const DEFAULT_OUT_HANDLE = 0.7;
 
-    const startHandleX = startKeyframe.handles?.out?.x ?? DEFAULT_IN_HANDLE;
-    const startHandleY = startKeyframe.handles?.out?.y ?? DEFAULT_IN_HANDLE;
+    const startHandleX = startKeyframe.handles[2] ?? DEFAULT_IN_HANDLE;
+    const startHandleY = startKeyframe.handles[3] ?? DEFAULT_IN_HANDLE;
 
-    const endHandleX = endKeyframe.handles?.in?.x ?? DEFAULT_OUT_HANDLE;
-    const endHandleY = endKeyframe.handles?.in?.y ?? DEFAULT_OUT_HANDLE;
+    const endHandleX = endKeyframe.handles[0] ?? DEFAULT_OUT_HANDLE;
+    const endHandleY = endKeyframe.handles[1] ?? DEFAULT_OUT_HANDLE;
 
     return this._interpolateNumberFunction(
       startValue,
@@ -1037,9 +1037,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     switch (action) {
       case 'create': {
         const keyframesForTrack = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey) || [];
+        const rawKeyframes = keyframesForTrack.map(edKeyframe => {
+          return {
+            id: edKeyframe.id,
+            value: edKeyframe.value,
+            time: edKeyframe.time,
+            handles: [
+              edKeyframe.handles.in.x,
+              edKeyframe.handles.in.y,
+              edKeyframe.handles.out.x,
+              edKeyframe.handles.out.y,
+            ] as [number, number, number, number]
+          }
+        })
         const rawTrack: RawTrackProps = {
           propertyPath: propertyPath,
-          keyframes: keyframesForTrack,
+          keyframes: rawKeyframes,
         };
         rawObject.tracks.push(rawTrack);
 
@@ -1116,7 +1129,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           id: edKeyframe.id,
           value: edKeyframe.value,
           time: edKeyframe.time,
-          handles: edKeyframe.handles
+          handles: [
+            edKeyframe.handles.in.x,
+            edKeyframe.handles.in.y,
+            edKeyframe.handles.out.x,
+            edKeyframe.handles.out.y,
+          ]
         } 
         keyframes.push(rawKeyframe);
         keyframes.sort((a, b) => a.time - b.time);
@@ -1131,7 +1149,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
         keyframes.forEach((kf, index) => {
           if (kf.id === keyframeKey) {
-            keyframes[index] = edKeyframe;
+            const keyframe = keyframes[index]
+            keyframe.value = edKeyframe.value;
+            keyframe.time = edKeyframe.time;
+            keyframe.handles = [
+              edKeyframe.handles.in.x,
+              edKeyframe.handles.in.y,
+              edKeyframe.handles.out.x,
+              edKeyframe.handles.out.y,
+            ]
           }
         });
         keyframes.sort((a, b) => a.time - b.time);

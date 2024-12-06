@@ -1,7 +1,7 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { create } from 'zustand'
 import { SourceManagerAPIProps } from './types'
-import { ITimeline } from '@vxengine/AnimationEngine/types/track'
+import { IKeyframe, ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
@@ -87,7 +87,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     if (DEBUG)
       console.log("VXEngine SourceManager: Validating LocalStorage")
 
-    validateAndFixTimelines(diskData);
+    // validateAndFixTimelines(diskData);
     const savedTimelines = localStorage.getItem('timelines');
 
 
@@ -102,9 +102,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
       // Compare disk data with localstorage
       console.log("VXEngine SourceManager: Restoring timelines from LocalStorage");
       const localStorageData = JSON.parse(savedTimelines);
-      validateAndFixTimelines(localStorageData);
-
-      console.log("CHECK THIS SHIT ", diskData)
+      // validateAndFixTimelines(localStorageData);
 
       const areTimelinesInSync = deepEqual(diskData, localStorageData);
 
@@ -185,8 +183,7 @@ const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
     // Validate and fix objects and their properties
     timeline.objects?.forEach((object) => {
       object.tracks.forEach(track => {
-        track.keyframes.forEach(keyframe => {
-          // console.trace("Keyframe object is frozen", keyframe);
+        track.keyframes.forEach((keyframe) => {
           if (!isValidPrecision(keyframe.time)) {
             errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
             keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);
@@ -195,7 +192,6 @@ const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
             errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
             keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
           }
-          
         });
       });
 

@@ -52,10 +52,6 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     }, [propertyKey, keyframesOnTrack]);
 
     useEffect(() => {
-        console.log("Keyframes On track Triggerd ", keyframeKeysForTrack)
-    }, [keyframeKeysForTrack])
-
-    useEffect(() => {
         checkIfOnKeyframe()
     }, [propertyKey, keyframesOnTrack])
 

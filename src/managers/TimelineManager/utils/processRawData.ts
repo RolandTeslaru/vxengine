@@ -21,15 +21,24 @@ export default function processRawData(
             const trackKey = `${rawObj.vxkey}.${track.propertyPath}`;
 
             // Create Keyframe Record
-            track.keyframes.forEach((kf) => {
-                const keyframeId = kf.id || `keyframe-${Date.now()}`;
+            track.keyframes.forEach((rawKeyframe) => {
+                const keyframeId = rawKeyframe.id || `keyframe-${Date.now()}`;
                 const newKeyframe: IKeyframe = {
                     id: keyframeId,
                     vxkey: rawObj.vxkey,
                     propertyPath: track.propertyPath,
-                    time: kf.time,
-                    value: kf.value,
-                    handles: kf.handles
+                    time: rawKeyframe.time,
+                    value: rawKeyframe.value,
+                    handles: {
+                        in: {
+                            x: rawKeyframe.handles[0],
+                            y: rawKeyframe.handles[1]
+                        },
+                        out: {
+                            x: rawKeyframe.handles[2],
+                            y: rawKeyframe.handles[3]
+                        }
+                    }
                 }
                 keyframes[keyframeId] = newKeyframe
                 keyframeIds.push(keyframeId);

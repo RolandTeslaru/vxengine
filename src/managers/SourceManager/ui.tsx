@@ -173,7 +173,7 @@ export const DataSyncPopup = () => {
                         </div>
                         {/* Data Difs */}
                         <div className="max-h-[500px] bg-neutral-950 overflow-scroll  text-xs">
-                            <ReactDiffViewer styles={defaultStyles} oldValue={diskDataString} newValue={localStorageDataString} splitView={true} />
+                            {/* <ReactDiffViewer styles={defaultStyles} oldValue={diskDataString} newValue={localStorageDataString} splitView={true} /> */}
                         </div>
                         {/* Buttons */}
                         <div className="flex flex-row py-3 justify-items-center">
