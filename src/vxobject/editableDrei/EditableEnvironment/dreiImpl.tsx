@@ -5,7 +5,7 @@ import { GroundProjectedEnv as GroundProjectedEnvImpl } from 'three-stdlib'
 import { PresetsType } from '@react-three/drei/helpers/environment-assets'
 import { EnvironmentLoaderProps, useEnvironment } from '@react-three/drei'
 import * as THREE from "three"
-import useAnimationEngineEvent from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
+import { useAnimationEngineEvent } from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
 import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils/useTransformControlsEvent"
 import { vx } from "@vxengine/vxobject"
 

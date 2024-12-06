@@ -9,7 +9,7 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
+import { IKeyframe, ISpline, IStaticProps, ITimeline, ITrack, RawKeyframeProps, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
@@ -565,7 +565,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _applyKeyframes(
     vxkey: string,
     propertyPath: string,
-    keyframes: IKeyframe[],
+    keyframes: RawKeyframeProps[],
     currentTime: number,
     recalculateAll: boolean = false
   ) {
@@ -592,7 +592,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns The interpolated value 
    */
   private _calculateInterpolatedValue(
-    keyframes: IKeyframe[],
+    keyframes: RawKeyframeProps[],
     currentTime: number,
     recalculateAll: boolean
   ): number {
@@ -696,7 +696,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param currentTime - The current time in the animation timeline.
    * @returns The interpolated value at the current time.
    */
-  private _interpolateKeyframes(keyframes: IKeyframe[], currentTime: number): number {
+  private _interpolateKeyframes(keyframes: RawKeyframeProps[], currentTime: number): number {
     // Handle edge cases where currentTime is outside the keyframe time range
     if (currentTime <= keyframes[0].time) {
       return keyframes[0].value;
@@ -745,7 +745,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param currentTime - The current time in the animation timeline.
    * @returns The index of the next keyframe.
    */
-  private _findNextKeyframeIndex(keyframes: IKeyframe[], currentTime: number): number {
+  private _findNextKeyframeIndex(keyframes: RawKeyframeProps[], currentTime: number): number {
     let left = 0;
     let right = keyframes.length - 1;
 
@@ -780,8 +780,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns The interpolated numeric value.
    */
   private _interpolateNumber(
-    startKeyframe: IKeyframe,
-    endKeyframe: IKeyframe,
+    startKeyframe: RawKeyframeProps,
+    endKeyframe: RawKeyframeProps,
     progress: number
   ): number {
     const startValue = startKeyframe.value as number;
@@ -1112,7 +1112,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     switch (action) {
       case 'create': {
         const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
-        keyframes.push(edKeyframe);
+        const rawKeyframe: RawKeyframeProps = {
+          id: edKeyframe.id,
+          value: edKeyframe.value,
+          time: edKeyframe.time,
+          handles: edKeyframe.handles
+        } 
+        keyframes.push(rawKeyframe);
         keyframes.sort((a, b) => a.time - b.time);
 
         if (DEBUG_REFRESHER) {

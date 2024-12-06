@@ -18,10 +18,16 @@ export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     defaultScene?: THREE.Scene
 };
 
-const outlineMaterial = new THREE.MeshBasicMaterial({
+const outlineMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     side: THREE.DoubleSide,
+    fog: false,
 })
+
+const tempPos = new THREE.Vector3();
+const tempQuat = new THREE.Quaternion();
+const tempScale = new THREE.Vector3();
+
 
 export const EditableLightFormer = memo(
     forwardRef<typeof Lightformer, EditableLightformerProps>(
@@ -81,9 +87,12 @@ export const EditableLightFormer = memo(
 
             useFrame(() => {
                 if (isVisibleInScene && internalRef.current && realMeshRef.current) {
-                  realMeshRef.current.position.copy(internalRef.current.position);
-                  realMeshRef.current.rotation.copy(internalRef.current.rotation);
-                  realMeshRef.current.scale.copy(internalRef.current.scale);
+                    internalRef.current.updateWorldMatrix(true, false);
+                    internalRef.current.matrixWorld.decompose(tempPos, tempQuat, tempScale);
+            
+                    realMeshRef.current.position.copy(tempPos);
+                    realMeshRef.current.quaternion.copy(tempQuat);
+                    realMeshRef.current.scale.copy(tempScale);
                 }
               });
 

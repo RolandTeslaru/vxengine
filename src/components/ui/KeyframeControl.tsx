@@ -15,18 +15,27 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
     const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
     const makePropertyTracked = useTimelineEditorAPI(state => state.makePropertyTracked)
-    const getKeyframesForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack);
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
     const track = useTimelineEditorAPI(state => state.tracks[propertyKey]);
     const isPropertyTracked = !!track;
     const keyframeKeysForTrack = track?.keyframes;
 
-    const keyframes = useTimelineEditorAPI(state => state.keyframes)
-
-    const keyframesOnTrack = useMemo(() => {
-        return getKeyframesForTrack(propertyKey);
-    }, [propertyKey, keyframeKeysForTrack, keyframes]);
+    const keyframesOnTrack = useTimelineEditorAPI(
+        state => {
+          const track = state.tracks[propertyKey];
+          return track ? track.keyframes.map(id => state.keyframes[id]) : [];
+        },
+        (oldVal, newVal) => {
+          if (oldVal.length !== newVal.length) return false;
+          for (let i = 0; i < oldVal.length; i++) {
+            if (oldVal[i].time !== newVal[i].time || oldVal[i].id !== newVal[i].id) {
+              return false;
+            }
+          }
+          return true; // If we reach here, contents are identical
+        }
+      );
 
     const checkIfOnKeyframe = () => {
         if (propertyKey) {
@@ -41,6 +50,10 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
         const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
         return () => unsubscribe();
     }, [propertyKey, keyframesOnTrack]);
+
+    useEffect(() => {
+        console.log("Keyframes On track Triggerd ", keyframeKeysForTrack)
+    }, [keyframeKeysForTrack])
 
     useEffect(() => {
         checkIfOnKeyframe()

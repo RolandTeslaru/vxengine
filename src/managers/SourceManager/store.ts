@@ -195,6 +195,7 @@ const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
             errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
             keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
           }
+          
         });
       });
 

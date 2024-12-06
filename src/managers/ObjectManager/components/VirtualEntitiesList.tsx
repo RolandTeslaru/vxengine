@@ -75,7 +75,7 @@ const VirtualEntitiesList = () => {
                 
                 <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
             </div>
-            <div className='mt-2 max-h-96 rounded-lg overflow-hidden'>
+            <div className='mt-2 max-h-96 rounded-lg overflow-y-scroll'>
                 {Object.values(vxVirtualEntities).map((vxVirtualEntity, index) => {
                     const vxkey = vxVirtualEntity.vxkey;
                     const isSelected = selectedObjectKeys?.includes(vxkey)

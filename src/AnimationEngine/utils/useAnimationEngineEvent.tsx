@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useVXEngine } from '@vxengine/engine';
 import { EventTypes } from '../events';
 
-function useAnimationEngineEvent(
+export function useAnimationEngineEvent(
   eventName,
   callback,
   dependencies = []
@@ -24,4 +24,3 @@ function useAnimationEngineEvent(
     };
   }, [animationEngine, eventName]);
 }
-export default useAnimationEngineEvent

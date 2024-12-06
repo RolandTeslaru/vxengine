@@ -95,8 +95,18 @@ export interface RawObjectProps {
 }
 
 export interface RawTrackProps {
-    keyframes:  IKeyframe[],
+    keyframes:  RawKeyframeProps[],
     propertyPath: string,
+}
+
+export interface RawKeyframeProps {
+    id: string
+    time: number; 
+    value: number;
+    handles: {
+        in: VXVector2,
+        out: VXVector2,
+    }
 }
 
 export interface RawStaticPropProps {

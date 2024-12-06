@@ -14,6 +14,7 @@ import { useEffectsManagerAPI } from "@vxengine/managers/EffectsManager";
 import { useCameraManagerAPI } from "@vxengine/managers/CameraManager";
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
 import Search from "./Search";
+import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 
 
 const filterOutFunctions = (state: any) => {
@@ -222,6 +223,19 @@ const State_UIStore = () => {
         />
     );
 };
+
+const State_AnimationEngineAPI = () => {
+    const state = useAnimationEngineAPI();
+    const filteredState = filterOutFunctions(state);
+    return (
+        <JsonView
+            src={filteredState}
+            collapsed={({ depth }) => depth > 2}
+            dark={true}
+        />
+    );
+}
+
 const StateVisualizer = () => {
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
     const [attachedState, setAttachedState] = useState(true);
@@ -251,6 +265,8 @@ const StateVisualizer = () => {
                 return <State_VXObjectStore />;
             case "UIStore":
                 return <State_UIStore />;
+            case "AnimationEngineAPI":
+                return <State_AnimationEngineAPI/>;
             default:
                 return null;
         }
@@ -293,6 +309,7 @@ const StateVisualizer = () => {
                                 <SelectItem value={"ObjectSettingsAPI"} >ObjectSettingsAPI</SelectItem>
                                 <SelectItem value={"VXObjectStore"} >VXObjectStore</SelectItem>
                                 <SelectItem value={"UIStore"} >UIStore</SelectItem>
+                                <SelectItem value={"AnimationEngineAPI"} >AnimationEngineAPI</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

@@ -16,3 +16,4 @@ export { useAnimationEngineAPI } from "./AnimationEngine/store"
 
 export { useCameraManagerAPI } from "./managers/CameraManager"
 export { useVXObjectStore } from "./managers/ObjectManager/stores/objectStore"
+export { useAnimationEngineEvent} from "./AnimationEngine/utils/useAnimationEngineEvent"

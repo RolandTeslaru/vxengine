@@ -11,6 +11,8 @@ import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 
+const AXES = ['x', 'y', 'z'];
+
 const axisMap = {
   X: 'x',
   Y: 'y',
@@ -31,6 +33,14 @@ const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectP
   document.dispatchEvent(virtualEntityChangeEvent as any);
 }
 
+
+const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
+  const lowerCaseKey = keyframeKey.toLowerCase();
+  if (lowerCaseKey.includes('.x')) return 'x';
+  if (lowerCaseKey.includes('.y')) return 'y';
+  if (lowerCaseKey.includes('.z')) return 'z';
+  return 'x';
+};
 
 /**
  * ObjectManagerDriver Component
@@ -57,7 +67,7 @@ const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectP
 
 export const ObjectManagerDriver = () => {
   const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
- 
+
   const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
@@ -68,11 +78,23 @@ export const ObjectManagerDriver = () => {
 
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
+  const intialProps = useRef({
+    position: new THREE.Vector3,
+    rotation: new THREE.Quaternion,
+    scale: new THREE.Vector3
+  })
+
+  const currentProps = useRef({
+    position: new THREE.Vector3,
+    rotation: new THREE.Quaternion,
+    scale: new THREE.Vector3
+  })
+
   // Create debounced functions for each axis using useMemo
   const debouncedPropertyValueChangeFunctions = useMemo(() => ({
     X: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-    Y: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false),300,{ leading: false, trailing: true }),
-    Z: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false),300,{ leading: false, trailing: true }),
+    Y: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
+    Z: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
   }), [handlePropertyValueChange]);
 
   // Cleanup debounced functions on unmount
@@ -105,22 +127,7 @@ export const ObjectManagerDriver = () => {
   };
 
 
-  // 
-  //  Handle ENTITIES
-  // 
-  const handleEntiyChange = (e) => {
-    const firstObjectSelectedRef = firstSelectedObject?.ref.current;
-    if (!firstObjectSelectedRef)
-      return
-    const controls = e.target;
-    const axis = controls.axis;
-    if (!axis) return
-
-    const vxkey = firstSelectedObject?.vxkey;
-
-    const axes = axis.split('');
-    const changes = {};
-
+  const handleSpaceTransform = (axes: string[], vxkey: string,) => {
     axes.forEach((axisLetter: string) => {
       const propertyAxis = axisMap[axisLetter];
       if (!propertyAxis) return;
@@ -146,6 +153,104 @@ export const ObjectManagerDriver = () => {
         newValue
       );
     });
+  }
+
+  // 
+  //  Handle ENTITIES
+  // 
+  const handleEntiyChange = (e) => {
+    const firstObjectSelectedRef = firstSelectedObject?.ref.current as THREE.Object3D;
+    if (!firstObjectSelectedRef)
+      return
+    const controls = e.target;
+    const axis = controls.axis;
+    if (!axis) return
+
+    const vxkey = firstSelectedObject?.vxkey;
+
+    const axes = axis.split('');
+
+    if (transformSpace === "world") {
+      handleSpaceTransform(axes, vxkey)
+    }
+    else if (transformSpace === "local") {
+
+      switch (transformMode) {
+        case 'translate': {
+          firstObjectSelectedRef.getWorldPosition(currentProps.current[transformMap[transformMode]]);
+          Array('x', 'y', 'z').forEach(axisLetter => {
+
+            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+            const newValue = currentProps.current[transformMap[transformMode]][axisLetter]
+            const oldValue = intialProps.current[transformMap[transformMode]][axisLetter];
+
+            if (oldValue !== newValue) {
+              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+                vxkey,
+                propertyPath,
+                newValue
+              );
+              intialProps.current[transformMap[transformMode]][axisLetter] = newValue
+            }
+          })
+
+          break;
+        }
+        case 'rotate': {
+          // Get the current world quaternion
+          firstObjectSelectedRef.getWorldQuaternion(currentProps.current.rotation);
+
+          // Convert both initial and current quaternions to Euler angles for comparison
+          const initialEuler = new THREE.Euler().setFromQuaternion(intialProps.current.rotation, 'XYZ');
+          const currentEuler = new THREE.Euler().setFromQuaternion(currentProps.current.rotation, 'XYZ');
+
+          ['x', 'y', 'z'].forEach(axisLetter => {
+            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+            const newValue = currentEuler[axisLetter];
+            const oldValue = initialEuler[axisLetter];
+
+            if (oldValue !== newValue) {
+              // Call debounced function with new rotation value
+              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+                vxkey,
+                propertyPath,
+                newValue
+              );
+              // Update the initial Euler to the new value so future comparisons are accurate
+              initialEuler[axisLetter] = newValue;
+            }
+          });
+
+          // After updating, convert `initialEuler` back into a quaternion and store it as the new baseline
+          intialProps.current.rotation.setFromEuler(initialEuler);
+          break;
+        }
+
+        case 'scale': {
+          // Get the current world scale
+          firstObjectSelectedRef.getWorldScale(currentProps.current.scale);
+
+          ['x', 'y', 'z'].forEach(axisLetter => {
+            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+            const newValue = currentProps.current.scale[axisLetter];
+            const oldValue = intialProps.current.scale[axisLetter];
+
+            if (oldValue !== newValue) {
+              // Call debounced function with new scale value
+              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+                vxkey,
+                propertyPath,
+                newValue
+              );
+              // Update the initial scale to the new value so future comparisons are accurate
+              intialProps.current.scale[axisLetter] = newValue;
+            }
+          });
+          break;
+        }
+      }
+
+    }
   }
 
   // 
@@ -189,6 +294,14 @@ export const ObjectManagerDriver = () => {
 
     useObjectManagerAPI.getState().setTransformMode("translate");
 
+    // We need to store initial values when dealing with local space, 
+    // because we need to compare them when the entity is changed
+    if (transformSpace === "local") {
+      firstObjectSelectedRef.getWorldPosition(intialProps.current.position);
+      firstObjectSelectedRef.getWorldQuaternion(intialProps.current.rotation);
+      firstObjectSelectedRef.getWorldScale(intialProps.current.scale);
+    }
+
     if (firstSelectedObject.type === "splineNode") {
       controls.showX = true;
       controls.showY = true;
@@ -217,13 +330,3 @@ export const ObjectManagerDriver = () => {
     </>
   );
 };
-
-const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
-  const lowerCaseKey = keyframeKey.toLowerCase();
-  if (lowerCaseKey.includes('.x')) return 'x';
-  if (lowerCaseKey.includes('.y')) return 'y';
-  if (lowerCaseKey.includes('.z')) return 'z';
-  return 'x';
-};
-
-

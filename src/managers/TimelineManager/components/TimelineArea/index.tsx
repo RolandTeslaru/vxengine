@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TimelineEditor as ITimelineEditor, TimelineRow, TimelineState } from '@vxengine/AnimationEngine/interface/timeline';
 import { DEFAULT_SCALE_WIDTH, MIN_SCALE_COUNT, PREFIX, START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
-import useAnimationEngineEvent from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
+import { useAnimationEngineEvent } from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { useTimelineEditorAPI } from '../..';
 import { handleSetCursor } from '../../utils/handleSetCursor';
