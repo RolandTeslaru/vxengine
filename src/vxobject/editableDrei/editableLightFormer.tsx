@@ -1,7 +1,7 @@
 'use client'
 
 import React, { memo, forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { Lightformer, LightProps, useHelper } from "@react-three/drei";
+import { LightProps, useHelper } from "@react-three/drei";
 import { createPortal as createR3FPortal, invalidate, useFrame } from "@react-three/fiber";
 import { EditableObjectProps } from "../types";
 import VXEntityWrapper from "../entityWrapper";
@@ -11,6 +11,7 @@ import * as THREE from "three"
 import VXVirtualEntityWrapper from "../virtualEntityWrapper";
 import { useThree } from "@react-three/fiber";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
+import { Lightformer } from "./lightFormerImpl";
 
 export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     ref?: React.Ref<LightProps>;
@@ -23,11 +24,6 @@ const outlineMaterial = new THREE.MeshStandardMaterial({
     side: THREE.DoubleSide,
     fog: false,
 })
-
-const tempPos = new THREE.Vector3();
-const tempQuat = new THREE.Quaternion();
-const tempScale = new THREE.Vector3();
-
 
 export const EditableLightFormer = memo(
     forwardRef<typeof Lightformer, EditableLightformerProps>(
@@ -57,6 +53,11 @@ export const EditableLightFormer = memo(
 
             const realMeshRef = useRef<THREE.Mesh>(null);
 
+            const tempPos = useRef(new THREE.Vector3());
+            const tempQuat = useRef(new THREE.Quaternion());
+            const tempScale = useRef(new THREE.Vector3());
+
+
             useEffect(() => {
                 if (vxSceneEntity && isVisibleInScene) {
                     const refScene = vxSceneEntity.ref.current as THREE.Scene;
@@ -68,7 +69,7 @@ export const EditableLightFormer = memo(
                         refScene.add(realMeshRef.current);
                     }
                     realMeshRef.current.visible = isVisibleInScene;
-                    
+
                     refScene.add(realMeshRef.current);
 
                     invalidate();
@@ -88,13 +89,18 @@ export const EditableLightFormer = memo(
             useFrame(() => {
                 if (isVisibleInScene && internalRef.current && realMeshRef.current) {
                     internalRef.current.updateWorldMatrix(true, false);
-                    internalRef.current.matrixWorld.decompose(tempPos, tempQuat, tempScale);
-            
-                    realMeshRef.current.position.copy(tempPos);
-                    realMeshRef.current.quaternion.copy(tempQuat);
-                    realMeshRef.current.scale.copy(tempScale);
+
+                    (internalRef.current as THREE.Object3D).matrixWorld.decompose(
+                        tempPos.current,
+                        tempQuat.current,
+                        tempScale.current
+                    );
+                    
+                    realMeshRef.current.position.copy(tempPos.current);
+                    realMeshRef.current.quaternion.copy(tempQuat.current);
+                    realMeshRef.current.scale.copy(tempScale.current);
                 }
-              });
+            });
 
             return (
                 <>

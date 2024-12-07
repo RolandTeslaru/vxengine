@@ -50,7 +50,7 @@ function setEnvProps(
   texture: Texture,
   sceneProps: Partial<EnvironmentProps> = {}
 ) {
-  console.log("Set Env Props, scene:", scene, "  defaultScene:", defaultScene)
+  // console.log("Set Env Props, scene:", scene, "  defaultScene:", defaultScene)
   // defaults
   sceneProps = {
     backgroundBlurriness: sceneProps.blur ?? 0,

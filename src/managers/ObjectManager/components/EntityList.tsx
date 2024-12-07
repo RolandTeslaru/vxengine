@@ -9,7 +9,7 @@ import Search from '@vxengine/components/ui/Search';
 
 const LIST_ITEM_HEIGHT = 34
 
-const ObjectList = () => {
+const EntityList = () => {
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     const hoveredObject = useObjectManagerAPI(state => state.hoveredObject)
@@ -123,4 +123,4 @@ type ListItemProps = {
 
 }
 
-export default ObjectList
+export default EntityList

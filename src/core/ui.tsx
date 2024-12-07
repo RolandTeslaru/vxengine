@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react"
 import { ObjectPropertiesPanel, ObjectTransformControls } from "../managers/ObjectManager/ui"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { AnimatePresence, motion } from "framer-motion"
-import ObjectList from "../managers/ObjectManager/components/ObjectList"
+import EntityList from "../managers/ObjectManager/components/EntityList"
 import VXEngineWindow from "@vxengine/components/ui/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
@@ -132,7 +132,7 @@ const LeftPanel = () => {
                             setMount={setMountLeftPanel}
                         />
                         <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
-                            <ObjectList />
+                            <EntityList />
                             <VirtualEntitiesList />
                             <EffectsManagerUI />
                             <TrackSegmentProperties />

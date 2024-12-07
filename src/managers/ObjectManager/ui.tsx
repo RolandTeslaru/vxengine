@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useObjectManagerAPI, useObjectPropertyAPI } from './stores/managerStore'
 import { TransformProperties } from './components/TransformProperties'
 import { GeometryProperties } from './components/GeometryProperties'
-import ObjectList from './components/ObjectList'
+import EntityList from './components/EntityList'
 import MaterialProperties from './components/MaterialProperties'
 import NodeTransformProperties from './components/NodeTransformProperties'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
@@ -69,7 +69,7 @@ export const ObjectManagerUI = () => {
 
   return (<>
     {listParent && createPortal(
-      <ObjectList />,
+      <EntityList />,
       listParent
     )}
   </>)
