@@ -177,12 +177,12 @@ export const ObjectManagerDriver = () => {
 
       switch (transformMode) {
         case 'translate': {
-          firstObjectSelectedRef.getWorldPosition(currentProps.current[transformMap[transformMode]]);
+          currentProps.current.position = firstObjectSelectedRef.position.clone()
           Array('x', 'y', 'z').forEach(axisLetter => {
 
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const newValue = currentProps.current[transformMap[transformMode]][axisLetter]
-            const oldValue = intialProps.current[transformMap[transformMode]][axisLetter];
+            const newValue = currentProps.current.position[axisLetter]
+            const oldValue = intialProps.current.position[axisLetter];
 
             if (oldValue !== newValue) {
               debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
@@ -190,7 +190,7 @@ export const ObjectManagerDriver = () => {
                 propertyPath,
                 newValue
               );
-              intialProps.current[transformMap[transformMode]][axisLetter] = newValue
+              intialProps.current.position[axisLetter] = newValue
             }
           })
 

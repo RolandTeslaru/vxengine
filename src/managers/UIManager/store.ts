@@ -92,6 +92,7 @@ export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>((set, get) =
     },
     openedDialogs: [],
     closeDialog: (id) => {
+        console.log("Closing Dialog with id ", id)
         set({
             openedDialogs: get().openedDialogs.filter(dialogId => dialogId !== id)
         })

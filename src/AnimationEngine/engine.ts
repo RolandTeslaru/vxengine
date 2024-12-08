@@ -1272,7 +1272,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     splineKey: string,
     reRender: boolean = true,
   ) {
-
     const splineState = useSplineManagerAPI.getState().splines
 
     switch (action) {
