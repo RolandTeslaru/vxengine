@@ -29,9 +29,6 @@ declare module '@react-three/fiber' {
   }
 }
 
-let VXEngineUtils;
-VXEngineUtils = require('../utils/rendererUtils.tsx').default;
-
 import { CanvasProps } from "@react-three/fiber";
 import { getNodeEnv } from '@vxengine/constants'
 import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/ObjectManager'
@@ -39,6 +36,7 @@ import { vx } from '@vxengine/vxobject'
 import { EffectComposer, LensFlare } from '@react-three/postprocessing'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
+import VXEngineUtils from '@vxengine/utils/rendererUtils'
 
 export interface RendererCoreProps {
   canvasProps?: CanvasProps;
@@ -46,6 +44,7 @@ export interface RendererCoreProps {
   mount?: boolean;
   powerPreferences?: 'high-performance' | 'low-power';
   effectsNode?: React.ReactElement
+  className?: string
 }
 
 // VXEngineCoreRenderer
@@ -53,7 +52,8 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   canvasProps = { gl: {}, dpr: {}, performance: {} },
   children,
   powerPreferences = 'high-performance',
-  effectsNode
+  effectsNode,
+  className
 }) => {
   const [dpr_state, setDpr_state] = useState(1)
   const { gl, dpr, performance, ...restCanvasProps } = canvasProps
@@ -61,7 +61,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
   const IS_DEVELOPMENT = getNodeEnv() === "development"
 
   return (
-    <>
+    <div className={"w-screen h-screen fixed top-0 z-[-1]" + " " + className}>
       <Canvas
         gl={{
           antialias: true,
@@ -97,7 +97,6 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           }
           <EffectComposer>
             {effectsNode}
-            <vx.fadeEffect />
           </EffectComposer>
 
 
@@ -105,7 +104,7 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
           {children}
         </PerformanceMonitor>
       </Canvas>
-    </>
+    </div>
   )
 }
 

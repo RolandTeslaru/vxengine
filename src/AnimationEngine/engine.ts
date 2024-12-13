@@ -19,7 +19,7 @@ import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 
-import wasmUrl from "../wasm/pkg/rust_bg.wasm"
+// import wasmUrl from "../wasm/pkg/rust_bg.wasm"
 
 import init, {
   Spline as wasm_Spline,
@@ -37,7 +37,6 @@ const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
-  /** requestAnimationFrame timerId */
   private _id: string
   private _timerId: number;
   private _prev: number;
@@ -86,6 +85,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Initializes the WebAssembly module and sets the interpolation function.
    */
   private async _initializeWasm() {
+
+    const wasmUrl = "/assets/wasm/rust_bg.wasm"
     console.log('AnimationEngine: Initializing WASM Driver with URL:', wasmUrl);
     try {
       await init(wasmUrl); // Wait for the WebAssembly module to initialize

@@ -12,7 +12,6 @@ export interface EngineContextProps {
 export interface VXEngineProviderProps {
     children: React.ReactNode;
     mount?: boolean;
-    scene: Scene;
     animations_json: any;
     nodeEnv: 'development' | 'production' | 'test';
 }

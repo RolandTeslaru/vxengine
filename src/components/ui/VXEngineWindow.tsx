@@ -1,35 +1,87 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
+import React, {useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { WindowControlDots } from './WindowControlDots';
 
-interface VXEngineWindowProps {
+export interface VXEngineWindowProps {
     children: React.ReactNode;
     title: string;
+    id: string;
     windowClasses: string;
-    attachedState: boolean;
-    setAttachedState: (value: boolean) => void;
+    className?: string;
+    detachedClassName?: string;
+    noStyling?: boolean
 }
 
-const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) => {
-    const { children, title, windowClasses, attachedState, setAttachedState } = props;
-    
-    const handleClose = useCallback(() => {
-        setAttachedState(true);
-    }, [setAttachedState]);
+export const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) => {
+    const { children, title, windowClasses, id, className, detachedClassName, noStyling = false } = props;
 
-    return (
-        <>
-            {attachedState ? (
-                <>
+    const registerWindow = useUIManagerAPI((state) => state.registerWindow);
+    const isVisible = useUIManagerAPI((state) => state.windowVisibility[id])
+    const setWindowVisibility = useUIManagerAPI((state) => state.setWindowVisibility);
+    const setWindowAttachment = useUIManagerAPI((state) => state.setWindowAttachment);
+
+    const isAttached = useUIManagerAPI((state) => state.getAttachmentState(id))
+
+    useEffect(() => {
+        registerWindow({ id, title })
+    }, [])
+
+    const handleAttach = () => { setWindowAttachment(id, true)}
+
+    const Content = useMemo(() => {
+        if (noStyling) {
+            return <>{children}</>;
+        } else {
+            return (
+                <StandardWindowStyling
+                    className={className}
+                    detachedClassName={detachedClassName}
+                    isDetached={!isAttached}
+                >
+                    <WindowControlDots
+                        isAttached={isAttached}
+                        setAttach={setWindowAttachment}
+                        setMount={setWindowVisibility}
+                        id={id}
+                    />
                     {children}
-                </>
-            ) : (
-                <DetachableWindow onClose={handleClose} title={title} windowClasses={windowClasses}>
-                    {children}
-                </DetachableWindow>
-            )}
-        </>
+                </StandardWindowStyling>
+            );
+        }
+    }, [noStyling, children, className, detachedClassName, isAttached,]);
+
+    if(isVisible === false) return null;
+
+    return isAttached ? (
+        Content
+    ) : (
+        <DetachableWindow onClose={handleAttach} title={title} windowClasses={windowClasses}>
+            {Content}
+        </DetachableWindow>
     );
 });
+
+interface StandardWindowStylingProps {
+    children: React.ReactNode
+    className?: string
+    isDetached: boolean
+    detachedClassName?: string
+}
+
+const StandardWindowStyling = (props: StandardWindowStylingProps) => {
+    const { children, className, isDetached, detachedClassName } = props
+    return (
+        <div
+            className={`fixed backdrop-blur-sm bg-neutral-900 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
+            ${className} ${isDetached && detachedClassName}`
+
+            }>
+            {children}
+        </div>
+    )
+}
+
 
 interface DetachableWindowProps {
     children: React.ReactNode;
@@ -76,5 +128,3 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
 
     return ReactDOM.createPortal(children, containerRef.current);
 };
-
-export default VXEngineWindow;

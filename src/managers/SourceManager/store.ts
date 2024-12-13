@@ -34,7 +34,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
     const timelines = useAnimationEngineAPI.getState().timelines
     const data = cloneDeep(timelines);
-    validateAndFixTimelines(data)
+    // validateAndFixTimelines(data)
     try {
       const response = await fetch('/api/vxSaveTimelines', {
         method: "POST",

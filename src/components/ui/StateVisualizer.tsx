@@ -1,12 +1,11 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import VXEngineWindow from "./VXEngineWindow";
+import { VXEngineWindow } from "./VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
 import { useUIManagerAPI } from "../../managers/UIManager/store";
-import { WindowControlDots } from "./WindowControlDots";
 import JsonView from 'react18-json-view'
 import 'react18-json-view/src/style.css'
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
@@ -24,30 +23,24 @@ const filterOutFunctions = (state: any) => {
     );
 };
 
-// Component for ObjectManagerAPI
-const State_ObjectManagerAPI = () => {
-    const state = useObjectManagerAPI();
+const StateVisualizerComponent = ({
+    useStateAPI,
+    collapsedDepth = 1,
+}: {
+    useStateAPI: () => any;
+    collapsedDepth?: number;
+}) => {
+    const state = useStateAPI();
     const filteredState = filterOutFunctions(state);
+
     return (
         <JsonView
             src={filteredState}
-            collapsed={({ depth }) => depth > 1}
+            collapsed={({ depth }) => depth > collapsedDepth}
             dark={true}
         />
     );
 };
-
-const State_VXObjectStore = () => {
-    const state = useVXObjectStore();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    )
-}
 
 // Component for TimelineEditorAPI
 const State_TimelineEditorAPI = () => {
@@ -65,19 +58,6 @@ const State_TimelineEditorAPI = () => {
         return depth > 1;
     };
 
-    const handleCollapseChange = (path: (string | number)[], isCollapsed: boolean) => {
-        const fullPath = path?.join(".");
-        setExpandedPaths((prev) => {
-            const updated = new Set(prev);
-            if (isCollapsed) {
-                updated.delete(fullPath);
-            } else {
-                updated.add(fullPath);
-            }
-            return updated;
-        });
-    };
-
     const filteredState = Object.fromEntries(
         Object.entries(state).filter(([_, value]) => typeof value !== "function")
     );
@@ -92,57 +72,7 @@ const State_TimelineEditorAPI = () => {
     );
 };
 
-// Component for SplineManagerAPI
-const State_SplineManagerAPI = () => {
-    const state = useSplineManagerAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    );
-};
 
-// Component for SourceManagerAPI
-const State_SourceManagerAPI = () => {
-    const state = useSourceManagerAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    );
-};
-
-// Component for EffectsManagerAPI
-const State_EffectsManagerAPI = () => {
-    const state = useEffectsManagerAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    );
-};
-
-// Component for CameraManagerAPI
-const State_CameraManagerAPI = () => {
-    const state = useCameraManagerAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    );
-};
 
 // Component for ObjectPropertyAPI
 const State_ObjectPropertyAPI = () => {
@@ -153,9 +83,9 @@ const State_ObjectPropertyAPI = () => {
     const filterProperties = (properties, query) => {
         if (!properties || typeof properties !== "object") return {};
         if (!query) return properties;
-    
+
         const lowerQuery = query.toLowerCase();
-    
+
         return Object.keys(properties)
             .filter((key) => {
                 const object = properties[key];
@@ -188,8 +118,8 @@ const State_ObjectPropertyAPI = () => {
                     <p>Rendering this will cause lag!</p>
                 </div>
             </div>
-            
-            <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
+
+            <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
             <JsonView
                 src={filteredState}
@@ -200,76 +130,63 @@ const State_ObjectPropertyAPI = () => {
     );
 };
 
-// Component for ObjectSettingsAPI
-const State_ObjectSettingsAPI = () => {
-    const state = useObjectSettingsAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 1}
-            dark={true}
-        />
-    );
-};
-const State_UIStore = () => {
-    const state = useUIManagerAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 2}
-            dark={true}
-        />
-    );
-};
-
-const State_AnimationEngineAPI = () => {
-    const state = useAnimationEngineAPI();
-    const filteredState = filterOutFunctions(state);
-    return (
-        <JsonView
-            src={filteredState}
-            collapsed={({ depth }) => depth > 2}
-            dark={true}
-        />
-    );
-}
+const stateComponents = {
+    ObjectManagerAPI: {
+        store: useObjectManagerAPI,
+        depth: 1
+    },
+    TimelineEditorAPI: {
+      store: useTimelineEditorAPI,
+      component: State_TimelineEditorAPI, // Custom component
+    },
+    SplineManagerAPI: {
+      store: useSplineManagerAPI,
+      depth: 2
+    },
+    SourceManagerAPI: {
+      store: useSourceManagerAPI,
+      depth: 2
+    },
+    EffectsManagerAPI: {
+      store: useEffectsManagerAPI,
+      
+    },
+    CameraManagerAPI: {
+      store: useCameraManagerAPI,
+    },
+    ObjectPropertyAPI: {
+      store: useObjectPropertyAPI,
+      component: State_ObjectPropertyAPI, // Custom component
+    },
+    ObjectSettingsAPI: {
+      store: useObjectSettingsAPI,
+    },
+    VXObjectStore: {
+      store: useVXObjectStore,
+      depth: 2
+    },
+    UIStore: {
+      store: useUIManagerAPI,
+      depth: 2
+    },
+    AnimationEngineAPI: {
+      store: useAnimationEngineAPI,
+    },
+  };
 
 const StateVisualizer = () => {
+    const id = "stateVisualizerWindow"
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
-    const [attachedState, setAttachedState] = useState(true);
-
-    const showStateVisualizer = useUIManagerAPI(state => state.showStateVisualizer)
-    const setShowStateVisualzier = useUIManagerAPI(state => state.setShowStateVisualizer)
+    const isAttached = useUIManagerAPI(state => state.getAttachmentState(id))
 
     const renderStateComponent = () => {
-        switch (activeData) {
-            case "ObjectManagerAPI":
-                return <State_ObjectManagerAPI />;
-            case "TimelineEditorAPI":
-                return <State_TimelineEditorAPI />;
-            case "SplineManagerAPI":
-                return <State_SplineManagerAPI />;
-            case "SourceManagerAPI":
-                return <State_SourceManagerAPI />;
-            case "EffectsManagerAPI":
-                return <State_EffectsManagerAPI />;
-            case "CameraManagerAPI":
-                return <State_CameraManagerAPI />;
-            case "ObjectPropertyAPI":
-                return <State_ObjectPropertyAPI />;
-            case "ObjectSettingsAPI":
-                return <State_ObjectSettingsAPI />;
-            case "VXObjectStore":
-                return <State_VXObjectStore />;
-            case "UIStore":
-                return <State_UIStore />;
-            case "AnimationEngineAPI":
-                return <State_AnimationEngineAPI/>;
-            default:
-                return null;
-        }
+        const useStateAPI = stateComponents[activeData].store;
+        const CustomComponent = stateComponents[activeData].component
+        const depth = stateComponents[activeData].depth;
+
+        if(CustomComponent)
+            return <CustomComponent/>
+        return <StateVisualizerComponent useStateAPI={useStateAPI} collapsedDepth={depth} />;
     };
 
     const [refresh, setRefresh] = useState(0);
@@ -298,51 +215,30 @@ const StateVisualizer = () => {
                             <SelectValue placeholder="Select a Timeline" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value={"ObjectManagerAPI"} >ObjectManagerAPI</SelectItem>
-                                <SelectItem value={"TimelineEditorAPI"} >TimelineEditorAPI</SelectItem>
-                                <SelectItem value={"SplineManagerAPI"} >SplineManagerAPI</SelectItem>
-                                <SelectItem value={"SourceManagerAPI"} >SourceManagerAPI</SelectItem>
-                                <SelectItem value={"EffectsManagerAPI"} >EffectsManagerAPI</SelectItem>
-                                <SelectItem value={"CameraManagerAPI"} >CameraManagerAPI</SelectItem>
-                                <SelectItem value={"ObjectPropertyAPI"} >ObjectPropertyAPI</SelectItem>
-                                <SelectItem value={"ObjectSettingsAPI"} >ObjectSettingsAPI</SelectItem>
-                                <SelectItem value={"VXObjectStore"} >VXObjectStore</SelectItem>
-                                <SelectItem value={"UIStore"} >UIStore</SelectItem>
-                                <SelectItem value={"AnimationEngineAPI"} >AnimationEngineAPI</SelectItem>
-                            </SelectGroup>
+                            {Object.keys(stateComponents).map((key) => (
+                                <SelectItem key={key} value={key}>
+                                    {key}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
-                <div className={`${attachedState ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll	 mb-auto `}>
+                <div className={`${isAttached ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll	 mb-auto `}>
                     {renderStateComponent()}
                 </div>
             </>
         )
-    }, [attachedState, activeData, refresh])
+    }, [isAttached, activeData, refresh])
 
     return (
         <VXEngineWindow
-            title="VXEngine: Object Visualizer"
+            id={id}
+            title="VXEngine: State Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
-            attachedState={attachedState}
-            setAttachedState={setAttachedState}
+            className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px]"
+            detachedClassName="top-1 left-1 h-[100%] w-[100%]"
         >
-            {showStateVisualizer && (
-                <div className={`fixed backdrop-blur-sm ${attachedState ? "bottom-[24px] max-w-96 left-[300px]" : "top-1 left-1 h-[100%] w-[100%]"} 
-                                text-sm bg-neutral-900 p-2 gap-2 bg-opacity-70 border-neutral-800 border-[1px] rounded-2xl flex flex-col`}
-                    style={{ minWidth: "500px" }}
-                >
-
-                    <WindowControlDots
-                        isAttached={attachedState}
-                        setAttach={setAttachedState}
-                        setMount={setShowStateVisualzier}
-                    />
-
-                    {memoizedChildren}
-                </div>
-            )}
+            {memoizedChildren}
         </VXEngineWindow>
     )
 

@@ -1,4 +1,4 @@
-import React, { forwardRef, ElementRef, ComponentPropsWithoutRef } from 'react'
+import React, { forwardRef, ElementRef, ComponentPropsWithoutRef, useCallback } from 'react'
 import Image from "next/image"
 import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../shadcn/menubar'
 import { } from '@radix-ui/react-menubar'
@@ -177,41 +177,24 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 }
 
 const ViewButton = () => {
-    const mountCoreUI = useUIManagerAPI(state => state.mountCoreUI);
-    const setMountCoreUI = useUIManagerAPI(state => state.setMountCoreUI);
+    const windows = useUIManagerAPI(state => state.windows);
+    const windowVisibility = useUIManagerAPI(state => state.windowVisibility);
+    const setWindowVisibility = useUIManagerAPI(state => state.setWindowVisibility);
 
-    const showStateVisualizer = useUIManagerAPI(state => state.showStateVisualizer)
-    const setShowStateVisualizer = useUIManagerAPI(state => state.setShowStateVisualizer);
-
-    const mountLeftPanel = useUIManagerAPI(state => state.mountLeftPanel)
-    const setMountLeftPanel = useUIManagerAPI(state => state.setMountLeftPanel)
-
-    const mountRightPanel = useUIManagerAPI(state => state.mountRightPanel);
-    const setMountRightPanel = useUIManagerAPI(state => state.setMountRightPanel)
-
-    const mountTimelineEditor = useUIManagerAPI(state => state.mountTimelineEditor);
-    const setMountTimelineEditor = useUIManagerAPI(state => state.setMountTimelineEditor)
+    const handleClick = (id: string) => {
+        const visibility = useUIManagerAPI.getState().windowVisibility[id];
+        setWindowVisibility(id, !visibility);
+    }
 
     return (
         <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => setMountCoreUI(!mountCoreUI)}>
-                    VXEngine Core UI <MenubarShortcut><CheckVisualizer show={mountCoreUI} /></MenubarShortcut>
-                </MenubarItem>
-                <MenubarItem onClick={() => setMountLeftPanel(!mountLeftPanel)}>
-                    Left Panel <MenubarShortcut><CheckVisualizer show={mountLeftPanel} /></MenubarShortcut>
-                </MenubarItem>
-                <MenubarItem onClick={() => setMountRightPanel(!mountRightPanel)}>
-                    Right Panel <MenubarShortcut><CheckVisualizer show={mountRightPanel} /></MenubarShortcut>
-                </MenubarItem>
-                <MenubarItem onClick={() => setMountTimelineEditor(!mountTimelineEditor)}>
-                    Timeline Editor<MenubarShortcut><CheckVisualizer show={mountTimelineEditor} /></MenubarShortcut>
-                </MenubarItem>
-                <MenubarItem onClick={() => setShowStateVisualizer(!showStateVisualizer)}>
-                    State Visualizer <MenubarShortcut><CheckVisualizer show={showStateVisualizer} /></MenubarShortcut>
-                </MenubarItem>
-
+                {Object.entries(windows).map(([key, window]) => 
+                        <MenubarItem key={window.id} onClick={() => handleClick(window.id)}>
+                            {window.title} <MenubarShortcut><CheckVisualizer show={windowVisibility[window.id]} /></MenubarShortcut>
+                        </MenubarItem>
+                )}
             </MenubarContent>
         </MenubarMenu>
     )

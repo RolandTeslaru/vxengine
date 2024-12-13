@@ -15,7 +15,7 @@ console.log("WEBPACK DIR NAME ", __dirname)
 
 const baseConfig = { 
     entry: {
-        main: './src/index.tsx',
+        main: './src/index.ts',
     },
     resolve: {
         alias: {
@@ -48,11 +48,11 @@ const baseConfig = {
         postprocessing: 'postprocessing',
     },
     plugins: [
-        new JavaScriptObfuscator({
-            rotateStringArray: true,
-            stringArray: true,
-            stringArrayThreshold: 0.75,
-        }, ['excluded_bundle.js']),
+        // new JavaScriptObfuscator({
+        //     rotateStringArray: true,
+        //     stringArray: true,
+        //     stringArrayThreshold: 0.75,
+        // }, ['excluded_bundle.js']),
         new CopyWebpackPlugin({
             patterns: [
                 { from: path.resolve(__dirname, 'scripts'), to: path.resolve(__dirname, 'dist/scripts') }
@@ -214,7 +214,7 @@ const baseConfig = {
         ],
     },
     optimization: {
-        minimizer: [new TerserPlugin()],
+        minimizer: [],
     },
 }
 
@@ -232,7 +232,7 @@ const esmConfig = merge(baseConfig, {
         asyncWebAssembly: true,
         outputModule: true, // Enable output as an ES module
     },
-    mode: 'production',
+    mode: 'development',
 })
 
 // CJS build config
@@ -250,7 +250,7 @@ const cjsConfig = merge(baseConfig, {
         asyncWebAssembly: true,
         outputModule: false,
     },
-    mode: 'production',
+    mode: 'development',
 })
 
 export default [esmConfig, cjsConfig];

@@ -69,16 +69,11 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
 };
 
 
-let VXEngineCoreUI: React.FC | null = null;
-
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
   const { children, nodeEnv } = props;
 
   setNodeEnv(nodeEnv);
   const IS_DEVELOPMENT = nodeEnv === "development"
-
-  if(IS_DEVELOPMENT && !VXEngineCoreUI)
-    VXEngineCoreUI = require('./core').VXEngineCoreUI;
 
   // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
@@ -97,7 +92,6 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   return (
     <VXEngineContext.Provider value={store}>
-      {IS_DEVELOPMENT && VXEngineCoreUI && <VXEngineCoreUI />}
       {children}
     </VXEngineContext.Provider>
   );

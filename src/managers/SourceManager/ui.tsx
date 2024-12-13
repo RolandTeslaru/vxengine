@@ -5,9 +5,8 @@ import { useSourceManagerAPI } from "./store"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"
 import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
-import { diff } from "deep-diff";
-import ReactDiffViewer from 'react-diff-viewer';
 import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger } from "@vxengine/components/shadcn/menubar"
+import ReactDiffViewer from 'react-diff-viewer-continued';
 
 
 const defaultStyles = {
@@ -173,7 +172,7 @@ export const DataSyncPopup = () => {
                         </div>
                         {/* Data Difs */}
                         <div className="max-h-[500px] bg-neutral-950 overflow-scroll  text-xs">
-                            {/* <ReactDiffViewer styles={defaultStyles} oldValue={diskDataString} newValue={localStorageDataString} splitView={true} /> */}
+                            <ReactDiffViewer styles={defaultStyles} oldValue={diskDataString} newValue={localStorageDataString} splitView={true} />
                         </div>
                         {/* Buttons */}
                         <div className="flex flex-row py-3 justify-items-center">

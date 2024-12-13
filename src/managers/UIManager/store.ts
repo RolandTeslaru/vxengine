@@ -1,52 +1,43 @@
+import { VXEngineWindowProps } from '@vxengine/components/ui/VXEngineWindow';
 import React from 'react';
 import { createWithEqualityFn } from 'zustand/traditional';
 
 type DialogType = "normal" | "alert" | "danger"
 
 interface DialogEntry {
-    id: string; // Unique identifier for each dialog
-    content: React.ReactNode; // The content of the dialog
-    type: DialogType; // Type of the dialog (e.g., "edit", "delete")
+    id: string; 
+    content: React.ReactNode; 
+    type: DialogType; 
 }
 
+interface PartialVXEngineWindowProps {
+    title: string;
+    id: string;
+}
 
 interface UIManagerProps {
     mountCoreUI: boolean;
     setMountCoreUI: (value: boolean) => void,
 
+    windows: Record<string, PartialVXEngineWindowProps>;
+    registerWindow: (props: PartialVXEngineWindowProps) => void;
+    windowVisibility: Record<string, boolean>; 
+    setWindowVisibility: (id: string, visible: boolean) => void;
+    
+    attachmentState: Record<string, boolean>;
+    setWindowAttachment: (id: string, value: boolean) => void;
+    getAttachmentState: (id: string, defaultValue?: boolean) => boolean;
+
     timelineEditorOpen: boolean;
     setTimelineEditorOpen: (value: boolean) => void;
 
-    timelineEditorAttached: boolean
-    setTimelineEditorAttached: (value: boolean) => void;
-
-    leftPanelAttached: boolean
-    setLeftPanelAttached: (value: boolean) => void;
-
-    rightPanelAttached: boolean;
-    setRightPanelAttached: (value: boolean) => void;
-
-    showStateVisualizer: boolean;
-    setShowStateVisualizer: (value: boolean) => void;
-
-    mountLeftPanel: boolean;
-    setMountLeftPanel: (mountLeftPanel: boolean) => void
-
-    mountRightPanel: boolean;
-    setMountRightPanel: (mountRightPanel: boolean) => void
-
-    mountTimelineEditor: boolean;
-    setMountTimelineEditor: (mountTimelineEditor: boolean) => void;
-
     selectedWindow: string;
     setSelectedWindow: (window: string) => void;
-
 
     dialogContent: DialogEntry[];
     pushDialog: (content: React.ReactNode, type: DialogType) => void;
     openedDialogs: string[];
     closeDialog: (id: string) => void;
-
 }
 
 
@@ -55,29 +46,35 @@ export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>((set, get) =
     mountCoreUI: false,
     setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
 
+    windows: {},
+    registerWindow: (props: PartialVXEngineWindowProps) => {
+        if(get().windows[props.id]) return;
+
+        set((state) => ({
+            windows: { ...state.windows, [props.id]: props },
+            windowVisibility: {...state.windowVisibility, [props.id]: true},
+            attachmentState: {...state.attachmentState, [props.id]: true}
+        }))
+    },
+        
+    windowVisibility: {},
+    setWindowVisibility: (id: string, visible: boolean) =>
+        set((state) => ({
+            windowVisibility: {...state.windowVisibility, [id]: visible}
+        })),
+
+    attachmentState: {},
+    setWindowAttachment: (id, value) => 
+        set((state) => ({
+            attachmentState: {...state.attachmentState, [id]: value}
+        })),
+
+    getAttachmentState: (id, defaultValue = true) => {
+        return get().attachmentState[id] ?? defaultValue
+    },
+
     timelineEditorOpen: false,
     setTimelineEditorOpen: (value: boolean) => set({ timelineEditorOpen: value }),
-
-    timelineEditorAttached: true,
-    setTimelineEditorAttached: (value: boolean) => set({ timelineEditorAttached: value }),
-
-    leftPanelAttached: true,
-    setLeftPanelAttached: (value: boolean) => set({ leftPanelAttached: value }),
-
-    rightPanelAttached: true,
-    setRightPanelAttached: (value: boolean) => set({ rightPanelAttached: value }),
-
-    showStateVisualizer: false,
-    setShowStateVisualizer: (value: boolean) => set({ showStateVisualizer: value }),
-
-    mountLeftPanel: true,
-    setMountLeftPanel: (mountLeftPanel: boolean) => set({ mountLeftPanel }),
-
-    mountRightPanel: true,
-    setMountRightPanel: (mountRightPanel: boolean) => set({ mountRightPanel }),
-
-    mountTimelineEditor: true,
-    setMountTimelineEditor: (mountTimelineEditor: boolean) => set({ mountTimelineEditor }),
 
     selectedWindow: "",
     setSelectedWindow: (window: string) => set({ selectedWindow: window }),

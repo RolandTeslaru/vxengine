@@ -25,9 +25,12 @@ import { DIALOG_createKeyframe, DIALOG_createStaticProp, DIALOG_makePropertyStat
 export const scaleWidth = 160;
 export const scale = 5;
 
+interface Props{
+    id: string
+}
 
-export const TimelineEditorUI = React.memo(() => {
-    const timelineEditorAttached = useUIManagerAPI(state => state.timelineEditorAttached)
+export const TimelineEditorUI = React.memo(({id}: Props) => {
+    const timelineEditorAttached = useUIManagerAPI(state =>state.getAttachmentState(id))
 
     return (
         <>
@@ -35,7 +38,7 @@ export const TimelineEditorUI = React.memo(() => {
             <div className={`flex flex-row gap-2 w-full  
                             ${timelineEditorAttached ? "pr-2" : "px-2"}`}
             >
-                <MinimizeButton />
+                <MinimizeButton id={id}/>
 
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
                     Timeline Editor
@@ -55,8 +58,8 @@ export const TimelineEditorUI = React.memo(() => {
     )
 })
 
-const MinimizeButton = () => {
-    const timelineEditorAttached = useUIManagerAPI(state => state.timelineEditorAttached)
+const MinimizeButton = ({id}: {id: string}) => {
+    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
     const setOpen = useUIManagerAPI(state => state.setTimelineEditorOpen)
     const open = useUIManagerAPI(state => state.timelineEditorOpen);
 
