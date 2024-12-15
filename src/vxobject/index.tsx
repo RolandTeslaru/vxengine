@@ -6,6 +6,7 @@ import { EditableFadeEffect } from './editableEffects/EditableFader';
 import { EditableBloom } from './editableEffects/EditableBloom';
 import { EditableLightFormer } from './editableDrei/editableLightFormer';
 import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './editableDrei/EditableEnvironment/dreiImpl';
+import { EditableLUT } from './editableEffects/EditableLUT';
 
 
 export const vx = {
@@ -22,6 +23,8 @@ export const vx = {
 
     fadeEffect: EditableFadeEffect,
     bloom: EditableBloom,
+    LUT: EditableLUT,
+
     lightFormer: EditableLightFormer,
 
     environment: VXEnvironment,

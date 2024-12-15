@@ -1,5 +1,15 @@
 import { vxObjectProps, vxObjectTypes } from "../managers/ObjectManager/types/objectStore";
 
+export interface ObjectTreeNodeProps {
+    vxkey: string
+    name: string;
+    isGroup: boolean;
+    type: string;
+    children: Record<string, ObjectTreeNodeProps>;
+    isSelectable?: boolean
+}
+
+
 export interface ObjectEditorStoreProps {
     transformMode: "translate" | "rotate" | "scale";
     setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
@@ -17,4 +27,8 @@ export interface ObjectEditorStoreProps {
     
     hoveredObject: vxObjectProps | null;
     setHoveredObject: (vxobject: vxObjectProps) => void;
+
+    tree: Record<string, ObjectTreeNodeProps>;
+    pendingChildren: Record<string, ObjectTreeNodeProps>;
+    addToTree: (vxobject: vxObjectProps, icon?: string) => void
 }

@@ -6,6 +6,7 @@ import { Effect } from 'postprocessing'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { useVXEngine } from '@vxengine/engine'
+import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -38,11 +39,6 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
 
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
 
-    const addObject = useVXObjectStore((state) => state.addObject);
-    const removeObject = useVXObjectStore((state) => state.removeObject);
-    const memoizedAddObject = useCallback(addObject, []);
-    const memoizedRemoveObject = useCallback(removeObject, []);
-
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
@@ -53,19 +49,29 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     ]
 
     useEffect(() => {
+        const addObject = useVXObjectStore.getState().addObject;
+        const removeObject = useVXObjectStore.getState().removeObject;
+        
+        const addToTree = useObjectManagerAPI.getState().addToTree;
+
+        internalRef.current.type = "FadeEffect"
+
         const newVXObject: vxObjectProps = {
             type: "effect",
             ref: internalRef,
             vxkey: vxkey,
             name: name,
             params: params || [],
+            parentKey: "effects"
         }
 
-        memoizedAddObject(newVXObject);
+        addObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);
 
-        return () => memoizedRemoveObject(vxkey);
-    }, [memoizedAddObject, memoizedRemoveObject])
+        addToTree(newVXObject);
+
+        return () => removeObject(vxkey);
+    }, [])
 
     return <primitive ref={internalRef} object={effect} dispose={null} />
 })

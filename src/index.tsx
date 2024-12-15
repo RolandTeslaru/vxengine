@@ -3,6 +3,9 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import "./globals.css";
+import { enableMapSet } from "immer";
+
+enableMapSet();
 
 export { VXEngineProvider } from "./engine"
 export { useVXEngine } from "./engine"

@@ -17,7 +17,7 @@ const MaterialProperties: React.FC<Props> = ({ material }) => {
     const renderProperty = (_key, value) => {
         if (typeof value === "number") {
             return (
-                <div className='flex flex-row py-1'>
+                <div className='flex flex-row py-1' key={_key}>
                     <p className='text-xs font-light text-neutral-500'>{_key}</p>
                     <PropInput
                         type="number"

@@ -16,26 +16,26 @@ const CameraManagerDriver = React.memo(() => {
 
     return (
         <>
-            {mode === "free" && (
-                <OrbitControls makeDefault/>
-            )}
-            <CameraTarget />
-            
-            <vx.perspectiveCamera 
-                vxkey='perspectiveCamera' 
+            <vx.perspectiveCamera
+                vxkey='perspectiveCamera'
                 // @ts-expect-error
-                makeDefault={mode === "attached"} 
-                name="Camera" 
+                makeDefault={mode === "attached"}
+                name="Camera"
             />
+            <CameraTarget />
+            {mode === "free" && (
+                <OrbitControls makeDefault />
+            )}
+
         </>
     )
 })
 
 const VXOrbitControls = () => {
     const cameraVxObject = useVXObjectStore(state => state.objects["perspectiveCamera"]);
-    
+
     return (
-        <OrbitControls makeDefault/>
+        <OrbitControls makeDefault />
     )
 }
 

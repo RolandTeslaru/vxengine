@@ -202,13 +202,24 @@ export function VXEnvironmentPortal({
     }
   )
 
+  const temporarySettings = {
+    "Show All": false
+  }
 
   return (
     <>
       {createPortal(
         <>
           <vx.cubeCamera vxkey="environmentCamera" name="EnvCamera" isVirtual={true} ref={camera} args={[near, far, fbo]}/>
-          {children}
+          <vx.group 
+            vxkey="environment" 
+            name="Environment" 
+            isVirtual={true} 
+            addToNodeTree={false}
+            temporarySettings={temporarySettings}
+          >
+            {children}
+          </vx.group>
           {/* @ts-ignore */}
           {files || preset ? (
             <VXEnvironmentCube background files={files} preset={preset} path={path} extensions={extensions} />

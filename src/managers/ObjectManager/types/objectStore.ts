@@ -9,6 +9,7 @@ export interface BaseVxProps {
     vxkey: string
     params?: string[]
     disabledParams?: string[]
+    parentKey: string;
 }
 
 export interface vxEntityProps extends BaseVxProps {

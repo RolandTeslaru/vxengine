@@ -95,9 +95,9 @@ export const CoreRenderer: React.FC<RendererCoreProps> = ({
             <ObjectManagerDriver />
           </>
           }
-          <EffectComposer>
+          <EffectsManagerDriver>
             {effectsNode}
-          </EffectComposer>
+          </EffectsManagerDriver>
 
 
           <CameraManagerDriver />
@@ -112,14 +112,11 @@ const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);
 
   const animationEngine = useVXEngine(state => state.animationEngine)
-
-  const addObject = useVXObjectStore(state => state.addObject)
-  const removeObject = useVXObjectStore(state => state.removeObject)
-
-  const memoizedAddObject = useCallback(addObject, []);
-  const memoizedRemoveObject = useCallback(removeObject, []);
   
   useLayoutEffect(() => {
+    const addObject = useVXObjectStore.getState().addObject;
+    const removeObject = useVXObjectStore.getState().removeObject;
+
     const sceneRef = {
       current: scene
     }
@@ -144,14 +141,13 @@ const SceneDriver = React.memo(() => {
       vxkey,
       name: "Scene",
       params,
-      disabledParams
+      disabledParams,
+      parentKey: null
     }
-    memoizedAddObject(newSceneEntity);
+    addObject(newSceneEntity);
     animationEngine.initObjectOnMount(newSceneEntity);
 
-    return () => {
-      memoizedRemoveObject(vxkey);
-    };
+    return () => removeObject(vxkey);
   }, [])
   return null;
 })

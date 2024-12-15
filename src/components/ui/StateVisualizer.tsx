@@ -136,43 +136,43 @@ const stateComponents = {
         depth: 1
     },
     TimelineEditorAPI: {
-      store: useTimelineEditorAPI,
-      component: State_TimelineEditorAPI, // Custom component
+        store: useTimelineEditorAPI,
+        component: State_TimelineEditorAPI, // Custom component
     },
     SplineManagerAPI: {
-      store: useSplineManagerAPI,
-      depth: 2
+        store: useSplineManagerAPI,
+        depth: 2
     },
     SourceManagerAPI: {
-      store: useSourceManagerAPI,
-      depth: 2
+        store: useSourceManagerAPI,
+        depth: 2
     },
     EffectsManagerAPI: {
-      store: useEffectsManagerAPI,
-      
+        store: useEffectsManagerAPI,
+
     },
     CameraManagerAPI: {
-      store: useCameraManagerAPI,
+        store: useCameraManagerAPI,
     },
     ObjectPropertyAPI: {
-      store: useObjectPropertyAPI,
-      component: State_ObjectPropertyAPI, // Custom component
+        store: useObjectPropertyAPI,
+        component: State_ObjectPropertyAPI, // Custom component
     },
     ObjectSettingsAPI: {
-      store: useObjectSettingsAPI,
+        store: useObjectSettingsAPI,
     },
     VXObjectStore: {
-      store: useVXObjectStore,
-      depth: 2
+        store: useVXObjectStore,
+        depth: 2
     },
     UIStore: {
-      store: useUIManagerAPI,
-      depth: 2
+        store: useUIManagerAPI,
+        depth: 2
     },
     AnimationEngineAPI: {
-      store: useAnimationEngineAPI,
+        store: useAnimationEngineAPI,
     },
-  };
+};
 
 const StateVisualizer = () => {
     const id = "stateVisualizerWindow"
@@ -184,8 +184,8 @@ const StateVisualizer = () => {
         const CustomComponent = stateComponents[activeData].component
         const depth = stateComponents[activeData].depth;
 
-        if(CustomComponent)
-            return <CustomComponent/>
+        if (CustomComponent)
+            return <CustomComponent />
         return <StateVisualizerComponent useStateAPI={useStateAPI} collapsedDepth={depth} />;
     };
 
@@ -235,7 +235,7 @@ const StateVisualizer = () => {
             id={id}
             title="VXEngine: State Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
-            className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px]"
+            className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-xl"
             detachedClassName="top-1 left-1 h-[100%] w-[100%]"
         >
             {memoizedChildren}

@@ -10,7 +10,7 @@ interface Props {
     vxobject: vxObjectProps
 }
 
-const Params: React.FC<Props> = ({ vxobject }) => {
+const ParamList: React.FC<Props> = ({ vxobject }) => {
     if (!vxobject) return
 
     const refObject = vxobject.ref.current as THREE.Object3D;
@@ -49,4 +49,4 @@ const Params: React.FC<Props> = ({ vxobject }) => {
     )
 }
 
-export default Params
+export default ParamList

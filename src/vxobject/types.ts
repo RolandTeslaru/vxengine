@@ -8,4 +8,6 @@ export type EditableObjectProps<T> = Omit<T, 'ref'> & {
     vxkey: string;
     ref?: React.Ref<unknown>;
     isVirtual?: boolean
+    addToNodeTree?: boolean
+    icon?: string
 };

@@ -1,0 +1,61 @@
+.tree_container {
+    width: 100%;
+
+    .listItem {
+        position: relative;
+        .verticalLine {
+            content: " ";
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 100%;
+        }
+        .groupVerticalLine {
+            content: " ";
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 100%;
+        }
+        //   &::before {
+        //     content: '';
+        //     position: absolute;
+        //     top: 0;
+        //     width: 1px;
+        //     height: 100%;
+        //     background-color: #505050; // Line color
+        //   }
+
+
+        //   > div {
+        //     position: relative;
+
+        //     &::after {
+        //       content: '';
+        //       position: absolute;
+        //       top: 50%;
+        //       left: 0;
+        //       width: 12px; // Length of horizontal line
+        //       height: 1px;
+        //       background-color: #505050; // Line color
+        //     }
+        //   }
+
+        &.group-expanded {
+            >div {
+                &::after {
+                    // Additional styles if necessary when the group is expanded
+                }
+            }
+        }
+
+        &.group-collapsed {
+            >div {
+                &::after {
+                    // Additional styles if necessary when the group is collapsed
+                }
+            }
+        }
+    }
+
+}

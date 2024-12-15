@@ -23,9 +23,18 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     disabledParams?: string[]
     disableClickSelect?: boolean
     isVirtual?: boolean
+    addToNodeTree?: boolean
 
     defaultSettings?: {},
     defaultAdditionalSettings?: {}
+
+    icon?: string
+}
+
+declare module 'three' {
+    interface Object3D {
+        vxkey: string;
+    }
 }
 
 const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
@@ -36,18 +45,18 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         disabledParams,
         disableClickSelect = false,
         isVirtual = false,
+        addToNodeTree = true,
         defaultSettings = {},
         defaultAdditionalSettings = {},
+        icon,
         ...props
     }, ref) => {
-        if (vxkey === undefined) 
+        if (vxkey === undefined)
             throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
 
         const animationEngine = useVXEngine(state => state.animationEngine)
         const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT);
 
-        const addObject = useVXObjectStore(state => state.addObject)
-        const removeObject = useVXObjectStore(state => state.removeObject)
         const vxObject = useVXObjectStore(state => state.objects[vxkey])
 
         const selectObjects = useObjectManagerAPI(state => state.selectObjects)
@@ -76,25 +85,35 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         const internalRef = useRef<THREE.Object3D | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
 
-        const memoizedAddObject = useCallback(addObject, []);
-        const memoizedRemoveObject = useCallback(removeObject, []);
         const memoizedSelectObjects = useCallback(selectObjects, []);
 
+        // Initializations
         useLayoutEffect(() => {
+            const addObject = useVXObjectStore.getState().addObject;
+            const removeObject = useVXObjectStore.getState().removeObject;
+            const addToTree = useObjectManagerAPI.getState().addToTree;
+
+            const name = props.name || vxkey
+            const parentKey = internalRef.current.parent.vxkey || null
+
             const newVXEntity: vxObjectProps = {
                 type: isVirtual ? "virtualEntity" : "entity",
                 ref: internalRef,
-                vxkey: vxkey,
-                name: props.name || vxkey,
+                vxkey,
+                name,
                 params: params || [],
                 disabledParams: disabledParams || [],
-            };
-
-            memoizedAddObject(newVXEntity);
+                parentKey,
+            };            
+            
+            addObject(newVXEntity);
             animationEngine.initObjectOnMount(newVXEntity);
 
-            return () => memoizedRemoveObject(vxkey);
-        }, [memoizedAddObject, memoizedRemoveObject]);
+
+            if (addToNodeTree)
+                addToTree(newVXEntity, icon)
+
+        }, []);
 
         const handlePointerOver = () => setHoveredObject(vxObject);
         const handlePointerOut = () => setHoveredObject(null);
@@ -103,7 +122,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             if (disableClickSelect === false && IS_DEVELOPMENT)
                 memoizedSelectObjects([vxkey], "entity", true)
         }, [])
-        
+
         const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
             e.stopPropagation()
         }, [])

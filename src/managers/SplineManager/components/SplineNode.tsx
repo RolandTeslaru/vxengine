@@ -37,7 +37,8 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
             ref,
             vxkey: nodeKey,
             index,
-            splineKey
+            splineKey,
+            parentKey: null
         }
 
         memoizedAddObject(splineNodeObject);

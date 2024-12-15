@@ -73,7 +73,7 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
     const { children, className, isDetached, detachedClassName } = props
     return (
         <div
-            className={`fixed backdrop-blur-sm bg-neutral-900 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
+            className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
             ${className} ${isDetached && detachedClassName}`
 
             }>

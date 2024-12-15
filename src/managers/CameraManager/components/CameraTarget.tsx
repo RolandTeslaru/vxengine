@@ -91,7 +91,7 @@ const CameraTarget = () => {
     return (
         <>
             {/* Camera Target  */}
-            <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={isVisible}>
+            <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={isVisible} icon="CameraTarget">
                 {/* YZ Plane */}
                 <mesh ref={verticalPlaneRef}>
                     <planeGeometry args={[20, 20]} />

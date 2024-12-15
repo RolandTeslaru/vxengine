@@ -43,7 +43,8 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, axis, positio
             axis: axis,
             data: {
                 keyframeKeys
-            }
+            },
+            parentKey: null
         }
         memoizedAddObject(keyframeNode);
 

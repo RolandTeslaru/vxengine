@@ -12,6 +12,7 @@ import { GroupProps } from "@react-three/fiber";
 export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     ref?: React.Ref<Group>;
     settings?: {},
+    temporarySettings?: {},
 };
 
 export const defaultSettings_group = {
@@ -19,7 +20,7 @@ export const defaultSettings_group = {
 }
 
 export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, ref) => {
-    const { settings = {}, children: groupChildren, ...rest } = props;
+    const { settings = {}, temporarySettings = {}, children: groupChildren, ...rest } = props;
 
     // INITIALIZE Settings
     const defaultSettings = {
@@ -30,6 +31,7 @@ export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, 
     // INITIALIZE Additional Settings
     const defaultAdditionalSettings = {
         showPositionPath: false,
+        ...temporarySettings
     }
 
     return (

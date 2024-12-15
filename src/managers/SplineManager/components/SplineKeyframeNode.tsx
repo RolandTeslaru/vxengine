@@ -44,7 +44,8 @@ const SplineKeyframeNode = ({ splineKey, keyframeKey, color = "blue" }) => {
             axis: ["X", "Y", "Z"],
             data: {
                 keyframeKeys: keyframeKey
-            }
+            },
+            parentKey: null
         }
 
         memoizedAddObject(newVXObject);

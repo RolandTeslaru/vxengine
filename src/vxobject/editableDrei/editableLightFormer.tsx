@@ -45,11 +45,12 @@ export const EditableLightFormer = memo(
                 "Show In Scene": false,
             }
 
-            const params = [
-            ]
+            const params = []
 
             const vxSceneEntity = useVXObjectStore(state => state.objects["scene"]);
-            const isVisibleInScene = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.["Show In Scene"]);
+            const isShowingAll = useObjectSettingsAPI(state => state.additionalSettings["environment"]?.["Show All"])
+            const viz = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.["Show In Scene"]);
+            const isVisibleInScene = viz || isShowingAll
 
             const realMeshRef = useRef<THREE.Mesh>(null);
 

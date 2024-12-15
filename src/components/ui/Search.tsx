@@ -13,7 +13,7 @@ const Search:React.FC<Props> = (props) => {
         <div className={'flex flex-row gap-1 h-[16px] px-1 bg-neutral-800 shadow-sm w-24 rounded-full' + " " + className} >
             <input
                 className={`h-full py-[1px] w-full text-neutral-400 bg-transparent
-                            placeholder-neutral-400 font-normal focus:outline-none` + " " + inputClassName}
+                            placeholder-neutral-400 font-light focus:outline-none` + " " + inputClassName}
                 type="text"
                 placeholder='search'
                 style={{ fontSize: "10px" }}

@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react"
 import { ObjectPropertiesPanel, ObjectTransformControls } from "../managers/ObjectManager/ui"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { AnimatePresence, motion } from "framer-motion"
-import EntityList from "../managers/ObjectManager/components/EntityList"
+import EntityList from "../managers/ObjectManager/components/ObjectList"
 import { VXEngineWindow } from "@vxengine/components/ui/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
@@ -16,11 +16,9 @@ import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
 import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
-import { EffectsManagerUI } from "@vxengine/managers/EffectsManager/ui"
-import Params from "@vxengine/managers/ObjectManager/components/Params"
+import ParamList from "@vxengine/managers/ObjectManager/components/ParamList"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
-import VirtualEntitiesList from "@vxengine/managers/ObjectManager/components/VirtualEntitiesList"
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
 import { MenubarUI } from "@vxengine/components/ui/MenubarUI"
@@ -77,7 +75,7 @@ const RightPanel = () => {
                 {firstSelectedObject && (
                     <>
                         <ObjectPropertiesPanel vxobject={firstSelectedObject} />
-                        <Params vxobject={firstSelectedObject} />
+                        <ParamList vxobject={firstSelectedObject} />
                         <SettingsList vxobject={firstSelectedObject} />
                     </>
                 )}
@@ -97,8 +95,6 @@ const LeftPanel = () => {
         >
             <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                 <EntityList />
-                <VirtualEntitiesList />
-                <EffectsManagerUI />
                 <TrackSegmentProperties />
                 <SplineManagerUI />
             </div>
