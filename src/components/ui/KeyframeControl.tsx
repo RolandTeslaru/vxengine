@@ -19,41 +19,29 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
     const track = useTimelineEditorAPI(state => state.tracks[propertyKey]);
     const isPropertyTracked = !!track;
-    const keyframeKeysForTrack = track?.keyframes;
 
-    const keyframesOnTrack = useTimelineEditorAPI(
-        state => {
-          const track = state.tracks[propertyKey];
-          return track ? track.keyframes.map(id => state.keyframes[id]) : [];
-        },
-        (oldVal, newVal) => {
-          if (oldVal.length !== newVal.length) return false;
-          for (let i = 0; i < oldVal.length; i++) {
-            if (oldVal[i].time !== newVal[i].time || oldVal[i].id !== newVal[i].id) {
-              return false;
-            }
-          }
-          return true; // If we reach here, contents are identical
-        }
-      );
-
+    const sortedKeyframes = useMemo(() => {
+        if(isPropertyTracked)
+            return Object.values(track.keyframes).sort((a, b) => a.time - b.time )
+        return null;
+    }, [track?.keyframes])
+    
     const checkIfOnKeyframe = () => {
-        if (propertyKey) {
-            const isCursorOnKeyframe = keyframesOnTrack.some(
-                (kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime
-            );
-            setIsOnKeyframe(isCursorOnKeyframe);
-        }
+        if(!isPropertyTracked) return ;
+        const isCursorOnKeyframe = sortedKeyframes.some(
+            (kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime
+        );
+        setIsOnKeyframe(isCursorOnKeyframe);
     };
 
     useEffect(() => {
         const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
         return () => unsubscribe();
-    }, [propertyKey, keyframesOnTrack]);
+    }, [propertyKey, sortedKeyframes]);
 
     useEffect(() => {
         checkIfOnKeyframe()
-    }, [propertyKey, keyframesOnTrack])
+    }, [propertyKey, sortedKeyframes])
 
     const handleMiddleButton = () => {
         if(isPropertyTracked === true){

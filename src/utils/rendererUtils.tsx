@@ -14,7 +14,7 @@ const VXEngineUtils = () => {
   return (
     <>
       {/* <VXFrameLimiter maxFps={120} /> */}
-      <Stats/>
+      {/* <Stats/> */}
       {/* <Ground /> */}
       <GizmoHelper renderPriority={2} alignment="top-right" margin={[350, 100]}>
         <GizmoViewport labelColor="white" axisHeadScale={1} />

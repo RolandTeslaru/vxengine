@@ -34,6 +34,7 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
                     selectedKeyframeKeys.forEach(keyframeKey => {
                         removeKeyframe({
                             keyframeKey,
+                            trackKey,
                             reRender: true
                         })
                     })
@@ -54,7 +55,7 @@ export default KeyframeContextMenu
 
 
 const ShowDataPopover = ({ trackKey, keyframeKey }) => {
-    const keyframe = useTimelineEditorAPI(state => state.keyframes[keyframeKey])
+    const keyframe = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
     const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
     const setKeyframeTime = useTimelineEditorAPI(state => state.setKeyframeTime);
 
@@ -67,7 +68,7 @@ const ShowDataPopover = ({ trackKey, keyframeKey }) => {
                     <Input
                         type="number"
                         value={keyframe.value}
-                        onChange={(e) => setKeyframeValue(keyframeKey, e.target.value as any, true)}
+                        onChange={(e) => setKeyframeValue(keyframeKey, trackKey, e.target.value as any, true)}
                         className="h-fit ml-auto border-none text-[10px] bg-neutral-800 p-0.5 max-w-[60px]"
                         style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
                     />
@@ -77,7 +78,7 @@ const ShowDataPopover = ({ trackKey, keyframeKey }) => {
                     <Input
                         type="number"
                         value={keyframe.time}
-                        onChange={(e) => setKeyframeTime(keyframeKey, e.target.value as any, true)}
+                        onChange={(e) => setKeyframeTime(keyframeKey, trackKey, e.target.value as any, true)}
                         className="h-fit ml-auto border-none text-[10px] bg-neutral-800 p-0.5 max-w-[60px]"
                         style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
                     />

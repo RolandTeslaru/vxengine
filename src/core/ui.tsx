@@ -113,7 +113,6 @@ const BottomRightBar = () => {
     const setWindowVisibility = useUIManagerAPI(state => state.setWindowVisibility);
     const setWindowAttachment = useUIManagerAPI(state => state.setWindowAttachment)
 
-
     return (
         <VXEngineWindow
             id={id}
@@ -121,7 +120,7 @@ const BottomRightBar = () => {
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
         >
-            <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[500px]
+            <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[960px]
                                         bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
                                         ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
                                         `}
@@ -132,7 +131,7 @@ const BottomRightBar = () => {
                 }}
                 initial={{ height: "45px" }}
                 animate={
-                    timelineEditorOpen ? { height: "500px" } : { height: "45px" }
+                    timelineEditorOpen ? { height: "450px" } : { height: "45px" }
                 }
 
             >

@@ -39,7 +39,7 @@ export const TimeArea = () => {
   return (
     <>
       <div
-        className="sticky top-0 h-[32px] bg-neutral-950 z-10"
+        className="sticky top-0 h-[32px] bg-neutral-950 bg-opacity-70 z-10"
         style={{width: `${timelineClientWidth}px`}}
         onClick={handleOnClick}
       >
@@ -54,7 +54,9 @@ export const TimeArea = () => {
           // Display only at multiples of the displayInterval
           const shouldDisplayNumber = isIntegerUnit && (index / OneSecondUnitSplitCount) % displayInterval === 0;
 
-          if (isIntegerUnit) classNames.push("time-unit-big");
+          if (isIntegerUnit) 
+            classNames.push("time-unit-big");
+          
           return (
             <div
               key={index}
@@ -65,7 +67,7 @@ export const TimeArea = () => {
               className={prefix(...classNames)}
             >
               {shouldDisplayNumber && (
-                <div className={prefix("time-unit-scale")}>
+                <div className={prefix("time-unit-scale") + " text-xs"}>
                   {index / OneSecondUnitSplitCount}
                 </div>
               )}

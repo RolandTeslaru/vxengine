@@ -8,7 +8,6 @@ export interface TimelineEditorStoreProps {
     editorObjects: Record<string, edObjectProps>;
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
-    keyframes: Record<string, IKeyframe>
 
     currentTimelineLength: number;
     setCurrentTimelineLength: (length: number) => void;
@@ -38,8 +37,11 @@ export interface TimelineEditorStoreProps {
     clipboard: string[],
     setClipboard: (keyframeKeys: string[]) => void
     
-    selectedKeyframeKeys: string[];
-    setSelectedKeyframeKeys: (keyframeKeys: string[]) => void;
+    selectedKeyframeKeys: Record<string, Record<string, boolean>>
+    selectKeyframe: (trackKey: string, keyframeKey: string) => void;
+    removeSelectedKeyframe: (trackKey: string, keyframeKey: string) => void;
+    clearSelectedKeyframes: () => void;
+    isKeyframeSelected: (trackKey: string, keyframeKey: string) => boolean;
 
     selectedTrackSegment: {
         firstKeyframeKey: string,
@@ -58,26 +60,24 @@ export interface TimelineEditorStoreProps {
     // Getter functions
     getTrack: (trackKey: string) => ITrack | undefined,
     getStaticProp: (staticPropKey) => IStaticProps | undefined
-    getKeyframe: (keyframeId: string) => IKeyframe | undefined
+    getAllKeyframes: () => IKeyframe[]
 
     getTracksForObject: (vxkey: string) => ITrack[] | [],
     getStaticPropsForObject: (vxkey: string) => IStaticProps[] | [],
-    getKeyframesForTrack: (trackKey: string) => IKeyframe[] | [],
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => void
-    addKeyframeToTrack: (state: TimelineEditorStoreProps, keyframeKey: string, trackKey: string) => void
     
     makePropertyTracked: (staticPropKey: string, reRender?: boolean) => void
     makePropertyStatic: (trackKey: string, reRender?: boolean) => void
 
-    createTrack: (trackKey: string, keyframeKeys?: string[]) => void
+    createTrack: (trackKey: string) => void
     removeTrack: (props: {trackKey: string, reRender: boolean}) => void
 
     // Keyframe functions
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;
-    removeKeyframe: (props: {keyframeKey: string, reRender: boolean}) => void;
-    setKeyframeTime: (keyframeKey: string, newTime: number, reRender?: boolean) => void;
-    setKeyframeValue: (keyframeKey: string, newValue: number, reRender?: boolean) => void;
+    removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
+    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean) => void;
+    setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: VXVector2, outHandle: VXVector2, reRender?: boolean) => void;
     // StaticProp function
     createStaticProp: (props: {vxkey: string, propertyPath: string, value: number, reRender: boolean, state?: TimelineEditorStoreProps}) => void;

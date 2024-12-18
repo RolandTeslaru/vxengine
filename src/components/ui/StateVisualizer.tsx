@@ -236,7 +236,7 @@ const StateVisualizer = () => {
             title="VXEngine: State Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-xl"
-            detachedClassName="top-1 left-1 h-[100%] w-[100%]"
+            detachedClassName=" top-1 !left-1 !h-[100%] !min-w-[100%] "
         >
             {memoizedChildren}
         </VXEngineWindow>

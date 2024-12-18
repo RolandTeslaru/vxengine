@@ -7,35 +7,38 @@ import Keyframe from '../Keyframe';
 import { DragLineData } from '../DragLines';
 import { RowDnd } from '../RowDnd';
 import KeyframeContextMenu from '../Keyframe/KeyframeContextMenu';
+import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
     scale: number
+    snap?: boolean
 };
 
 const startLeft = 22
 
-const Track: FC<EditRowProps> = memo(({ trackKey, scale }) => {
-    const keyframeKeys = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes)
+const Track: FC<EditRowProps> = memo(({ trackKey, scale, snap }) => {
+    const track = useTimelineEditorAPI(state => state.tracks[trackKey])
+    // Sorted keyframes by time
+    const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
+    const selectedKeyframeKeysOnTrack = useTimelineEditorAPI(state => state.selectedKeyframeKeys[trackKey])
 
-    if (!keyframeKeys) return
     return (
-        <div
-            className='relative  py-4 border-y  border-neutral-900'
-        >
+        <>
             <ContextMenu>
-                {keyframeKeys.map((keyframeKey: string, index: number) => {
+                {sortedKeyframes.map((keyframe: IKeyframe, index: number) => {
                     if (index === 0) return null;
 
-                    const firstKeyframeKey = keyframeKeys[index - 1]
-                    const secondKeyframeKey = keyframeKey
+                    const firstKeyframe = sortedKeyframes[index - 1];
+                    const secondKeyframe = keyframe
                     return (
                         <TrackSegment
-                            key={`segment-${firstKeyframeKey}-${secondKeyframeKey}`}
-                            firstKeyframeKey={firstKeyframeKey}
-                            secondKeyframeKey={secondKeyframeKey}
+                            key={`segment-${firstKeyframe.id}-${secondKeyframe.id}`}
+                            firstKeyframe={firstKeyframe}
+                            secondKeyframe={secondKeyframe}
                             trackKey={trackKey}
+                            scale={scale}
                         />
                     )
                 })}
@@ -44,36 +47,56 @@ const Track: FC<EditRowProps> = memo(({ trackKey, scale }) => {
 
             {/* Render Keyframes */}
 
-            {keyframeKeys.map((keyframeKey: string, index) => (
+            {sortedKeyframes.map((keyframe: IKeyframe, index) => (
                 <Keyframe
-                    key={`keyframe-${keyframeKey}`}
+                    key={`keyframe-${keyframe.id}`}
                     track={useTimelineEditorAPI.getState().tracks[trackKey]}
-                    keyframeKey={keyframeKey}
+                    keyframe={keyframe}
+                    scale={scale}
+                    snap={snap}
+                    isSelected={selectedKeyframeKeysOnTrack?.[keyframe.id]}
                 />
             ))}
-        </div>
+        </>
     );
 });
 
 export default Track
 
 
-const TrackSegment = memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
-    { firstKeyframeKey: string, secondKeyframeKey: string, trackKey: string }
+const handleOnDragSegment = (data: { left: number, lastLeft: number, firstKeyframe: IKeyframe, secondKeyframe: IKeyframe }) => {
+    const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime
+    const trackKey = `${data.firstKeyframe.vxkey}.${data.firstKeyframe.propertyPath}`
+
+    const newTime = parserPixelToTime(data.left, startLeft)
+    const oldTime = parserPixelToTime(data.lastLeft, startLeft)
+    const deltaTime = newTime - oldTime
+
+    const oldFirstKeyframeTime = data.firstKeyframe.time
+    const oldSecondKeyframeTime = data.secondKeyframe.time
+
+    const newFirstKeyframeTime = oldFirstKeyframeTime + deltaTime
+    const newSecondKeyframeTime = oldSecondKeyframeTime + deltaTime
+
+    setKeyframeTime(data.firstKeyframe.id, trackKey, parseFloat(newFirstKeyframeTime.toFixed(4)))
+    setKeyframeTime(data.secondKeyframe.id, trackKey, parseFloat(newSecondKeyframeTime.toFixed(4)))
+}
+
+const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
+    { firstKeyframe: IKeyframe, secondKeyframe: IKeyframe, trackKey: string, scale: number }
 ) => {
-    const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[firstKeyframeKey]);
-    const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[secondKeyframeKey]);
+    const firstKeyframeKey = firstKeyframe.id
+    const secondKeyframeKey = secondKeyframe.id;
     const isSelectedFromKeyframes = useTimelineEditorAPI(
-        state => state.selectedKeyframeKeys.includes(firstKeyframeKey) && state.selectedKeyframeKeys.includes(secondKeyframeKey)
+        state => state.selectedKeyframeKeys[trackKey]?.[firstKeyframeKey] && state.selectedKeyframeKeys[trackKey]?.[secondKeyframeKey]
     );
     const isSelectedFromTrackSegments = useTimelineEditorAPI(
         state =>
             state.selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey &&
             state.selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
     );
-    const scale = useTimelineEditorAPI(state => state.scale);
     const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment);
-    const setSelectedKeyframeKeys = useTimelineEditorAPI(state => state.setSelectedKeyframeKeys);
+    const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe);
 
 
     // When deleting a keyframe an issue appeasr with the endX where it cant read 
@@ -88,44 +111,29 @@ const TrackSegment = memo(({ firstKeyframeKey, secondKeyframeKey, trackKey, }:
         return [startX, endX];
     }, [scale, firstKeyframe.time, secondKeyframe.time]);
 
-    const handleOnDrag = useCallback((data: { left: number, lastLeft: number }) => {
-        const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime
-
-        const newTime = parserPixelToTime(data.left, startLeft)
-        const oldTime = parserPixelToTime(data.lastLeft, startLeft)
-        const deltaTime = newTime - oldTime
-
-        const oldFirstKeyframeTime = useTimelineEditorAPI.getState().keyframes[firstKeyframeKey].time;
-        const oldSecondKeyframeTime = useTimelineEditorAPI.getState().keyframes[secondKeyframeKey].time;
-
-        const newFirstKeyframeTime = oldFirstKeyframeTime + deltaTime
-        const newSecondKeyframeTime = oldSecondKeyframeTime + deltaTime
-
-        setKeyframeTime(firstKeyframeKey, parseFloat(newFirstKeyframeTime.toFixed(4)))
-        setKeyframeTime(secondKeyframeKey, parseFloat(newSecondKeyframeTime.toFixed(4)))
-    }, [])
-
-    const handleOnClick = useCallback(() => {
-        setSelectedKeyframeKeys([firstKeyframe.id, secondKeyframe.id])
+    const handleOnClick = () => {
+        selectKeyframe(trackKey, firstKeyframe.id)
+        selectKeyframe(trackKey, secondKeyframe.id)
         setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
-    }, [])
+    }
 
     return (
         <ContextMenuTrigger>
             <RowDnd
-                onDrag={handleOnDrag}
+                onDrag={(data) => handleOnDragSegment({...data, firstKeyframe, secondKeyframe})}
                 left={startX}
                 start={startLeft}
                 width={endX - startX}
             >
-                <div
-                    key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
-                    className={`absolute bg-white hover:bg-neutral-300 h-[6px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
-                    style={{
-                        top: `calc(50% - 3px)`,
-                    }}
+                <div className='absolute h-full flex '
                     onClick={handleOnClick}
                 >
+                    <div
+                        key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
+                        className={`bg-white my-auto w-full hover:bg-neutral-300 h-[3px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
+
+                    >
+                    </div>
                 </div>
             </RowDnd>
         </ContextMenuTrigger>

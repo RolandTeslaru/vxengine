@@ -84,8 +84,8 @@ export const DIALOG_createKeyframe = () => {
                         <Button type="submit">Execute</Button>
                     </DialogFooter>
                 </form>
-                <Button onClick={() => pushDialog(<DIALOG_createKeyframe/>, "normal")}>OpenDialog</Button>
-                <Button variant="warning" onClick={() => pushDialog(<ALERT_ResetProperty vxkey="dasd" propertyPath="dad"/>, "alert")}>Alert OpenDialog</Button>
+                <Button onClick={() => pushDialog(<DIALOG_createKeyframe />, "normal")}>OpenDialog</Button>
+                <Button variant="warning" onClick={() => pushDialog(<ALERT_ResetProperty vxkey="dasd" propertyPath="dad" />, "alert")}>Alert OpenDialog</Button>
             </DialogHeader>
         </>
     );
@@ -93,19 +93,27 @@ export const DIALOG_createKeyframe = () => {
 
 export const DIALOG_setKeyframeTime = () => {
     const setKeyframeTime = useTimelineEditorAPI((state) => state.setKeyframeTime);
-    const keyframes = useTimelineEditorAPI((state) => state.keyframes);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+        const trackKey = e.target.trackKey.value;
         const keyframeKey = e.target.keyframeKey.value;
         const newTime = parseFloat(e.target.newTime.value);
 
-        if (!keyframes[keyframeKey]) {
+        const track = useTimelineEditorAPI.getState().tracks[trackKey]
+        if (!track) {
+            alert("Invalid Track!");
+            return;
+        }
+
+        const keyframe = track.keyframes[keyframeKey];
+
+        if (!keyframe) {
             alert("Invalid keyframe!");
             return;
         }
 
-        setKeyframeTime(keyframeKey, newTime);
+        setKeyframeTime(keyframeKey, trackKey, newTime);
     };
 
     return (
@@ -113,6 +121,12 @@ export const DIALOG_setKeyframeTime = () => {
             <DialogHeader>
                 <DialogTitle>Set Keyframe Time</DialogTitle>
                 <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="trackKey" className="text-right">
+                            Track Key
+                        </Label>
+                        <Input id="trackKey" name="keyframeKey" className="col-span-3" />
+                    </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="keyframeKey" className="text-right">
                             Keyframe Key
@@ -136,19 +150,27 @@ export const DIALOG_setKeyframeTime = () => {
 
 export const DIALOG_setKeyframeValue = () => {
     const setKeyframeValue = useTimelineEditorAPI((state) => state.setKeyframeValue);
-    const keyframes = useTimelineEditorAPI((state) => state.keyframes);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+        const trackKey = e.target.trackKey.value;
         const keyframeKey = e.target.keyframeKey.value;
         const newValue = parseFloat(e.target.newValue.value);
 
-        if (!keyframes[keyframeKey]) {
+        const track = useTimelineEditorAPI.getState().tracks[trackKey]
+        if (!track) {
+            alert("Invalid Track!");
+            return;
+        }
+
+        const keyframe = track.keyframes[keyframeKey];
+
+        if (!keyframe) {
             alert("Invalid keyframe!");
             return;
         }
 
-        setKeyframeValue(keyframeKey, newValue);
+        setKeyframeValue(keyframeKey, trackKey, newValue);
     };
 
     return (
@@ -156,6 +178,12 @@ export const DIALOG_setKeyframeValue = () => {
             <DialogHeader>
                 <DialogTitle>Set Keyframe Value</DialogTitle>
                 <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="trackKey" className="text-right">
+                            Track Key
+                        </Label>
+                        <Input id="trackKey" name="keyframeKey" className="col-span-3" />
+                    </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="keyframeKey" className="text-right">
                             Keyframe Key
@@ -179,18 +207,26 @@ export const DIALOG_setKeyframeValue = () => {
 
 export const DIALOG_removeKeyframe = () => {
     const removeKeyframe = useTimelineEditorAPI((state) => state.removeKeyframe);
-    const keyframes = useTimelineEditorAPI((state) => state.keyframes);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+        const trackKey = e.target.trackKey.value;
         const keyframeKey = e.target.keyframeKey.value;
 
-        if (!keyframes[keyframeKey]) {
+        const track = useTimelineEditorAPI.getState().tracks[trackKey]
+        if (!track) {
+            alert("Invalid Track!");
+            return;
+        }
+
+        const keyframe = track.keyframes[keyframeKey];
+
+        if (!keyframe) {
             alert("Invalid keyframe!");
             return;
         }
 
-        removeKeyframe({ keyframeKey, reRender: true });
+        removeKeyframe({ keyframeKey, trackKey, reRender: true });
     };
 
     return (
@@ -198,6 +234,12 @@ export const DIALOG_removeKeyframe = () => {
             <DialogHeader>
                 <DialogTitle>Remove Keyframe</DialogTitle>
                 <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="trackKey" className="text-right">
+                            Track Key
+                        </Label>
+                        <Input id="trackKey" name="keyframeKey" className="col-span-3" />
+                    </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="keyframeKey" className="text-right">
                             Keyframe Key

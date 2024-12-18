@@ -1,5 +1,5 @@
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import React, {useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, createContext, useContext, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { WindowControlDots } from './WindowControlDots';
 
@@ -12,6 +12,18 @@ export interface VXEngineWindowProps {
     detachedClassName?: string;
     noStyling?: boolean
 }
+
+interface WindowContextProps {
+    externalContainer: HTMLElement | null;
+    setExternalContainer: (element: HTMLElement | null) => void
+}
+
+const WindowContext = createContext<WindowContextProps>({ 
+    externalContainer: null,
+    setExternalContainer: (element) => {}
+});
+
+export const useWindowContext = () => useContext(WindowContext);
 
 export const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) => {
     const { children, title, windowClasses, id, className, detachedClassName, noStyling = false } = props;
@@ -27,7 +39,7 @@ export const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) 
         registerWindow({ id, title })
     }, [])
 
-    const handleAttach = () => { setWindowAttachment(id, true)}
+    const handleAttach = () => { setWindowAttachment(id, true) }
 
     const Content = useMemo(() => {
         if (noStyling) {
@@ -51,15 +63,23 @@ export const VXEngineWindow: React.FC<VXEngineWindowProps> = React.memo((props) 
         }
     }, [noStyling, children, className, detachedClassName, isAttached,]);
 
-    if(isVisible === false) return null;
+    if (isVisible === false) return null;
 
-    return isAttached ? (
-        Content
-    ) : (
-        <DetachableWindow onClose={handleAttach} title={title} windowClasses={windowClasses}>
-            {Content}
-        </DetachableWindow>
-    );
+    const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
+
+    return (
+        <WindowContext.Provider value={{ externalContainer, setExternalContainer }}>
+            {
+                isAttached ? (
+                    Content
+                ) : (
+                    <DetachableWindow onClose={handleAttach} title={title} windowClasses={windowClasses}>
+                        {Content}
+                    </DetachableWindow>
+                )
+            }
+        </WindowContext.Provider>
+    )
 });
 
 interface StandardWindowStylingProps {
@@ -92,6 +112,7 @@ interface DetachableWindowProps {
 
 const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     const { children, onClose, windowClasses, title } = props;
+    const { setExternalContainer } = useWindowContext();
     const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
     const externalWindow = useRef<Window | null>(null);
 
@@ -112,6 +133,10 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
             document.querySelectorAll('link[rel="stylesheet"], style').forEach((link) => {
                 extDocument.head.appendChild(link.cloneNode(true));
             });
+
+            console.log("Setting external window container ")
+
+            setExternalContainer(extDocument.body);
         } else {
             console.error("Failed to open new window");
             return;

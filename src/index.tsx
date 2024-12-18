@@ -17,6 +17,9 @@ export { useAnimationEngineAPI } from "./AnimationEngine/store"
 
 export { useCameraManagerAPI } from "./managers/CameraManager"
 export { useVXObjectStore } from "./managers/ObjectManager/stores/objectStore"
-export { useAnimationEngineEvent} from "./AnimationEngine/utils/useAnimationEngineEvent"
+
+export { useAnimationEngineEvent} from "./AnimationEngine"
+export { useAnimationFrame } from "./AnimationEngine"
 
 export { VXEngineWindow } from "./components/ui/VXEngineWindow"
+

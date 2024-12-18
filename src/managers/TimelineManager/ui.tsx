@@ -51,9 +51,6 @@ export const TimelineEditorUI = React.memo(({id}: Props) => {
 
             {/* M A I N  */}
             <TimelineEditorContent />
-
-            {/* F O O T E R */}
-            <TimelineEditorFooter />
         </>
     )
 })

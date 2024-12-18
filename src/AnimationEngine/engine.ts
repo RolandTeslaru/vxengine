@@ -1011,7 +1011,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   //
   //  R E F R R E S H     F U N C T I O N S
   //
-  // Used to synchronize the data strcture from the Timeline editor with animation engine data structure
+  // Used to synchronize the data structure from the Timeline editor with animation engine data structure
 
   /**
    * Refreshes a track in the animation engine's data structure and optionally re-renders.
@@ -1037,8 +1037,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     switch (action) {
       case 'create': {
-        const keyframesForTrack = useTimelineEditorAPI.getState().getKeyframesForTrack(trackKey) || [];
-        const rawKeyframes = keyframesForTrack.map(edKeyframe => {
+        const keyframesForTrack = useTimelineEditorAPI.getState().tracks[trackKey].keyframes;
+        const sortedKeyframes = Object.values(keyframesForTrack).sort((a,b) => a.time - b.time)
+
+        const rawKeyframes = sortedKeyframes.map(edKeyframe => {
           return {
             id: edKeyframe.id,
             value: edKeyframe.value,
@@ -1125,7 +1127,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     switch (action) {
       case 'create': {
-        const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+        const track = useTimelineEditorAPI.getState().tracks[trackKey];
+        const edKeyframe = track.keyframes[keyframeKey]
         const rawKeyframe: RawKeyframeProps = {
           id: edKeyframe.id,
           value: edKeyframe.value,
@@ -1147,7 +1150,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       case 'update': {
-        const edKeyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey];
+        const track = useTimelineEditorAPI.getState().tracks[trackKey];
+        const edKeyframe = track.keyframes[keyframeKey];
         keyframes.forEach((kf, index) => {
           if (kf.id === keyframeKey) {
             const keyframe = keyframes[index]

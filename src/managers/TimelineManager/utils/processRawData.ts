@@ -8,7 +8,6 @@ export default function processRawData(
     const editorObjects: Record<string, EditorObjectProps> = {};
     const tracks: Record<string, ITrack> = {};
     const staticProps: Record<string, IStaticProps> = {};
-    const keyframes: Record<string, IKeyframe> = {};
 
     // Create Records
     rawObjects.forEach((rawObj) => {
@@ -16,17 +15,22 @@ export default function processRawData(
         const staticPropKeys: string[] = [];
 
         // Create Track Record
-        rawObj.tracks.forEach((track) => {
+        rawObj.tracks.forEach((rawTrack) => {
             const keyframeIds: string[] = [];
-            const trackKey = `${rawObj.vxkey}.${track.propertyPath}`;
+            const trackKey = `${rawObj.vxkey}.${rawTrack.propertyPath}`;
 
+            const newTrack: ITrack = {
+                keyframes: {} as Record<string, IKeyframe>,
+                propertyPath: rawTrack.propertyPath,
+                vxkey: rawObj.vxkey,
+            };
             // Create Keyframe Record
-            track.keyframes.forEach((rawKeyframe) => {
+            rawTrack.keyframes.forEach((rawKeyframe) => {
                 const keyframeId = rawKeyframe.id || `keyframe-${Date.now()}`;
                 const newKeyframe: IKeyframe = {
                     id: keyframeId,
                     vxkey: rawObj.vxkey,
-                    propertyPath: track.propertyPath,
+                    propertyPath: rawTrack.propertyPath,
                     time: rawKeyframe.time,
                     value: rawKeyframe.value,
                     handles: {
@@ -40,15 +44,10 @@ export default function processRawData(
                         }
                     }
                 }
-                keyframes[keyframeId] = newKeyframe
-                keyframeIds.push(keyframeId);
+                newTrack.keyframes[keyframeId] = newKeyframe;
             });
 
-            const newTrack: ITrack = {
-                keyframes: keyframeIds,
-                propertyPath: track.propertyPath,
-                vxkey: rawObj.vxkey,
-            };
+            
             trackKeys.push(trackKey);
             tracks[trackKey] = newTrack;
         });
@@ -74,5 +73,5 @@ export default function processRawData(
     });
     const groupedPaths = computeGroupPaths(editorObjects)
 
-    return { editorObjects, tracks, staticProps, groupedPaths, keyframes };
+    return { editorObjects, tracks, staticProps, groupedPaths };
 }

@@ -25,9 +25,10 @@ export default TrackSegmentProperties
 const TrackSegmentEditor = () => {
     const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
     const setKeyframeHandles = useTimelineEditorAPI(state => state.setKeyframeHandles)
+    const trackKey = selectedTrackSegment.trackKey
 
-    const firstKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.firstKeyframeKey])
-    const secondKeyframe = useTimelineEditorAPI(state => state.keyframes[selectedTrackSegment?.secondKeyframeKey])
+    const firstKeyframe = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes[selectedTrackSegment.firstKeyframeKey])
+    const secondKeyframe = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes[selectedTrackSegment.secondKeyframeKey])
 
     const defaultHandleLeft = { x: 0.3, y: 0.3 };   // bottom left thing
     const defaultHandleRight = { x: 0.7, y: 0.7 };  // top right thing

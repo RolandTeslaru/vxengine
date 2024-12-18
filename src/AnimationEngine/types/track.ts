@@ -23,7 +23,7 @@ export interface ITimeline {
 export interface ITrack {
     vxkey: string,
     propertyPath: string;
-    keyframes: string[];
+    keyframes: Record<string, IKeyframe>;
 }
 export interface IStaticProps {
     vxkey: string

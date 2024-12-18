@@ -20,6 +20,7 @@ export const EditArea = () => {
   const editorObjects = useTimelineEditorAPI(state => state.editorObjects);
   const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
   const scale = useTimelineEditorAPI(state => state.scale)
+  const snap = useTimelineEditorAPI(state => state.snap);
   const searchQuery = useTimelineEditorAPI(state => state.searchQuery);
 
   const editAreaRef = useRefStore(state => state.editAreaRef);
@@ -32,7 +33,7 @@ export const EditArea = () => {
     return Object.entries(groupedPaths).reduce((filteredPaths, [key, group]) => {
       if (key && key.toLowerCase().includes(searchQuery.toLowerCase()))
         filteredPaths[key] = group;
-      
+
       return filteredPaths;
     }, {});
   }, [groupedPaths, searchQuery]);
@@ -40,7 +41,7 @@ export const EditArea = () => {
   const startLeft = 22
 
   const verticalRowList = useMemo(() => {
-    const allRows = [];
+    const allRows: string[] = [];
 
     const fillRows = ({ key, group }: { key: string, group: PathGroup }) => {
       const { rowIndex, trackKey } = group;
@@ -53,32 +54,6 @@ export const EditArea = () => {
     Object.entries(filteredGroupedPaths).forEach(([key, group]) => fillRows({ key, group }));
     return allRows.filter(item => item !== undefined);
   }, [editorObjects, filteredGroupedPaths]);
-
-  const renderRow = (index: number) => {
-    const track = verticalRowList[index];
-    if (track) {
-      return (
-        <Track
-          trackKey={track}
-          scale={scale}
-        />
-      );
-    }
-    else {
-      return (
-        <div
-          style={{
-            height: `${DEFAULT_ROW_HEIGHT}px`,
-            backgroundPositionX: `0, ${startLeft}px`,
-            backgroundSize: `${startLeft}px, ${DEFAULT_SCALE_WIDTH}px`,
-          }}
-          className="relative py-4 border-y border-neutral-900 bg-black bg-opacity-60"
-        >
-          {/* Empty row */}
-        </div>
-      );
-    }
-  }
 
   const timelineClientWidth = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
 
@@ -125,7 +100,7 @@ export const EditArea = () => {
           width: `${timelineClientWidth}px` // Ensure this is greater than the container's width
         }}
         totalCount={rows}
-        itemContent={index => renderRow(index)}
+        itemContent={index => <EditAreaRow trackKey={verticalRowList[index]} index={index} scale={scale} snap={snap} />}
         scrollerRef={scrollerRefCallback}
         onScroll={handleOnScroll}
         components={{ Scroller }}
@@ -134,3 +109,20 @@ export const EditArea = () => {
     </div>
   );
 };
+
+const EditAreaRow = React.memo(({ trackKey, index, scale, snap }: { trackKey: any, index: number, scale: number, snap: boolean }) => {
+  const isEmpty = !trackKey
+  return (
+    <div className={`w-full relative border-t-[0.5px] border-b-[0.5px] h-[34px] border-neutral-900 ${isEmpty && "bg-black bg-opacity-60"}`}>
+      {trackKey && (
+        <>
+          <Track
+            trackKey={trackKey}
+            scale={scale}
+            snap={snap}
+          />
+        </>
+      )}
+    </div>
+  )
+})
