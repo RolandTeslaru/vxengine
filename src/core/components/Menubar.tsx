@@ -1,44 +1,30 @@
-import React, { forwardRef, ElementRef, ComponentPropsWithoutRef, useCallback } from 'react'
-import Image from "next/image"
-import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../shadcn/menubar'
+import React from 'react'
+import { Menubar, MenubarContent, MenubarItem, MenubarSubContent, MenubarSubTrigger, MenubarMenu, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarTrigger } from '../../components/shadcn/menubar'
 import { } from '@radix-ui/react-menubar'
 import { useObjectManagerAPI } from "../../managers/ObjectManager/stores/managerStore"
-import { shallow } from 'zustand/shallow'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
-import { Button } from '../shadcn/button'
-import { useVXEngine } from '@vxengine/engine'
 import { useUIManagerAPI } from '../../managers/UIManager/store'
 import { invalidate } from '@react-three/fiber'
-import { useSourceManagerAPI } from '@vxengine/managers/SourceManager'
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { SourceManagerSubMenu } from '@vxengine/managers/SourceManager/ui'
 import { ObjectManagerSubMenu, ObjectPropertySubMenu, ObjectSettingsSubMenu } from '@vxengine/managers/ObjectManager/ui'
 import { SplineManagerSubMenu } from '@vxengine/managers/SplineManager/ui'
 import { EffectsManagerSubMenu } from '@vxengine/managers/EffectsManager/ui'
 import { TimelineManagerSubMenu } from '@vxengine/managers/TimelineManager/ui'
+import VXEngineLogo from '@vxengine/components/ui/VXEngineLogo'
+import { INFO_About, INFO_Settings } from '@vxengine/components/ui/DialogInfos'
 
-export const MenubarUI = () => {
-
+const VXMenubar = () => {
     return (
         <div
-            className={`fixed top-6 left-6 z-10 h-10 w-fit border-neutral-800 border-[1px] text-white 
-                    backdrop-blur-sm bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-6`}
+            className={`fixed top-6 left-6 z-10 w-fit border-neutral-800 border-[1px] text-white 
+                    backdrop-blur-sm bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-3 `}
             id="VXEngineMenubar"
         >
             {/* Icon */}
-            <div className='h-full  w-[40px] flex scale-75'>
-                <Image src={"/VXEngine/logo.png"} width={33} height={23}
-                    alt="VXEngineLogo" className='w-[33px] h-[23px] my-auto' />
-            </div>
-            {/* Status */}
-            {/* <div className='flex-row flex my-auto mx-4 text-nowrap'>
-                <p className='font-sans-menlo text-sm'>
-                    STATUS: SYS. READY
-                </p>
-            </div> */}
-            {/* Items  */}
-            <div className='my-auto-fit !text-white font-sans-menlo flex flex-row text-xs'>
-                <Menubar>
+
+            <div className='my-auto-fit !text-white font-sans-menlo flex flex-row text-sm'>
+                <Menubar className=' h-auto'>
+                    <LogoButton />
                     <FileButton />
                     <EditButton />
                     <SelectButton />
@@ -49,6 +35,25 @@ export const MenubarUI = () => {
             </div>
 
         </div>
+    )
+}
+
+export default VXMenubar
+
+const LogoButton = () => {
+
+    const pushDialog = useUIManagerAPI(state => state.pushDialog);
+
+    return (
+        <MenubarMenu>
+            <MenubarTrigger className='!my-0 !py-0'>
+                <VXEngineLogo />
+            </MenubarTrigger>
+            <MenubarContent>
+                <MenubarItem onClick={() => pushDialog(<INFO_About/>, "normal", "!p-0")}>About VXEngine</MenubarItem>
+                <MenubarItem onClick={() => pushDialog(<INFO_Settings/> ,"normal")}>Settings</MenubarItem>
+            </MenubarContent>
+        </MenubarMenu >
     )
 }
 
@@ -124,16 +129,16 @@ const ManagersButton = () => {
             <MenubarTrigger><p className='font-sans-menlo'>Debug</p></MenubarTrigger>
             <MenubarContent>
 
-                <ObjectManagerSubMenu/>
-                <ObjectSettingsSubMenu/>
-                <ObjectPropertySubMenu/>
+                <ObjectManagerSubMenu />
+                <ObjectSettingsSubMenu />
+                <ObjectPropertySubMenu />
 
                 <MenubarSeparator />
 
-                <SourceManagerSubMenu/>
-                <SplineManagerSubMenu/>
-                <EffectsManagerSubMenu/>
-                <TimelineManagerSubMenu/>
+                <SourceManagerSubMenu />
+                <SplineManagerSubMenu />
+                <EffectsManagerSubMenu />
+                <TimelineManagerSubMenu />
             </MenubarContent>
         </MenubarMenu>
     )
@@ -190,10 +195,10 @@ const ViewButton = () => {
         <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
-                {Object.entries(windows).map(([key, window]) => 
-                        <MenubarItem key={window.id} onClick={() => handleClick(window.id)}>
-                            {window.title} <MenubarShortcut><CheckVisualizer show={windowVisibility[window.id]} /></MenubarShortcut>
-                        </MenubarItem>
+                {Object.entries(windows).map(([key, window]) =>
+                    <MenubarItem key={window.id} onClick={() => handleClick(window.id)}>
+                        {window.title} <MenubarShortcut><CheckVisualizer show={windowVisibility[window.id]} /></MenubarShortcut>
+                    </MenubarItem>
                 )}
             </MenubarContent>
         </MenubarMenu>

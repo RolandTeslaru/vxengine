@@ -5,8 +5,9 @@ import { useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorOnDrag, handleCursorOnDragEng, handleCursorOnDragStart } from '../../utils/cursorHandlers';
 import { RowDnd } from './EditArea/RowDnd';
 import { useTimelineEditorAPI } from '../..';
+import { DEFAULT_ROW_HEIGHT } from '@vxengine/AnimationEngine/interface/const';
 
-export const CursorLine = () => {
+export const CursorLine = ({rows}: {rows: number}) => {
   const cursorLineRef = useRefStore(state => state.cursorLineRef)
   const left = useMemo(() => parserTimeToPixel(0, cursorStartLeft), [])
 
@@ -30,8 +31,11 @@ export const CursorLine = () => {
         onDragEnd={handleCursorOnDragEng}
         onDrag={handleCursorOnDrag}
       >
-        <div className={" absolute cursor-ew-resize box-border top-0 h-full border-x border-blue-500 z-[1]"}
-          style={{ transform: "translateX(-25%) scaleX(0.5)"}}
+        <div className={" absolute cursor-ew-resize box-border top-0 border-x border-blue-500 z-[1]"}
+          style={{ 
+            transform: "translateX(-25%) scaleX(0.5)",
+            height: `${rows * DEFAULT_ROW_HEIGHT}px`
+          }}
         >
           <div className={prefix('cursor-area')} />
         </div>

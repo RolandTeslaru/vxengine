@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "../stores/managerStore";
-import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
+import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
@@ -38,6 +38,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
             <PropInput
+                vxkey={vxkey}
                 key={`${property}-${axis}`}
                 type="number"
                 propertyPath={`${property}.${axis}`}
@@ -155,7 +156,7 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
                     value={[value]}
                     onValueChange={(newValue) => handleChange(newValue[0])}
                 />
-                <PropInput propertyPath={propertyPath} />
+                <PropInput propertyPath={propertyPath} vxkey={vxkey} />
             </div>
         </div>
     )

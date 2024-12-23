@@ -1,5 +1,5 @@
 import React from 'react'
-import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '..'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'

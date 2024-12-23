@@ -3,7 +3,7 @@ import { useUIManagerAPI } from './store'
 import { Dialog, DialogContent, DialogOverlay } from '@vxengine/components/shadcn/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@vxengine/components/shadcn/alertDialog';
 
-const UIManagerDialog = () => {
+export const UIManagerDialogLayer = () => {
   const dialogContent = useUIManagerAPI(state => state.dialogContent);
   const dialogTotal = dialogContent.length;
   const closeDialog = useUIManagerAPI(state => state.closeDialog);
@@ -11,7 +11,7 @@ const UIManagerDialog = () => {
 
   return (
     <>
-      {dialogContent.map(({ id, content, type }, index) => {
+      {dialogContent.map(({ id, content, type, className }, index) => {
         const scale_offset = (index - (dialogTotal - 1)) * 8;
         const y_offset = (index - (dialogTotal - 1)) * 40;
         const opacity_offset = (index - (dialogTotal - 1)) / 5
@@ -26,6 +26,7 @@ const UIManagerDialog = () => {
                 }}
                 darkenBackground={index === 0}
                 blockTransparency={dialogTotal - index > 1}
+                className={className}
               >
                 {content}
               </DialogContent>
@@ -35,7 +36,8 @@ const UIManagerDialog = () => {
         else if (type === "alert") {
           return (
             <AlertDialog key={id} open={openedDialogs.includes(id)} onOpenChange={() => closeDialog(id)}>
-              <AlertDialogContent className='flex flex-row'
+              <AlertDialogContent 
+                className={"flex flex-row" + " " + className}
                 style={{
                   transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${1 + scale_offset / 100})`,
                   filter: `brightness(${1 / -(index - dialogTotal)})`,
@@ -58,5 +60,3 @@ const UIManagerDialog = () => {
     </>
   )
 }
-
-export default UIManagerDialog

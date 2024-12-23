@@ -18,6 +18,7 @@ import ChevronDown from "lucide-react/dist/esm/icons/chevron-down"
 import { GroupedPaths } from "../../store";
 import TopLevelContextMenu from "./TopLevelContextMenu";
 import Search from "@vxengine/components/ui/Search";
+import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
 
 const TRACK_HEIGHT = 34;
 
@@ -37,16 +38,17 @@ const RenderNormalProperty: React.FC<RenderNormalPropertyProps> = memo(
 
         return (
             <div
-                className={`h-[34px] flex items-center`}
+                className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center`}
             >
                 {isCollapsible &&
-                    <button onClick={() => setCollapsedGroups(groupKey)}>
+                    <button className="scale-75" onClick={() => setCollapsedGroups(groupKey)}>
                         {isCollapsed ? <ChevronRight /> : <ChevronDown />}
                     </button>
                 }
                 <p
-                    className={`flex !flex-row mr-2`}
+                    className={`flex !flex-row mr-2 text-neutral-300 font-light`}
                     onClick={() => selectObjects([vxkey])}
+                    style={{fontSize: "11px"}}
                 >
                     {propKey}
                     {/* Debug Row index */}
@@ -141,8 +143,8 @@ const RenderFinalProperty: React.FC<RenderFinalPropertyProps> = memo(
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
         return (
             <ContextMenu>
-                <ContextMenuTrigger className={`h-[34px] w-auto ml-auto flex !flex-row items-center`}>
-                    <p className={`flex !flex-row text-neutral-500 mr-2`}>
+                <ContextMenuTrigger className={`h-[${DEFAULT_ROW_HEIGHT}px] w-auto ml-auto flex !flex-row items-center`}>
+                    <p className={`flex !flex-row text-neutral-500 mr-2 font-light`} style={{ fontSize: "11px"}}>
                         {propKey}
                         {/* Debug Row index */}
                         {/* <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span> */}
@@ -251,8 +253,8 @@ const TrackVerticalList = memo(() => {
 
 
     return (
-        <div className="w-full h-full mr-2 px-4 flex flex-col bg-neutral-950 border border-neutral-800 border-opacity-70 rounded-2xl">
-            <div className="h-[34px] flex flex-row">
+        <div className="w-full h-full mr-2 px-1 flex flex-col bg-neutral-950 border border-neutral-800 rounded-2xl">
+            <div className={`h-[30px] flex flex-row`}>
                 <Search 
                     className="w-36 px-2 bg-neutral-900 ml-auto my-auto"
                     searchQuery={searchQuery} 

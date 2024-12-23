@@ -21,5 +21,5 @@ export { useVXObjectStore } from "./managers/ObjectManager/stores/objectStore"
 export { useAnimationEngineEvent} from "./AnimationEngine"
 export { useAnimationFrame } from "./AnimationEngine"
 
-export { VXEngineWindow } from "./components/ui/VXEngineWindow"
+export { VXEngineWindow } from "./core/components/VXEngineWindow"
 

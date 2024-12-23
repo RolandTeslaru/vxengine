@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
+import React, { useState, FC } from "react";
+import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 
 import * as THREE from "three"
@@ -7,12 +7,12 @@ import * as THREE from "three"
 type SupportedGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 
-interface GeometryPropertiesProps {
+interface VXGeometryProps {
     geometry: SupportedGeometries;
+    vxkey: string
 }
 
-export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
-
+export const GeometryProperties:FC<VXGeometryProps> = ({ geometry, vxkey }) => {
     const params = geometry.parameters
     if (!params) return null;
 
@@ -21,6 +21,7 @@ export const GeometryProperties = ({ geometry }: GeometryPropertiesProps) => {
             <div className='flex flex-row py-1'>
                 <p className='text-xs font-light text-neutral-500'>{_key}</p>
                 <PropInput
+                    vxkey={vxkey}
                     type="number"
                     className="ml-auto w-fit"
                     propertyPath={`geometry.parameters.${_key}`}

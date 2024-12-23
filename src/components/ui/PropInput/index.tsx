@@ -1,26 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react'
-import { useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
-import { getNestedProperty, setNestedProperty } from '@vxengine/utils/nestedProperty'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
-import { invalidate } from '@react-three/fiber'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
-import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../PopupAlerts'
+import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts'
 import ValueRenderer from '../ValueRenderer'
 
 interface Props extends InputProps {
     propertyPath: string
+    vxkey: string
     horizontal?: boolean
     disableTracking?: boolean
 }
 export const PropInput: FC<Props> = (props) => {
-    const { propertyPath, className, horizontal, disableTracking = false, ...inputProps } = props
-    const disabled = props.disabled ? props.disabled : false;
-    const vxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey);
+    const { propertyPath, className, horizontal, vxkey, disableTracking = false, disabled = false, ...inputProps } = props
     const trackKey = vxkey + "." + propertyPath
 
     const isPropertyTracked = useTimelineEditorAPI(state => !!state.tracks[trackKey])

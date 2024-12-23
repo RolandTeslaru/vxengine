@@ -17,6 +17,9 @@ export const startLeft = 0;
 
 const TimelineArea = (() => {
   const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
+  const editAreaRef = useRefStore(state => state.editAreaRef);
+  const trackListRef = useRefStore(state => state.trackListRef);
+  const scrollSyncId = useRefStore(state => state.scrollSyncId);
   const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
 
   const scale = useTimelineEditorAPI(state => state.scale)
@@ -36,11 +39,28 @@ const TimelineArea = (() => {
     }
   );
 
+  const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+      const scrollContainer = e.target;
+  
+      if (!trackListRef.current) return;
+  
+      if (scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
+  
+      scrollSyncId.current = requestAnimationFrame(() => {
+        // @ts-expect-error
+        trackListRef.current.scrollTop = scrollContainer.scrollTop;
+      })
+    }
+
   return (
-    <div className={`w-full h-full min-h-[414px] border border-neutral-800 border-opacity-70 bg-neutral-950 rounded-2xl relative flex flex-col overflow-hidden  `}>
+    <div 
+        className={`w-full h-full border border-neutral-800 bg-neutral-950 
+                    rounded-2xl relative flex flex-col !overflow-hidden  `}
+    >
       <div
+        className={"w-full h-full relative !overflow-y-scroll"}
         ref={timelineAreaRef}
-        className={"w-full h-full !overflow-y-scroll"}
+        onScroll={handleOnScroll}
       >
         <TimeArea />
         <EditArea />

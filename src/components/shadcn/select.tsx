@@ -8,7 +8,7 @@ import ChevronDown from "lucide-react/dist/esm/icons/chevron-down"
 import ChevronUp from "lucide-react/dist/esm/icons/chevron-up"
 
 import { cn } from "@vxengine/utils"
-import { useWindowContext } from "../ui/VXEngineWindow"
+import { useWindowContext } from "../../core/components/VXEngineWindow"
 
 
 const Select = SelectPrimitive.Root
@@ -24,7 +24,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950 bg-opacity-65 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-800 bg-neutral-950 bg-opacity-65 px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
     {...props}

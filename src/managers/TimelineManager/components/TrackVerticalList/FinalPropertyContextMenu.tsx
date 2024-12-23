@@ -1,6 +1,6 @@
 import React from 'react'
 import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn/contextMenu'
-import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '@vxengine/components/ui/PopupAlerts'
+import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '@vxengine/components/ui/DialogAlerts'
 import { MenubarItem } from '@vxengine/components/shadcn/menubar'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 

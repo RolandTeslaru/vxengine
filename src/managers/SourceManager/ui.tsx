@@ -1,5 +1,5 @@
 import { Button } from "@vxengine/components/shadcn/button"
-import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel"
+import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useSourceManagerAPI } from "./store"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"

@@ -7,9 +7,9 @@
 import React, { useEffect, useState } from "react"
 import { ObjectPropertiesPanel, ObjectTransformControls } from "../managers/ObjectManager/ui"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import EntityList from "../managers/ObjectManager/components/ObjectList"
-import { VXEngineWindow } from "@vxengine/components/ui/VXEngineWindow"
+import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
 import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
@@ -21,37 +21,28 @@ import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsLi
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager"
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
-import { MenubarUI } from "@vxengine/components/ui/MenubarUI"
+import VXMenubar from "@vxengine/core/components/Menubar"
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { useRefStore } from "@vxengine/utils"
-import UIManagerDialog from "@vxengine/managers/UIManager/ui"
+import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
+import Watermark from "@vxengine/components/ui/Watermark"
 
 export const CoreUI = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
 
     return (
-        <div id="VXEngineBaseUI" className='fixed top-0 left-0 z-50'>
-            <MenubarUI />
+        <div id="VXEngineCoreUI" className='fixed top-0 left-0 z-50'>
+            <VXMenubar/>
+            <VXLeftPanel/>
+            <VXRightPanel/>
+            <VXBottomRightBar/>
 
-            <LeftPanel />
-            <RightPanel />
+            <StateVisualizer/>
+            <CameraManagerUI/>
 
-            <BottomRightBar />
+            <UIManagerDialogLayer/>
 
-            <StateVisualizer />
-            <CameraManagerUI />
-
-            <UIManagerDialog />
-
-            <a
-                className="fixed pointer-events-auto bottom-5 left-10"
-                href="https://vexr-labs.com/"
-                target="_blank"
-            >
-                <h1 className="font-inter font-bold text-3xl text-white text-opacity-20">
-                    VEXR<span className="font-thin">LABS</span>
-                </h1>
-            </a>
+            <Watermark/>
 
             {showSyncPopup && (
                 <DataSyncPopup />
@@ -60,7 +51,7 @@ export const CoreUI = () => {
     )
 }
 
-const RightPanel = () => {
+const VXRightPanel = () => {
     const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
 
     return (
@@ -84,7 +75,7 @@ const RightPanel = () => {
     )
 }
 
-const LeftPanel = () => {
+const VXLeftPanel = () => {
     return (
         <VXEngineWindow
             id="VXEngineLeftPanel"
@@ -93,7 +84,7 @@ const LeftPanel = () => {
             className="w-60 h-[686px] top-[128px] left-[24px] pt-3"
             detachedClassName="top-[8px] left-[8px]"
         >
-            <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
+            <div className="w-full  flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                 <EntityList />
                 <TrackSegmentProperties />
                 <SplineManagerUI />
@@ -104,7 +95,7 @@ const LeftPanel = () => {
     )
 }
 
-const BottomRightBar = () => {
+const VXBottomRightBar = () => {
     const id = "rightBar"
 
     const timelineEditorOpen = useUIManagerAPI(state => state.timelineEditorOpen)
@@ -121,9 +112,9 @@ const BottomRightBar = () => {
             noStyling={true}
         >
             <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[960px]
-                                        bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2
-                                        ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
-                                        `}
+                                        bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col px-2
+                                    ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
+                                  `}
                 id="VXEngineTimelinePanel"
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
@@ -131,9 +122,8 @@ const BottomRightBar = () => {
                 }}
                 initial={{ height: "45px" }}
                 animate={
-                    timelineEditorOpen ? { height: "450px" } : { height: "45px" }
+                    timelineEditorOpen ? { height: "400px" } : { height: "45px" }
                 }
-
             >
                 <WindowControlDots
                     id={id}

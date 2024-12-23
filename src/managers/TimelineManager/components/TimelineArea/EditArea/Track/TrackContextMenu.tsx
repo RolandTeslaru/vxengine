@@ -18,7 +18,8 @@ const TrackContextMenu: React.FC<Props> = React.memo(({trackKey}) => {
 export default TrackContextMenu
 
 const ALERT_MakePropertyStatic: React.FC<Props> = React.memo(({trackKey}) => {
-  const keyframeLengthForTrack = useTimelineEditorAPI(state => state.tracks[trackKey].keyframes.length)
+  const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
+  const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
   const makePropertyStatic = useTimelineEditorAPI(state => state.makePropertyStatic)
   const [show, setShow] = useState(false);
 
@@ -46,7 +47,7 @@ const ALERT_MakePropertyStatic: React.FC<Props> = React.memo(({trackKey}) => {
           <AlertDialogHeader className='flex flex-col'>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              Track <span className='text-yellow-500'>{trackKey}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
+              Track <span className='text-yellow-500'>{trackKey}</span> with <span className='text-yellow-500'>{keyframesLengthForTrack}</span> keyframes will be deleted!
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

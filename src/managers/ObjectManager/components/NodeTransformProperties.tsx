@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import CollapsiblePanel from "@vxengine/components/ui/CollapsiblePanel";
+import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSettingsAPI } from "../stores/settingsStore";
@@ -17,6 +17,7 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
             <PropInput
+                vxkey={vxkey}
                 key={`${property}-${axis}`}
                 type="number"
                 propertyPath={`${property}.${axis}`}

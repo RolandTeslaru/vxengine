@@ -39,7 +39,7 @@ export const TimeArea = () => {
   return (
     <>
       <div
-        className="sticky top-0 h-[32px] bg-neutral-950 bg-opacity-70 z-10"
+        className="sticky top-0 h-[28px] bg-neutral-950 z-10 border-b border-neutral-800"
         style={{width: `${timelineClientWidth}px`}}
         onClick={handleOnClick}
       >
@@ -56,7 +56,7 @@ export const TimeArea = () => {
 
           if (isIntegerUnit) 
             classNames.push("time-unit-big");
-          
+         
           return (
             <div
               key={index}
@@ -67,7 +67,7 @@ export const TimeArea = () => {
               className={prefix(...classNames)}
             >
               {shouldDisplayNumber && (
-                <div className={prefix("time-unit-scale") + " text-xs"}>
+                <div className={prefix("time-unit-scale") + " font-light"} style={{fontSize: "10px"}}>
                   {index / OneSecondUnitSplitCount}
                 </div>
               )}

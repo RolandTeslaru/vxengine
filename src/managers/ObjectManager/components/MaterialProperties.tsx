@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as THREE from "three"
-import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel';
+import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import PropInput from '@vxengine/components/ui/PropInput';
 import Search from '@vxengine/components/ui/Search';
 
 interface Props {
     material: THREE.MeshBasicMaterial | THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial
+    vxkey: string
 }
 
-const MaterialProperties: React.FC<Props> = ({ material }) => {
+const MaterialProperties: React.FC<Props> = ({ material, vxkey }) => {
     const properties = useMemo(() => {
         return Object.entries(material);
     }, [material])
@@ -20,6 +21,7 @@ const MaterialProperties: React.FC<Props> = ({ material }) => {
                 <div className='flex flex-row py-1' key={_key}>
                     <p className='text-xs font-light text-neutral-500'>{_key}</p>
                     <PropInput
+                        vxkey={vxkey}
                         type="number"
                         className="ml-auto w-fit"
                         propertyPath={`material.${_key}`}

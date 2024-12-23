@@ -17,22 +17,24 @@ const CollapsiblePanel: React.FC<Props> = memo(
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl ${noPadding === false && "px-2"} border border-neutral-800 bg-neutral-900
+        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl ${noPadding === false && "px-1"} border border-neutral-800 bg-neutral-900
             ${open === false && "!h-[40px]"} ` +
             className}
         style={{ boxShadow: "0px 0px 5px 1px rgba(0,0,0, 0.6)" }}
         >
             {/* Title */}
-            <div className="py-2 px-2 h-[40px] relative">
-                <button className={"absolute top-[7px] h-6 w-6 flex hover:bg-neutral-800 rounded-lg cursor-pointer "}
+            <div className={`py-2 ${noPadding ? "px-2" : "px-0"} relative`}>
+                <button className={"absolute top-[7px] h-6 w-6 flex hover:bg-neutral-800 rounded-xl cursor-pointer "}
                     onClick={() => setOpen(!open)}
                 >
                     <ChevronRight className={`${open === true && " rotate-90 "}  scale-[60%] m-auto`} />
                 </button>
-                <p className='text-center text-xs font-sans-menlo py-1'>{title}</p>
+                <p className='text-center text-xs font-sans-menlo text-neutral-200 font-light py-1'>
+                    {title}
+                </p>
             </div>
             {open && 
-                <div className={'text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400 ' + contentClassName}
+                <div className={'text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400 px-1 ' + contentClassName}
                     style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                 >
                     {children}

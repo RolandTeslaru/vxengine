@@ -153,8 +153,6 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
   const material = refObject.material;
   const geometry = refObject.geometry;
 
-  const vxType = vxobject.type
-
   let validMaterial: THREE.MeshBasicMaterial | THREE.MeshStandardMaterial | null = null;
 
   if (
@@ -165,8 +163,8 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
   }
 
 
-  const isEntity = vxType === "entity" || vxType === "virtualEntity";
-  const isNode = vxType === "splineNode" || vxType === "keyframeNode";
+  const isEntity = vxobject.type === "entity" || vxobject.type === "virtualEntity";
+  const isNode = vxobject.type === "splineNode" || vxobject.type === "keyframeNode";
 
   return (
     <>
@@ -178,9 +176,12 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
       }
       {geometry && (
         <>
-          <GeometryProperties geometry={geometry} />
+          <GeometryProperties geometry={geometry} vxkey={vxobject.vxkey} />
           {validMaterial && (
-            <MaterialProperties material={validMaterial} />
+            <MaterialProperties 
+              material={validMaterial} 
+              vxkey={vxobject.vxkey}
+            />
           )}
         </>
       )}

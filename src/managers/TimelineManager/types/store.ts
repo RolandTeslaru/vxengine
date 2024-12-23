@@ -3,6 +3,12 @@ import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITimeline, 
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { GroupedPaths } from "../store";
 
+export type SelectedKeyframe = {
+    trackKey: string;
+    keyframeKey: string;
+    isSelected: boolean;
+  };
+
 export interface TimelineEditorStoreProps {
     // Records of data used in the editor
     editorObjects: Record<string, edObjectProps>;
@@ -34,10 +40,11 @@ export interface TimelineEditorStoreProps {
 
     setEditorData: (rawObjects: RawObjectProps[]) => void;
 
-    clipboard: string[],
-    setClipboard: (keyframeKeys: string[]) => void
+    clipboard: Record<string, Record<string, boolean>>,
+    setClipboard: (content: Record<string, Record<string, boolean>>) => void
     
     selectedKeyframeKeys: Record<string, Record<string, boolean>>
+    selectedKeyframesFlatMap: SelectedKeyframe[],
     selectKeyframe: (trackKey: string, keyframeKey: string) => void;
     removeSelectedKeyframe: (trackKey: string, keyframeKey: string) => void;
     clearSelectedKeyframes: () => void;

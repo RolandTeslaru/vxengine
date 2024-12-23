@@ -1,7 +1,7 @@
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
-import { ContextMenuItem } from "../../shadcn/contextMenu"
 import React, { useState } from "react"
+
 
 interface Props {
     vxkey: string,
@@ -10,10 +10,11 @@ interface Props {
 
 
 export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath }) => {
-    const key = vxkey + "." + propertyPath
+    const trackKey = vxkey + "." + propertyPath
+    const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
+    const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
 
     const makePropertyStatic = useTimelineEditorAPI(state => state.makePropertyStatic)
-    const keyframeLengthForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack(key)?.length)
 
     return (
         <>
@@ -21,7 +22,7 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
                 <AlertDialogHeader className='flex flex-col'>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
+                        Track <span className='text-yellow-500'>{trackKey}</span> with <span className='text-yellow-500'>{keyframesLengthForTrack}</span> keyframes will be deleted!
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -30,7 +31,7 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
                     <AlertDialogAction
                         //@ts-expect-error
                         type="warning"
-                        onClick={() => makePropertyStatic(key)}
+                        onClick={() => makePropertyStatic(trackKey)}
                     >Continue</AlertDialogAction>
                 </AlertDialogFooter>
             </div>
@@ -40,12 +41,13 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
 
 export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const key = vxkey + "." + propertyPath
+    const trackKey = vxkey + "." + propertyPath
+    const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
+    const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
 
-    const track = useTimelineEditorAPI(state => state.tracks[key])
     const staticProp = useTimelineEditorAPI(state => state.staticProps[key])
     const removeProperty = useTimelineEditorAPI(state => state.removeProperty)
 
-    const keyframeLengthForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack(key)?.length)
 
     return (
 
@@ -55,7 +57,7 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                 <AlertDialogDescription>
                     {track && (
                         <>
-                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframeLengthForTrack}</span> keyframes will be deleted!
+                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframesLengthForTrack}</span> keyframes will be deleted!
                         </>
                     )}
                     {staticProp && (

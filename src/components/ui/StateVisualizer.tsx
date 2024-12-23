@@ -1,5 +1,5 @@
 import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
-import { VXEngineWindow } from "./VXEngineWindow";
+import { VXEngineWindow } from "../../core/components/VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";

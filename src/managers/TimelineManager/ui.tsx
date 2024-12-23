@@ -35,7 +35,7 @@ export const TimelineEditorUI = React.memo(({id}: Props) => {
     return (
         <>
             {/*  H E A D E R */}
-            <div className={`flex flex-row gap-2 w-full  
+            <div className={`flex flex-row gap-2 w-full py-2 
                             ${timelineEditorAttached ? "pr-2" : "px-2"}`}
             >
                 <MinimizeButton id={id}/>
@@ -51,6 +51,8 @@ export const TimelineEditorUI = React.memo(({id}: Props) => {
 
             {/* M A I N  */}
             <TimelineEditorContent />
+
+            <TimelineEditorFooter/>
         </>
     )
 })
@@ -78,13 +80,13 @@ const TimelineEditorContent = () => {
             className='relative flex flex-row w-full flex-grow overflow-hidden'
             direction='horizontal'
         >
-            <ResizablePanel defaultSize={35}>
+            <ResizablePanel defaultSize={32}>
                 <div className='h-full flex flex-col overflow-hidden'>
                     <TrackVerticalList />
                 </div>
             </ResizablePanel>
             <ResizableHandle withHandle className='mx-1' />
-            <ResizablePanel defaultSize={65}>
+            <ResizablePanel defaultSize={68}>
                 <TimelineArea />
             </ResizablePanel>
         </ResizablePanelGroup>
@@ -109,7 +111,6 @@ const shouldIgnoreKeyEvent = (event: KeyboardEvent): boolean => {
 const TimelineEditorFooter = () => {
     const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
     const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
-    const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe);
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
     const snap = useTimelineEditorAPI(state => state.snap);
 
@@ -125,9 +126,11 @@ const TimelineEditorFooter = () => {
             if (shouldIgnoreKeyEvent(event))
                 return
 
+            const timelineEditorAPI = useTimelineEditorAPI.getState()
+
             if ((event.ctrlKey || event.metaKey) && event.key === "c") {
-                const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
-                const setClipboard = useTimelineEditorAPI.getState().setClipboard;
+                const selectedKeyframeKeys = timelineEditorAPI.selectedKeyframeKeys
+                const setClipboard = timelineEditorAPI.setClipboard;
                 setClipboard(selectedKeyframeKeys);
             }
         }
@@ -141,16 +144,20 @@ const TimelineEditorFooter = () => {
             if (shouldIgnoreKeyEvent(event))
                 return
 
+            const timelineEditorAPI = useTimelineEditorAPI.getState();
+            const createKeyframe = timelineEditorAPI.createKeyframe;
+
             if ((event.ctrlKey || event.metaKey) && event.key === "v") {
                 const clipboard = useTimelineEditorAPI.getState().clipboard;
-                const selectedKeyframes = clipboard.map((key, index) => {
-                    return useTimelineEditorAPI.getState().getKeyframe(key);
-                })
-                selectedKeyframes.forEach((keyframe) => {
-                    const { vxkey, propertyPath, value } = keyframe
-                    createKeyframe({
-                        trackKey: `${vxkey}.${propertyPath}`,
-                        value
+                Object.entries(clipboard).forEach(([trackKey, keyframesObj]) => {
+                    const keyframeKeys = Object.keys(keyframesObj);
+                    keyframeKeys.forEach((keyframeKey) => {
+                        const selectedKeyframe = timelineEditorAPI.tracks[trackKey]?.keyframes[keyframeKey]
+
+                        createKeyframe({
+                            trackKey,
+                            value: selectedKeyframe.value
+                        })
                     })
                 })
             }
@@ -158,19 +165,19 @@ const TimelineEditorFooter = () => {
 
         window.addEventListener("keydown", handlePaste);
         return () => window.removeEventListener("keydown", handlePaste);
-    })
+    }, [])
 
     return (
         <AnimatePresence>
             {open && (
-                <motion.div className='mt-auto relative pl-2 flex flex-row gap-2 font-sans-menlo'
+                <motion.div className='mt-auto relative pl-2 flex flex-row gap-4 font-sans-menlo'
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
                     <ScaleSlider />
                     <div className='flex flex-row gap-2'>
-                        <p className='text-xs h-auto my-auto'>Snap</p>
+                        <p className='font-light h-auto my-auto' style={{fontSize: "10px"}}>Snap</p>
                         <Switch
                             className='my-auto scale-75'
                             onClick={() => setSnap(!snap)}
@@ -178,8 +185,8 @@ const TimelineEditorFooter = () => {
                         />
                     </div>
                     <div className='flex flex-row h-fit text-xs gap-2'>
-                        <p className='h-auto my-auto'>length</p>
-                        <Input className='p-1 text-xs my-auto h-fit w-16'
+                        <p className='h-auto my-auto font-light' style={{fontSize: "10px"}}>length</p>
+                        <Input className='px-1 py-0 font-light my-auto h-fit w-10' style={{fontSize: "10px"}}
                             value={currentTimelineLength}
                             onChange={handleTimelineLengthChange}
                             type='number'
@@ -197,7 +204,7 @@ const ScaleSlider = () => {
 
     return (
         <div className='flex flex-row gap-2'>
-            <p className='text-xs h-auto my-auto w-20 whitespace-nowrap'>Scale {scale}</p>
+            <p className='font-light h-auto my-auto whitespace-nowrap' style={{fontSize: "10px"}}>Scale {scale}</p>
             <Slider
                 defaultValue={[scale]}
                 max={20}
@@ -227,12 +234,16 @@ export const TimelineSelect = () => {
             value={currentTimelineID}
         >
             <SelectTrigger className="w-[180px] h-7 my-auto">
-                <SelectValue placeholder="Select a Timeline" />
+                <SelectValue className='!text-xs' placeholder="Select a Timeline" />
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
                     {Object.entries(timelines).map(([key, timeline]) =>
-                        <SelectItem value={timeline.id} key={key}>{timeline.name}</SelectItem>
+                        <SelectItem value={timeline.id} key={key}>
+                            <p className='text-xs'>
+                                {timeline.name}
+                            </p>
+                        </SelectItem>
                     )}
                 </SelectGroup>
             </SelectContent>

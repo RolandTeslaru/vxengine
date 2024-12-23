@@ -18,6 +18,96 @@ export type EditKeyframeProps = {
     isSelected: boolean
 };
 
+const startLeft = 12.5;
+
+const handleOnDrag = (left: number, lastLeft: number, trackKey: string, keyframeKey: string) => {
+    const { selectedKeyframeKeys, selectedKeyframesFlatMap, setKeyframeTime, tracks, selectKeyframe } = useTimelineEditorAPI.getState();
+
+    if (Object.entries(selectedKeyframeKeys).length === 0)
+        selectKeyframe(trackKey, keyframeKey)
+    // Single Keyframe Drag
+    else if (selectedKeyframesFlatMap.length === 1) {
+        const newTime = parserPixelToTime(left, startLeft)
+        setKeyframeTime(keyframeKey, trackKey, newTime);
+    }
+    // Multiple Keyframe Drag
+    else if (selectedKeyframesFlatMap.length > 1) {
+        const lastTime = parserPixelToTime(lastLeft, startLeft)
+        const newTime = parserPixelToTime(left, startLeft)
+        const deltaTime = newTime - lastTime;
+
+        selectedKeyframesFlatMap.forEach(selectedKeyframeFlat => {
+            const { trackKey: _trackKey, keyframeKey: _keyframeKey } = selectedKeyframeFlat
+            const kf = tracks[_trackKey]?.keyframes[_keyframeKey]
+            const oldKeyframeTime = kf.time
+            const newKeyframeTime = oldKeyframeTime + deltaTime
+
+            if (newKeyframeTime !== null && newKeyframeTime !== undefined && !isNaN(newKeyframeTime)) {
+                setKeyframeTime(
+                    _keyframeKey,
+                    _trackKey,
+                    parseFloat(newKeyframeTime.toFixed(4))
+                )
+            }
+        })
+    }
+}
+
+
+const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframe: IKeyframe) => {
+    event.preventDefault();
+
+    const timelineEditorAPI = useTimelineEditorAPI.getState();
+
+    const {
+        selectedKeyframeKeys,
+        selectKeyframe,
+        removeSelectedKeyframe,
+        isKeyframeSelected,
+        clearSelectedKeyframes,
+        getAllKeyframes,
+        setLastKeyframeSelectedIndex,
+        lastKeyframeSelectedIndex,
+    } = timelineEditorAPI;
+    // Get keyframes and their indices
+    const keyframes = getAllKeyframes(); // Retrieve all keyframes for the track
+
+    const selectedKeyframesFlatMap = Object.values(selectedKeyframeKeys).flatMap(track => Object.keys(track));
+    // Find the index of the clicked keyframe
+    const keyframeIndex = keyframes.findIndex(kf => kf.id === keyframe.id)
+
+    if (keyframeIndex === -1) return; // Keyframe not found
+
+
+    // Click + CTRL key ( command key on macOS )
+    // CTRL or Meta key (multi-select)
+    if (event.metaKey || event.ctrlKey) {
+        if (isKeyframeSelected(trackKey, keyframe.id)) {
+            // If already selected, remove the selection
+            removeSelectedKeyframe(trackKey, keyframe.id)
+        } else {
+            // Add the keyframe to the selection
+            selectKeyframe(trackKey, keyframe.id);
+        }
+    }
+    else if (event.shiftKey && lastKeyframeSelectedIndex !== null) {
+        const start = Math.min(lastKeyframeSelectedIndex, keyframeIndex);
+        const end = Math.max(lastKeyframeSelectedIndex, keyframeIndex);
+
+        // Select all keyframes in the range
+        for (let i = start; i <= end; i++) {
+            selectKeyframe(trackKey, selectedKeyframesFlatMap[i]);
+        }
+    }
+    // Normal Click
+    else {
+        clearSelectedKeyframes();
+        selectKeyframe(trackKey, keyframe.id);
+    }
+
+    setLastKeyframeSelectedIndex(keyframeIndex)
+}
+
 const Keyframe: React.FC<EditKeyframeProps> = memo(({
     keyframe,
     track,
@@ -29,9 +119,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
     const trackKey = `${track.vxkey}.${track.propertyPath}`
 
     const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe)
-    const setLastKeyframeSelectedIndex = useTimelineEditorAPI(state => state.setLastKeyframeSelectedIndex)
 
-    const startLeft = 12.5;
     const [left, setLeft] = useState(() => {
         return parserTimeToPixel(keyframe.time, startLeft);
     });
@@ -39,95 +127,6 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
     useEffect(() => {
         setLeft(parserTimeToPixel(keyframe.time, startLeft));
     }, [keyframe.time, startLeft, scale]);
-
-
-    const handleOnDrag = useCallback((data: { left: number, lastLeft: number }) => {
-        const {selectedKeyframeKeys, setKeyframeTime } = useTimelineEditorAPI.getState();
-
-        const selectedKeyframesFlatMap = Object.values(selectedKeyframeKeys).flatMap(track => Object.values(track));
-
-        if (Object.entries(selectedKeyframeKeys).length === 0)
-            selectKeyframe(trackKey, keyframe.id)
-        // Single Keyframe Drag
-        if (selectedKeyframesFlatMap.length == 1) {
-            const newTime = parserPixelToTime(data.left, startLeft)
-            setKeyframeTime(keyframe.id, trackKey, newTime);
-        }
-        // Multiple Keyframe Drag
-        else if (selectedKeyframesFlatMap.length > 1) {
-            const lastTime = parserPixelToTime(data.lastLeft, startLeft)
-            const newTime = parserPixelToTime(data.left, startLeft)
-            const deltaTime = newTime - lastTime;
-
-            selectedKeyframesFlatMap.forEach(keyframeKey => {
-                const oldKeyframeTime = keyframe.time
-                const newKeyframeTime = oldKeyframeTime + deltaTime
-                if (newKeyframeTime !== null && newKeyframeTime !== undefined && !isNaN(newKeyframeTime)) {
-                    setKeyframeTime(keyframe.id, trackKey, parseFloat(newKeyframeTime.toFixed(4)))
-                }
-            })
-        }
-    }, [])
-
-
-    const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframe: IKeyframe) => {
-        event.preventDefault();
-        console.log("HANDLE KEYFRAME CLICK")
-
-        const timelineEditorAPI = useTimelineEditorAPI.getState();
-
-        const {
-            selectedKeyframeKeys,
-            selectKeyframe,
-            removeSelectedKeyframe,
-            isKeyframeSelected,
-            clearSelectedKeyframes,
-            getAllKeyframes,
-            setLastKeyframeSelectedIndex,
-            lastKeyframeSelectedIndex,
-        } = timelineEditorAPI;
-        // Get keyframes and their indices
-        const keyframes = getAllKeyframes(); // Retrieve all keyframes for the track
-        
-        const selectedKeyframesFlatMap = Object.values(selectedKeyframeKeys).flatMap(track => Object.keys(track));
-        // Find the index of the clicked keyframe
-        const keyframeIndex = keyframes.findIndex(kf => kf.id === keyframe.id)
-        console.log("Keyframe Index ", keyframeIndex)
-
-        if (keyframeIndex === -1) return; // Keyframe not found
-
-
-        // Click + CTRL key ( command key on macOS )
-        // CTRL or Meta key (multi-select)
-        if (event.metaKey || event.ctrlKey) {
-            console.log("Keyframe Control click")
-            if (isKeyframeSelected(trackKey, keyframe.id)) {
-                // If already selected, remove the selection
-                removeSelectedKeyframe(trackKey, keyframe.id)
-            } else {
-                // Add the keyframe to the selection
-                selectKeyframe(trackKey, keyframe.id);
-            }
-        }
-        else if (event.shiftKey && lastKeyframeSelectedIndex !== null) {
-            console.log("Keyframe Shift click")
-            const start = Math.min(lastKeyframeSelectedIndex, keyframeIndex);
-            const end = Math.max(lastKeyframeSelectedIndex, keyframeIndex);
-
-            // Select all keyframes in the range
-            for (let i = start; i <= end; i++) {
-                selectKeyframe(trackKey, selectedKeyframesFlatMap[i]);
-            }
-        }
-        // Normal Click
-        else {
-            console.log("Keyframe Normal click")
-            clearSelectedKeyframes();
-            selectKeyframe(trackKey, keyframe.id);
-        }
-
-        setLastKeyframeSelectedIndex(keyframeIndex)
-    }
 
     return (
         <RowDnd
@@ -142,8 +141,8 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
                 right: ONE_SECOND_UNIT_WIDTH * 1000
             }}
             // @ts-expect-error
-            onDragEnd={handleOnDrag}
-            onDrag={handleOnDrag}
+            onDragEnd={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
+            onDrag={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
         >
             <div
                 className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600
@@ -154,7 +153,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
                     top: `${rowHeight / 4}px`,
                 }}
                 onClick={(e) => handleOnClick(e, trackKey, keyframe)}
-                onContextMenu={(e) => { setSelectedKeyframeKeys() }}
+                onContextMenu={(e) => { selectKeyframe(trackKey, keyframe.id) }}
             >
                 <ContextMenu>
                     <ContextMenuTrigger>

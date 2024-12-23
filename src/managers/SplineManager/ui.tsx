@@ -1,4 +1,4 @@
-import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useSplineManagerAPI } from './store'
 import { useObjectManagerAPI, useObjectSettingsAPI, useVXObjectStore } from '../ObjectManager'

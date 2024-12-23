@@ -12,14 +12,14 @@ import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
-    scale: number
     snap?: boolean
 };
 
 const startLeft = 22
 
-const Track: FC<EditRowProps> = memo(({ trackKey, scale, snap }) => {
+const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
     const track = useTimelineEditorAPI(state => state.tracks[trackKey])
+    const scale = useTimelineEditorAPI(state => state.scale)
     // Sorted keyframes by time
     const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
     const selectedKeyframeKeysOnTrack = useTimelineEditorAPI(state => state.selectedKeyframeKeys[trackKey])
@@ -130,7 +130,7 @@ const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
                 >
                     <div
                         key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
-                        className={`bg-white my-auto w-full hover:bg-neutral-300 h-[3px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
+                        className={`bg-white my-auto w-full hover:bg-neutral-300 h-[1.5px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
 
                     >
                     </div>

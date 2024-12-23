@@ -7,7 +7,6 @@ import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/managers/Objec
 import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { invalidate } from '@react-three/fiber'
 
-
 interface ValueRendererProps {
     propertyPath: string
     inputProps: React.InputHTMLAttributes<HTMLInputElement>
@@ -82,27 +81,12 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             <div className="relative">
                 <Input
                     ref={inputRef}
-                    // value={getDefaultValue()} // Removed to make input uncontrolled
                     onChange={handleChange}
                     type='number'
                     className="h-fit border-none text-[10px] bg-neutral-800 p-0.5 max-w-[40px]"
                     {...inputProps}
                     style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
                 />
-
-                {/* <div className="absolute top-1/2 right-0 transform -translate-y-1/2 h-5 flex flex-col space-y-0.5 bg-neutral-950">
-                    <button type="button" className="text-gray-400 bg-blue-500 h-2 hover:text-white"
-                        style={{ fontSize: 8 }}
-                    >
-
-                    </button>
-                    <button type="button" className="text-gray-400 bg-blue-500 hover:text-white"
-                    >
-                        <svg width="10" height="10" viewBox="0 0 12 13" fill="currentColor">
-                            <path d="M4 6H11L7.5 10.5L4 6Z" />
-                        </svg>
-                    </button>
-                </div> */}
             </div >
         );
     }

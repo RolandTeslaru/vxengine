@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react';
-import { EditableAmbientLight, EditableDirectionalLight, EditableFog, EditableGroup, EditableHemisphereLight, EditableMesh, EditablePerspectiveCamera, EditablePointLight, EditablePoints, EditableSpotLight, EditableCubeCamera } from './editableObjects';
-import { EditableFadeEffect } from './editableEffects/EditableFader';
-import { EditableBloom } from './editableEffects/EditableBloom';
-import { EditableLightFormer } from './editableDrei/editableLightFormer';
-import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './editableDrei/EditableEnvironment/dreiImpl';
-import { EditableLUT } from './editableEffects/EditableLUT';
+import { EditableAmbientLight, EditableDirectionalLight, EditableFog, EditableGroup, EditableHemisphereLight, EditableMesh, EditablePerspectiveCamera, EditablePointLight, EditablePoints, EditableSpotLight, EditableCubeCamera } from './fiber';
+import { EditableFadeEffect } from './effects/EditableFader';
+import { EditableBloom } from './effects/EditableBloom';
+import { EditableLightFormer } from './drei/editableLightFormer';
+import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './drei/EditableEnvironment/dreiImpl';
+import { EditableLUT } from './effects/EditableLUT';
 
 
 export const vx = {

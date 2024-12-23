@@ -8,7 +8,7 @@ import { computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataPro
 import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { EditorObjectProps, TimelineEditorStoreProps } from './types/store';
+import { EditorObjectProps, SelectedKeyframe, TimelineEditorStoreProps } from './types/store';
 import { useVXObjectStore } from '../ObjectManager';
 import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
@@ -116,6 +116,23 @@ function createTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
 
 
 
+const createFlatMap = (state: TimelineEditorStoreProps): SelectedKeyframe[] => {
+    const { selectedKeyframeKeys } = state;
+    return Object.entries(selectedKeyframeKeys).reduce(
+        (acc: SelectedKeyframe[], [trackKey, keyframeKeys]) => {
+            Object.keys(keyframeKeys).forEach((keyframeKey) => {
+                acc.push({
+                    trackKey,
+                    keyframeKey,
+                    isSelected: keyframeKeys[keyframeKey],
+                });
+            });
+            return acc;
+        }, []);
+};
+
+
+
 
 
 export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
@@ -168,28 +185,36 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     changes: 0,
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
 
-    clipboard: [],
-    setClipboard: (keyframeKeys: string[]) => set({ clipboard: keyframeKeys }),
+    clipboard: {},
+    setClipboard: (content) => set({ clipboard: content }),
 
     selectedKeyframeKeys: {},
+    selectedKeyframesFlatMap: [],
     selectKeyframe: (trackKey, keyframeKey) => {
         set(
             produce((state: TimelineEditorStoreProps) => {
-                if(!state.selectedKeyframeKeys[trackKey])
+                if (!state.selectedKeyframeKeys[trackKey])
                     state.selectedKeyframeKeys[trackKey] = {};
-                
+
                 state.selectedKeyframeKeys[trackKey][keyframeKey] = true;
+
+
+                // Update the flat map using the reusable function
+                state.selectedKeyframesFlatMap = createFlatMap(state);
             })
         )
     },
     removeSelectedKeyframe: (trackKey, keyframeKey) => {
         set(
             produce((state: TimelineEditorStoreProps) => {
-                if(!state.selectedKeyframeKeys[trackKey]) return;
+                if (!state.selectedKeyframeKeys[trackKey]) return;
 
                 delete state.selectedKeyframeKeys[trackKey][keyframeKey];
-                if(Object.entries(state.selectedKeyframeKeys[trackKey]).length === 0)
+                if (Object.entries(state.selectedKeyframeKeys[trackKey]).length === 0)
                     delete state.selectedKeyframeKeys[trackKey];
+
+                // Update the flat map using the reusable function
+                state.selectedKeyframesFlatMap = createFlatMap(state);
             })
         )
     },
@@ -416,6 +441,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         set(produce((state: TimelineEditorStoreProps) => {
             const track = state.tracks[trackKey];
             if (!track) return;
+            const keyframe = track.keyframes[keyframeKey];
+
+            if (!keyframe) { console.warn(`TimelineManagerAPI: Keyframe does not exist ${keyframeKey}`, track.keyframes); return; }
+
+            // console.log("SetKeyframeTime keyframeKey:", keyframeKey, " trackKey:", trackKey, " newTime:", newTime)
             track.keyframes[keyframeKey].time = newTime;
         }))
 

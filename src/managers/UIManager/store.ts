@@ -1,4 +1,4 @@
-import { VXEngineWindowProps } from '@vxengine/components/ui/VXEngineWindow';
+import { VXEngineWindowProps } from '@vxengine/core/components/VXEngineWindow';
 import React from 'react';
 import { createWithEqualityFn } from 'zustand/traditional';
 
@@ -8,6 +8,7 @@ interface DialogEntry {
     id: string; 
     content: React.ReactNode; 
     type: DialogType; 
+    className?: string
 }
 
 interface PartialVXEngineWindowProps {
@@ -35,7 +36,7 @@ interface UIManagerProps {
     setSelectedWindow: (window: string) => void;
 
     dialogContent: DialogEntry[];
-    pushDialog: (content: React.ReactNode, type: DialogType) => void;
+    pushDialog: (content: React.ReactNode, type: DialogType, className?: string) => void;
     openedDialogs: string[];
     closeDialog: (id: string) => void;
 }
@@ -80,11 +81,11 @@ export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>((set, get) =
     setSelectedWindow: (window: string) => set({ selectedWindow: window }),
 
     dialogContent: [],
-    pushDialog: (content, type) => {
+    pushDialog: (content, type, className) => {
         const id = `${type}-${Date.now()}`;
         set({
             openedDialogs: [...get().openedDialogs, id],
-            dialogContent: [...get().dialogContent, { id, content, type }],
+            dialogContent: [...get().dialogContent, { id, content, type, className }],
         });
     },
     openedDialogs: [],

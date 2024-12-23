@@ -1,4 +1,4 @@
-import CollapsiblePanel from '@vxengine/components/ui/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import PropInput from '@vxengine/components/ui/PropInput'
 import React from 'react'
 import { useObjectManagerAPI } from '..'
@@ -25,8 +25,9 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     const ParamRenderer = ({ param, index }) => {
         return (
             <div key={index} className='flex flex-row py-1'>
-                <p className='text-xs font-light'>{param}</p>
+                <p className='text-xs font-light text-neutral-500'>{param}</p>
                 <PropInput 
+                    vxkey={vxobject.vxkey}
                     type="number"
                     className="ml-auto w-fit"
                     propertyPath={param}
