@@ -5,7 +5,7 @@ import { Button } from '@vxengine/components/shadcn/button';
 import { Input } from '@vxengine/components/shadcn/input';
 import { Label } from '@vxengine/components/shadcn/label';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import { ALERT_ResetProperty } from '@vxengine/components/ui/DialogAlerts';
+import { ALERT_ResetProperty } from '@vxengine/components/ui/DialogAlerts/Alert';
 
 export const DIALOG_createKeyframe = () => {
     const tracks = useTimelineEditorAPI((state) => state.tracks);

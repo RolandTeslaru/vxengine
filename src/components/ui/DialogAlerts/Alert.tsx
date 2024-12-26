@@ -43,7 +43,11 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
     const key = vxkey + "." + propertyPath
     const trackKey = vxkey + "." + propertyPath
     const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
-    const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
+    const keyframes = track?.keyframes;
+    if(!keyframes) 
+        return null
+    const keyframesLength = Object.values(keyframes).length;
+    // const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
 
     const staticProp = useTimelineEditorAPI(state => state.staticProps[key])
     const removeProperty = useTimelineEditorAPI(state => state.removeProperty)
@@ -57,7 +61,7 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                 <AlertDialogDescription>
                     {track && (
                         <>
-                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframesLengthForTrack}</span> keyframes will be deleted!
+                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframesLength}</span> keyframes will be deleted!
                         </>
                     )}
                     {staticProp && (

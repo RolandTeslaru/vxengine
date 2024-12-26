@@ -3,25 +3,34 @@ import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 
 import * as THREE from "three"
+import { vxEntityProps, vxObjectProps } from "../types/objectStore";
 
-type SupportedGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
+export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 
 interface VXGeometryProps {
-    geometry: SupportedGeometries;
-    vxkey: string
+    vxobject: vxEntityProps
 }
 
-export const GeometryProperties:FC<VXGeometryProps> = ({ geometry, vxkey }) => {
+export const GeometryProperties:FC<VXGeometryProps> = ({ vxobject }) => {
+    const refObject = (vxobject.ref.current as THREE.Mesh);
+    if(!refObject)
+        return null;
+
+    const geometry = refObject.geometry as ValidGeometries;
+    if(!geometry) 
+        return null;
+
     const params = geometry.parameters
-    if (!params) return null;
+    if (!params) 
+        return null;
 
     const GeomPropRender = ({ _key, value}) => {
         return (
             <div className='flex flex-row py-1'>
                 <p className='text-xs font-light text-neutral-500'>{_key}</p>
                 <PropInput
-                    vxkey={vxkey}
+                    vxkey={vxobject.vxkey}
                     type="number"
                     className="ml-auto w-fit"
                     propertyPath={`geometry.parameters.${_key}`}

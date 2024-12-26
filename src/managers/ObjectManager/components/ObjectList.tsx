@@ -16,6 +16,8 @@ import ArrowUp from '@geist-ui/icons/arrowUp'
 import ArrowDown from "@geist-ui/icons/arrowDown"
 import X from '@geist-ui/icons/x'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
+import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
 
 let lastSelectedIndex = 0;
 
@@ -79,7 +81,7 @@ const ObjectList = () => {
             </div>
             {/* Content */}
             <div className='mt-2 max-h-[500px] rounded-b-xl overflow-y-scroll text-sm'>
-                <CustomTree nodes={filteredTree} onNodeClick={(e, vxkey, index) => handleObjectClick(e, vxkey, index)} />
+                <ObjectTree nodes={filteredTree} onNodeClick={(e, vxkey, index) => handleObjectClick(e, vxkey, index)} />
             </div>
         </CollapsiblePanel>
     )
@@ -136,7 +138,7 @@ const defaultExpandedKeys = {
     "splines": true,
 }
 
-const CustomTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
+const ObjectTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
     const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>(defaultExpandedKeys);
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
@@ -206,7 +208,7 @@ const CustomTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
                                 </p>
                             </div>
                         </ContextMenuTrigger>
-                        <ContextMenuContentComponent nodeKey={node.vxkey}/>
+                        <ContextMenuContentComponent vxkey={node.vxkey} />
                     </ContextMenu>
 
                     {/* Render Children */}
@@ -271,42 +273,62 @@ const TreeLineConnect = ({ isSelected }) => {
     return <div className={`ml-2 w-2 h-[1px] content-[" "] bg-neutral-500 ${isSelected && "bg-neutral-300"} `}></div>
 }
 
-const SplineNodeContextMenuContent = ({ nodeKey }: {nodeKey: string}) => {
+
+
+const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
+    const splineKey = vxkey;
+    const pushDialog = useUIManagerAPI(state => state.pushDialog);
+    const handleDeleteSpline = () => {
+        const objVxKey = useTimelineEditorAPI.getState().splines[splineKey]?.vxkey
+        pushDialog(<DANGER_UseSplinePath objVxKey={objVxKey} isUsingSplinePath={true}/>, "danger")
+    }
+    return (
+        <ContextMenuContent className='font-sans-menlo'>
+            <ContextMenuItem onClick={handleDeleteSpline} className='text-xs gap-2 text-red-600'>
+                <X size={15} />
+                Delete Spline
+            </ContextMenuItem>
+        </ContextMenuContent>
+    )
+}
+
+const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
+    const nodeKey = vxkey;
     const insertNode = useTimelineEditorAPI(state => state.insertNode);
     const removeNode = useTimelineEditorAPI(state => state.removeNode);
 
     const vxSplineNode = useVXObjectStore(state => state.objects[nodeKey]);
 
-    if(!vxSplineNode) return
+    if (!vxSplineNode) return
 
     const nodeIndex = vxSplineNode.ref.current.nodeIndex
 
     const splineKey = nodeKey.includes('.node') ? nodeKey.split('.node')[0] : nodeKey;
 
     const handleInsertBefore = () => {
-        insertNode({splineKey, index: nodeIndex - 1})
+        insertNode({ splineKey, index: nodeIndex - 1 })
     }
     const handleDelete = () => {
-        removeNode({splineKey, index: nodeIndex})
+        removeNode({ splineKey, index: nodeIndex })
     }
     const handleInsertAfter = () => {
-        insertNode({splineKey, index: nodeIndex})
+        insertNode({ splineKey, index: nodeIndex })
     }
 
     return (
         <ContextMenuContent className='font-sans-menlo'>
             {nodeIndex !== 0 &&
                 <ContextMenuItem onClick={handleInsertBefore} className='text-xs gap-2'>
-                    <ArrowUp size={15}/>
+                    <ArrowUp size={15} />
                     Insert Node Before
                 </ContextMenuItem>
             }
             <ContextMenuItem onClick={handleDelete} className='text-xs gap-2 text-red-600'>
-                <X size={15}/>
+                <X size={15} />
                 Delete Node {nodeIndex}
             </ContextMenuItem>
             <ContextMenuItem onClick={handleInsertAfter} className='text-xs gap-2'>
-                <ArrowDown size={15}/>
+                <ArrowDown size={15} />
                 Insert Node After
             </ContextMenuItem>
         </ContextMenuContent>
@@ -325,5 +347,6 @@ const MeshContextMenu = ({ vxkey }) => {
 
 const contextMenuMapping = {
     "splineNode": SplineNodeContextMenuContent,
+    "Spline": SplineContextMenu,
     default: MeshContextMenu
 }

@@ -21,7 +21,7 @@ export interface vxVirtualEntityProps extends BaseVxProps {
     name: string,
 }
 
-export interface vxSpline extends BaseVxProps {
+export interface vxSplineProps extends BaseVxProps {
     type: "spline",
     objectVxKey: string // the vxkey for the object it is controlling
     name: string
@@ -53,7 +53,7 @@ export type vxObjectProps = vxEffectProps
     | vxEntityProps 
     | vxSplineNodeProps 
     | vxVirtualEntityProps
-    | vxSpline
+    | vxSplineProps
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>

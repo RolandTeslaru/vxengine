@@ -11,7 +11,7 @@ import { useTimelineEditorAPI } from '../TimelineManager/store';
 import SplineKeyframeNode from './components/SplineKeyframeNode';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { useVXObjectStore } from '../ObjectManager';
-import { vxSpline } from '../ObjectManager/types/objectStore';
+import { vxSplineProps } from '../ObjectManager/types/objectStore';
 
 interface SplineProps {
     splineKey: string;
@@ -38,7 +38,7 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
 
-        const vxSpline: vxSpline = {
+        const vxSpline: vxSplineProps = {
             objectVxKey: vxkey,
             vxkey: splineKey,
             ref: {

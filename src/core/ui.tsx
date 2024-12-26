@@ -5,7 +5,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { ObjectPropertiesPanel, ObjectTransformControls } from "../managers/ObjectManager/ui"
+import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
 import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
 import EntityList from "../managers/ObjectManager/components/ObjectList"
@@ -25,6 +25,7 @@ import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { useRefStore } from "@vxengine/utils"
 import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
+import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
 
 export const CoreUI = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
@@ -51,7 +52,7 @@ export const CoreUI = () => {
 }
 
 const VXRightPanel = () => {
-    const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
+    const vxObject = useObjectManagerAPI(state => state.selectedObjects[0]);
 
     return (
         <VXEngineWindow
@@ -62,11 +63,11 @@ const VXRightPanel = () => {
             detachedClassName="top-2 right-2"
         >
             <div className="w-full h-full flex flex-col gap-2 rounded-2xl  overflow-y-scroll">
-                {firstSelectedObject && (
+                {vxObject && (
                     <>
-                        <ObjectPropertiesPanel vxobject={firstSelectedObject} />
-                        <ParamList vxobject={firstSelectedObject} />
-                        <SettingsList vxobject={firstSelectedObject} />
+                        <ObjectPropertiesPanel vxobject={vxObject} />
+                        <ParamList vxobject={vxObject} />
+                        <SettingsList vxobject={vxObject} />
                     </>
                 )}
             </div>

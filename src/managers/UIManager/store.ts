@@ -114,7 +114,7 @@ export const useUIManagerAPI = create<UIManagerProps>()(
             name: "uiManager-storage",
             partialize: (state) =>
                 Object.fromEntries(
-                    Object.entries(state).filter(([key]) => !["dialogContent", "hydrated", "setHydrated", "closeDialog"].includes(key)),
+                    Object.entries(state).filter(([key]) => !["dialogContent", "hydrated", "setHydrated", "closeDialog", "openedDialogs"].includes(key)),
                 ),
             onRehydrateStorage: () => (state) => {
                 state?.setHydrated(true); // Set the hydrated flag after state is restored
@@ -122,34 +122,3 @@ export const useUIManagerAPI = create<UIManagerProps>()(
         }
     )
 );
-
-function deepMerge<T>(target: T, source: Partial<T>): T {
-    if (typeof target !== "object" || target === null) {
-        return source as T;
-    }
-
-    if (Array.isArray(target) && Array.isArray(source)) {
-        return [...target, ...source] as T;
-    }
-
-    const result = { ...target } as Record<string, any>;
-
-    for (const [key, value] of Object.entries(source)) {
-        if (
-            value &&
-            typeof value === "object" &&
-            !Array.isArray(value) &&
-            target[key] &&
-            typeof target[key] === "object" &&
-            !Array.isArray(target[key])
-        ) {
-            // Recursively merge objects
-            result[key] = deepMerge(target[key], value);
-        } else {
-            // Directly assign values
-            result[key] = value;
-        }
-    }
-
-    return result as T;
-}

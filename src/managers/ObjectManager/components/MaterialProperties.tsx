@@ -3,17 +3,30 @@ import * as THREE from "three"
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import PropInput from '@vxengine/components/ui/PropInput';
 import Search from '@vxengine/components/ui/Search';
+import { vxEntityProps, vxObjectProps } from '../types/objectStore';
 
-interface Props {
-    material: THREE.MeshBasicMaterial | THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial
-    vxkey: string
-}
+const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
+    const refObject = (vxobject.ref.current as THREE.Mesh)
+    if (!refObject)
+        return null;
 
-const MaterialProperties: React.FC<Props> = ({ material, vxkey }) => {
+    const material = refObject.material;
+    if (!material)
+        return null;
+
     const properties = useMemo(() => {
-        return Object.entries(material);
-    }, [material])
+        return Object.entries(material).filter(
+            ([key, value]) => typeof value === "number" && !key.startsWith("_")
+        );
+    }, [material]);
+
     const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredProperties = useMemo(() => {
+        const lowerCaseQuery = searchQuery.toLowerCase();
+        return properties.filter(([key]) => key.toLowerCase().includes(lowerCaseQuery));
+    }, [properties, searchQuery]);
+
 
     const renderProperty = (_key, value) => {
         if (typeof value === "number") {
@@ -21,7 +34,7 @@ const MaterialProperties: React.FC<Props> = ({ material, vxkey }) => {
                 <div className='flex flex-row py-1' key={_key}>
                     <p className='text-xs font-light text-neutral-500'>{_key}</p>
                     <PropInput
-                        vxkey={vxkey}
+                        vxkey={vxobject.vxkey}
                         type="number"
                         className="ml-auto w-fit"
                         propertyPath={`material.${_key}`}
@@ -32,13 +45,10 @@ const MaterialProperties: React.FC<Props> = ({ material, vxkey }) => {
         else return null;
     }
 
-    const filteredProperties = useMemo(() => {
-        return properties.filter(([key, obj]) => typeof obj === "number" && key.toLocaleLowerCase().includes(searchQuery));
-    }, [material, searchQuery])
 
     return (
         <CollapsiblePanel
-            title={material.type}
+            title={(material as any).type}
             defaultOpen={true}
         >
             <div className='text-xs flex flex-row text-neutral-400'>

@@ -4,7 +4,7 @@ import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
-import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts'
+import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert'
 import ValueRenderer from '../ValueRenderer'
 
 interface Props extends InputProps {
