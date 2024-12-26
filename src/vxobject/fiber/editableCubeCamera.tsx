@@ -11,25 +11,24 @@ import VXEntityWrapper from '../entityWrapper';
 export type EditableCubeCameraProps = EditableObjectProps<CubeCameraProps> & {
     ref?: React.Ref<THREE.CubeCamera>;
     settings?: {};
+    overrideNodeTreeParentKey?: string
 };
 
 
 export const EditableCubeCamera = memo(
     forwardRef<THREE.CubeCamera, EditableCubeCameraProps>((props, ref) => {
-        const {vxkey, ...rest} = props;
+        const { vxkey, ...rest } = props;
 
         const params = [];
         const disabledParams = [];
 
         return (
-            <>
-                <VXEntityWrapper
-                    vxkey={vxkey}
-                    ref={ref}
-                    {...rest}
-                >
-                    <cubeCamera/>
-                </VXEntityWrapper>
-            </>
+            <VXEntityWrapper
+                vxkey={vxkey}
+                ref={ref}
+                {...rest}
+            >
+                <cubeCamera />
+            </VXEntityWrapper>
         )
-}) )
+    }))

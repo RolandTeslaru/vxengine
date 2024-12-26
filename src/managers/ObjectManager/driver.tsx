@@ -5,7 +5,6 @@ import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { useTimelineEditorAPI } from "../TimelineManager/store";
-import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
@@ -72,6 +71,8 @@ export const ObjectManagerDriver = () => {
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
 
+  const updateProperty = useObjectPropertyAPI(state => state.updateProperty);
+
   const firstObjectSelectedRef: THREE.Object3D = firstSelectedObject?.ref.current;
   const type = firstObjectSelectedRef?.type
   const isValid = type === "Mesh" || type === "Group" || type === "PerspectiveCamera" || type === "CubeCamera";
@@ -111,10 +112,10 @@ export const ObjectManagerDriver = () => {
     const type = firstSelectedObject.type;
     switch (type) {
       case "entity":
-        handleEntiyChange(e)
+        handleEntityChange(e)
         break;
       case "virtualEntity": {
-        handleEntiyChange(e)
+        handleEntityChange(e)
         dispatchVirtualEntityChangeEvent(e, firstSelectedObject);
         break;
       }
@@ -158,7 +159,7 @@ export const ObjectManagerDriver = () => {
   // 
   //  Handle ENTITIES
   // 
-  const handleEntiyChange = (e) => {
+  const handleEntityChange = (e) => {
     const firstObjectSelectedRef = firstSelectedObject?.ref.current as THREE.Object3D;
     if (!firstObjectSelectedRef)
       return
@@ -260,31 +261,42 @@ export const ObjectManagerDriver = () => {
     const { data, ref } = (firstSelectedObject as vxKeyframeNodeProps);
     const setKeyframeValue = useTimelineEditorAPI.getState().setKeyframeValue;
 
-    (data.keyframeKeys as string[])?.forEach(
-      (keyframeKey) => {
-        const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
-        // Update keyframe in the store from the the ref stored in the utility node 
-        const newPosition = ref.current.position;
-        const axis = getKeyframeAxis(keyframe.propertyPath);
-        setKeyframeValue(keyframeKey, newPosition[axis]);
+    // (data.keyframeKeys as string[])?.forEach(
+    //   (keyframeKey) => {
+    //     const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
+    //     // Update keyframe in the store from the the ref stored in the utility node 
+    //     const newPosition = ref.current.position;
+    //     const axis = getKeyframeAxis(keyframe.propertyPath);
+    //     setKeyframeValue(keyframeKey, newPosition[axis]);
 
-        useObjectPropertyAPI.getState().updateProperty(
-          firstSelectedObject.vxkey,
-          keyframe.propertyPath,
-          newPosition[axis]
-        )
-      }
-    );
+    //     updateProperty(
+    //       firstSelectedObject.vxkey,
+    //       keyframe.propertyPath,
+    //       newPosition[axis]
+    //     )
+    //   }
+    // );
   }, 300)
+
+
+  const setSplineNodePosition = useTimelineEditorAPI(state => state.setSplineNodePosition);
 
   // 
   //  Handle SPLINE Nodes 
   // 
   const handleSplineNodeChange = () => {
     const { index, splineKey, ref } = firstSelectedObject as vxSplineNodeProps;
-    const newPosition = ref.current.position
-    useSplineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
+    const newPosition = ref.current.position;
+    setSplineNodePosition(splineKey, index, newPosition)
+
+     const vxNodeKey = `${splineKey}.node${index}`
+
+     updateProperty(vxNodeKey, 'position.x', newPosition.x)
+     updateProperty(vxNodeKey, 'position.y', newPosition.y)
+     updateProperty(vxNodeKey, 'position.z', newPosition.z)
   }
+
+
 
   // Set the Axis of the controls when a node is selected
   useEffect(() => {

@@ -40,6 +40,7 @@ export const EffectComposerContext = createContext<{
   resolutionScale?: number
 }>(null!)
 
+
 const isConvolution = (effect: Effect): boolean =>
   (effect.getAttributes() & EffectAttribute.CONVOLUTION) === EffectAttribute.CONVOLUTION
 
@@ -116,6 +117,7 @@ export const EffectsManagerDriver = React.memo(
     const instance = useInstanceHandle(group)
 
     useLayoutEffect(() => {
+
       const addObject = useVXObjectStore.getState().addObject;
       const removeObject = useVXObjectStore.getState().removeObject;
 
@@ -126,11 +128,10 @@ export const EffectsManagerDriver = React.memo(
         name: "Effects",
         params: [],
         disabledParams: [],
-        parentKey: null,
+        parentKey: "global",
       };
 
-      addObject(newVXEntity);
-
+      addObject(newVXEntity, { type: "Effects"});
     }, [])
 
     useLayoutEffect(() => {

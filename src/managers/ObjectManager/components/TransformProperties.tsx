@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "../stores/managerStore";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
@@ -6,7 +6,6 @@ import { Switch } from "@vxengine/components/shadcn/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
-import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
@@ -33,7 +32,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
 
     const isPanelDisabled = isPositionDisabled && isRotationDisabled && isScaleDisabled
 
-    if(isPanelDisabled) return;
+    if (isPanelDisabled) return;
 
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
@@ -124,6 +123,7 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
     const trackKey = `${vxkey}.splineProgress`
     const inputRef = useRef();
     const [value, setValue] = useState(getDefaultValue({ vxkey, propertyPath }));
+    const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
 
     useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
@@ -139,7 +139,7 @@ const SplineProgress = React.memo(({ vxkey }: any) => {
     }, [])
 
     const handleChange = (newValue) => {
-        useTimelineEditorAPI.getState().handlePropertyValueChange(vxkey, propertyPath, newValue)
+        handlePropertyValueChange(vxkey, propertyPath, newValue)
         setValue(newValue);
         invalidate();
     }
@@ -194,52 +194,42 @@ const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
     )
 })
 
-const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
-    const getTracksForObject = useTimelineEditorAPI(state => state.getTracksForObject)
-    const getStaticPropsForObject = useTimelineEditorAPI(state => state.getStaticPropsForObject)
-    const removeTrack = useTimelineEditorAPI(state => state.removeTrack);
-    const removeStaticProp = useTimelineEditorAPI(state => state.removeStaticProp);
 
-    const tracks = getTracksForObject(vxkey)
-    const staticProps = getStaticPropsForObject(vxkey);
+
+const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
+    const { tracks, staticProps, removeTrack, removeStaticProp, createSpline, removeSpline }
+        = useTimelineEditorAPI(state => ({
+            tracks: [
+                state.tracks[`${vxkey}.position.x`],
+                state.tracks[`${vxkey}.position.y`],
+                state.tracks[`${vxkey}.position.z`],
+                state.tracks[`${vxkey}.splineProgress`]
+            ].filter(Boolean),
+            staticProps: [
+                state.staticProps[`${vxkey}.position.x`],
+                state.staticProps[`${vxkey}.position.y`],
+                state.staticProps[`${vxkey}.position.z`],
+            ].filter(Boolean),
+            removeTrack: state.removeTrack,
+            removeStaticProp: state.removeStaticProp,
+            createSpline: state.createSpline,
+            removeSpline: state.removeSpline
+        }));
 
     const setSetting = useObjectSettingsAPI(state => state.setSetting)
 
-    const removeSpline = useSplineManagerAPI(state => state.removeSpline);
-    const createSpline = useSplineManagerAPI(state => state.createSpline);
-
-    const splineKey = `${vxkey}.spline`
-
-    const isPositionProperty = (propertyPath) => {
-        return (
-            propertyPath === "position.x" ||
-            propertyPath === "position.y" ||
-            propertyPath === "position.z"
-        );
-    };
     const handleOnClick = () => {
         if (alertType === "addSpline") {
-            // Remove all position tracks
-            tracks.forEach((track: ITrack) => {
-                const trackKey = `${track.vxkey}.${track.propertyPath}`;
-                if (isPositionProperty(track.propertyPath)) {
-                    removeTrack({ trackKey, reRender: true });
-                }
-            });
+            tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
 
-            // Remove all position static props
-            staticProps.forEach((staticProp: IStaticProps) => {
-                const staticPropKey = `${staticProp.vxkey}.${staticProp.propertyPath}`;
-                if (isPositionProperty(staticProp.propertyPath)) {
-                    removeStaticProp({ staticPropKey, reRender: true });
-                }
-            });
-            createSpline(vxkey, splineKey)
+            staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
+
+            createSpline({ vxkey })
             setSetting(vxkey, "useSplinePath", true)
 
         }
         else if (alertType === "removeSpline") {
-            removeSpline(splineKey);
+            removeSpline({ vxkey });
             setSetting(vxkey, "useSplinePath", false)
         }
     }
@@ -261,29 +251,26 @@ const UseSplinePathAlertDialog = ({ open, setOpen, alertType, vxkey }) => {
                                     Switching to a spline path for position will permanently delete the existing position tracks and keyframes. This action cannot be undone.
                                 </p>
 
-                                {tracks.map((track, index) => {
-                                    if (isPositionProperty(track.propertyPath)) {
-                                        return (<p className="h-auto" key={index}>
-                                            <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${track.keyframes.length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
-                                        </p>)
-                                    }
-                                })}
-                                {staticProps.map((staticProp: IStaticProps, index) => {
-                                    if (isPositionProperty(staticProp.propertyPath)) {
-                                        return (<p className="h-auto" key={index}>
-                                            <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
-                                        </p>)
-                                    }
-                                })}
+                                {tracks.map((track, index) =>
+                                    <p className="h-auto" key={index}>
+                                        <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                    </p>
+                                )}
+                                {Object.values(staticProps).map((staticProp: IStaticProps, index) =>
+                                    <p className="h-auto" key={index}>
+                                        <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                                    </p>
+
+                                )}
                             </> : <>
                                 <p>Disabling the spline path will remove the current spline and allow position tracks and keyframes to be created. </p>
                                 <br />
                                 <p>Spline <span className="text-red-600">{`${vxkey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
-                                {tracks.map((track, index) => {
-                                    return (<p className="h-auto" key={index}>
-                                        <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${track.keyframes.length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
-                                    </p>)
-                                })}
+                                {tracks.map((track: ITrack, index) =>
+                                    <p className="h-auto" key={index}>
+                                        <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                    </p>
+                                )}
                             </>}
                         </AlertDialogDescription>
                     </AlertDialogHeader>

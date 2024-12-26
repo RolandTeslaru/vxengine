@@ -9,6 +9,7 @@ import { RowDnd } from '../RowDnd';
 import KeyframeContextMenu from '../Keyframe/KeyframeContextMenu';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 
+
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
@@ -64,23 +65,9 @@ const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
 export default Track
 
 
-const handleOnDragSegment = (data: { left: number, lastLeft: number, firstKeyframe: IKeyframe, secondKeyframe: IKeyframe }) => {
-    const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime
-    const trackKey = `${data.firstKeyframe.vxkey}.${data.firstKeyframe.propertyPath}`
 
-    const newTime = parserPixelToTime(data.left, startLeft)
-    const oldTime = parserPixelToTime(data.lastLeft, startLeft)
-    const deltaTime = newTime - oldTime
 
-    const oldFirstKeyframeTime = data.firstKeyframe.time
-    const oldSecondKeyframeTime = data.secondKeyframe.time
 
-    const newFirstKeyframeTime = oldFirstKeyframeTime + deltaTime
-    const newSecondKeyframeTime = oldSecondKeyframeTime + deltaTime
-
-    setKeyframeTime(data.firstKeyframe.id, trackKey, parseFloat(newFirstKeyframeTime.toFixed(4)))
-    setKeyframeTime(data.secondKeyframe.id, trackKey, parseFloat(newSecondKeyframeTime.toFixed(4)))
-}
 
 const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
     { firstKeyframe: IKeyframe, secondKeyframe: IKeyframe, trackKey: string, scale: number }
@@ -97,7 +84,27 @@ const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
     );
     const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment);
     const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe);
+    const clearSelectedKeyframes = useTimelineEditorAPI(state => state.clearSelectedKeyframes);
+    const setKeyframeTime = useTimelineEditorAPI(state => state.setKeyframeTime);
 
+
+    const handleOnDragSegment = (data: { left: number, lastLeft: number}) => {
+        const tracks = useTimelineEditorAPI.getState().tracks;
+        const trackKey = `${firstKeyframe.vxkey}.${firstKeyframe.propertyPath}`;
+    
+        const newTime = parserPixelToTime(data.left, startLeft);
+        const oldTime = parserPixelToTime(data.lastLeft, startLeft);
+        const deltaTime = newTime - oldTime;
+    
+        const oldFirstKeyframeTime = tracks[trackKey]?.keyframes[firstKeyframeKey]?.time;
+        const oldSecondKeyframeTime = tracks[trackKey]?.keyframes[secondKeyframeKey]?.time;
+    
+        const newFirstKeyframeTime = oldFirstKeyframeTime + deltaTime;
+        const newSecondKeyframeTime = oldSecondKeyframeTime + deltaTime;
+    
+        setKeyframeTime(firstKeyframe.id, trackKey, newFirstKeyframeTime);
+        setKeyframeTime(secondKeyframe.id, trackKey, newSecondKeyframeTime);
+    };
 
     // When deleting a keyframe an issue appeasr with the endX where it cant read 
     // the time on the secondKeyframe becuase its deleted
@@ -109,9 +116,10 @@ const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
         const endX = parserTimeToPixel(secondKeyframe.time, startLeft);
 
         return [startX, endX];
-    }, [scale, firstKeyframe.time, secondKeyframe.time]);
+    }, [scale, firstKeyframe, secondKeyframe]);
 
     const handleOnClick = () => {
+        clearSelectedKeyframes();
         selectKeyframe(trackKey, firstKeyframe.id)
         selectKeyframe(trackKey, secondKeyframe.id)
         setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
@@ -120,7 +128,8 @@ const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
     return (
         <ContextMenuTrigger>
             <RowDnd
-                onDrag={(data) => handleOnDragSegment({...data, firstKeyframe, secondKeyframe})}
+                enableDragging={isSelectedFromTrackSegments}
+                onDrag={handleOnDragSegment}
                 left={startX}
                 start={startLeft}
                 width={endX - startX}
@@ -131,9 +140,7 @@ const TrackSegment = memo(({ firstKeyframe, secondKeyframe, trackKey, scale }:
                     <div
                         key={`line-${firstKeyframe.id}-${secondKeyframe.id}`}
                         className={`bg-white my-auto w-full hover:bg-neutral-300 h-[1.5px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
-
-                    >
-                    </div>
+                    />
                 </div>
             </RowDnd>
         </ContextMenuTrigger>

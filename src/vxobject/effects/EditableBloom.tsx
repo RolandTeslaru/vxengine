@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useLayoutEffect } from "react";
 import { useObjectManagerAPI, useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useAnimationEngineAPI } from "../../AnimationEngine";
 import { EditableObjectProps } from "../types";
@@ -9,7 +9,7 @@ import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStor
 import { SelectiveBloomProps } from "@react-three/postprocessing";
 import { Bloom } from "@react-three/postprocessing";
 import { BloomEffect } from "postprocessing";
-import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { vxEffectProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
 import { useVXEngine } from "@vxengine/engine";
 import { BloomEffectOptions } from "postprocessing";
@@ -34,30 +34,25 @@ export const EditableBloom = memo(
 
       const animationEngine = useVXEngine((state) => state.animationEngine);
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
-        const addToTree = useObjectManagerAPI.getState().addToTree;
 
         internalRef.current.type = "BloomEffect"
                     
-        const newVXObject: vxObjectProps = {
+        const newVXObject: vxEffectProps = {
           type: "effect",
           ref: internalRef,
-          vxkey: vxkey,
-          name: name,
-          params: params || [],
+          vxkey,
+          name,
+          params,
           parentKey: "effects"
         };
 
         addObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);
 
-        useTimelineEditorAPI.getState().addObjectToEditorData(newVXObject);
-
-        addToTree(newVXObject)
-
-        return () => {removeObject(vxkey);};
+        return () => removeObject(vxkey)        
       }, []);
 
       return <Bloom ref={internalRef as unknown as React.LegacyRef<typeof BloomEffect>} {...rest} />;

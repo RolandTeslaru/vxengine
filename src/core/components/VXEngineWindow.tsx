@@ -34,6 +34,7 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     const setWindowVisibility = useUIManagerAPI((state) => state.setWindowVisibility);
     const setWindowAttachment = useUIManagerAPI((state) => state.setWindowAttachment);
     const isAttached = useUIManagerAPI((state) => state.getAttachmentState(id))
+    const isStoreHydrated = useUIManagerAPI(state => state.hydrated);
 
     const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
 
@@ -64,6 +65,8 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
             );
         }
     }, [noStyling, children, className, detachedClassName, isAttached,]);
+
+    if(isStoreHydrated === false) return null;
 
     if (isVisible === false) return null;
 
@@ -120,10 +123,13 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     const effectTriggerCountRef = useRef(0);
 
     const handleOnClose = useCallback(() => {
-        effectTriggerCountRef.current = 0;
-        setExternalContainer(null);
-        onClose();
-    }, [])
+        if (externalWindow.current) {
+            console.log(`Window "${title}" is closing`);
+            setExternalContainer(null);
+            onClose?.();
+        }
+    }, [setExternalContainer, onClose, title]);
+
 
     useEffect(() => {
         // This useEffect must run at least twice to get a working window

@@ -3,10 +3,9 @@
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
-import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { useVXEngine } from '@vxengine/engine'
-import { useObjectManagerAPI } from '@vxengine/managers/ObjectManager'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -52,23 +51,19 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
         
-        const addToTree = useObjectManagerAPI.getState().addToTree;
-
         internalRef.current.type = "FadeEffect"
 
-        const newVXObject: vxObjectProps = {
+        const newVXObject: vxEffectProps = {
             type: "effect",
             ref: internalRef,
-            vxkey: vxkey,
-            name: name,
-            params: params || [],
+            vxkey,
+            name,
+            params: params,
             parentKey: "effects"
         }
 
         addObject(newVXObject);
         animationEngine.initObjectOnMount(newVXObject);
-
-        addToTree(newVXObject);
 
         return () => removeObject(vxkey);
     }, [])

@@ -4,7 +4,6 @@ import { getNestedProperty } from '@vxengine/utils/nestedProperty'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { invalidate } from '@react-three/fiber'
 
 interface ValueRendererProps {
@@ -14,7 +13,7 @@ interface ValueRendererProps {
 }
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ propertyPath, inputProps, isPropertyTracked }) => {
+    ({ propertyPath, inputProps, isPropertyTracked}) => {
         const vxkey = useObjectManagerAPI((state) => state.selectedObjects[0].vxkey);
         const firstObjectSelected = useObjectManagerAPI((state) => state.selectedObjects[0]);
         const ref = firstObjectSelected?.ref.current;
@@ -72,9 +71,9 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             const nodeIndex = (firstObjectSelected as vxSplineNodeProps).index;
             const splineKey = (firstObjectSelected as vxSplineNodeProps).splineKey;
 
-            useSplineManagerAPI
-                .getState()
-                .changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
+            // useSplineManagerAPI
+            //     .getState()
+            //     .changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
         };
 
         return (

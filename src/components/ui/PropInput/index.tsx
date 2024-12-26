@@ -33,7 +33,7 @@ export const PropInput: FC<Props> = (props) => {
                     </div>
                     <ValueRenderer
                         propertyPath={propertyPath}
-                        inputProps={inputProps}
+                        inputProps={{...inputProps, disabled}}
                         isPropertyTracked={isPropertyTracked}
                     />
                 </div>

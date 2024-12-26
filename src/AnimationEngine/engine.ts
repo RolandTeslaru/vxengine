@@ -9,13 +9,12 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, ISpline, IStaticProps, ITimeline, ITrack, RawKeyframeProps, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
+import { IKeyframe, RawSpline, IStaticProps, ITimeline, ITrack, RawKeyframeProps, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
-import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 
@@ -134,11 +133,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this._currentTimeline = selectedTimeline;
 
-    const { objects, splines } = selectedTimeline;
+    const { objects: rawObjects, splines: rawSplines } = selectedTimeline;
 
 
     // Cache the splines asynchronously
-    this.cacheSplines(splines).then(() => {
+    this.cacheSplines(rawSplines).then(() => {
       // Re-render after splines are cached
       this.reRender({ time: this._currentTime, force: true });
     }).catch(error => {
@@ -146,7 +145,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     });
 
     // Set the editor data
-    useTimelineEditorAPI.getState().setEditorData(objects);
+    useTimelineEditorAPI.getState().setEditorData(rawObjects, rawSplines);
     useTimelineEditorAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
   }
 
@@ -983,7 +982,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Caches splines by initializing WebAssembly spline objects.
    * @param splines - A record of splines to cache.
    */
-  async cacheSplines(splines: Record<string, ISpline>) {
+  async cacheSplines(splines: Record<string, RawSpline>) {
     await this._wasmReady; // Ensure WASM is initialized
 
     if (!splines) {
@@ -1277,7 +1276,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     splineKey: string,
     reRender: boolean = true,
   ) {
-    const splineState = useSplineManagerAPI.getState().splines
+    const splineState = useTimelineEditorAPI.getState().splines;
 
     switch (action) {
       case "update": {
@@ -1315,7 +1314,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const spline = splineState[splineKey];
 
         // set the currentTimeline spline
-        if (!this.currentTimeline.splines) this.currentTimeline.splines = {};
+        if (!this.currentTimeline.splines) 
+          this.currentTimeline.splines = {};
+
         this.currentTimeline.splines[splineKey] = spline;
 
         // Create the WebAssembly spline object in the cache if not already created

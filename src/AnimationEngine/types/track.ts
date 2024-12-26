@@ -15,7 +15,7 @@ export interface ITimeline {
     name: string;        
     id: string;          
     objects: RawObjectProps[]
-    splines: Record<string, ISpline>
+    splines: Record<string, RawSpline>
     settings: Record<string, ISettings>
     length: number
 }
@@ -24,6 +24,7 @@ export interface ITrack {
     vxkey: string,
     propertyPath: string;
     keyframes: Record<string, IKeyframe>;
+    orderedKeyframeKeys: string[]
 }
 export interface IStaticProps {
     vxkey: string
@@ -41,6 +42,12 @@ export interface IAdditionalSettingsProps{
     showHelper?: boolean
 }
 
+export interface ISpline {
+    splineKey: string; // the key for the spline, also used in the VXObjectStore, use this as a vxkey for accesiing it 
+    vxkey: string; // the vxObject the spline is controlling
+    nodes: [number, number, number][]
+}
+
 
 
 export interface IKeyframe {
@@ -55,7 +62,7 @@ export interface IKeyframe {
     }
 }
 
-export interface ISpline {
+export interface RawSpline {
     splineKey: string;
     vxkey: string;
     nodes: [ number, number, number][];

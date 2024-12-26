@@ -1,5 +1,5 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, ISettings, ISpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2 } from "@vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, ISettings, RawSpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2, ISpline } from "@vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { GroupedPaths } from "../store";
 
@@ -14,6 +14,7 @@ export interface TimelineEditorStoreProps {
     editorObjects: Record<string, edObjectProps>;
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
+    splines: Record<string, ISpline>
 
     currentTimelineLength: number;
     setCurrentTimelineLength: (length: number) => void;
@@ -38,7 +39,7 @@ export interface TimelineEditorStoreProps {
     searchQuery: string
     setSearchQuery: (query: string) => void
 
-    setEditorData: (rawObjects: RawObjectProps[]) => void;
+    setEditorData: (rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>) => void;
 
     clipboard: Record<string, Record<string, boolean>>,
     setClipboard: (content: Record<string, Record<string, boolean>>) => void
@@ -79,6 +80,12 @@ export interface TimelineEditorStoreProps {
 
     createTrack: (trackKey: string) => void
     removeTrack: (props: {trackKey: string, reRender: boolean}) => void
+
+    createSpline: (props: {vxkey: string}) => void
+    removeSpline: (props: {vxkey: string}) => void
+    insertNode: (props: {splineKey: string, index: number}) => void
+    removeNode: (props: {splineKey: string, index: number}) => void
+    setSplineNodePosition:(splineKey: string, nodeIndex: number, newPosition: {x: number, y:number, z:number}) => void;
 
     // Keyframe functions
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;

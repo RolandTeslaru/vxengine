@@ -4,14 +4,17 @@
 
 import { create } from 'zustand';
 import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
+import { useObjectManagerAPI } from './managerStore';
 
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     objects: {},
-    addObject: (vxobject) => set((state) => {
-        // if(state.objects[vxobject.vxkey]){
-        //     // console.warn("ObjectStore: trying to add an already present object", vxobject.vxkey)
-        //     return state;
-        // }
+    addObject: (vxobject, props = {}) => set((state) => {
+        const { addToTree, type: icon} = props
+        if(addToTree === undefined || addToTree === true){
+            const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
+            addToTreeFunc(vxobject, icon)
+        }
+        
         return ({
             ...state,
             objects: {
@@ -25,6 +28,9 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
             console.warn("ObjectStore: trying to remove a non-existent object",vxkey);
             return state; // No changes to state
         }
+
+        const removeFromTree = useObjectManagerAPI.getState().removeFromTree;
+        removeFromTree(vxkey);
         
         const newObjects = { ...state.objects };
         delete newObjects[vxkey];

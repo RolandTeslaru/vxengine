@@ -7,7 +7,6 @@ import { useUIManagerAPI } from '../../managers/UIManager/store'
 import { invalidate } from '@react-three/fiber'
 import { SourceManagerSubMenu } from '@vxengine/managers/SourceManager/ui'
 import { ObjectManagerSubMenu, ObjectPropertySubMenu, ObjectSettingsSubMenu } from '@vxengine/managers/ObjectManager/ui'
-import { SplineManagerSubMenu } from '@vxengine/managers/SplineManager/ui'
 import { EffectsManagerSubMenu } from '@vxengine/managers/EffectsManager/ui'
 import { TimelineManagerSubMenu } from '@vxengine/managers/TimelineManager/ui'
 import VXEngineLogo from '@vxengine/components/ui/VXEngineLogo'
@@ -136,7 +135,6 @@ const ManagersButton = () => {
                 <MenubarSeparator />
 
                 <SourceManagerSubMenu />
-                <SplineManagerSubMenu />
                 <EffectsManagerSubMenu />
                 <TimelineManagerSubMenu />
             </MenubarContent>

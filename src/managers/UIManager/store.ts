@@ -1,13 +1,14 @@
 import { VXEngineWindowProps } from '@vxengine/core/components/VXEngineWindow';
 import React from 'react';
-import { createWithEqualityFn } from 'zustand/traditional';
+import { create, StateCreator } from 'zustand';
+import { persist, PersistOptions } from "zustand/middleware";
 
 type DialogType = "normal" | "alert" | "danger"
 
 interface DialogEntry {
-    id: string; 
-    content: React.ReactNode; 
-    type: DialogType; 
+    id: string;
+    content: React.ReactNode;
+    type: DialogType;
     className?: string
 }
 
@@ -22,9 +23,9 @@ interface UIManagerProps {
 
     windows: Record<string, PartialVXEngineWindowProps>;
     registerWindow: (props: PartialVXEngineWindowProps) => void;
-    windowVisibility: Record<string, boolean>; 
+    windowVisibility: Record<string, boolean>;
     setWindowVisibility: (id: string, visible: boolean) => void;
-    
+
     attachmentState: Record<string, boolean>;
     setWindowAttachment: (id: string, value: boolean) => void;
     getAttachmentState: (id: string, defaultValue?: boolean) => boolean;
@@ -39,66 +40,116 @@ interface UIManagerProps {
     pushDialog: (content: React.ReactNode, type: DialogType, className?: string) => void;
     openedDialogs: string[];
     closeDialog: (id: string) => void;
+
+    hydrated: boolean;
+    setHydrated: (value: boolean) => void
 }
 
+export const useUIManagerAPI = create<UIManagerProps>()(
+    persist(
+        (set, get) => ({
+            mountCoreUI: false,
+            setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
 
+            windows: {},
+            registerWindow: (props: PartialVXEngineWindowProps) => {
+                if (get().windows[props.id]) return;
 
-export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>((set, get) => ({
-    mountCoreUI: false,
-    setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
+                set((state) => ({
+                    windows: { ...state.windows, [props.id]: props },
+                    windowVisibility: { ...state.windowVisibility, [props.id]: true },
+                    attachmentState: { ...state.attachmentState, [props.id]: true },
+                }));
 
-    windows: {},
-    registerWindow: (props: PartialVXEngineWindowProps) => {
-        if(get().windows[props.id]) return;
+            },
 
-        set((state) => ({
-            windows: { ...state.windows, [props.id]: props },
-            windowVisibility: {...state.windowVisibility, [props.id]: true},
-            attachmentState: {...state.attachmentState, [props.id]: true}
-        }))
-    },
-        
-    windowVisibility: {},
-    setWindowVisibility: (id: string, visible: boolean) =>
-        set((state) => ({
-            windowVisibility: {...state.windowVisibility, [id]: visible}
-        })),
+            windowVisibility: {},
+            setWindowVisibility: (id: string, visible: boolean) =>
+                set((state) => ({
+                    windowVisibility: { ...state.windowVisibility, [id]: visible },
+                })),
 
-    attachmentState: {},
-    setWindowAttachment: (id, value) => 
-        set((state) => ({
-            attachmentState: {...state.attachmentState, [id]: value}
-        })),
+            attachmentState: {},
+            setWindowAttachment: (id, value) =>
+                set((state) => ({
+                    attachmentState: { ...state.attachmentState, [id]: value },
+                })),
 
-    getAttachmentState: (id, defaultValue = true) => {
-        return get().attachmentState[id] ?? defaultValue
-    },
+            getAttachmentState: (id, defaultValue = true) => {
+                return get().attachmentState[id] ?? defaultValue;
+            },
 
-    timelineEditorOpen: false,
-    setTimelineEditorOpen: (value: boolean) => set({ timelineEditorOpen: value }),
+            timelineEditorOpen: false,
+            setTimelineEditorOpen: (value: boolean) => set({ timelineEditorOpen: value }),
 
-    selectedWindow: "",
-    setSelectedWindow: (window: string) => set({ selectedWindow: window }),
+            selectedWindow: '',
+            setSelectedWindow: (window: string) => set({ selectedWindow: window }),
 
-    dialogContent: [],
-    pushDialog: (content, type, className) => {
-        const id = `${type}-${Date.now()}`;
-        set({
-            openedDialogs: [...get().openedDialogs, id],
-            dialogContent: [...get().dialogContent, { id, content, type, className }],
-        });
-    },
-    openedDialogs: [],
-    closeDialog: (id) => {
-        console.log("Closing Dialog with id ", id)
-        set({
-            openedDialogs: get().openedDialogs.filter(dialogId => dialogId !== id)
-        })
+            dialogContent: [],
+            pushDialog: (content, type, className) => {
+                const id = `${type}-${Date.now()}`;
+                set({
+                    openedDialogs: [...get().openedDialogs, id],
+                    dialogContent: [...get().dialogContent, { id, content, type, className }],
+                });
+            },
+            openedDialogs: [],
+            closeDialog: (id) => {
+                console.log('Closing Dialog with id ', id);
+                set({
+                    openedDialogs: get().openedDialogs.filter((dialogId) => dialogId !== id),
+                });
 
-        setTimeout(() => {
-            set({
-                dialogContent: get().dialogContent.filter((dialog) => dialog.id !== id),
-            });
-        }, 300);
-    },
-})) 
+                setTimeout(() => {
+                    set({
+                        dialogContent: get().dialogContent.filter((dialog) => dialog.id !== id),
+                    });
+                }, 300);
+            },
+
+            hydrated: false,
+            setHydrated: (value) => set({ hydrated: value })
+        }),
+        {
+            name: "uiManager-storage",
+            partialize: (state) =>
+                Object.fromEntries(
+                    Object.entries(state).filter(([key]) => !["dialogContent", "hydrated", "setHydrated", "closeDialog"].includes(key)),
+                ),
+            onRehydrateStorage: () => (state) => {
+                state?.setHydrated(true); // Set the hydrated flag after state is restored
+            },
+        }
+    )
+);
+
+function deepMerge<T>(target: T, source: Partial<T>): T {
+    if (typeof target !== "object" || target === null) {
+        return source as T;
+    }
+
+    if (Array.isArray(target) && Array.isArray(source)) {
+        return [...target, ...source] as T;
+    }
+
+    const result = { ...target } as Record<string, any>;
+
+    for (const [key, value] of Object.entries(source)) {
+        if (
+            value &&
+            typeof value === "object" &&
+            !Array.isArray(value) &&
+            target[key] &&
+            typeof target[key] === "object" &&
+            !Array.isArray(target[key])
+        ) {
+            // Recursively merge objects
+            result[key] = deepMerge(target[key], value);
+        } else {
+            // Directly assign values
+            result[key] = value;
+        }
+    }
+
+    return result as T;
+}

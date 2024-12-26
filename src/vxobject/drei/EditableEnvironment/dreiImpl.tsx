@@ -30,17 +30,17 @@ export type EnvironmentProps = {
   preset?: PresetsType
   scene?: Scene | React.MutableRefObject<Scene>
   ground?:
-    | boolean
-    | {
-        radius?: number
-        height?: number
-        scale?: number
-      }
+  | boolean
+  | {
+    radius?: number
+    height?: number
+    scale?: number
+  }
 } & EnvironmentLoaderProps
 
 const isRef = (obj: any): obj is React.MutableRefObject<Scene> => obj.current && obj.current.isScene
 const resolveScene = (scene: Scene | React.MutableRefObject<Scene>) => (
-    isRef(scene) ? scene.current : scene
+  isRef(scene) ? scene.current : scene
 )
 
 function setEnvProps(
@@ -76,19 +76,19 @@ function setEnvProps(
     // @ts-ignore
     environmentRotation: target.environmentRotation?.clone?.() ?? [0, 0, 0],
   }
-  if (background !== 'only') 
+  if (background !== 'only')
     target.environment = texture
-  if (background) 
+  if (background)
     target.background = texture
   applyProps(target as any, sceneProps)
 
   invalidate();
 
   return () => {
-    if (background !== 'only') 
-        target.environment = oldenv
-    if (background) 
-        target.background = oldbg
+    if (background !== 'only')
+      target.environment = oldenv
+    if (background)
+      target.background = oldbg
     applyProps(target as any, oldSceneProps)
   }
 }
@@ -119,7 +119,7 @@ export function VXEnvironmentCube({
   const texture = useEnvironment(rest)
   const defaultScene = useThree((state) => state.scene)
   useLayoutEffect(() => {
-    const cleanup =  setEnvProps(background, scene, defaultScene as any, texture as any, {
+    const cleanup = setEnvProps(background, scene, defaultScene as any, texture as any, {
       blur,
       backgroundBlurriness,
       backgroundIntensity,
@@ -191,7 +191,7 @@ export function VXEnvironmentPortal({
     'timeUpdated',
     ({ time }) => {
       camera.current.update(gl as any, virtualScene)
-      count++ 
+      count++
     }
   );
 
@@ -210,12 +210,20 @@ export function VXEnvironmentPortal({
     <>
       {createPortal(
         <>
-          <vx.cubeCamera vxkey="environmentCamera" name="EnvCamera" isVirtual={true} ref={camera} args={[near, far, fbo]}/>
-          <vx.group 
-            vxkey="environment" 
-            name="Environment" 
-            isVirtual={true} 
-            addToNodeTree={false}
+          <vx.cubeCamera
+            vxkey="environmentCamera"
+            name="EnvCamera"
+            isVirtual={true}
+            ref={camera}
+            args={[near, far, fbo]}
+            overrideNodeTreeParentKey={"environment"}
+          />
+          <vx.group
+            vxkey="environment"
+            name="Environment"
+            isVirtual={true}
+            type="Environment"
+            overrideNodeTreeParentKey="global"
             temporarySettings={temporarySettings}
           >
             {children}
@@ -265,9 +273,9 @@ function VXEnvironmentGround(props: EnvironmentProps) {
     <>
       <VXEnvironmentMap {...props} map={texture as any} />
       <mesh>
-        <sphereGeometry args={[100, 100]}/>
-        <meshBasicMaterial 
-          map={texture} 
+        <sphereGeometry args={[100, 100]} />
+        <meshBasicMaterial
+          map={texture}
           side={THREE.BackSide}
         />
       </mesh>

@@ -1,6 +1,6 @@
 {
   "name": "@vexr-labs/vxengine",
-  "version": "1.0.70",
+  "version": "1.0.71",
   "private": false,
   "scripts": {
     "build": "webpack --mode production",

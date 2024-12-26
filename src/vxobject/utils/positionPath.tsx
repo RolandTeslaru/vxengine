@@ -13,70 +13,64 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
     const trackKeys = useTimelineEditorAPI(state => state.editorObjects[vxkey].trackKeys, shallow);
 
-    const keyframeKeysForTrackPostionX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]?.keyframes)
-    const keyframeKeysForTrackPostionY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]?.keyframes)
-    const keyframeKeysForTrackPostionZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]?.keyframes)
+    const trackX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]);
+    const trackY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]);
+    const trackZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]);
 
-    const keyframesForPositionX = useMemo(() => {
-        return useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.x`)
-    }, [keyframeKeysForTrackPostionX])
-    const keyframesForPositionY = useMemo(() => {
-        return useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.y`)
-    }, [keyframeKeysForTrackPostionY])
-    const keyframesForPositionZ = useMemo(() => {
-        return useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.z`)
-    }, [keyframeKeysForTrackPostionZ])
 
-    const keyframes = useTimelineEditorAPI(state => state.keyframes)
+    const keyframesForPositionX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]?.keyframes)
+    const keyframesForPositionY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]?.keyframes)
+    const keyframesForPositionZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]?.keyframes)
+
     const staticProps = useTimelineEditorAPI(state => state.staticProps);
 
-    const XpositionKey = `${vxkey}.position.x`;
-    const YpositionKey = `${vxkey}.position.y`;
-    const ZpositionKey = `${vxkey}.position.z`;
-
     const getAxisValueAtTime = (
-        keyframesForAxis: IKeyframe[], 
+        keyframesForAxis: Record<string, IKeyframe>, 
         staticPropKey: string, 
         time: number
     ) => {
-        if (keyframesForAxis.length > 0) {
-            return interpolateKeyframes(keyframesForAxis, time);
+        const sortedKeyframes = Object.values(keyframesForAxis).sort((a, b) => a.time - b.time);
+        if (sortedKeyframes.length > 0) {
+            return interpolateKeyframes(sortedKeyframes, time);
         }
         const staticProp = staticProps[staticPropKey];
         return staticProp ? staticProp.value : 0;
     };
 
+    
+
     const { positions, sortedTimes, keyframeDataForNodes } = useMemo(() => {
-        const _keyframesForX = useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.x`)
-        const _keyframesForY = useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.y`)
-        const _keyframesForZ = useTimelineEditorAPI.getState().getKeyframesForTrack(`${vxkey}.position.z`)
+        const keyframesX = trackX?.keyframes || {};
+        const keyframesY = trackY?.keyframes || {};
+        const keyframesZ = trackZ?.keyframes || {};
 
         const allTimes = new Set([
-            ..._keyframesForX.map(kf => kf.time),
-            ..._keyframesForY.map(kf => kf.time),
-            ..._keyframesForZ.map(kf => kf.time),
+            ...Object.values(keyframesX).map(kf => kf.time),
+            ...Object.values(keyframesY).map(kf => kf.time),
+            ...Object.values(keyframesZ).map(kf => kf.time),
         ]);
-        const sortedTimes = [...allTimes].sort((a, b) => a - b);
 
+        const sortedTimes = [...allTimes].sort((a, b) => a - b);
         const positions = new Float32Array(sortedTimes.length * 3);
         const keyframeDataForNodes = sortedTimes.map(() => []); // Contains keyframe keys and their axis
 
+
         sortedTimes.forEach((time, index) => {
-            const x = getAxisValueAtTime(_keyframesForX, XpositionKey, time);
-            const y = getAxisValueAtTime(_keyframesForY, YpositionKey, time);
-            const z = getAxisValueAtTime(_keyframesForZ, ZpositionKey, time);
+            const x = getAxisValueAtTime(keyframesX, `${vxkey}.position.x`, time);
+            const y = getAxisValueAtTime(keyframesY, `${vxkey}.position.y`, time);
+            const z = getAxisValueAtTime(keyframesZ, `${vxkey}.position.z`, time);
 
             positions[index * 3] = x;
             positions[index * 3 + 1] = y;
             positions[index * 3 + 2] = z;
 
-            _keyframesForX.forEach((kf: IKeyframe) => {
+            Object.values(keyframesX).forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "X" });
             });
-            _keyframesForY.forEach((kf: IKeyframe) => {
+            Object.values(keyframesY).forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Y" });
             });
-            _keyframesForZ.forEach((kf: IKeyframe) => {
+            Object.values(keyframesZ).forEach((kf: IKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Z" });
             });
         });
@@ -87,7 +81,7 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
         }
 
         return { positions, sortedTimes, keyframeDataForNodes };
-    }, [keyframesForPositionX, keyframesForPositionY, keyframesForPositionZ, keyframes, staticProps, trackKeys]);
+    }, [trackX?.keyframes, trackY?.keyframes, trackZ?.keyframes, staticProps]);
 
     useEffect(() => {
         if (lineRef.current) {

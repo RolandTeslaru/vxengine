@@ -14,8 +14,7 @@ export const UIManagerDialogLayer = () => {
       {dialogContent.map(({ id, content, type, className }, index) => {
         const scale_offset = (index - (dialogTotal - 1)) * 8;
         const y_offset = (index - (dialogTotal - 1)) * 40;
-        const opacity_offset = (index - (dialogTotal - 1)) / 5
-        const isFront = (dialogTotal - index > 1);
+        
         if (type === "normal") {
           return (
             <Dialog key={id} open={openedDialogs.includes(id)} onOpenChange={() => closeDialog(id)}>

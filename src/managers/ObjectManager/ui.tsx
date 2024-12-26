@@ -192,6 +192,7 @@ export const ObjectPropertiesPanel: React.FC<Props> = ({ vxobject }) => {
 
 export const ObjectManagerSubMenu = () => {
   const pushDialog = useUIManagerAPI(state => state.pushDialog)
+
   return (
     <MenubarSub>
       <MenubarSubTrigger>Object Manager API</MenubarSubTrigger>

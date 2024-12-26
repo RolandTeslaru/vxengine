@@ -13,6 +13,7 @@ export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     ref?: React.Ref<Group>;
     settings?: {},
     temporarySettings?: {},
+    overrideNodeTreeParentKey?: string
 };
 
 export const defaultSettings_group = {

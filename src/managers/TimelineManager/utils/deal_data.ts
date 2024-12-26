@@ -2,6 +2,7 @@ import { TimelineAction, TimelineRow } from "@vxengine/AnimationEngine/interface
 import { ADD_SCALE_COUNT } from "@vxengine/AnimationEngine/interface/const";
 import { useTimelineEditorAPI } from "../store";
 import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
+import { truncateToDecimals } from "../store";
 
 /** 时间转像素 */
 export function parserTimeToPixel(
@@ -15,10 +16,15 @@ export function parserTimeToPixel(
 /** 像素转时间 */
 export function parserPixelToTime(
   data: number,
-  startLeft: number
+  startLeft: number,
+  truncate?: boolean
 ) {
   const scale = useTimelineEditorAPI.getState().scale  
   const value = ((data - startLeft) / ONE_SECOND_UNIT_WIDTH) * scale;
+  
+  if(truncate)
+    return truncateToDecimals(value)
+
   return value;
 }
 

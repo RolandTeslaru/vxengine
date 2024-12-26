@@ -1,4 +1,3 @@
-import { useSplineManagerAPI } from "@vxengine/managers/SplineManager/store";
 import { VXEngineWindow } from "../../core/components/VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
@@ -138,10 +137,6 @@ const stateComponents = {
     TimelineEditorAPI: {
         store: useTimelineEditorAPI,
         component: State_TimelineEditorAPI, // Custom component
-    },
-    SplineManagerAPI: {
-        store: useSplineManagerAPI,
-        depth: 2
     },
     SourceManagerAPI: {
         store: useSourceManagerAPI,

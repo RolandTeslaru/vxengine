@@ -21,10 +21,17 @@ export interface vxVirtualEntityProps extends BaseVxProps {
     name: string,
 }
 
+export interface vxSpline extends BaseVxProps {
+    type: "spline",
+    objectVxKey: string // the vxkey for the object it is controlling
+    name: string
+}
+
 export interface vxSplineNodeProps extends BaseVxProps {
     type: "splineNode";
     index: number
     splineKey: string
+    name: string
 }
 export interface vxKeyframeNodeProps extends BaseVxProps {
     type: "keyframeNode",
@@ -46,9 +53,10 @@ export type vxObjectProps = vxEffectProps
     | vxEntityProps 
     | vxSplineNodeProps 
     | vxVirtualEntityProps
+    | vxSpline
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>
-    addObject: (object: vxObjectProps) => void;
+    addObject: (object: vxObjectProps, props?: { type?: string, addToTree?: boolean}) => void;
     removeObject: (vxkey: string) => void;
 }

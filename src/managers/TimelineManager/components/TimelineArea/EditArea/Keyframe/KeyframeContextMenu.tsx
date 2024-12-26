@@ -60,7 +60,7 @@ const ShowDataPopover = ({ trackKey, keyframeKey }) => {
     const setKeyframeTime = useTimelineEditorAPI(state => state.setKeyframeTime);
 
     return (
-        <PopoverContent className='gap-2'>
+        <PopoverContent className='gap-2' style={{boxShadow: "0px 0px 5px 10px rgba(0,0,0, 0.3)",}}>
             <p className='font-sans-menlo text-xs text-center mb-2'>Keyframe Data</p>
             <div className='flex flex-col font-sans-menlo text-xs gap-2'>
                 <div className='flex flex-row'>

@@ -3,14 +3,13 @@ import { vxObjectProps, vxObjectTypes } from "../managers/ObjectManager/types/ob
 export interface ObjectTreeNodeProps {
     vxkey: string
     name: string;
-    isGroup: boolean;
     type: string;
     children: Record<string, ObjectTreeNodeProps>;
     isSelectable?: boolean
 }
 
 
-export interface ObjectEditorStoreProps {
+export interface ObjectManagerStoreProps {
     transformMode: "translate" | "rotate" | "scale";
     setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
 
@@ -31,4 +30,5 @@ export interface ObjectEditorStoreProps {
     tree: Record<string, ObjectTreeNodeProps>;
     pendingChildren: Record<string, ObjectTreeNodeProps>;
     addToTree: (vxobject: vxObjectProps, icon?: string) => void
+    removeFromTree: (vxkey: string) => void
 }

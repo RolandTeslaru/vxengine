@@ -21,7 +21,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, './src/index.tsx'), // Your entry point
+      entry: path.resolve(__dirname, './src/index.ts'), // Your entry point
       name: 'vxengine',
       formats: ['es'], // Only build ESM for frontend usage
       fileName: 'index.esm',

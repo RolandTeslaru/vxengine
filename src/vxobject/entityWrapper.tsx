@@ -24,6 +24,7 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     disableClickSelect?: boolean
     isVirtual?: boolean
     addToNodeTree?: boolean
+    overrideNodeTreeParentKey?: string;
 
     defaultSettings?: {},
     defaultAdditionalSettings?: {}
@@ -48,6 +49,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         addToNodeTree = true,
         defaultSettings = {},
         defaultAdditionalSettings = {},
+        overrideNodeTreeParentKey,
         icon,
         ...props
     }, ref) => {
@@ -69,7 +71,6 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         useLayoutEffect(() => {
             useObjectSettingsAPI.getState().initAdditionalSettingsForObject(vxkey, defaultAdditionalSettings)
         }, [])
-
 
         // Refresh settings when the current timeline changes
         useLayoutEffect(() => {
@@ -94,7 +95,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             const addToTree = useObjectManagerAPI.getState().addToTree;
 
             const name = props.name || vxkey
-            const parentKey = internalRef.current.parent.vxkey || null
+            const parentKey = overrideNodeTreeParentKey || internalRef.current.parent.vxkey || null
 
             const newVXEntity: vxObjectProps = {
                 type: isVirtual ? "virtualEntity" : "entity",
@@ -109,23 +110,20 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             addObject(newVXEntity);
             animationEngine.initObjectOnMount(newVXEntity);
 
-
-            if (addToNodeTree)
-                addToTree(newVXEntity, icon)
-
+            return () => removeObject(vxkey)
         }, []);
 
-        const handlePointerOver = () => setHoveredObject(vxObject);
-        const handlePointerOut = () => setHoveredObject(null);
+        // const handlePointerOver = () => setHoveredObject(vxObject);
+        // const handlePointerOut = () => setHoveredObject(null);
 
-        const onClick = useCallback(() => {
-            if (disableClickSelect === false && IS_DEVELOPMENT)
-                memoizedSelectObjects([vxkey], "entity", true)
-        }, [])
+        // const onClick = useCallback(() => {
+        //     if (disableClickSelect === false && IS_DEVELOPMENT)
+        //         memoizedSelectObjects([vxkey], "entity", true)
+        // }, [])
 
-        const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
-            e.stopPropagation()
-        }, [])
+        // const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+        //     e.stopPropagation()
+        // }, [])
 
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
@@ -138,6 +136,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
 
         return <>
             {modifiedChildren}
+
             {vxObject && IS_DEVELOPMENT && (
                 <ObjectUtils vxkey={vxkey}>
                     {children}

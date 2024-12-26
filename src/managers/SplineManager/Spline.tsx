@@ -4,37 +4,64 @@
 
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
-import { useSplineManagerAPI } from '@vxengine/managers/SplineManager/store';
 import SplineNode from './components/SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
 import SplineKeyframeNode from './components/SplineKeyframeNode';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
+import { useVXObjectStore } from '../ObjectManager';
+import { vxSpline } from '../ObjectManager/types/objectStore';
 
 interface SplineProps {
     splineKey: string;
     vxkey: string
+    visible: boolean
 }
 
-const Spline: React.FC<SplineProps> = React.memo(({ vxkey }) => {
-    const splineKey = `${vxkey}.spline`
-    const nodes = useSplineManagerAPI(state => state.splines[splineKey]?.nodes)
-    const splineProgressTrackKey = `${vxkey}.splineProgress`
-    const getKeyframeForTrack = useTimelineEditorAPI(state => state.getKeyframesForTrack)
+// a "Spline" is an editableObject (reactive), an vxObject (r3f), 
+// This handles only the vxObject part
 
-    const keyframeNodes = useMemo(() => {
-        return getKeyframeForTrack(splineProgressTrackKey);
-    }, [splineProgressTrackKey])
+const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
+    const splineKey = `${vxkey}.spline`
+    const nodes = useTimelineEditorAPI(state => state.splines[splineKey].nodes)
+    const trackKey = `${vxkey}.splineProgress`
 
     const segmentMultiplier = 10;
     const segments = Math.max(nodes?.length * segmentMultiplier, 10);
 
-    if (!nodes)
-        return
+    // This handles only the VXOBjectStore aspect of the spline identity
+    useLayoutEffect(() => {
+        const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
+        const rawSpline = currentTimeline.splines?.[splineKey]
 
+        const addObject = useVXObjectStore.getState().addObject;
+        const removeObject = useVXObjectStore.getState().removeObject;
+
+        const vxSpline: vxSpline = {
+            objectVxKey: vxkey,
+            vxkey: splineKey,
+            ref: {
+                current: {
+                    nodes: rawSpline.nodes,
+                    type: "Spline"
+                }
+            },
+            type: "spline",
+            name: `${vxkey} spline`,
+            parentKey: "splines"
+        }
+
+        addObject(vxSpline);
+        return () => removeObject(splineKey);
+    }, [])
+
+    if (!nodes) return
+
+    if(!visible) return
 
     return (
-        <>
+        <group>
             {nodes.map((nodePosition, index) => (
                 <SplineNode splineKey={splineKey} position={nodePosition} index={index} key={index} />
             ))}
@@ -68,7 +95,7 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey }) => {
                 // @ts-expect-error
                 segments={segments}
             />
-        </>
+        </group>
     );
 });
 

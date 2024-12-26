@@ -11,12 +11,17 @@ import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
 import Video from '@geist-ui/icons/video'
 import Sun from '@geist-ui/icons/sun'
 import s from "./entityList.module.scss"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import ArrowUp from '@geist-ui/icons/arrowUp'
+import ArrowDown from "@geist-ui/icons/arrowDown"
+import X from '@geist-ui/icons/x'
+import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 
 let lastSelectedIndex = 0;
 
 const handleObjectClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, vxkey: string, index: number) => {
     const ObjectManagerAPI = useObjectManagerAPI.getState();
-    const {selectObjects, selectedObjectKeys} = ObjectManagerAPI
+    const { selectObjects, selectedObjectKeys } = ObjectManagerAPI
 
     event.preventDefault();
 
@@ -120,13 +125,15 @@ const iconMapping = {
     BloomEffect: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><defs><radialGradient id="bloomGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" stopColor="white" stopOpacity="1" /><stop offset="70%" stopColor="white" stopOpacity="0.4" /><stop offset="100%" stopColor="white" stopOpacity="0" /></radialGradient></defs><circle cx="8" cy="8" r="2" fill="white" /><circle cx="8" cy="8" r="7" fill="url(#bloomGradient)" /></svg>,
     LUTEffect: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" fill="#60a5fa" /><rect x="9" y="1" width="6" height="6" fill="#FA6767FF" /><rect x="1" y="9" width="6" height="6" fill="#4ade80" /><rect x="9" y="9" width="6" height="6" fill="white" /></svg>,
     Splines: <svg className='text-red-400' width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path id="Path" fill="currentColor" stroke="none" d="M 3.374073 7.547915 C 3.239028 8.353275 2.538744 8.966934 1.695041 8.966934 C 0.75477 8.966934 -0.007484 8.204681 -0.007484 7.264408 C -0.007484 6.324139 0.75477 5.561882 1.695041 5.561882 C 2.497135 5.561882 3.169633 6.116497 3.350033 6.863159 L 21.513258 4.200409 C 24.821333 3.086685 27.856798 2.524509 28.594948 2.397568 L 28.594948 1.716558 L 32 1.716558 L 32 5.121611 L 28.594948 5.121611 L 28.594948 4.440599 C 26.940365 4.761627 13.782974 7.507191 13.782974 12.612724 C 13.782974 17.379795 22.465855 16.017775 22.465855 20.784845 C 22.465855 23.797569 16.426521 26.393852 11.027266 28.112926 L 27.933344 25.634457 C 28.057697 24.816563 28.763908 24.189898 29.616461 24.189898 C 30.556734 24.189898 31.318989 24.952152 31.318989 25.892424 C 31.318989 26.832695 30.556734 27.594948 29.616461 27.594948 C 28.823015 27.594948 28.156376 27.052183 27.967466 26.317715 L 6.064471 29.528746 C 4.068293 30.039299 2.716557 30.318991 2.716557 30.318991 L 2.716557 31 L -0.688495 31 L -0.688495 27.594948 L 2.716557 27.594948 L 2.716557 28.275959 C 5.440598 27.594948 20.082317 23.508888 20.082317 20.784845 C 20.082317 18.060806 11.569692 18.741817 11.569692 12.612724 C 11.569692 9.322216 14.887505 6.945217 18.608475 5.314541 L 3.374073 7.547915 Z M 1.695041 8.285925 C 2.25919 8.285925 2.716557 7.828558 2.716557 7.264408 C 2.716557 6.70026 2.25919 6.242893 1.695041 6.242893 C 1.130893 6.242893 0.673525 6.70026 0.673525 7.264408 C 0.673525 7.828558 1.130893 8.285925 1.695041 8.285925 Z M 29.275957 2.397568 L 29.275957 4.440599 L 31.318989 4.440599 L 31.318989 2.397568 L 29.275957 2.397568 Z M -0.007484 28.275959 L -0.007484 30.318991 L 2.035546 30.318991 L 2.035546 28.275959 L -0.007484 28.275959 Z M 29.616461 24.870907 C 29.052315 24.870907 28.594948 25.328274 28.594948 25.892424 C 28.594948 26.456572 29.052315 26.913939 29.616461 26.913939 C 30.180613 26.913939 30.63798 26.456572 30.63798 25.892424 C 30.63798 25.328274 30.180613 24.870907 29.616461 24.870907 Z" /></svg>,
+    Spline: <svg className='text-white' width="16" height="16" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path id="Path" fill="currentColor" stroke="none" d="M 3.374073 7.547915 C 3.239028 8.353275 2.538744 8.966934 1.695041 8.966934 C 0.75477 8.966934 -0.007484 8.204681 -0.007484 7.264408 C -0.007484 6.324139 0.75477 5.561882 1.695041 5.561882 C 2.497135 5.561882 3.169633 6.116497 3.350033 6.863159 L 21.513258 4.200409 C 24.821333 3.086685 27.856798 2.524509 28.594948 2.397568 L 28.594948 1.716558 L 32 1.716558 L 32 5.121611 L 28.594948 5.121611 L 28.594948 4.440599 C 26.940365 4.761627 13.782974 7.507191 13.782974 12.612724 C 13.782974 17.379795 22.465855 16.017775 22.465855 20.784845 C 22.465855 23.797569 16.426521 26.393852 11.027266 28.112926 L 27.933344 25.634457 C 28.057697 24.816563 28.763908 24.189898 29.616461 24.189898 C 30.556734 24.189898 31.318989 24.952152 31.318989 25.892424 C 31.318989 26.832695 30.556734 27.594948 29.616461 27.594948 C 28.823015 27.594948 28.156376 27.052183 27.967466 26.317715 L 6.064471 29.528746 C 4.068293 30.039299 2.716557 30.318991 2.716557 30.318991 L 2.716557 31 L -0.688495 31 L -0.688495 27.594948 L 2.716557 27.594948 L 2.716557 28.275959 C 5.440598 27.594948 20.082317 23.508888 20.082317 20.784845 C 20.082317 18.060806 11.569692 18.741817 11.569692 12.612724 C 11.569692 9.322216 14.887505 6.945217 18.608475 5.314541 L 3.374073 7.547915 Z M 1.695041 8.285925 C 2.25919 8.285925 2.716557 7.828558 2.716557 7.264408 C 2.716557 6.70026 2.25919 6.242893 1.695041 6.242893 C 1.130893 6.242893 0.673525 6.70026 0.673525 7.264408 C 0.673525 7.828558 1.130893 8.285925 1.695041 8.285925 Z M 29.275957 2.397568 L 29.275957 4.440599 L 31.318989 4.440599 L 31.318989 2.397568 L 29.275957 2.397568 Z M -0.007484 28.275959 L -0.007484 30.318991 L 2.035546 30.318991 L 2.035546 28.275959 L -0.007484 28.275959 Z M 29.616461 24.870907 C 29.052315 24.870907 28.594948 25.328274 28.594948 25.892424 C 28.594948 26.456572 29.052315 26.913939 29.616461 26.913939 C 30.180613 26.913939 30.63798 26.456572 30.63798 25.892424 C 30.63798 25.328274 30.180613 24.870907 29.616461 24.870907 Z" /></svg>,
     CameraTarget: <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 0C7.77614 0 8 0.223858 8 0.5V1.80687C10.6922 2.0935 12.8167 4.28012 13.0068 7H14.5C14.7761 7 15 7.22386 15 7.5C15 7.77614 14.7761 8 14.5 8H12.9888C12.7094 10.6244 10.6244 12.7094 8 12.9888V14.5C8 14.7761 7.77614 15 7.5 15C7.22386 15 7 14.7761 7 14.5V13.0068C4.28012 12.8167 2.0935 10.6922 1.80687 8H0.5C0.223858 8 0 7.77614 0 7.5C0 7.22386 0.223858 7 0.5 7H1.78886C1.98376 4.21166 4.21166 1.98376 7 1.78886V0.5C7 0.223858 7.22386 0 7.5 0ZM8 12.0322V9.5C8 9.22386 7.77614 9 7.5 9C7.22386 9 7 9.22386 7 9.5V12.054C4.80517 11.8689 3.04222 10.1668 2.76344 8H5.5C5.77614 8 6 7.77614 6 7.5C6 7.22386 5.77614 7 5.5 7H2.7417C2.93252 4.73662 4.73662 2.93252 7 2.7417V5.5C7 5.77614 7.22386 6 7.5 6C7.77614 6 8 5.77614 8 5.5V2.76344C10.1668 3.04222 11.8689 4.80517 12.054 7H9.5C9.22386 7 9 7.22386 9 7.5C9 7.77614 9.22386 8 9.5 8H12.0322C11.7621 10.0991 10.0991 11.7621 8 12.0322Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
 }
 
 const defaultExpandedKeys = {
     "scene": true,
     "effects": true,
-    "environment": true
+    "environment": true,
+    "splines": true,
 }
 
 const CustomTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
@@ -145,71 +152,65 @@ const CustomTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
             const isExpanded = expandedKeys[node.vxkey] || false;
             const childrenLength = Object.keys(node.children).length
             const hasChildren = childrenLength > 0;
-            const showCollapseButton = node.isGroup && hasChildren;
+            const showCollapseButton = hasChildren;
             const isSelected = selectedObjectKeys.includes(node.vxkey)
             const isFinalNodeToParent = siblings - 1 === indexToParent
             const isSelectable = node.isSelectable
             const type = node.type;
+
+            const props = { isExpanded, node, isSelected, isFinalNodeToParent, level, toggleExpand }
+
+            const ContextMenuContentComponent =
+                contextMenuMapping[type] || contextMenuMapping.default;
 
             return (
                 <li
                     key={node.vxkey}
                     role="treeitem"
                     aria-selected="false"
-                    aria-expanded={node.isGroup ? isExpanded : undefined}
+                    aria-expanded={isExpanded}
                     aria-level={level}
                     tabIndex={-1}
                     className={`relative ${isSelected ? "bg-neutral-800 !text-white" : ""} `}
                 >
-                    <div
-                        className={s.listItem + " " + ` flex items-center gap-2 py-2
-                                   ${isSelected ? "bg-blue-600" : "bg-transparent"}
-                                    ${isSelectable && "hover:bg-blue-800"}
-                                   `}
-                        style={{ paddingLeft: `${level * 24}px` }}
-                        onClick={(e) => isSelectable && onNodeClick(e, node.vxkey, 0)}
-                    >
-                        {/* Toggle Button for Groups */}
-                        {showCollapseButton ? (
-                            <>
-                                <div className={`${s.groupVerticalLine}  bg-neutral-500 ${isSelected && "bg-neutral-300"}  ml-[7.5px] !h-[10px]  left-[${level * 12}px ]`}></div>
-                                <button
-                                    type="button"
-                                    aria-label="Toggle children"
-                                    onClick={() => toggleExpand(node.vxkey)}
-                                    style={{
-                                        transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                                        transition: "transform 0.2s",
-                                    }}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="m10 8 4 4-4 4" /></svg>
+                    <ContextMenu>
+                        <ContextMenuTrigger>
+                            <div
+                                className={s.listItem + " " + ` flex items-center gap-2 py-2
+                                        ${isSelected ? "bg-blue-600" : "bg-transparent"}
+                                            ${isSelectable && "hover:bg-blue-800"}
+                                        `}
+                                style={{ paddingLeft: `${level * 24}px` }}
+                                onClick={(e) => isSelectable && onNodeClick(e, node.vxkey, 0)}
+                            >
+                                {/* Toggle Button for Groups */}
+                                {showCollapseButton ?
+                                    <TreeCollapseButton {...props} />
+                                    :
+                                    <>
+                                        {isFinalNodeToParent ?
+                                            <TreeLineCorner {...props} />
+                                            :
+                                            <TreeLine {...props} />
+                                        }
+                                        <TreeLineConnect {...props} />
+                                    </>
 
-                                </button>
-                                {!isExpanded && !isFinalNodeToParent && (
-                                    <div className={`${s.groupVerticalLine} bg-neutral-500 ${isSelected && "bg-neutral-300"}  ml-[7.5px] mt-[22px] !h-[10px] left-[${level * 16 + 4}px ]`}></div>
-                                )}
-                            </>
-                        ) : <>
-                            {isFinalNodeToParent ?
-                                <div className={`${s.verticalLine} ml-[7.5px] !h-1/2  bg-neutral-500 ${isSelected && "bg-neutral-300"} left-[${level * 16 + 4}px ]`}></div>
-                                :
-                                <div className={`${s.verticalLine} ml-[7.5px]  bg-neutral-500 ${isSelected && "bg-neutral-300"} left-[${level * 16 + 4}px ]`}></div>
-                            }
-                            <div className={`ml-2 w-2 h-[1px] content-[" "] bg-neutral-500 ${isSelected && "bg-neutral-300"} `}></div>
-                        </>
+                                }
+                                {/* Icon */}
+                                <span className='text-neutral-200'> {iconMapping[type]} </span>
 
-                        }
-                        {/* Icon */}
-                        <span className='text-neutral-200'> {iconMapping[type]} </span>
-
-                        {/* Node Name */}
-                        <p className={`text-xs font-light text-neutral-200 ${isSelected && "text-white"}`}>
-                            {node.name}
-                        </p>
-                    </div>
+                                {/* Node Name */}
+                                <p className={`text-xs font-light text-neutral-200 ${isSelected && "text-white"}`}>
+                                    {node.name}
+                                </p>
+                            </div>
+                        </ContextMenuTrigger>
+                        <ContextMenuContentComponent nodeKey={node.vxkey}/>
+                    </ContextMenu>
 
                     {/* Render Children */}
-                    {node.isGroup && isExpanded && hasChildren && (
+                    {isExpanded && hasChildren && (
                         <ul role="group" className='m-0 p-0'>
                             {Object.values(node.children).map((child, i) =>
                                 renderNode(child, childrenLength, i, level + 1)
@@ -235,3 +236,94 @@ const CustomTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
 });
 
 export default ObjectList
+
+const TreeCollapseButton = ({ node, level, isExpanded, isSelected, isFinalNodeToParent, toggleExpand }) => {
+    return (
+        <>
+            <div className={`${s.groupVerticalLine}  bg-neutral-500 ${isSelected && "bg-neutral-300"} ml-[7.5px] !h-[10px] left-[${level * 12}px ]`}></div>
+            <button
+                type="button"
+                aria-label="Toggle children"
+                onClick={() => toggleExpand(node.vxkey)}
+                style={{
+                    transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="m10 8 4 4-4 4" /></svg>
+            </button>
+            {!isExpanded && !isFinalNodeToParent && (
+                <div className={`${s.groupVerticalLine} bg-neutral-500 ${isSelected && "bg-neutral-300"}  ml-[7.5px] mt-[22px] !h-[10px] left-[${level * 16 + 4}px ]`}></div>
+            )}
+        </>
+    )
+}
+
+const TreeLine = ({ isSelected, level }) => {
+    return <div className={`${s.verticalLine} ml-[7.5px]  bg-neutral-500 ${isSelected && "bg-neutral-300"} left-[${level * 16 + 4}px ]`}></div>
+}
+
+const TreeLineCorner = ({ isSelected, level }) => {
+    return <div className={`${s.verticalLine} ml-[7.5px] !h-1/2  bg-neutral-500 ${isSelected && "bg-neutral-300"} left-[${level * 16 + 4}px ]`}></div>
+}
+
+const TreeLineConnect = ({ isSelected }) => {
+    return <div className={`ml-2 w-2 h-[1px] content-[" "] bg-neutral-500 ${isSelected && "bg-neutral-300"} `}></div>
+}
+
+const SplineNodeContextMenuContent = ({ nodeKey }: {nodeKey: string}) => {
+    const insertNode = useTimelineEditorAPI(state => state.insertNode);
+    const removeNode = useTimelineEditorAPI(state => state.removeNode);
+
+    const vxSplineNode = useVXObjectStore(state => state.objects[nodeKey]);
+
+    if(!vxSplineNode) return
+
+    const nodeIndex = vxSplineNode.ref.current.nodeIndex
+
+    const splineKey = nodeKey.includes('.node') ? nodeKey.split('.node')[0] : nodeKey;
+
+    const handleInsertBefore = () => {
+        insertNode({splineKey, index: nodeIndex - 1})
+    }
+    const handleDelete = () => {
+        removeNode({splineKey, index: nodeIndex})
+    }
+    const handleInsertAfter = () => {
+        insertNode({splineKey, index: nodeIndex})
+    }
+
+    return (
+        <ContextMenuContent className='font-sans-menlo'>
+            {nodeIndex !== 0 &&
+                <ContextMenuItem onClick={handleInsertBefore} className='text-xs gap-2'>
+                    <ArrowUp size={15}/>
+                    Insert Node Before
+                </ContextMenuItem>
+            }
+            <ContextMenuItem onClick={handleDelete} className='text-xs gap-2 text-red-600'>
+                <X size={15}/>
+                Delete Node {nodeIndex}
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleInsertAfter} className='text-xs gap-2'>
+                <ArrowDown size={15}/>
+                Insert Node After
+            </ContextMenuItem>
+        </ContextMenuContent>
+    )
+}
+
+const MeshContextMenu = ({ vxkey }) => {
+    return (
+        <ContextMenuContent className='text-xs font-sans-menlo'>
+            <p>
+
+            </p>
+        </ContextMenuContent>
+    )
+}
+
+const contextMenuMapping = {
+    "splineNode": SplineNodeContextMenuContent,
+    default: MeshContextMenu
+}

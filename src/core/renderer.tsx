@@ -115,7 +115,6 @@ const SceneDriver = React.memo(() => {
   
   useLayoutEffect(() => {
     const addObject = useVXObjectStore.getState().addObject;
-    const removeObject = useVXObjectStore.getState().removeObject;
 
     const sceneRef = {
       current: scene
@@ -142,12 +141,11 @@ const SceneDriver = React.memo(() => {
       name: "Scene",
       params,
       disabledParams,
-      parentKey: null
+      parentKey: "global"
     }
     addObject(newSceneEntity);
     animationEngine.initObjectOnMount(newSceneEntity);
 
-    return () => removeObject(vxkey);
   }, [])
   return null;
 })

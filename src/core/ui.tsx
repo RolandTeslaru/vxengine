@@ -12,7 +12,6 @@ import EntityList from "../managers/ObjectManager/components/ObjectList"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
-import SplineManagerUI from "@vxengine/managers/SplineManager/ui"
 import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
@@ -87,7 +86,6 @@ const VXLeftPanel = () => {
             <div className="w-full  flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                 <EntityList />
                 <TrackSegmentProperties />
-                <SplineManagerUI />
             </div>
 
             <ObjectTransformControls />
