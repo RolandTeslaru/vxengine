@@ -17,7 +17,7 @@ const CollapsiblePanel: React.FC<Props> = memo(
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl ${noPadding === false && "px-1"} border border-neutral-800 bg-neutral-900
+        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl ${noPadding === false && "px-1"} ${styles.gradient_border_mask} bg-neutral-900
             ${open === false && "!h-[40px]"} ` +
             className}
         style={{ boxShadow: "0px 0px 5px 1px rgba(0,0,0, 0.6)" }}

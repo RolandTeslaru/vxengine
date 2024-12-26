@@ -46,7 +46,7 @@ const RenderNormalProperty: React.FC<RenderNormalPropertyProps> = memo(
                     </button>
                 }
                 <p
-                    className={`flex !flex-row mr-2 text-neutral-300 font-light`}
+                    className={`flex !flex-row mr-2 select-none text-neutral-300 font-light`}
                     onClick={() => selectObjects([vxkey])}
                     style={{fontSize: "11px"}}
                 >
@@ -144,7 +144,7 @@ const RenderFinalProperty: React.FC<RenderFinalPropertyProps> = memo(
         return (
             <ContextMenu>
                 <ContextMenuTrigger className={`h-[${DEFAULT_ROW_HEIGHT}px] w-auto ml-auto flex !flex-row items-center`}>
-                    <p className={`flex !flex-row text-neutral-500 mr-2 font-light`} style={{ fontSize: "11px"}}>
+                    <p className={`flex !flex-row select-none text-neutral-500 mr-2 font-light`} style={{ fontSize: "11px"}}>
                         {propKey}
                         {/* Debug Row index */}
                         {/* <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span> */}

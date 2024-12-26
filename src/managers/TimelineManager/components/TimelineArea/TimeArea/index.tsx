@@ -67,7 +67,7 @@ export const TimeArea = () => {
               className={prefix(...classNames)}
             >
               {shouldDisplayNumber && (
-                <div className={prefix("time-unit-scale") + " font-light"} style={{fontSize: "10px"}}>
+                <div className={prefix("time-unit-scale") + " font-light select-none"} style={{fontSize: "10px"}}>
                   {index / OneSecondUnitSplitCount}
                 </div>
               )}
