@@ -206,12 +206,12 @@ const StateVisualizer = () => {
                         onValueChange={(value) => {
                             setActiveData(value)
                         }}>
-                        <SelectTrigger className="w-[180px] h-7 my-auto focus:outline-none">
+                        <SelectTrigger className="w-[180px] h-7 my-auto focus:outline-none !text-xs">
                             <SelectValue placeholder="Select a Timeline" />
                         </SelectTrigger>
                         <SelectContent>
                             {Object.keys(stateComponents).map((key) => (
-                                <SelectItem key={key} value={key}>
+                                <SelectItem key={key} value={key} className="!text-xs">
                                     {key}
                                 </SelectItem>
                             ))}
