@@ -87,6 +87,13 @@ export interface PathGroup {
     isCollapsed: boolean;
     maxDepth?: number
 }
+
+export interface ITrackTreeNode {
+    key: string;
+    children: Record<string, ITrackTreeNode>
+    track?: string
+}
+
 // Editor Data Object
 export interface edObjectProps {
     vxkey: string;

@@ -1,4 +1,4 @@
-import { edObjectProps, ITrack, PathGroup, RawObjectProps, RawTrackProps } from "@vxengine/AnimationEngine/types/track";
+import { edObjectProps, ITrack, ITrackTreeNode, PathGroup, RawObjectProps, RawTrackProps } from "@vxengine/AnimationEngine/types/track";
 import { useTimelineEditorAPI } from "../store";
 
 export const precomputeRowIndices = (
@@ -11,7 +11,7 @@ export const precomputeRowIndices = (
         const isPath = group.children && childrenAllKeys.length > 0;
         const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1)
         const isTrack = !isPath && group.trackKey;
-        
+
         group.prevRowIndex = prevRowIndex;
         group.rowIndex = currentRowIndex;
         // group.nextRowIndex = isNestedToPreviousPath ? 1 : currentRowIndex + 1;
@@ -67,8 +67,8 @@ export const groupTracksByParent = (trackKeys: string[], trackRowIndex: number) 
 
         pathSegments.forEach((key, index) => {
             if (!currentGroup[key]) {
-                currentGroup[key] = { 
-                    children: {}, 
+                currentGroup[key] = {
+                    children: {},
                     trackKey: null,
                     isCollapsed: false,
                 };
@@ -87,9 +87,9 @@ export const groupTracksByParent = (trackKeys: string[], trackRowIndex: number) 
     let finalIndex;
     // console.log(childrenLength, "Group Track By Parent ", groupedPaths)
     // Call precomputeRowIndices and return both grouped tracks and the final index
-    if(childrenLength > 1)
+    if (childrenLength > 1)
         finalIndex = precomputeRowIndices(groupedPaths, trackRowIndex + 1, 0);
-    else 
+    else
         finalIndex = precomputeRowIndices(groupedPaths, trackRowIndex, 0);
     return { groupedPaths, finalIndex };
 };
@@ -103,39 +103,90 @@ interface ComputedGroupData {
 export const computeGroupPathFromRawObject = (
     edObject: edObjectProps,
     rowIndex: number
-  ): ComputedGroupData => {
+): ComputedGroupData => {
     const { trackKeys } = edObject;
-    const { groupedPaths, finalIndex } = groupTracksByParent(trackKeys, rowIndex );
+    const { groupedPaths, finalIndex } = groupTracksByParent(trackKeys, rowIndex);
 
     const nextRowIndex = finalIndex + 1
     // Check if the object is empty basically
-    if(Object.entries(groupedPaths).length === 0){
-        return { groupedPaths: null, newIndex: finalIndex}
+    if (Object.entries(groupedPaths).length === 0) {
+        return { groupedPaths: null, newIndex: finalIndex }
     }
-  
-    const rootGroupedPaths: PathGroup = {
-      rowIndex,
-      prevRowIndex: null,
-      nextRowIndex: nextRowIndex,
-      children: groupedPaths,
-      trackKey: null,
-      isCollapsed: false,
-      maxDepth: finalIndex - rowIndex + 1
-    };
-    
-    return { groupedPaths: rootGroupedPaths, newIndex: nextRowIndex };
-  };
 
-export const computeGroupPaths = ( editorObjects: Record<string, edObjectProps>) => {
+    const rootGroupedPaths: PathGroup = {
+        rowIndex,
+        prevRowIndex: null,
+        nextRowIndex: nextRowIndex,
+        children: groupedPaths,
+        trackKey: null,
+        isCollapsed: false,
+        maxDepth: finalIndex - rowIndex + 1
+    };
+
+    return { groupedPaths: rootGroupedPaths, newIndex: nextRowIndex };
+};
+
+export const computeGroupPaths = (editorObjects: Record<string, edObjectProps>) => {
     let rowIndex = 0;
     const groupedPaths = {};
 
     Object.values(editorObjects).map((edObject: edObjectProps) => {
         const { groupedPaths: objGroupedPaths, newIndex } = computeGroupPathFromRawObject(edObject, rowIndex);
         rowIndex = newIndex;
-        if(objGroupedPaths !== null)
+        if (objGroupedPaths !== null)
             groupedPaths[edObject.vxkey] = objGroupedPaths;
     })
 
     return groupedPaths
+}
+
+export const buildTrackTree = (tracks: Record<string, ITrack>) => {
+    const root: Record<string, ITrackTreeNode> = {};
+
+    for (const key in tracks) {
+        const path = key.split(".");
+        let currentLevel = root;
+
+        path.forEach((part, index) => {
+            if (!currentLevel[part]) {
+                currentLevel[part] = {
+                    key: part,
+                    children: {}
+                }
+            }
+
+            if (index === path.length - 1) {
+                currentLevel[part].track = key;
+            }
+
+            currentLevel = currentLevel[part].children;
+        })
+    }
+
+
+    // Process merging single-child nodes recursively
+    for (const key in root) {
+        root[key] = mergeSingleChildNodes(root[key]);
+    }
+
+    return root;
+}
+
+function mergeSingleChildNodes(node: ITrackTreeNode): ITrackTreeNode {
+    while (node.children && Object.keys(node.children).length === 1) {
+        const childKey = Object.keys(node.children)[0];
+        const child = node.children[childKey];
+        node.key = `${node.key}.${child.key}`;
+        node.children = child.children;
+        if (child.track) {
+            node.track = child.track;
+        }
+    }
+
+    if (node.children) {
+        for (const key in node.children) {
+            node.children[key] = mergeSingleChildNodes(node.children[key]);
+        }
+    }
+    return node;
 }

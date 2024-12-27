@@ -3,16 +3,11 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
-import { edObjectProps, IKeyframe, ITrack, PathGroup } from "@vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, ITrack, ITrackTreeNode, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { useRefStore } from "@vxengine/utils/useRefStore";
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
 import { useTimelineEditorAPI } from "../..";
-import FinalPropertyContextMenu from "./FinalPropertyContextMenu";
-import { extractDataFromTrackKey } from "../../utils/trackDataProcessing";
-import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager";
-import { Virtuoso } from "react-virtuoso";
-
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right"
 import ChevronDown from "lucide-react/dist/esm/icons/chevron-down"
 import { GroupedPaths } from "../../store";
@@ -22,203 +17,7 @@ import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
 
 const TRACK_HEIGHT = 34;
 
-interface RenderNormalPropertyProps {
-    propKey: string,
-    isCollapsed: boolean,
-    isCollapsible: boolean,
-    groupKey: string
-}
-
-
-const RenderNormalProperty: React.FC<RenderNormalPropertyProps> = memo(
-    ({ propKey, isCollapsed, isCollapsible, groupKey }) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(propKey)
-        const setCollapsedGroups = useTimelineEditorAPI(state => state.setCollapsedGroups)
-        const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-
-        return (
-            <div
-                className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center`}
-            >
-                {isCollapsible &&
-                    <button className="scale-75" onClick={() => setCollapsedGroups(groupKey)}>
-                        {isCollapsed ? <ChevronRight /> : <ChevronDown />}
-                    </button>
-                }
-                <p
-                    className={`flex !flex-row mr-2 select-none text-neutral-300 font-light`}
-                    onClick={() => selectObjects([vxkey])}
-                    style={{fontSize: "11px"}}
-                >
-                    {propKey}
-                    {/* Debug Row index */}
-                    {/* <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span> */}
-                </p>
-            </div>
-        )
-    })
-
-interface RenderGroupedPathsProps {
-    groupedPaths: Record<string, PathGroup>,
-    depth: number,
-    shouldIndent: boolean,
-    parentPath: string
-}
-
-
-const RenderGroupedPaths: React.FC<RenderGroupedPathsProps> = memo(({
-    groupedPaths,
-    depth = 0,
-    shouldIndent = false,
-    parentPath = null,
-}) => {
-    const collapsedGroups = useTimelineEditorAPI((state) => state.collapsedGroups);
-    const setCollapsedGroups = useTimelineEditorAPI((state) => state.setCollapsedGroups);
-
-    return (
-        <>
-            {Object.entries(groupedPaths).map(([key, group]) => {
-                const childrenKeys = Object.keys(group.children || {});
-                const hasMultipleChildren = childrenKeys.length > 1;
-                const isNestedToPreviousPath = !hasMultipleChildren;
-                const isTrack = group.trackKey ? true : false;
-                const isPath = !isTrack && hasMultipleChildren;
-                const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
-
-                const isCollapsible =
-                    group.rowIndex !== group.prevRowIndex &&
-                    group.rowIndex !== group.localFinalTrackIndex &&
-                    !isTrack;
-
-                const groupKey = parentPath ? `${parentPath}/${key}` : key;
-                const isCollapsed = collapsedGroups[groupKey] || false;
-
-                return (
-                    <div
-                        key={`level-${groupKey}`}
-                        className={`w-full flex  ${isNestedToPreviousPath ? 'flex-row' : 'flex-col'}`}
-                        style={{ paddingLeft: shouldIndent ? 16 : 0 }}
-                    >
-                       
-                        {isTrack ? (
-                            <RenderFinalProperty
-                                propKey={key}
-                                trackKey={group.trackKey}
-                                isCollapsed={isCollapsed}
-                            />
-                        ) : (
-                            <RenderNormalProperty
-                                propKey={key}
-                                groupKey={groupKey}
-                                isCollapsible={isCollapsible}
-                                isCollapsed={isCollapsed}
-                            />
-                        )}
-                        {!isCollapsed && (
-                            <RenderGroupedPaths
-                                groupedPaths={group.children}
-                                depth={depth + 1}
-                                shouldIndent={shouldIndentChildren}
-                                parentPath={groupKey}
-                            />
-                        )}
-                    </div>
-                );
-            })}
-        </>
-    );
-});
-
-
-
-
-interface RenderFinalPropertyProps {
-    propKey: string,
-    isCollapsed: boolean,
-    trackKey: string
-}
-
-const RenderFinalProperty: React.FC<RenderFinalPropertyProps> = memo(
-    ({ propKey, isCollapsed, trackKey }) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-        return (
-            <ContextMenu>
-                <ContextMenuTrigger className={`h-[${DEFAULT_ROW_HEIGHT}px] w-auto ml-auto flex !flex-row items-center`}>
-                    <p className={`flex !flex-row select-none text-neutral-500 mr-2 font-light`} style={{ fontSize: "11px"}}>
-                        {propKey}
-                        {/* Debug Row index */}
-                        {/* <span className="font-bold !text-green-600 text-nowrap">&nbsp; {group.rowIndex}</span> */}
-                    </p>
-                    {!isCollapsed &&
-                        <KeyframeControl
-                            propertyKey={trackKey}
-                        />
-                    }
-                </ContextMenuTrigger>
-                <FinalPropertyContextMenu vxkey={vxkey} propertyPath={propertyPath} />
-            </ContextMenu>
-        )
-    })
-
-const RenderTopLevelGroupedPaths = memo(({ propKey, group }: { propKey: string, group: PathGroup }
-) => {
-    const key = propKey;
-    const collapsedGroups = useTimelineEditorAPI(state => state.collapsedGroups);
-
-    const childrenAllKeys = Object.keys(group.children);
-    const isNestedToPreviousPath = !(group.children && childrenAllKeys.length > 1);
-    const isTrack = Boolean(group.trackKey);
-    const isPath = group.children && childrenAllKeys.length > 0 && !isTrack;
-    const shouldIndentChildren = !isNestedToPreviousPath && !isTrack;
-
-
-
-    const isCollapsible = (group.rowIndex !== group.prevRowIndex) &&
-        (group.rowIndex !== group.localFinalTrackIndex) &&
-        !isTrack;
-
-    let groupKey = `${key}`;
-    const isCollapsed = collapsedGroups[groupKey] || false;
-
-    return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <div
-                    key={`topLevel-${groupKey}`}
-                    className={`w-full flex ${isNestedToPreviousPath ? "flex-row" : "flex-col"}`}
-                >
-                    {isTrack ? (
-                        <RenderFinalProperty
-                            propKey={key}
-                            trackKey={group.trackKey}
-                            isCollapsed={isCollapsed}
-                        />
-                    ) : (
-                        <RenderNormalProperty
-                            propKey={key}
-                            groupKey={groupKey}
-                            isCollapsible={isCollapsible}
-                            isCollapsed={isCollapsed}
-                        />
-                    )}
-                    {isPath && !isCollapsed && <RenderGroupedPaths
-                        groupedPaths={group.children}
-                        depth={1}
-                        shouldIndent={shouldIndentChildren}
-                        parentPath={groupKey}
-                    />}
-                </div>
-            </ContextMenuTrigger>
-            <ContextMenuContent className="min-w-[0]">
-                <TopLevelContextMenu vxkey={propKey} />
-            </ContextMenuContent>
-        </ContextMenu>
-    );
-});
-
-
 const TrackVerticalList = memo(() => {
-    const groupedPaths = useTimelineEditorAPI(state => state.groupedPaths)
     const searchQuery = useTimelineEditorAPI(state => state.searchQuery)
     const setSearchQuery = useTimelineEditorAPI(state => state.setSearchQuery)
 
@@ -226,6 +25,8 @@ const TrackVerticalList = memo(() => {
     const editAreaRef = useRefStore(state => state.editAreaRef)
 
     const scrollSyncId = useRefStore(state => state.scrollSyncId)
+
+    const trackTree = useTimelineEditorAPI(state => state.trackTree);
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target;
@@ -239,25 +40,23 @@ const TrackVerticalList = memo(() => {
         })
     }, [])
 
-    // Filtered paths based on the search query
-    const filteredGroupedPaths: GroupedPaths = useMemo(() => {
-        if (!searchQuery) return groupedPaths;
+    const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
+        if(!searchQuery) return trackTree;
 
-        return Object.entries(groupedPaths).reduce((filteredPaths, [key, group]) => {
-            if (key && key.toLowerCase().includes(searchQuery.toLowerCase())) {
-                filteredPaths[key] = group;
+        return Object.entries(trackTree).reduce((filtredNode, [key, node]) => {
+            if(key && key.toLowerCase().includes(searchQuery.toLowerCase())){
+                filtredNode[key] = node;
             }
-            return filteredPaths;
-        }, {});
-    }, [groupedPaths, searchQuery]);
-
+            return filtredNode;
+        }, {})
+    }, [trackTree, searchQuery])
 
     return (
         <div className="w-full h-full mr-2 px-1 flex flex-col bg-neutral-950 border border-neutral-800 rounded-2xl">
             <div className={`h-[30px] flex flex-row`}>
-                <Search 
+                <Search
                     className="w-36 px-2 bg-neutral-900 ml-auto my-auto"
-                    searchQuery={searchQuery} 
+                    searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
             </div>
@@ -266,13 +65,108 @@ const TrackVerticalList = memo(() => {
                 ref={trackListRef}
                 onScroll={handleOnScroll}
             >
-                {Object.entries(filteredGroupedPaths).map(([key, pathGroup]) => (
-                    <RenderTopLevelGroupedPaths propKey={key} group={pathGroup} key={key} />
-                ))}
+                {Object.values(filteredTree).map((node) =>
+                    <TreeNode node={node} level={1} />
+                )}
             </div>
         </div>
     )
 });
 
+const NODE_PADDING_INDENT = 30;
+
+const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: number }) => {
+    const paths = React.useMemo(() => node.key.split("."), [node.key]);
+    const hasChildren = !!node.children && Object.values(node.children).length > 0
+    const isCollapsed = useTimelineEditorAPI(state => state.collapsedTrackNodes[node.key])
+
+    const isLinearTrack = !!node.track && !hasChildren
+    // (example) object1 > rotation > x
+    //           object2 > scale > y
+
+    return (
+        <li
+            key={node.key}
+            role="treeitem"
+            className="list-none"
+            aria-level={level}
+            aria-selected="false"
+            tabIndex={-1}
+        >
+            <div className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center hover:bg-neutral-800 w-full`}>
+                <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
+                    {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed}/>}
+                    {renderPaths(paths, isLinearTrack, node.track)}
+                </div>
+            </div>
+            {!isCollapsed && hasChildren && (
+                <ul role="group" className="list-none m-0 p-0">
+                    {Object.values(node.children).map((node) =>
+                        <TreeNode node={node} level={level + 1} />
+                    )}
+                </ul>
+            )}
+        </li>
+    )
+})
+
+const renderPaths = (paths: string[], isLinearTrack: boolean, trackKey?: string) => {
+    return paths.map((path, index) => {
+        const isFinal = index === paths.length - 1;
+        const showArrow = index < paths.length - (isLinearTrack ? 2 : 1);
+
+        if (isLinearTrack && isFinal && trackKey) {
+            return <FinalPath key={index} pathKey={path} trackKey={trackKey} />;
+        }
+
+        return <Path key={index} pathKey={path} showArrow={showArrow} />;
+    });
+};
+
+const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
+    return (
+        <div className="flex items-center h-full">
+            <p className="text-xs font-light text-neutral-200" style={{ fontSize: "11px" }}>
+                {pathKey}
+            </p>
+            {showArrow &&
+                <svg className="mx-1 fill-neutral-500" width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+            }
+        </div>
+    )
+}
+
+const FinalPath = ({ pathKey, trackKey }: { pathKey: string, trackKey: string }) => {
+    return (
+        <div className="h-full ml-auto flex items-center gap-2">
+            <p className="text-xs text-neutral-500">
+                {pathKey}
+            </p>
+            <KeyframeControl
+                propertyKey={trackKey}
+            />
+        </div>
+    )
+}
+
+const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: {nodeKey: string, isCollapsed: boolean}) => {
+    return (
+        <div className="mr-[3px]">
+            <button
+                type="button"
+                aria-label="Toggle children"
+                style={{
+                    transform: !isCollapsed ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                }}
+                onClick={() => {
+                    useTimelineEditorAPI.getState().setCollapsedTrackNodes(nodeKey);
+                }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="m10 8 4 4-4 4" /></svg>
+            </button>
+        </div>
+    )
+}
 
 export default TrackVerticalList;

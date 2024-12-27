@@ -1,5 +1,5 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, ISettings, RawSpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2, ISpline } from "@vxengine/AnimationEngine/types/track";
+import { edObjectProps, IKeyframe, ISettings, RawSpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2, ISpline, ITrackTreeNode } from "@vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { GroupedPaths } from "../store";
 
@@ -15,14 +15,15 @@ export interface TimelineEditorStoreProps {
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
     splines: Record<string, ISpline>
+    trackTree: Record<string, ITrackTreeNode>
 
     currentTimelineLength: number;
     setCurrentTimelineLength: (length: number) => void;
 
     groupedPaths: GroupedPaths
 
-    collapsedGroups: Record<string, boolean>
-    setCollapsedGroups: (groupKey: string) => void;
+    collapsedTrackNodes: Record<string, boolean>
+    setCollapsedTrackNodes: (groupKey: string) => void;
 
     scale: number;
     setScale: (count: number) => void;

@@ -148,6 +148,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     tracks: {},
     staticProps: {},
     groupedPaths: {},
+    trackTree: {},
     splines: {},
 
     currentTimelineLength: 0,
@@ -158,22 +159,23 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         set({ currentTimelineLength: length })
     },
 
-    collapsedGroups: {},
-    setCollapsedGroups: (groupKey: string) => {
+    collapsedTrackNodes: {},
+    setCollapsedTrackNodes: (nodeKey: string) => {
         set(produce((state: TimelineEditorStoreProps) => {
-            const value = state.collapsedGroups[groupKey]
-            state.collapsedGroups[groupKey] = !value
+            const value = state.collapsedTrackNodes[nodeKey]
+            state.collapsedTrackNodes[nodeKey] = !value
         }), false)
     },
 
     setEditorData: (rawObjects, rawSplines) => {
-        const { editorObjects, tracks, staticProps, splines, groupedPaths } = processRawData(rawObjects, rawSplines);
+        const { editorObjects, tracks, staticProps, splines, groupedPaths, trackTree } = processRawData(rawObjects, rawSplines);
         set({
             editorObjects,
             tracks,
             staticProps,
             groupedPaths,
-            splines
+            splines,
+            trackTree
         });
     },
 

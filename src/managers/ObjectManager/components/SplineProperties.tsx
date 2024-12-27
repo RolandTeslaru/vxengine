@@ -72,7 +72,7 @@ const SplineProgress = ({ vxSpline }: { vxSpline: vxSplineProps }) => {
 
     return (
         <div className="flex flex-col gap-2">
-            <p className="text-xs font-light text-neutral-500">spline progress</p>
+            <p className="text-xs font-light text-neutral-500">progress</p>
             <div className="w-full flex flex-row">
                 <Slider
                     max={100}
