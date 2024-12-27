@@ -4,7 +4,7 @@ import { IKeyframe, ISpline, IStaticProps, ITrack, PathGroup, RawObjectProps, Ra
 import { createWithEqualityFn } from 'zustand/traditional';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { produce } from 'immer';
-import { computeGroupPaths, extractDataFromTrackKey } from './utils/trackDataProcessing';
+import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { ObjectStoreStateProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
@@ -147,7 +147,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     editorObjects: {},
     tracks: {},
     staticProps: {},
-    groupedPaths: {},
     trackTree: {},
     splines: {},
 
@@ -168,12 +167,11 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     setEditorData: (rawObjects, rawSplines) => {
-        const { editorObjects, tracks, staticProps, splines, groupedPaths, trackTree } = processRawData(rawObjects, rawSplines);
+        const { editorObjects, tracks, staticProps, splines, trackTree } = processRawData(rawObjects, rawSplines);
         set({
             editorObjects,
             tracks,
             staticProps,
-            groupedPaths,
             splines,
             trackTree
         });
@@ -369,8 +367,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             createTrackLogic(state, trackKey)
             createKeyframeLogic(state, trackKey, keyframeKey, value,)
 
-            // Recompute grouped Paths for Visual 
-            state.groupedPaths = computeGroupPaths(state.editorObjects)
+            // Recompute Track Tree
+            state.trackTree = buildTrackTree(state.tracks)
         }))
         // Refresh Raw Data and ReRender
         animationEngine.refreshKeyframe(trackKey, "create", keyframeKey, false)
@@ -396,7 +394,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             createStaticPropLogic(state, vxkey, propertyPath, value)
 
             // Recompute grouped Paths for Visual 
-            state.groupedPaths = computeGroupPaths(state.editorObjects)
+            state.trackTree = buildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -417,7 +415,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     createTrack: (trackKey) => {
         set(produce((state: TimelineEditorStoreProps) => {
             createTrackLogic(state, trackKey)
-            state.groupedPaths = computeGroupPaths(state.editorObjects)
+            state.trackTree = buildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -429,7 +427,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     removeTrack: ({ trackKey, reRender }) => {
         set(produce((state: TimelineEditorStoreProps) => {
             removeTrackLogic(state, trackKey)
-            state.groupedPaths = computeGroupPaths(state.editorObjects)
+            state.trackTree = buildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine

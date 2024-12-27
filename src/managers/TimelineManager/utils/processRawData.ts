@@ -1,6 +1,6 @@
 import { IKeyframe, ISpline, IStaticProps, ITrack, RawObjectProps, RawSpline } from "@vxengine/AnimationEngine/types/track";
 import { EditorObjectProps } from "../types/store";
-import { buildTrackTree, computeGroupPaths } from "./trackDataProcessing";
+import { buildTrackTree } from "./trackDataProcessing";
 
 export default function processRawData(
     rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>
@@ -77,12 +77,10 @@ export default function processRawData(
 
     const trackTree = buildTrackTree(tracks);
 
-    const groupedPaths = computeGroupPaths(editorObjects)
-
     // Just to be sure recreate the edSpline object
     Object.values(rawSplines).forEach(rawSpline => {
         splines[rawSpline.splineKey] = rawSpline
     })
 
-    return { editorObjects, tracks, staticProps, splines, groupedPaths, trackTree };
+    return { editorObjects, tracks, staticProps, splines, trackTree };
 }

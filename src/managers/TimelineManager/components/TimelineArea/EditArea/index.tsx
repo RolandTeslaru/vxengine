@@ -8,6 +8,9 @@ import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngi
 import Track from './Track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { CursorLine } from '../cursor';
+import { useRefStore } from '@vxengine/utils';
+
+const startLeft = 22
 
 export const EditArea = () => {
   const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength);
@@ -24,9 +27,6 @@ export const EditArea = () => {
       return filtredNode;
     }, {})
   }, [trackTree, searchQuery])
-
-
-  const startLeft = 22
 
   const timelineClientWidth = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
 
@@ -49,7 +49,6 @@ const TrackNode:React.FC<TrackNodeProps> = memo(({ node, timelineClientWidth }) 
     <>
       <div
         className={`w-full relative border-t-[0.5px] border-b-[0.5px] h-[${DEFAULT_ROW_HEIGHT}px] border-neutral-900 ${!isTrack && "bg-black bg-opacity-60"}`}
-        style={{ width: `${timelineClientWidth}px` }}
       >
         {isTrack && <Track trackKey={node.track}/>}
       </div>

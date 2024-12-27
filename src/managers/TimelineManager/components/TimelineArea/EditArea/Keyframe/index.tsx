@@ -18,7 +18,7 @@ export type EditKeyframeProps = {
     isSelected: boolean
 };
 
-const startLeft = 12.5;
+const startLeft = 13.616;
 
 const handleOnDrag = (left: number, lastLeft: number, trackKey: string, keyframeKey: string) => {
     const { selectedKeyframeKeys, selectedKeyframesFlatMap, setKeyframeTime, tracks, selectKeyframe } = useTimelineEditorAPI.getState();

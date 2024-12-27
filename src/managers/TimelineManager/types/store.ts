@@ -15,12 +15,11 @@ export interface TimelineEditorStoreProps {
     tracks: Record<string, ITrack>,
     staticProps: Record<string, IStaticProps>
     splines: Record<string, ISpline>
+    
     trackTree: Record<string, ITrackTreeNode>
 
     currentTimelineLength: number;
     setCurrentTimelineLength: (length: number) => void;
-
-    groupedPaths: GroupedPaths
 
     collapsedTrackNodes: Record<string, boolean>
     setCollapsedTrackNodes: (groupKey: string) => void;

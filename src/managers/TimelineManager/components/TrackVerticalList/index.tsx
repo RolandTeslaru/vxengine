@@ -6,12 +6,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "
 import { edObjectProps, IKeyframe, ITrack, ITrackTreeNode, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { useRefStore } from "@vxengine/utils/useRefStore";
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
 import { useTimelineEditorAPI } from "../..";
-import ChevronRight from "lucide-react/dist/esm/icons/chevron-right"
-import ChevronDown from "lucide-react/dist/esm/icons/chevron-down"
-import { GroupedPaths } from "../../store";
-import TopLevelContextMenu from "./TopLevelContextMenu";
 import Search from "@vxengine/components/ui/Search";
 import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
 
@@ -22,21 +17,20 @@ const TrackVerticalList = memo(() => {
     const setSearchQuery = useTimelineEditorAPI(state => state.setSearchQuery)
 
     const trackListRef = useRefStore(state => state.trackListRef)
-    const editAreaRef = useRefStore(state => state.editAreaRef)
-
+    const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
     const scrollSyncId = useRefStore(state => state.scrollSyncId)
 
     const trackTree = useTimelineEditorAPI(state => state.trackTree);
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target;
-        if (!editAreaRef.current) return
+        if (!timelineAreaRef.current) return
 
         if (scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
 
         scrollSyncId.current = requestAnimationFrame(() => {
             // @ts-expect-error
-            editAreaRef.current.scrollTop = scrollContainer.scrollTop;
+            timelineAreaRef.current.scrollTop = scrollContainer.scrollTop;
         })
     }, [])
 
