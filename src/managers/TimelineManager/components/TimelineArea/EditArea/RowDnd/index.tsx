@@ -9,6 +9,14 @@ import { InteractComp } from './interactable';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { computeScrollLeft } from '@vxengine/managers/TimelineManager/utils/computeScrollLeft';
 
+const handleUpdateLeft = (interactable, deltaX, left: number, reset = true) => {
+  if (!interactable.current || !interactable.current.target) return;
+  reset && (deltaX.current = 0);
+  const target = interactable.current.target as HTMLElement;
+  target.style.left = `${left}px`;
+  Object.assign(target.dataset, { left });
+};
+
 export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
   (
     {
@@ -49,35 +57,15 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
     }, []);
 
     useImperativeHandle(ref, () => ({
-      updateLeft: (left) => handleUpdateLeft(left || 0, false),
-      updateWidth: (width) => handleUpdateWidth(width, false),
+      updateLeft: (left) => handleUpdateLeft(interactable, deltaX, left || 0, false),
       getLeft: handleGetLeft,
       getWidth: handleGetWidth,
     }), []);
 
     useEffect(() => {
-      const target = interactable.current.target as HTMLElement;
-      handleUpdateWidth(typeof width === 'undefined' ? target.offsetWidth : width, false);
-    }, [width]);
-
-    useEffect(() => {
-      handleUpdateLeft(left || 0, false);
+      handleUpdateLeft(interactable, deltaX, left || 0, false);
     }, [left]);
 
-    const handleUpdateLeft = (left: number, reset = true) => {
-      if (!interactable.current || !interactable.current.target) return;
-      reset && (deltaX.current = 0);
-      const target = interactable.current.target as HTMLElement;
-      target.style.left = `${left}px`;
-      Object.assign(target.dataset, { left });
-    };
-    const handleUpdateWidth = (width: number, reset = true) => {
-      if (!interactable.current || !interactable.current.target) return;
-      reset && (deltaX.current = 0);
-      const target = interactable.current.target as HTMLElement;
-      target.style.width = `${width}px`;
-      Object.assign(target.dataset, { width });
-    };
     const handleGetLeft = () => {
       const target = interactable.current.target as HTMLElement;
       return parseFloat(target?.dataset?.left || '0');
@@ -96,7 +84,7 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
       onDragStart && onDragStart();
     }, [])
 
-    const move = (param: { preLeft: number; preWidth: number; scrollDelta?: number }) => {
+    const move = useCallback((param: { preLeft: number; preWidth: number; scrollDelta?: number }) => {
       const { preLeft, preWidth, scrollDelta } = param;
       const distance = isAdsorption.current ? adsorptionDistance : grid;
       if (Math.abs(deltaX.current) >= distance) {
@@ -143,9 +131,9 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
           if (ret === false) return;
         }
 
-        handleUpdateLeft(curLeft, false);
+        handleUpdateLeft(interactable, deltaX, curLeft, false);
       }
-    };
+    }, []);
 
     const handleMove = useCallback((e: DragEvent) => {
       const target = e.target;
@@ -181,149 +169,9 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
       onDragEnd && onDragEnd({ left: parseFloat(left), width: parseFloat(width) });
     }, []);
 
-    const handleResizeStart = (e: ResizeEvent) => {
-      deltaX.current = 0;
-      isAdsorption.current = false;
-      initAutoScroll();
+   
 
-      let dir: Direction = e.edges?.right ? 'right' : 'left';
-      onResizeStart && onResizeStart(dir);
-    };
 
-    const resize = (param: { preLeft: number; preWidth: number; dir: 'left' | 'right' }) => {
-      const { dir, preWidth, preLeft } = param;
-      const distance = isAdsorption.current ? adsorptionDistance : grid;
-
-      if (dir === 'left') {
-        //Drag left
-        if (Math.abs(deltaX.current) >= distance) {
-          const count = parseInt(deltaX.current / distance + '');
-          let curLeft = preLeft + count * distance;
-
-          //Control adsorption
-          let adsorption = curLeft;
-          let minDis = Number.MAX_SAFE_INTEGER;
-          adsorptionPositions.forEach((item) => {
-            const dis = Math.abs(item - curLeft);
-            if (dis < adsorptionDistance && dis < minDis) adsorption = item;
-          });
-
-          if (adsorption !== curLeft) {
-            //Use adsorption data
-            isAdsorption.current = true;
-            curLeft = adsorption;
-          } else {
-            //Control grid grid
-            if ((curLeft - start) % grid !== 0) {
-              curLeft = start + grid * Math.round((curLeft - start) / grid);
-            }
-            isAdsorption.current = false;
-          }
-          deltaX.current = deltaX.current % distance;
-
-          //Control bounds
-          const tempRight = preLeft + preWidth;
-          if (curLeft < bounds.left) curLeft = bounds.left;
-          const curWidth = tempRight - curLeft;
-
-          if (onResize) {
-            const ret = onResize('left', {
-              lastLeft: preLeft,
-              lastWidth: preWidth,
-              left: curLeft,
-              width: curWidth,
-            });
-            if (ret === false) return;
-          }
-
-          handleUpdateLeft(curLeft, false);
-          handleUpdateWidth(curWidth, false);
-        }
-      } else if (dir === 'right') {
-        //Drag the right
-        if (Math.abs(deltaX.current) >= distance) {
-          const count = parseInt(deltaX.current / grid + '');
-          let curWidth = preWidth + count * grid;
-
-          //Control adsorption
-          let adsorption = preLeft + curWidth;
-          let minDis = Number.MAX_SAFE_INTEGER;
-          adsorptionPositions.forEach((item) => {
-            const dis = Math.abs(item - (preLeft + curWidth));
-            if (dis < adsorptionDistance && dis < minDis) adsorption = item;
-          });
-
-          if (adsorption !== preLeft + curWidth) {
-            //Use adsorption data
-            isAdsorption.current = true;
-            curWidth = adsorption - preLeft;
-          } else {
-            //Control grid grid
-            let tempRight = preLeft + curWidth;
-            if ((tempRight - start) % grid !== 0) {
-              tempRight = start + grid * Math.round((tempRight - start) / grid);
-              curWidth = tempRight - preLeft;
-            }
-            isAdsorption.current = false;
-          }
-          deltaX.current = deltaX.current % distance;
-
-          //Control bounds
-          if (preLeft + curWidth > bounds.right) curWidth = bounds.right - preLeft;
-
-          if (onResize) {
-            const ret = onResize('right', {
-              lastLeft: preLeft,
-              lastWidth: preWidth,
-              left: preLeft,
-              width: curWidth,
-            });
-            if (ret === false) return;
-          }
-
-          handleUpdateWidth(curWidth, false);
-        }
-      }
-    };
-
-    const handleResize = (e: ResizeEvent) => {
-      const target = e.target;
-      const dir = e.edges?.left ? 'left' : 'right';
-
-      if (editAreaRef.current) {
-        const result = dealResizeAutoScroll(e, dir, (delta) => {
-          computeScrollLeft(delta);
-
-          let { left, width } = target.dataset;
-          const preLeft = parseFloat(left);
-          const preWidth = parseFloat(width);
-          deltaX.current += delta;
-          resize({ preLeft, preWidth, dir });
-        });
-        if (!result) return;
-      }
-
-      let { left, width } = target.dataset;
-      const preLeft = parseFloat(left);
-      const preWidth = parseFloat(width);
-
-      deltaX.current += dir === 'left' ? e.deltaRect.left : e.deltaRect.right;
-      resize({ preLeft, preWidth, dir });
-    };
-    const handleResizeStop = (e: ResizeEvent) => {
-      deltaX.current = 0;
-      isAdsorption.current = false;
-      stopAutoScroll();
-
-      const target = e.target;
-      let { left, width } = target.dataset;
-      let dir: Direction = e.edges?.right ? 'right' : 'left';
-      onResizeEnd &&
-        onResizeEnd(dir, {
-          left: parseFloat(left),
-          width: parseFloat(width),
-        });
-    };
     //#endregion
 
     return (
@@ -331,7 +179,6 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
       <InteractComp
         interactRef={interactable}
         draggable={enableDragging}
-        resizable={enableResizing}
         draggableOptions={{
           lockAxis: 'x',
           onmove: handleMove,
@@ -341,20 +188,7 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
             return null;
           },
         }}
-        resizableOptions={{
-          axis: 'x',
-          invert: 'none',
-          edges: {
-            left: true,
-            right: true,
-            top: false,
-            bottom: false,
-            ...(edges || {}),
-          },
-          onmove: handleResize,
-          onstart: handleResizeStart,
-          onend: handleResizeStop,
-        }}
+   
       >
         {React.cloneElement(children as ReactElement, {
           style: {

@@ -26,7 +26,6 @@ export type RndResizeEndCallback = (
 ) => void;
 
 export interface RowRndApi {
-  updateWidth: (size: number) => void;
   updateLeft: (left: number) => void;
   getLeft: () => number;
   getWidth: () => number;

@@ -9,29 +9,26 @@ export interface BaseVxProps {
     vxkey: string
     params?: string[]
     disabledParams?: string[]
+    name: string
     parentKey: string;
 }
 
 export interface vxEntityProps extends BaseVxProps {
     type: "entity";
-    name: string,
 }
 export interface vxVirtualEntityProps extends BaseVxProps {
     type: "virtualEntity";
-    name: string,
 }
 
 export interface vxSplineProps extends BaseVxProps {
     type: "spline",
     objectVxKey: string // the vxkey for the object it is controlling
-    name: string
 }
 
 export interface vxSplineNodeProps extends BaseVxProps {
     type: "splineNode";
     index: number
     splineKey: string
-    name: string
 }
 export interface vxKeyframeNodeProps extends BaseVxProps {
     type: "keyframeNode",
@@ -43,7 +40,6 @@ export interface vxKeyframeNodeProps extends BaseVxProps {
 
 export interface vxEffectProps extends BaseVxProps {
     type: "effect";
-    name: string
 }
 
 

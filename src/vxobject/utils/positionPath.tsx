@@ -17,11 +17,6 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const trackY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]);
     const trackZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]);
 
-
-    const keyframesForPositionX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]?.keyframes)
-    const keyframesForPositionY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]?.keyframes)
-    const keyframesForPositionZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]?.keyframes)
-
     const staticProps = useTimelineEditorAPI(state => state.staticProps);
 
     const getAxisValueAtTime = (
@@ -106,6 +101,8 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
             {sortedTimes.map((time, index) => (
                 <KeyframeNode
                     key={index}
+                    parentVxKey={vxkey}
+                    index={index}
                     keyframeKeys={keyframeDataForNodes[index].map(data => data.id)} // Pass the keyframe keys
                     axis={keyframeDataForNodes[index].map(data => data.axis)} // Pass the axis info
                     position={[positions[index * 3], positions[index * 3 + 1], positions[index * 3 + 2]]}

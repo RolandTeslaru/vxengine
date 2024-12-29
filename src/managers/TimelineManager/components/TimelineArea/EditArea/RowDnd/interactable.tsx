@@ -9,10 +9,8 @@ export const InteractComp: FC<{
   interactRef?: React.MutableRefObject<Interactable>;
   draggable: boolean;
   draggableOptions: DraggableOptions;
-  resizable: boolean;
-  resizableOptions: ResizableOptions;
   children?: React.ReactNode
-}> = ({ children, interactRef, draggable, resizable, draggableOptions, resizableOptions }) => {
+}> = ({ children, interactRef, draggable, draggableOptions }) => {
   const nodeRef = useRef<HTMLElement>();
   const interactable = useRef<Interactable>();
   const draggableOptionsRef = useRef<DraggableOptions>();
@@ -21,8 +19,7 @@ export const InteractComp: FC<{
 
   useEffect(() => {
     draggableOptionsRef.current = { ...draggableOptions };
-    resizableOptionsRef.current = { ...resizableOptions };
-  }, [draggableOptions, resizableOptions]);
+  }, [draggableOptions]);
 
   useEffect(() => {
     if (interactable.current) {
@@ -36,7 +33,7 @@ export const InteractComp: FC<{
       interactable.current = interact(nodeRef.current);
     interactRef.current = interactable.current;
     setInteractions();
-  }, [draggable, resizable, externalContainer]);
+  }, [draggable, externalContainer]);
 
   const setInteractions = () => {
     if (draggable)
@@ -46,12 +43,6 @@ export const InteractComp: FC<{
         onmove: (e) => draggableOptionsRef.current.onmove && (draggableOptionsRef.current.onmove as (e: DragEvent) => any)(e),
         onend: (e) => draggableOptionsRef.current.onend && (draggableOptionsRef.current.onend as (e: DragEvent) => any)(e),
       });
-    if (resizable) interactable.current.resizable({
-      ...resizableOptionsRef.current,
-      onstart: (e) => resizableOptionsRef.current.onstart && (resizableOptionsRef.current.onstart as (e: DragEvent) => any)(e),
-      onmove: (e) => resizableOptionsRef.current.onmove && (resizableOptionsRef.current.onmove as (e: DragEvent) => any)(e),
-      onend: (e) => resizableOptionsRef.current.onend && (resizableOptionsRef.current.onend as (e: DragEvent) => any)(e),
-    });
   };
 
   return cloneElement(children as ReactElement, {
