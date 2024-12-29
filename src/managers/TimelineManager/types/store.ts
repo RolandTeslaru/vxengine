@@ -98,13 +98,6 @@ export interface TimelineEditorStoreProps {
     removeStaticProp: (props: {staticPropKey: string, reRender?: boolean, state?: TimelineEditorStoreProps,}) => void
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
-    handlePropertyValueChange: (
-        vxkey: string, 
-        propertyPath: string, 
-        newValue: number,
-        reRender?: boolean
-    ) => void
-
     removeProperty: (vxkey: string, propertyPath: string) => void;
 
 }

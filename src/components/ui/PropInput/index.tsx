@@ -6,15 +6,22 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert'
 import ValueRenderer from '../ValueRenderer'
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 interface Props extends InputProps {
     propertyPath: string
-    vxkey: string
+    vxObject: vxObjectProps
+    vxkey?: string;   // spline has a vxkey with the ".spline" prefix
     horizontal?: boolean
     disableTracking?: boolean
 }
 export const PropInput: FC<Props> = (props) => {
-    const { propertyPath, className, horizontal, vxkey, disableTracking = false, disabled = false, ...inputProps } = props
+    const { vxObject, propertyPath, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
+    
+    let { vxkey } = props
+    if(!vxkey)
+        vxkey = vxObject.vxkey
+
     const trackKey = vxkey + "." + propertyPath
 
     const isPropertyTracked = useTimelineEditorAPI(state => !!state.tracks[trackKey])
@@ -32,6 +39,8 @@ export const PropInput: FC<Props> = (props) => {
                         />
                     </div>
                     <ValueRenderer
+                        vxObject={vxObject}
+                        vxkey={vxkey}
                         propertyPath={propertyPath}
                         inputProps={{...inputProps, disabled}}
                         isPropertyTracked={isPropertyTracked}

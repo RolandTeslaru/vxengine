@@ -39,3 +39,13 @@
     font-family: 'Inter';
     src: url('./assets/fonts/Inter-VariableFont_slnt_wght.ttf') format('truetype-variations'); 
   }
+
+  /* Reset defaults on Chrome’s spinner */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin-left: -8px;
+}
+
+input[type="number"] {
+  position: relative; 
+}

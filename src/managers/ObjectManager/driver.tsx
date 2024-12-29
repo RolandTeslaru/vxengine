@@ -3,12 +3,13 @@
 import { TransformControls, useCamera } from "@react-three/drei";
 import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
-import { useTimelineEditorAPI } from "../TimelineManager/store";
+import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
+import { handlePropertyValueChange, useTimelineEditorAPI } from "../TimelineManager/store";
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
+import { useObjectSettingsAPI } from "./stores/settingsStore";
 
 const AXES = ['x', 'y', 'z'];
 
@@ -24,9 +25,9 @@ const transformMap = {
   scale: "scale"
 }
 
-const dispatchVirtualEntityChangeEvent = (e: any, firstSelectedObject: vxObjectProps) => {
+const dispatchVirtualEntityChangeEvent = (e: any, vxobject: vxObjectProps) => {
   const virtualEntityChangeEvent = new CustomEvent('virtualEntityChange', {
-    detail: { transformation: e, object: firstSelectedObject }
+    detail: { transformation: e, object: vxobject }
   });
 
   document.dispatchEvent(virtualEntityChangeEvent as any);
@@ -65,20 +66,28 @@ const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
  */
 
 export const ObjectManagerDriver = () => {
-  const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
-
-  const firstSelectedObject = useObjectManagerAPI(state => state.selectedObjects[0]);
+  const vxobject = useObjectManagerAPI(state => state.selectedObjects[0]);
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
-
-  const updateProperty = useObjectPropertyAPI(state => state.updateProperty);
-
-  const firstObjectSelectedRef: THREE.Object3D = firstSelectedObject?.ref.current;
-  const type = firstObjectSelectedRef?.type
-  const isValid = type === "Mesh" || type === "Group" || type === "PerspectiveCamera" || type === "CubeCamera";
-
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
+  
+  const vxkey = vxobject?.vxkey;
+  const vxRef: THREE.Object3D = vxobject?.ref.current;
+  const type = vxRef?.type
+  const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
+  
+  const isValid =
+    type === "Mesh" ||
+    type === "Group" ||
+    type === "PerspectiveCamera" ||
+    type === "CubeCamera";
+  const isTransformDisabled =
+    isUsingSplinePath ||
+    vxobject?.disabledParams?.includes("position") ||
+    !isValid;
+
+  
   const intialProps = useRef({
     position: new THREE.Vector3,
     rotation: new THREE.Quaternion,
@@ -90,13 +99,14 @@ export const ObjectManagerDriver = () => {
     rotation: new THREE.Quaternion,
     scale: new THREE.Vector3
   })
+  
 
   // Create debounced functions for each axis using useMemo
   const debouncedPropertyValueChangeFunctions = useMemo(() => ({
     X: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
     Y: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
     Z: debounce((vxkey, propertyPath, newValue) => handlePropertyValueChange(vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-  }), [handlePropertyValueChange]);
+  }), []);
 
   // Cleanup debounced functions on unmount
   useEffect(() => {
@@ -108,15 +118,15 @@ export const ObjectManagerDriver = () => {
   }, [debouncedPropertyValueChangeFunctions]);
 
   const handleTransformChange = (e) => {
-    if (!firstSelectedObject) return
-    const type = firstSelectedObject.type;
+    if (!vxobject) return
+    const type = vxobject.type;
     switch (type) {
       case "entity":
         handleEntityChange(e)
         break;
       case "virtualEntity": {
         handleEntityChange(e)
-        dispatchVirtualEntityChangeEvent(e, firstSelectedObject);
+        dispatchVirtualEntityChangeEvent(e, vxobject);
         break;
       }
       case "keyframeNode":
@@ -138,21 +148,23 @@ export const ObjectManagerDriver = () => {
 
       switch (transformMode) {
         case 'translate':
-          newValue = firstObjectSelectedRef.position[propertyAxis];
+          newValue = vxRef.position[propertyAxis];
           break;
         case 'rotate':
-          newValue = firstObjectSelectedRef.rotation[propertyAxis]
+          newValue = vxRef.rotation[propertyAxis]
           break;
         case 'scale':
-          newValue = firstObjectSelectedRef.scale[propertyAxis]
+          newValue = vxRef.scale[propertyAxis]
           break;
       }
       // Call the appropriate debounced function
       debouncedPropertyValueChangeFunctions[axisLetter]?.(
         vxkey,
         propertyPath,
-        newValue
+        newValue,
       );
+
+      updateProperty(vxkey,propertyPath, newValue)
     });
   }
 
@@ -160,14 +172,13 @@ export const ObjectManagerDriver = () => {
   //  Handle ENTITIES
   // 
   const handleEntityChange = (e) => {
-    const firstObjectSelectedRef = firstSelectedObject?.ref.current as THREE.Object3D;
-    if (!firstObjectSelectedRef)
+    if (!vxRef)
       return
     const controls = e.target;
     const axis = controls.axis;
     if (!axis) return
 
-    const vxkey = firstSelectedObject?.vxkey;
+    const vxkey = vxobject?.vxkey;
 
     const axes = axis.split('');
 
@@ -178,7 +189,7 @@ export const ObjectManagerDriver = () => {
 
       switch (transformMode) {
         case 'translate': {
-          currentProps.current.position = firstObjectSelectedRef.position.clone()
+          currentProps.current.position = vxRef.position.clone()
           Array('x', 'y', 'z').forEach(axisLetter => {
 
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
@@ -199,7 +210,7 @@ export const ObjectManagerDriver = () => {
         }
         case 'rotate': {
           // Get the current world quaternion
-          firstObjectSelectedRef.getWorldQuaternion(currentProps.current.rotation);
+          vxRef.getWorldQuaternion(currentProps.current.rotation);
 
           // Convert both initial and current quaternions to Euler angles for comparison
           const initialEuler = new THREE.Euler().setFromQuaternion(intialProps.current.rotation, 'XYZ');
@@ -229,7 +240,7 @@ export const ObjectManagerDriver = () => {
 
         case 'scale': {
           // Get the current world scale
-          firstObjectSelectedRef.getWorldScale(currentProps.current.scale);
+          vxRef.getWorldScale(currentProps.current.scale);
 
           ['x', 'y', 'z'].forEach(axisLetter => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
@@ -258,7 +269,7 @@ export const ObjectManagerDriver = () => {
   //  Handle KEYFRAME Nodes 
   // 
   const handleKeyframeNodeChange = throttle(() => {
-    const { data, ref } = (firstSelectedObject as vxKeyframeNodeProps);
+    const { data, ref } = (vxobject as vxKeyframeNodeProps);
     const setKeyframeValue = useTimelineEditorAPI.getState().setKeyframeValue;
 
     // (data.keyframeKeys as string[])?.forEach(
@@ -270,7 +281,7 @@ export const ObjectManagerDriver = () => {
     //     setKeyframeValue(keyframeKey, newPosition[axis]);
 
     //     updateProperty(
-    //       firstSelectedObject.vxkey,
+    //       vxobject.vxkey,
     //       keyframe.propertyPath,
     //       newPosition[axis]
     //     )
@@ -285,15 +296,15 @@ export const ObjectManagerDriver = () => {
   //  Handle SPLINE Nodes 
   // 
   const handleSplineNodeChange = () => {
-    const { index, splineKey, ref } = firstSelectedObject as vxSplineNodeProps;
+    const { index, splineKey, ref } = vxobject as vxSplineNodeProps;
     const newPosition = ref.current.position;
     setSplineNodePosition(splineKey, index, newPosition)
 
-     const vxNodeKey = `${splineKey}.node${index}`
+    const vxNodeKey = `${splineKey}.node${index}`
 
-     updateProperty(vxNodeKey, 'position.x', newPosition.x)
-     updateProperty(vxNodeKey, 'position.y', newPosition.y)
-     updateProperty(vxNodeKey, 'position.z', newPosition.z)
+    updateProperty(vxNodeKey, 'position.x', newPosition.x)
+    updateProperty(vxNodeKey, 'position.y', newPosition.y)
+    updateProperty(vxNodeKey, 'position.z', newPosition.z)
   }
 
 
@@ -301,7 +312,7 @@ export const ObjectManagerDriver = () => {
   // Set the Axis of the controls when a node is selected
   useEffect(() => {
     const controls = transformControlsRef.current as any;
-    if (!firstSelectedObject) return
+    if (!vxobject) return
     if (!controls) return
 
     useObjectManagerAPI.getState().setTransformMode("translate");
@@ -309,31 +320,31 @@ export const ObjectManagerDriver = () => {
     // We need to store initial values when dealing with local space, 
     // because we need to compare them when the entity is changed
     if (transformSpace === "local") {
-      firstObjectSelectedRef.getWorldPosition(intialProps.current.position);
-      firstObjectSelectedRef.getWorldQuaternion(intialProps.current.rotation);
-      firstObjectSelectedRef.getWorldScale(intialProps.current.scale);
+      vxRef.getWorldPosition(intialProps.current.position);
+      vxRef.getWorldQuaternion(intialProps.current.rotation);
+      vxRef.getWorldScale(intialProps.current.scale);
     }
 
-    if (firstSelectedObject.type === "splineNode") {
+    if (vxobject.type === "splineNode") {
       controls.showX = true;
       controls.showY = true;
       controls.showZ = true;
     }
-    else if (firstSelectedObject.type === "keyframeNode") {
-      const axis = firstSelectedObject.axis
+    else if (vxobject.type === "keyframeNode") {
+      const axis = vxobject.axis
       controls.showX = axis.includes('X')
       controls.showY = axis.includes('Y')
       controls.showZ = axis.includes('Z')
     }
-  }, [firstSelectedObject])
+  }, [vxobject])
 
   return (
     <>
       {/* Object Transform Controls */}
-      {firstObjectSelectedRef && isValid && (
+      {vxRef && !isTransformDisabled && (
         <TransformControls
           ref={transformControlsRef}
-          object={firstObjectSelectedRef}
+          object={vxRef}
           mode={transformMode}
           onObjectChange={handleTransformChange}
           space={transformSpace}

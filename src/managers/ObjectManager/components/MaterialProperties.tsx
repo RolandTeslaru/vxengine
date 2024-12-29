@@ -34,7 +34,7 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 <div className='flex flex-row py-1' key={_key}>
                     <p className='text-xs font-light text-neutral-500'>{_key}</p>
                     <PropInput
-                        vxkey={vxobject.vxkey}
+                        vxObject={vxobject}
                         type="number"
                         className="ml-auto w-fit"
                         propertyPath={`material.${_key}`}

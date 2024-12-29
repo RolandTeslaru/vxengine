@@ -12,7 +12,7 @@ import * as THREE from "three"
 import { IKeyframe, RawSpline, IStaticProps, ITimeline, ITrack, RawKeyframeProps, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
-import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
+import { updateProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
 import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
@@ -634,7 +634,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._checkCameraUpdateRequirement(vxkey, propertyPath);
     
     if(this._IS_DEVELOPMENT)
-      useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, interpolatedValue);
+      updateProperty(vxkey, propertyPath, interpolatedValue);
   }
 
 

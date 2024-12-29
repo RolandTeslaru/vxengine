@@ -208,25 +208,24 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
 
 export const useObjectPropertyAPI = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({
     properties: {},
-    updateProperty: (vxkey, propertyPath, value) => {
-        set(
-            produce((state) => {
-                const key = `${vxkey}.${propertyPath}`;
-                state.properties[key] = value;
-            })
-        );
-    },
-    getProperty: (vxkey, propertyPath) => {
-        const state = get();
-        const key = `${vxkey}.${propertyPath}`;
-        return state.properties[key];
-    },
     deleteProperty: (vxkey, propertyPath) => {
-        set(
-            produce((state) => {
-                const key = `${vxkey}.${propertyPath}`;
-                delete state.properties[key];
-            })
-        );
-    },
+        const key = `${vxkey}.${propertyPath}`;
+        set(produce((state: ObjectPropertyStoreProps) => {
+            delete state.properties[key]
+        }))
+    }
 }))
+
+export const getProperty = (vxkey: string, propertyPath: string) => {
+    const state = useObjectPropertyAPI.getState()
+    const key = `${vxkey}.${propertyPath}`;
+    return state.properties[key];
+}
+export const updateProperty = (vxkey: string, propertyPath: string, value: any) => {
+    const key = `${vxkey}.${propertyPath}`;
+    useObjectPropertyAPI.setState(
+        produce((state: ObjectPropertyStoreProps) => {
+            state.properties[key] = value;
+        })
+    )
+}

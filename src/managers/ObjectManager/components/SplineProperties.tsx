@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { vxSplineProps } from '../types/objectStore'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
-import { useObjectPropertyAPI } from '../stores/managerStore'
+import { getProperty, useObjectPropertyAPI } from '../stores/managerStore'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager'
 import { invalidate } from '@react-three/fiber'
 import { Slider } from '@vxengine/components/shadcn/slider'
 import PropInput from '@vxengine/components/ui/PropInput'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '../stores/settingsStore'
+import { handlePropertyValueChange } from '@vxengine/managers/TimelineManager/store'
 
 interface Props {
     vxobject: vxSplineProps
@@ -38,23 +39,18 @@ export default SplineProperties
 
 
 
-const getDefaultValue = ({ vxkey, propertyPath }: { vxkey: string, propertyPath: string }) => {
-    const getProperty = useObjectPropertyAPI.getState().getProperty;
-    const val = getProperty(vxkey, propertyPath)
-    return val;
-}
+const getDefaultValue = (vxkey: string, propertyPath: string) => getProperty(vxkey,propertyPath) || 0
 
 const SplineProgress = ({ vxSpline }: { vxSpline: vxSplineProps }) => {
     const objectVxKey = vxSpline.objectVxKey;
     const propertyPath = "splineProgress"
+    const trackKey = `${objectVxKey}.${propertyPath}`
 
-    const [value, setValue] = useState(getDefaultValue({ vxkey: objectVxKey, propertyPath }));
-    const handlePropertyValueChange = useTimelineEditorAPI(state => state.handlePropertyValueChange)
+    const [value, setValue] = useState(getDefaultValue(objectVxKey, propertyPath));
 
     useEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
-            const newValue = state.getProperty(objectVxKey, propertyPath);
-            const prevValue = prevState.getProperty(objectVxKey, propertyPath);
+            const newValue = state.properties[trackKey]
 
             if (newValue !== undefined) {
                 setValue(newValue);
@@ -82,7 +78,7 @@ const SplineProgress = ({ vxSpline }: { vxSpline: vxSplineProps }) => {
                     value={[value]}
                     onValueChange={(newValue) => handleChange(newValue[0])}
                 />
-                <PropInput propertyPath={propertyPath} vxkey={objectVxKey} />
+                <PropInput propertyPath={propertyPath} vxObject={vxSpline} vxkey={vxSpline.objectVxKey} />
             </div>
         </div>
     )

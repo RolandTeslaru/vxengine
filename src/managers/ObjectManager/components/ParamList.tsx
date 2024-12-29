@@ -27,7 +27,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             <div key={index} className='flex flex-row py-1'>
                 <p className='text-xs font-light text-neutral-500'>{param}</p>
                 <PropInput 
-                    vxkey={vxobject.vxkey}
+                    vxObject={vxobject}
                     type="number"
                     className="ml-auto w-fit"
                     propertyPath={param}

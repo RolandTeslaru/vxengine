@@ -12,7 +12,7 @@ interface Props {
 export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const trackKey = vxkey + "." + propertyPath
     const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
-    const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
+    const keyframesLengthForTrack = Object.entries(track?.keyframes || {}).length;
 
     const makePropertyStatic = useTimelineEditorAPI(state => state.makePropertyStatic)
 

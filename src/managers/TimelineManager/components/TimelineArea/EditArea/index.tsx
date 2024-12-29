@@ -19,7 +19,9 @@ export const EditArea = () => {
   const trackTree = useTimelineEditorAPI(state => state.trackTree);
 
   const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
-    if (!searchQuery) return trackTree;
+    if (!searchQuery) 
+      return trackTree;
+    
     return Object.entries(trackTree).reduce((filtredNode, [key, node]) => {
       if (key && key.toLowerCase().includes(searchQuery.toLowerCase())) {
         filtredNode[key] = node;
@@ -33,8 +35,8 @@ export const EditArea = () => {
   return (
     <>
       <CursorLine rows={10 + 1} />
-      {Object.values(filteredTree).map((node) =>
-        <TrackNode node={node} timelineClientWidth={timelineClientWidth} />
+      {Object.values(filteredTree).map((node,index) =>
+        <TrackNode key={index} node={node} timelineClientWidth={timelineClientWidth} />
       )}
     </>
   );
@@ -53,7 +55,7 @@ const TrackNode:React.FC<TrackNodeProps> = memo(({ node, timelineClientWidth }) 
         {isTrack && <Track trackKey={node.track}/>}
       </div>
       {hasChildren && !isCollapsed &&
-        Object.values(node.children).map((node) => <TrackNode node={node} timelineClientWidth={timelineClientWidth} />)
+        Object.values(node.children).map((node, index) => <TrackNode node={node} key={index} timelineClientWidth={timelineClientWidth} />)
       }
     </>
   )

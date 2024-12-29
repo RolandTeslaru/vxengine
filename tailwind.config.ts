@@ -20,6 +20,9 @@ const config = {
       },
     },
     extend: {
+      boxShadow: {
+        "contextItem": "0 0 5px black "
+      },
       fontSize: {
         "xss": '8px', // 10px
       },

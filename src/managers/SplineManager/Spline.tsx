@@ -4,11 +4,10 @@
 
 "use client"
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
 import SplineNode from './components/SplineNode';
 import { useTimelineEditorAPI } from '../TimelineManager/store';
-import SplineKeyframeNode from './components/SplineKeyframeNode';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { useVXObjectStore } from '../ObjectManager';
 import { vxSplineProps } from '../ObjectManager/types/objectStore';
@@ -19,7 +18,11 @@ interface SplineProps {
     visible: boolean
 }
 
-// a "Spline" is an editableObject (reactive), an vxObject (r3f), 
+// a "Spline" is an
+// -> editableObject (reactive edSpline),
+// -> vxObject (r3f vxSpline) 
+// -> WASM object (cached in the animationEngine)
+
 // This handles only the vxObject part
 
 const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {

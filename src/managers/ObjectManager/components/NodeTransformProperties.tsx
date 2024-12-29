@@ -17,7 +17,7 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
             <PropInput
-                vxkey={vxkey}
+                vxObject={vxobject}
                 key={`${property}-${axis}`}
                 type="number"
                 propertyPath={`${property}.${axis}`}

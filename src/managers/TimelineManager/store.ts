@@ -5,7 +5,7 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { handleSetCursor } from './utils/handleSetCursor';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
+import { updateProperty, useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { ObjectStoreStateProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { EditorObjectProps, SelectedKeyframe, TimelineEditorStoreProps } from './types/store';
@@ -14,6 +14,7 @@ import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { debounce } from 'lodash';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
+import { invalidate } from '@react-three/fiber';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -95,6 +96,7 @@ function createStaticPropLogic(state: TimelineEditorStoreProps, vxkey: string, p
         propertyPath: propertyPath,
         value: value
     }
+
 
     state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
     state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
@@ -257,7 +259,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     // Getter functions
     //
 
-    
+
     getTrack: (trackKey) => { return get().tracks[trackKey]; },
     getStaticProp: (staticPropKey) => { return get().staticProps[staticPropKey]; },
     getAllKeyframes: () => {
@@ -447,7 +449,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const trackKey = `${vxkey}.splineProgress`
 
         const vxObject = useVXObjectStore.getState().objects[vxkey];
-        if(!vxObject){
+        if (!vxObject) {
             console.error("useTimelineEditorAPI createSpline(): Could not find the vxobject")
             return;
         }
@@ -478,7 +480,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 const edSpline: ISpline = {
                     splineKey,
                     vxkey,
-                    nodes: nodes as [number,number,number][]
+                    nodes: nodes as [number, number, number][]
                 }
                 state.splines[splineKey] = edSpline;
             })
@@ -560,7 +562,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 }
 
                 const nodes = spline.nodes
-      
+
                 // Ensure at least two nodes remain on the spline
                 if (nodes.length <= 2) {
                     console.warn(`removeNode(): Cannot remove node. Spline must have at least two nodes.`);
@@ -585,8 +587,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 ]
             })
         )
-      
-    
+
+
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.refreshSpline("update", splineKey, true)
     },
@@ -715,47 +717,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         get().addChange()
     },
 
-    handlePropertyValueChange: (vxkey, propertyPath, newValue, reRender = true) => {
-        newValue = truncateToDecimals(newValue);
-        const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
-        const track = get().getTrack(generalKey);
-        const isPropertyTracked = !!track;
-
-        if (isPropertyTracked) {
-            const trackKey = generalKey;
-            const keyframesOnTrack = Object.values(get().tracks[trackKey].keyframes)
-
-            // Check if the cursor is under any keyframe
-            let targetedKeyframe: IKeyframe | undefined;
-            keyframesOnTrack.some((kf: IKeyframe) => {
-                if (kf.time === get().cursorTime) {
-                    targetedKeyframe = kf;
-                    return true;  // Exit early once we find the keyframe
-                }
-                return false;
-            });
-            // if keyframe exists, update its value
-            // else create a new keyframe at cursortime
-            if (targetedKeyframe)
-                get().setKeyframeValue(targetedKeyframe.id, trackKey, newValue, reRender);
-            else
-                get().createKeyframe({ trackKey, value: newValue, reRender });
-        } else {
-            const staticPropKey = generalKey;
-            // Check if the static prop exists
-            const staticProp = get().getStaticProp(staticPropKey);
-
-            if (staticProp)
-                get().setStaticPropValue(staticPropKey, newValue, reRender);
-            else
-                get().createStaticProp({ vxkey, propertyPath, value: newValue, reRender });
-
-        }
-
-        useObjectPropertyAPI.getState().updateProperty(vxkey, propertyPath, newValue);
-        get().addChange()
-    },
-
     removeProperty: (vxkey, propertyPath) => {
         const key = `${vxkey}.${propertyPath}`
         const track = get().getTrack(key);
@@ -779,3 +740,46 @@ export const truncateToDecimals = (value: number) => {
     return AnimationEngine.truncateToDecimals(value, AnimationEngine.ENGINE_PRECISION)
 }
 
+
+export const handlePropertyValueChange = (vxkey: string, propertyPath: string, newValue: any, reRender = true) => {
+    newValue = truncateToDecimals(newValue);
+
+    const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
+    const state = useTimelineEditorAPI.getState();
+    const track = state.getTrack(generalKey);
+    const isPropertyTracked = !!track;
+
+    if (isPropertyTracked) {
+        const trackKey = generalKey;
+        const keyframesOnTrack = Object.values(state.tracks[trackKey].keyframes)
+
+        // Check if the cursor is under any keyframe
+        let targetedKeyframe: IKeyframe | undefined;
+        keyframesOnTrack.some((kf: IKeyframe) => {
+            if (kf.time === state.cursorTime) {
+                targetedKeyframe = kf;
+                return true;  // Exit early once we find the keyframe
+            }
+            return false;
+        });
+        // if keyframe exists, update its value
+        // else create a new keyframe at cursortime
+        if (targetedKeyframe)
+            state.setKeyframeValue(targetedKeyframe.id, trackKey, newValue, reRender);
+        else
+            state.createKeyframe({ trackKey, value: newValue, reRender });
+    } else {
+        const staticPropKey = generalKey;
+        // Check if the static prop exists
+        const staticProp = state.getStaticProp(staticPropKey);
+
+        if (staticProp)
+            state.setStaticPropValue(staticPropKey, newValue, reRender);
+        else
+            state.createStaticProp({ vxkey, propertyPath, value: newValue, reRender });
+
+    }
+
+    updateProperty(vxkey, propertyPath, newValue);
+    state.addChange()
+}
