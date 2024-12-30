@@ -47,7 +47,6 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
     if(!keyframes) 
         return null
     const keyframesLength = Object.values(keyframes).length;
-    // const keyframesLengthForTrack = Object.entries(track?.keyframes).length;
 
     const staticProp = useTimelineEditorAPI(state => state.staticProps[key])
     const removeProperty = useTimelineEditorAPI(state => state.removeProperty)
@@ -61,12 +60,12 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                 <AlertDialogDescription>
                     {track && (
                         <>
-                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframesLength}</span> keyframes will be deleted!
+                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{keyframesLength}</span> keyframes will be erased!
                         </>
                     )}
                     {staticProp && (
                         <>
-                            StaticProp <span className='text-yellow-500'>{key}</span> will be deleted!
+                            StaticProp <span className='text-yellow-500'>{key}</span> will be erased!
                         </>
                     )}
                     {!track && !staticProp && (
@@ -74,6 +73,10 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                             Property path <span className='text-yellow-500'>{key}</span> isnt a track nor a staticProp. Nothing to reset!
                         </>
                     )}
+                    <p>
+                        <br/> This returns the property to its default value defined in code.
+                        No StaticProp will be created.
+                    </p>
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -8,20 +8,37 @@ import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
 
 const Popover = PopoverPrimitive.Root
 
-const PopoverTrigger = PopoverPrimitive.Trigger
+// const PopoverTrigger = PopoverPrimitive.Trigger 
 
 const PopoverAnchor = PopoverPrimitive.Anchor
+
+const PopoverTrigger = React.forwardRef<
+  React.ElementRef<typeof PopoverPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger>
+>((props, ref) => {
+  const { children, className, ...rest } = props
+  return (
+    <PopoverPrimitive.Trigger
+      className={'hover:bg-neutral-800 px-2 gap-2 py-1.5 text-xs flex font-sans-menlo rounded-md w-full hover:shadow-md shadow-black' + " " + className }
+      ref={ref}
+      {...rest}
+    >
+      {children}
+    </PopoverPrimitive.Trigger>
+  )
+})
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = "center", sideOffset = 1, ...props }, ref) => {
+>(({ className, align = "center", side = "bottom", sideOffset = 1, ...props }, ref) => {
   const { externalContainer } = useWindowContext();
   return (
     <PopoverPrimitive.Portal container={externalContainer}>
       <PopoverPrimitive.Content
         ref={ref}
         align={align}
+        side={side}
         sideOffset={sideOffset}
         className={cn(
           `backdrop-blur-sm z-50 w-72 rounded-xl border-[1px] border-neutral-600 bg-opacity-80 bg-neutral-700 

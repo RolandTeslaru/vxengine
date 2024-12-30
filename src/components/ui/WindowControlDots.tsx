@@ -32,7 +32,8 @@ export const WindowControlDots: React.FC<Props> = ({ isAttached, setAttach, setM
                         </span>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent sideOffset={0} className="w-40 p-1 text-sm font-sans-menlo border-neutral-600 bg-neutral-700 ">
+                <PopoverContent sideOffset={0} className="w-40 p-1 text-sm font-sans-menlo border-neutral-600 bg-neutral-700 "
+                >
                     <div
                         className="cursor-pointer hover:bg-neutral-800 p-2 rounded-lg flex flex-row"
                         onClick={handleAttachChange}

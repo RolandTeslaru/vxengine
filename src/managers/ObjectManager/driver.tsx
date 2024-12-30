@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { handlePropertyValueChange, useTimelineEditorAPI } from "../TimelineManager/store";
-import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { vxEntityProps, vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
@@ -71,23 +71,25 @@ export const ObjectManagerDriver = () => {
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
-  
+
   const vxkey = vxobject?.vxkey;
   const vxRef: THREE.Object3D = vxobject?.ref.current;
   const type = vxRef?.type
   const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
-  
+
   const isValid =
     type === "Mesh" ||
     type === "Group" ||
     type === "PerspectiveCamera" ||
-    type === "CubeCamera";
+    type === "CubeCamera" ||
+    type === "Environment"
   const isTransformDisabled =
     isUsingSplinePath ||
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
 
-  
+  console.log("Object ManagerDriver Render with isValid:", isValid, "  isTransformDisabled:", isTransformDisabled)
+
   const intialProps = useRef({
     position: new THREE.Vector3,
     rotation: new THREE.Quaternion,
@@ -99,7 +101,7 @@ export const ObjectManagerDriver = () => {
     rotation: new THREE.Quaternion,
     scale: new THREE.Vector3
   })
-  
+
 
   // Create debounced functions for each axis using useMemo
   const debouncedPropertyValueChangeFunctions = useMemo(() => ({
@@ -164,7 +166,7 @@ export const ObjectManagerDriver = () => {
         newValue,
       );
 
-      updateProperty(vxkey,propertyPath, newValue)
+      updateProperty(vxkey, propertyPath, newValue)
     });
   }
 
@@ -353,3 +355,115 @@ export const ObjectManagerDriver = () => {
     </>
   );
 };
+
+
+// const EntityTransformDriver = ({ vxEntity }: { vxEntity: vxEntityProps }) => {
+//   const transformSpace = useObjectManagerAPI(state => state.transformSpace);
+//   const transformMode = useObjectManagerAPI(state => state.transformMode);
+//   const transformControlsRef = useRefStore(state => state.transformControlsRef);
+
+
+//   const handleTransformChange = (e) => {
+//     const controls = e.target;
+//     const axis = controls.axis;
+//     if (!axis) return
+
+//     const axes = axis.split('');
+
+//     if (transformSpace === "world") {
+//       handleSpaceTransform(axes, vxkey)
+//     }
+//     else if (transformSpace === "local") {
+
+//       switch (transformMode) {
+//         case 'translate': {
+//           currentProps.current.position = vxRef.position.clone()
+//           Array('x', 'y', 'z').forEach(axisLetter => {
+
+//             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+//             const newValue = currentProps.current.position[axisLetter]
+//             const oldValue = intialProps.current.position[axisLetter];
+
+//             if (oldValue !== newValue) {
+//               debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+//                 vxkey,
+//                 propertyPath,
+//                 newValue
+//               );
+//               intialProps.current.position[axisLetter] = newValue
+//             }
+//           })
+
+//           break;
+//         }
+//         case 'rotate': {
+//           // Get the current world quaternion
+//           vxRef.getWorldQuaternion(currentProps.current.rotation);
+
+//           // Convert both initial and current quaternions to Euler angles for comparison
+//           const initialEuler = new THREE.Euler().setFromQuaternion(intialProps.current.rotation, 'XYZ');
+//           const currentEuler = new THREE.Euler().setFromQuaternion(currentProps.current.rotation, 'XYZ');
+
+//           ['x', 'y', 'z'].forEach(axisLetter => {
+//             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+//             const newValue = currentEuler[axisLetter];
+//             const oldValue = initialEuler[axisLetter];
+
+//             if (oldValue !== newValue) {
+//               // Call debounced function with new rotation value
+//               debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+//                 vxkey,
+//                 propertyPath,
+//                 newValue
+//               );
+//               // Update the initial Euler to the new value so future comparisons are accurate
+//               initialEuler[axisLetter] = newValue;
+//             }
+//           });
+
+//           // After updating, convert `initialEuler` back into a quaternion and store it as the new baseline
+//           intialProps.current.rotation.setFromEuler(initialEuler);
+//           break;
+//         }
+
+//         case 'scale': {
+//           // Get the current world scale
+//           vxRef.getWorldScale(currentProps.current.scale);
+
+//           ['x', 'y', 'z'].forEach(axisLetter => {
+//             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
+//             const newValue = currentProps.current.scale[axisLetter];
+//             const oldValue = intialProps.current.scale[axisLetter];
+
+//             if (oldValue !== newValue) {
+//               // Call debounced function with new scale value
+//               debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+//                 vxkey,
+//                 propertyPath,
+//                 newValue
+//               );
+//               // Update the initial scale to the new value so future comparisons are accurate
+//               intialProps.current.scale[axisLetter] = newValue;
+//             }
+//           });
+//           break;
+//         }
+//       }
+//     }
+
+//     const vxkey = vxEntity;
+//     const vxRef = vxEntity.ref.current;
+//     return (
+//       <TransformControls
+//         ref={transformControlsRef}
+//         object={vxRef}
+//         mode={transformMode}
+//         onObjectChange={handleTransformChange}
+//         space={transformSpace}
+//       />
+//     )
+//   }
+
+//   const NodeTransformDriver = ({ vxNode }: { vxNode: vxKeyframeNodeProps | vxSplineNodeProps }) => {
+
+//   }

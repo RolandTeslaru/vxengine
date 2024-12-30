@@ -18,6 +18,9 @@ import X from '@geist-ui/icons/x'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
+import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
+import JsonView from 'react18-json-view'
+import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 
 let lastSelectedIndex = 0;
 
@@ -25,10 +28,10 @@ const handleObjectClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, 
     const ObjectManagerAPI = useObjectManagerAPI.getState();
     const { selectObjects, selectedObjectKeys } = ObjectManagerAPI
 
-    event.preventDefault();
-
     const vxObjects = useVXObjectStore.getState().objects;
     const vxobject = vxObjects[vxkey];
+
+    event.preventDefault();
 
     // Convert objects to an array to get a slice
     const objectArray = Object.values(vxObjects);
@@ -57,6 +60,11 @@ const handleObjectClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, 
     lastSelectedIndex = index;
 };
 
+const handleObjectContext = (vxkey: string) => {
+    const selectObjects = useObjectManagerAPI.getState().selectObjects
+    selectObjects([vxkey])
+}
+
 const ObjectList = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -81,7 +89,7 @@ const ObjectList = () => {
             </div>
             {/* Content */}
             <div className='mt-2 max-h-[500px] rounded-b-xl overflow-y-scroll text-sm'>
-                <ObjectTree nodes={filteredTree} onNodeClick={(e, vxkey, index) => handleObjectClick(e, vxkey, index)} />
+                <ObjectTree nodes={filteredTree} onNodeClick={handleObjectClick} onNodeContext={handleObjectContext} />
             </div>
         </CollapsiblePanel>
     )
@@ -109,6 +117,7 @@ const filterTree = (tree: Record<string, ObjectTreeNodeProps>, query: string): R
 interface TreeProps {
     nodes: Record<string, ObjectTreeNodeProps>;
     onNodeClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>, vxkey: string, index: number) => void;
+    onNodeContext?: (vxkey: string) => void;
 }
 
 const iconMapping = {
@@ -138,7 +147,7 @@ const defaultExpandedKeys = {
     "splines": true,
 }
 
-const ObjectTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
+const ObjectTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick, onNodeContext }) => {
     const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>(defaultExpandedKeys);
     const selectedObjectKeys = useObjectManagerAPI(state => state.selectedObjectKeys)
 
@@ -175,8 +184,14 @@ const ObjectTree: React.FC<TreeProps> = React.memo(({ nodes, onNodeClick }) => {
                     tabIndex={-1}
                     className={`relative ${isSelected ? "bg-neutral-800 !text-white" : ""} `}
                 >
-                    <ContextMenu>
-                        <ContextMenuTrigger>
+                    <ContextMenu
+                        onOpenChange={(open) => {
+                            if(isSelectable)
+                                onNodeContext(node.vxkey);
+                        }}
+                    >
+                        <ContextMenuTrigger
+                        >
                             <div
                                 className={s.listItem + " " + ` flex items-center gap-2 py-2
                                         ${isSelected ? "bg-blue-600" : "bg-transparent"}
@@ -284,6 +299,9 @@ const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
     }
     return (
         <ContextMenuContent className='font-sans-menlo'>
+            <PopoverShowVXObjectData vxkey={vxkey} side="right" >
+                Show Data
+            </PopoverShowVXObjectData>
             <ContextMenuItem onClick={handleDeleteSpline} className='text-xs gap-2 text-red-600'>
                 <X size={15} />
                 Delete Spline
@@ -317,6 +335,9 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
 
     return (
         <ContextMenuContent className='font-sans-menlo'>
+            <PopoverShowVXObjectData vxkey={nodeKey}>
+                Show Data
+            </PopoverShowVXObjectData>
             {nodeIndex !== 0 &&
                 <ContextMenuItem onClick={handleInsertBefore} className='text-xs gap-2'>
                     <ArrowUp size={15} />
@@ -335,18 +356,19 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
     )
 }
 
-const MeshContextMenu = ({ vxkey }) => {
+const DefaultContextMenu = ({ vxkey }) => {
     return (
         <ContextMenuContent className='text-xs font-sans-menlo'>
-            <p>
-
-            </p>
+            <PopoverShowVXObjectData vxkey={vxkey} side='right'>
+                Show Data
+            </PopoverShowVXObjectData>
         </ContextMenuContent>
     )
 }
 
+
 const contextMenuMapping = {
     "splineNode": SplineNodeContextMenuContent,
     "Spline": SplineContextMenu,
-    default: MeshContextMenu
+    default: DefaultContextMenu
 }

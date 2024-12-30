@@ -1,6 +1,7 @@
 import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn/contextMenu'
 import { Input } from '@vxengine/components/shadcn/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
+import PopoverShowKeyframeData from '@vxengine/components/ui/Popovers/PopoverShowKeyframeData'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager'
 import React from 'react'
 
@@ -15,19 +16,9 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
     return (
         <ContextMenuContent>
-            <Popover>
-                <PopoverTrigger className='w-full hover:bg-neutral-800 rounded-md'
-                >
-                    <ContextMenuItem
-                        className='!pointer-events-none '
-                    >
-                        <p className='font-sans-menlo text-xs'>
-                            Show Data
-                        </p>
-                    </ContextMenuItem>
-                </PopoverTrigger>
-                <ShowDataPopover trackKey={trackKey} keyframeKey={keyframeKey} />
-            </Popover>
+            <PopoverShowKeyframeData side="bottom" trackKey={trackKey} keyframeKey={keyframeKey}>
+                <p className='text-xs'>Show Data</p>
+            </PopoverShowKeyframeData>
             <ContextMenuItem
                 onClick={() => {
                     const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys

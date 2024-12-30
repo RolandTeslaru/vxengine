@@ -79,24 +79,29 @@ const ContextMenuContent = React.forwardRef<
 })
 ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName
 
+
 const ContextMenuItem = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & {
-    inset?: boolean
+    inset?: boolean;
+    preventClose?: boolean;
   }
->(({ className, inset, style, ...props }, ref) => (
-  <ContextMenuPrimitive.Item
-    ref={ref}
-    className={cn(
-    `relative flex hover:bg-neutral-800 hover:shadow-md shadow-black
-     rounded-md cursor-default select-none items-center px-2 py-1.5 text-sm outline-none 
-     focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-5`,
-      inset && "pl-8",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, inset, preventClose = false, ...props }, ref) => {
+
+  return (
+      <ContextMenuPrimitive.Item
+        ref={ref}
+        className={cn(
+          `relative flex hover:bg-neutral-800 hover:shadow-md shadow-black
+           rounded-md cursor-default select-none items-center px-2 py-1.5 text-sm outline-none 
+           focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-5 ${preventClose && "!pointer-events-none"}`,
+          inset && "pl-8",
+          className
+        )}
+        {...props}
+      />
+  );
+});
 ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName
 
 const ContextMenuCheckboxItem = React.forwardRef<

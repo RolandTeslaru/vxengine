@@ -25,7 +25,7 @@ const FinalPropertyContextMenu: React.FC<Props> = ({ vxkey, propertyPath }) => {
                 onClick={() => pushDialog(<ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
             >
                 <p className=' text-red-600'>
-                    Remove Property
+                    Erase Property
                 </p>
             </ContextMenuItem>
         </ContextMenuContent>

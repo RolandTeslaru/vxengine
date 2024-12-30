@@ -7,6 +7,8 @@ import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert'
 import ValueRenderer from '../ValueRenderer'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import PopoverShowTrackData from '../Popovers/PopoverShowTrackData';
+import PopoverShowStaticPropData from '../Popovers/PopoverShowStaticPropData';
 
 interface Props extends InputProps {
     propertyPath: string
@@ -49,6 +51,15 @@ export const PropInput: FC<Props> = (props) => {
             </ContextMenuTrigger>
             {disabled === false &&
                 <ContextMenuContent className='flex flex-col'>
+                    {isPropertyTracked ?
+                        <PopoverShowTrackData trackKey={trackKey}>
+                            <p>Show Data</p>
+                        </PopoverShowTrackData>
+                        :
+                        <PopoverShowStaticPropData staticPropKey={trackKey}>
+                            <p>Show Data</p>
+                        </PopoverShowStaticPropData>
+                    }
                     {isPropertyTracked && 
                         <ContextMenuItem
                             onClick={(e) => {
