@@ -203,6 +203,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     selectedKeyframeKeys: {},
     selectedKeyframesFlatMap: [],
     selectKeyframe: (trackKey, keyframeKey) => {
+        console.log("Selecting Keyframe ", keyframeKey, " on track ", trackKey)
         set(
             produce((state: TimelineEditorStoreProps) => {
                 if (!state.selectedKeyframeKeys[trackKey])
@@ -215,6 +216,8 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
                 state.selectedKeyframesFlatMap = createFlatMap(state);
             })
         )
+
+        console.log("Selected Keyframes After ", get().selectedKeyframeKeys)
     },
     removeSelectedKeyframe: (trackKey, keyframeKey) => {
         set(

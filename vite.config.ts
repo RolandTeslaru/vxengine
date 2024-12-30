@@ -3,6 +3,7 @@ import wasm from 'vite-plugin-wasm';
 import path from 'path';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import topLevelAwait from 'vite-plugin-top-level-await';
+import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
 
 import visualizer from 'rollup-plugin-visualizer';
 
@@ -50,6 +51,8 @@ export default defineConfig({
         'lodash',
         'baffle',
         'scss',
+        'zustand',
+        '@emotion',
         'postprocessing',
       ],
       output: {
@@ -60,13 +63,26 @@ export default defineConfig({
       },
     },
     minify: true, // Minify the output for better performance
-    sourcemap: true, // Enable sourcemaps for better debugging
+    sourcemap: false, // Enable sourcemaps for better debugging
     target: 'esnext', // Ensure modern browser support for Next.js
   },
   plugins: [
     wasm(),
     topLevelAwait(),
-    cssInjectedByJsPlugin()
+    cssInjectedByJsPlugin(),
+    obfuscatorPlugin({
+      options: {
+        compact: true, // Minify the obfuscated code
+        renameGlobals: true,
+        identifierNamesGenerator: "mangled",
+        controlFlowFlattening: false, // Avoid high performance cost
+        stringArray: true, // Replace strings with array indices
+        stringArrayThreshold: 0.75, // Obfuscate 75% of strings
+        deadCodeInjection: false, // Avoid unnecessary bundle size increase
+        transformObjectKeys: true, // Obfuscate object keys for added security
+        disableConsoleOutput: true, // Remove console.log statements
+      }
+    }),
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'), // Define NODE_ENV for frontend compatibility

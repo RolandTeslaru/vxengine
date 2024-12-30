@@ -9,6 +9,11 @@ import { useRefStore } from "@vxengine/utils/useRefStore";
 import { useTimelineEditorAPI } from "../..";
 import Search from "@vxengine/components/ui/Search";
 import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
+import { ContextMenu, ContextMenuContent, ContextMenuSub, ContextMenuItem, ContextMenuTrigger, ContextMenuSubTrigger, ContextMenuSubContent } from "@vxengine/components/shadcn/contextMenu";
+import PopoverShowTrackData from "@vxengine/components/ui/Popovers/PopoverShowTrackData";
+import Box from '@geist-ui/icons/box'
+import Maximize2 from "@geist-ui/icons/maximize2";
+import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
 
 const TRACK_HEIGHT = 34;
 
@@ -130,18 +135,55 @@ const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) =
     )
 }
 
-const FinalPath = ({ pathKey, trackKey }: { pathKey: string, trackKey: string }) => {
+interface FinaNodeProps {
+    pathKey: string
+    trackKey: string
+}
+
+const FinalPath: React.FC<FinaNodeProps> = (props) => {
+    const { pathKey, trackKey } = props;
+
     return (
-        <div className="h-full ml-auto flex items-center gap-2">
-            <p className="text-xs text-neutral-500">
-                {pathKey}
-            </p>
-            <KeyframeControl
-                propertyKey={trackKey}
-            />
-        </div>
+        <ContextMenu>
+            <ContextMenuTrigger className="h-full ml-auto flex items-center gap-2">
+                    <p className="text-xs text-neutral-500">
+                        {pathKey}
+                    </p>
+                    <KeyframeControl
+                        propertyKey={trackKey}
+                    />
+            </ContextMenuTrigger>
+            <FinalPathContextMenu {...props}/>
+        </ContextMenu>
     )
 }
+const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
+    const { pathKey, trackKey } = props;
+
+    return (
+        <ContextMenuContent>
+            <PopoverShowTrackData trackKey={trackKey} side="right">
+                <p className="text-xs font-sans-menlo">Show Data</p>
+            </PopoverShowTrackData>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                    <p className="text-xs font-sans-menlo">Select...</p>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <ContextMenuItem onClick={() => selectAllKeyframesOnTrack(trackKey)}>
+                        <Maximize2 size={15} className='rotate-45'/>
+                        <p className="text-xs">All on Track</p>
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => selectAllKeyframesOnObject(trackKey)}>
+                        <Box size={15}/>
+                        <p>All on Object</p>
+                    </ContextMenuItem>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
+        </ContextMenuContent>
+    )
+}
+
 
 const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: {nodeKey: string, isCollapsed: boolean}) => {
     return (

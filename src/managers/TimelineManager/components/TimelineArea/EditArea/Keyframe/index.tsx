@@ -132,34 +132,34 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
     }, [keyframe.time, startLeft, scale]);
 
     return (
-        <RowDnd
-            left={left}
-            width={rowHeight / 2}
-            start={startLeft}
-            grid={snap ? ONE_SECOND_UNIT_WIDTH / 10 : 1}
-            enableDragging={true}
-            enableResizing={false}
-            bounds={{
-                left: 0,
-                right: ONE_SECOND_UNIT_WIDTH * 1000
-            }}
-            // @ts-expect-error
-            onDragEnd={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
-            onDrag={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
-        >
-            <div
-                className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <RowDnd
+                    left={left}
+                    width={rowHeight / 2}
+                    start={startLeft}
+                    grid={snap ? ONE_SECOND_UNIT_WIDTH / 10 : 1}
+                    enableDragging={true}
+                    enableResizing={false}
+                    bounds={{
+                        left: 0,
+                        right: ONE_SECOND_UNIT_WIDTH * 1000
+                    }}
+                    // @ts-expect-error
+                    onDragEnd={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
+                    onDrag={(data) => handleOnDrag(data.left, data.lastLeft, trackKey, keyframe.id)}
+                >
+                    <div
+                        className={`absolute h-2 w-[11px] fill-white hover:fill-blue-600
                     ${isSelected && "!fill-yellow-300"} `
-                }
-                style={{
-                    left: `${left}px`,
-                    top: `${rowHeight / 4}px`,
-                }}
-                onClick={(e) => handleOnClick(e, trackKey, keyframe)}
-                onContextMenu={(e) => { selectKeyframe(trackKey, keyframe.id) }}
-            >
-                <ContextMenu>
-                    <ContextMenuTrigger>
+                        }
+                        style={{
+                            left: `${left}px`,
+                            top: `${rowHeight / 4}px`,
+                        }}
+                        onClick={(e) => handleOnClick(e, trackKey, keyframe)}
+                        onContextMenu={(e) => { selectKeyframe(trackKey, keyframe.id) }}
+                    >
                         <svg viewBox="0 0 100 100">
                             <polygon
                                 points="50,0 100,50 50,100 0,50"
@@ -167,12 +167,12 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
                                 strokeWidth="5"
                             />
                         </svg>
-                    </ContextMenuTrigger>
-                    <KeyframeContextMenu trackKey={trackKey} keyframeKey={keyframe.id} />
-                </ContextMenu>
 
-            </div>
-        </RowDnd>
+                    </div>
+                </RowDnd>
+            </ContextMenuTrigger>
+            <KeyframeContextMenu trackKey={trackKey} keyframeKey={keyframe.id} />
+        </ContextMenu>
     );
 })
 

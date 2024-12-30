@@ -1,9 +1,14 @@
-import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn/contextMenu'
+import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu'
 import { Input } from '@vxengine/components/shadcn/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
 import PopoverShowKeyframeData from '@vxengine/components/ui/Popovers/PopoverShowKeyframeData'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager'
+import ArrowRight from '@geist-ui/icons/arrowRight'
+import ArrowLeft from "@geist-ui/icons/arrowLeft"
+import Maximize2 from '@geist-ui/icons/maximize2'
+
 import React from 'react'
+import { selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
 
 interface Props {
     trackKey: string,
@@ -13,15 +18,39 @@ interface Props {
 const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey }) => {
     const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
     const selectedKeyframesFlatMap = useTimelineEditorAPI(state => state.selectedKeyframesFlatMap)
+    
+    const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe)
+
 
     return (
         <ContextMenuContent>
             <PopoverShowKeyframeData side="bottom" trackKey={trackKey} keyframeKey={keyframeKey}>
                 <p className='text-xs'>Show Data</p>
             </PopoverShowKeyframeData>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                    <p className='text-xs font-sans-menlo text-center w-full'>
+                        Select...
+                    </p>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesAfter(trackKey, keyframeKey)}>
+                        <ArrowRight size={15} />
+                        <p className='text-xs'>After</p>
+                    </ContextMenuItem>
+                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesOnTrack(trackKey)}>
+                        <Maximize2 size={15} className='rotate-45'/>
+                        <p className='text-xs'>All on Track</p>
+                    </ContextMenuItem>
+                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesBefore(trackKey, keyframeKey)}>
+                        <ArrowLeft size={15} />
+                        <p className='text-xs'>Before</p>
+                    </ContextMenuItem>
+
+                </ContextMenuSubContent>
+            </ContextMenuSub>
             <ContextMenuItem
                 onClick={() => {
-                    const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
                     selectedKeyframesFlatMap.forEach(kf => {
                         removeKeyframe({
                             keyframeKey: kf.keyframeKey,
@@ -32,9 +61,9 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
                 }}
             >
                 <p className='font-sans-menlo text-xs text-red-600'>
-                    {selectedKeyframesFlatMap.length < 2 
-                    ? <>Delete Keyframe</>
-                    : <>Delete Keyframes</>    
+                    {selectedKeyframesFlatMap.length < 2
+                        ? <>Delete Keyframe</>
+                        : <>Delete Keyframes</>
                     }
                 </p>
             </ContextMenuItem>
@@ -44,49 +73,3 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
 export default KeyframeContextMenu
 
-
-const ShowDataPopover = ({ trackKey, keyframeKey }) => {
-    const keyframe = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
-    const setKeyframeValue = useTimelineEditorAPI(state => state.setKeyframeValue)
-    const setKeyframeTime = useTimelineEditorAPI(state => state.setKeyframeTime);
-
-    return (
-        <PopoverContent className='gap-2' style={{boxShadow: "0px 0px 5px 10px rgba(0,0,0, 0.3)",}}>
-            <p className='font-sans-menlo text-xs text-center mb-2'>Keyframe Data</p>
-            <div className='flex flex-col font-sans-menlo text-xs gap-2'>
-                <div className='flex flex-row'>
-                    <p className='text-neutral-200'>value</p>
-                    <Input
-                        type="number"
-                        value={keyframe.value}
-                        onChange={(e) => setKeyframeValue(keyframeKey, trackKey, e.target.value as any, true)}
-                        className="h-fit ml-auto text-[10px] bg-neutral-800 border border-neutral-700 p-0.5 max-w-[60px]"
-                        style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
-                    />
-                </div>
-                <div className='flex flex-row'>
-                    <p className='text-neutral-200'>time</p>
-                    <Input
-                        type="number"
-                        value={keyframe.time}
-                        onChange={(e) => setKeyframeTime(keyframeKey, trackKey, e.target.value as any, true)}
-                        className="h-fit ml-auto text-[10px] bg-neutral-800 border border-neutral-700 p-0.5 max-w-[60px]"
-                        style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
-                    />
-                </div>
-                <div className='flex flex-row'>
-                    <p className='text-neutral-200'>keyframeKey</p>
-                    <p className='ml-auto text-neutral-400'>
-                        {keyframeKey}
-                    </p>
-                </div>
-                <div className='flex flex-row'>
-                    <p className='text-neutral-200'>trackKey</p>
-                    <p className='ml-auto text-neutral-400'>
-                        {trackKey}
-                    </p>
-                </div>
-            </div>
-        </PopoverContent>
-    )
-}
