@@ -90,7 +90,7 @@ export interface TimelineEditorStoreProps {
     // Keyframe functions
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;
     removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
-    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean) => void;
+    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: VXVector2, outHandle: VXVector2, reRender?: boolean) => void;
     // StaticProp function

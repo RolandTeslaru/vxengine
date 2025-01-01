@@ -150,18 +150,18 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
     const handleMove = (e: DragEvent) => {
       const target = e.target;
 
-      if (editAreaRef.current) {
-        const result = dealDragAutoScroll(e, (delta) => {
-          computeScrollLeft(delta);
+      // if (editAreaRef.current) {
+      //   const result = dealDragAutoScroll(e, (delta) => {
+      //     computeScrollLeft(delta);
 
-          let { left, width } = target.dataset;
-          const preLeft = parseFloat(left);
-          const preWidth = parseFloat(width);
-          deltaX.current += delta;
-          move({ preLeft, preWidth, scrollDelta: delta });
-        });
-        if (!result) return;
-      }
+      //     let { left, width } = target.dataset;
+      //     const preLeft = parseFloat(left);
+      //     const preWidth = parseFloat(width);
+      //     deltaX.current += delta;
+      //     move({ preLeft, preWidth, scrollDelta: delta });
+      //   });
+      //   if (!result) return;
+      // }
 
       let { left, width } = target.dataset;
       const preLeft = parseFloat(left);
@@ -290,18 +290,18 @@ export const RowDnd = React.forwardRef<RowRndApi, RowRndProps>(
       const target = e.target;
       const dir = e.edges?.left ? 'left' : 'right';
 
-      if (editAreaRef.current) {
-        const result = dealResizeAutoScroll(e, dir, (delta) => {
-          computeScrollLeft(delta);
+      // if (editAreaRef.current) {
+      //   const result = dealResizeAutoScroll(e, dir, (delta) => {
+      //     computeScrollLeft(delta);
 
-          let { left, width } = target.dataset;
-          const preLeft = parseFloat(left);
-          const preWidth = parseFloat(width);
-          deltaX.current += delta;
-          resize({ preLeft, preWidth, dir });
-        });
-        if (!result) return;
-      }
+      //     let { left, width } = target.dataset;
+      //     const preLeft = parseFloat(left);
+      //     const preWidth = parseFloat(width);
+      //     deltaX.current += delta;
+      //     resize({ preLeft, preWidth, dir });
+      //   });
+      //   if (!result) return;
+      // }
 
       let { left, width } = target.dataset;
       const preLeft = parseFloat(left);

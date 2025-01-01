@@ -13,6 +13,8 @@ import { useCameraManagerAPI } from "@vxengine/managers/CameraManager";
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
 import Search from "./Search";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
+import { useRefStore } from "@vxengine/utils";
+import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
 
 
 const filterOutFunctions = (state: any) => {
@@ -129,6 +131,34 @@ const State_ObjectPropertyAPI = () => {
     );
 };
 
+
+function extractDatasetFromMap(map: Map<string, any>) {
+    const obj = {}
+    for(let [key, value] of map ){
+        obj[key] = (value as HTMLElement)?.dataset ? { dataset: { ...value.dataset } } : value;
+    }
+
+    return obj;
+}
+
+const State_RefStore = () => {
+    const state = useRefStore();
+    const convertedState = {
+        ...state,
+        keyframesRef: extractDatasetFromMap(state.keyframesRef),
+        trackSegmentsRef: extractDatasetFromMap(state.trackSegmentsRef)
+    }
+    return (
+        <>
+            <JsonView
+                src={convertedState}
+                collapsed={({depth}) => depth > 3}
+                dark={true}
+            />
+        </>
+    )
+}
+
 const stateComponents = {
     ObjectManagerAPI: {
         store: useObjectManagerAPI,
@@ -167,6 +197,10 @@ const stateComponents = {
     AnimationEngineAPI: {
         store: useAnimationEngineAPI,
     },
+    RefStore: {
+        store: useRefStore,
+        component: State_RefStore
+    }
 };
 
 const StateVisualizer = () => {

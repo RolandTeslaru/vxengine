@@ -138,18 +138,18 @@ export const RowDnd = memo(forwardRef<RowRndApi, RowRndProps>(
     const handleMove = useCallback((e: DragEvent) => {
       const target = e.target;
 
-      if (editAreaRef.current) {
-        const result = dealDragAutoScroll(e, (delta) => {
-          computeScrollLeft(delta);
+      // if (editAreaRef.current) {
+      //   const result = dealDragAutoScroll(e, (delta) => {
+      //     computeScrollLeft(delta);
 
-          let { left, width } = target.dataset;
-          const preLeft = parseFloat(left);
-          const preWidth = parseFloat(width);
-          deltaX.current += delta;
-          move({ preLeft, preWidth, scrollDelta: delta });
-        });
-        if (!result) return;
-      }
+      //     let { left, width } = target.dataset;
+      //     const preLeft = parseFloat(left);
+      //     const preWidth = parseFloat(width);
+      //     deltaX.current += delta;
+      //     move({ preLeft, preWidth, scrollDelta: delta });
+      //   });
+      //   if (!result) return;
+      // }
 
       let { left, width } = target.dataset;
       const preLeft = parseFloat(left);

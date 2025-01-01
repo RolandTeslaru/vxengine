@@ -24,9 +24,10 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
     return (
         <ContextMenuContent>
-            <PopoverShowKeyframeData side="bottom" trackKey={trackKey} keyframeKey={keyframeKey}>
+            <PopoverShowKeyframeData side="right" trackKey={trackKey} keyframeKey={keyframeKey}>
                 <p className='text-xs'>Show Data</p>
             </PopoverShowKeyframeData>
+            
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     <p className='text-xs font-sans-menlo text-center w-full'>
@@ -46,9 +47,9 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
                         <ArrowLeft size={15} />
                         <p className='text-xs'>Before</p>
                     </ContextMenuItem>
-
                 </ContextMenuSubContent>
             </ContextMenuSub>
+
             <ContextMenuItem
                 onClick={() => {
                     selectedKeyframesFlatMap.forEach(kf => {

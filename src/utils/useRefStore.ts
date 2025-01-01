@@ -4,7 +4,7 @@ import React from "react";
 import { TransformControls } from "three-stdlib";
 import { create } from "zustand";
 
-interface refStoreProps {
+export interface refStoreProps {
     editAreaRef: React.MutableRefObject<HTMLDivElement | null>
     trackListRef: React.MutableRefObject<HTMLDivElement | null>
     timelineAreaRef: React.MutableRefObject<HTMLDivElement | null>
@@ -17,7 +17,13 @@ interface refStoreProps {
     transformControlsRef: React.MutableRefObject<TransformControls | null>
 
     entityListRef: React.MutableRefObject<any>
+    keyframesRef: Map<string, HTMLElement>
+    trackSegmentsRef: Map<string, HTMLElement>
 }
+
+export const keyframesRef = new Map<string, HTMLElement>()
+
+export const trackSegmentsRef =  new Map<string, HTMLElement>()
 
 export const useRefStore = create<refStoreProps>((set, get) => ({
     editAreaRef: React.createRef<HTMLDivElement>(),
@@ -31,5 +37,9 @@ export const useRefStore = create<refStoreProps>((set, get) => ({
 
     transformControlsRef: React.createRef<TransformControls>(),
 
-    entityListRef: React.createRef()
+    entityListRef: React.createRef(),
+
+    keyframesRef: keyframesRef,
+    trackSegmentsRef: trackSegmentsRef,
 }))
+

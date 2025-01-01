@@ -62,10 +62,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   constructor(nodeEnv: "production" | "development" | "test") {
     super(new Events());
 
-    if(nodeEnv === "production"){
+    if (nodeEnv === "production") {
       this._IS_PRODUCTION = true;
     }
-    else if (nodeEnv === "development"){
+    else if (nodeEnv === "development") {
       this._IS_DEVELOPMENT = true;
     }
 
@@ -185,16 +185,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * @param timelines - A record of timelines to load.
   */
   loadTimelines(timelines: Record<string, ITimeline>) {
-    if(IS_DEVELOPMENT){  
+    if (IS_DEVELOPMENT) {
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
-  
+
       if (syncResult?.status === 'out_of_sync') {
         this.setIsPlaying(false);
       }
     }
-    else if(IS_PRODUCTION){
+    else if (IS_PRODUCTION) {
       useAnimationEngineAPI.setState({ timelines: timelines })
-    } 
+    }
 
     // Load the first timeline
     const firstTimeline = Object.values(timelines)[0];
@@ -632,8 +632,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
 
     this._checkCameraUpdateRequirement(vxkey, propertyPath);
-    
-    if(this._IS_DEVELOPMENT)
+
+    if (this._IS_DEVELOPMENT)
       updateProperty(vxkey, propertyPath, interpolatedValue);
   }
 
@@ -1037,7 +1037,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     switch (action) {
       case 'create': {
         const keyframesForTrack = useTimelineEditorAPI.getState().tracks[trackKey].keyframes;
-        const sortedKeyframes = Object.values(keyframesForTrack).sort((a,b) => a.time - b.time)
+        const sortedKeyframes = Object.values(keyframesForTrack).sort((a, b) => a.time - b.time)
 
         const rawKeyframes = sortedKeyframes.map(edKeyframe => {
           return {
@@ -1101,9 +1101,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   refreshKeyframe(
     trackKey: string,
-    action: 'create' | 'remove' | 'update',
+    action: 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles',
     keyframeKey: string,
-    reRender: boolean = true
+    reRender: boolean = true,
+    newData?: number | [number, number, number, number]
   ) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
@@ -1138,7 +1139,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
             edKeyframe.handles.out.x,
             edKeyframe.handles.out.y,
           ]
-        } 
+        }
         keyframes.push(rawKeyframe);
         keyframes.sort((a, b) => a.time - b.time);
 
@@ -1171,6 +1172,50 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         }
         break;
       }
+
+      case 'updateTime': {
+        if (typeof newData === 'number') {
+          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          targetedKeyframe.time = newData;
+          keyframes.sort((a, b) => a.time - b.time);
+
+          if (DEBUG_REFRESHER) {
+            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Time in track '${trackKey}' with value '${newData}'`);
+          }
+        } else {
+          console.error(`Invalid newData for 'updateTime'. Expected a number but received:`, newData);
+        }
+        break;
+      }
+
+      case 'updateValue': {
+        if (typeof newData === 'number') {
+          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          targetedKeyframe.value = newData;
+
+          if (DEBUG_REFRESHER) {
+            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Value in track '${trackKey}' with value '${newData}'`);
+          }
+        } else {
+          console.error(`Invalid newData for 'updateValue'. Expected a number but received:`, newData);
+        }
+        break;
+      }
+
+      case 'updateHandles': {
+        if (Array.isArray(newData) && newData.length === 4 && newData.every(v => typeof v === 'number')) {
+          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          targetedKeyframe.handles = newData as [number, number, number, number];
+
+          if (DEBUG_REFRESHER) {
+            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Handles in track '${trackKey}' with value '${newData}'`);
+          }
+        } else {
+          console.error(`Invalid newData for 'updateHandles'. Expected [number, number, number, number] but received:`, newData);
+        }
+        break;
+      }
+
 
       case "remove": {
         track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
@@ -1314,7 +1359,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const spline = splineState[splineKey];
 
         // set the currentTimeline spline
-        if (!this.currentTimeline.splines) 
+        if (!this.currentTimeline.splines)
           this.currentTimeline.splines = {};
 
         this.currentTimeline.splines[splineKey] = spline;
@@ -1389,7 +1434,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       case 'remove': {
         delete this.currentTimeline.settings[vxkey][settingKey];
         // Remove the object if no settings remain;
-        if(Object.keys(this.currentTimeline.settings[vxkey]).length === 0){
+        if (Object.keys(this.currentTimeline.settings[vxkey]).length === 0) {
           delete this.currentTimeline.settings[vxkey];
         }
         break;
@@ -1413,9 +1458,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   static truncateToDecimals(num: number, decimals?: number): number {
-    if(!decimals)
+    if (!decimals)
       decimals = AnimationEngine.ENGINE_PRECISION;
-    
+
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;
   }
@@ -1471,7 +1516,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       });
 
       // Validate and fix splines and nodes
-      if(timeline.splines)
+      if (timeline.splines)
         Object.values(timeline.splines).forEach(spline => {
           spline.nodes.forEach((node, index) => {
             node.forEach((coord, coordIndex) => {
@@ -1489,4 +1534,3 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 }
-

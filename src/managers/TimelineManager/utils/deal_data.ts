@@ -4,28 +4,46 @@ import { useTimelineEditorAPI } from "../store";
 import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 import { truncateToDecimals } from "../store";
 
-/** 时间转像素 */
 export function parserTimeToPixel(
   data: number,
-  startLeft: number
+  startLeft: number,
+  scale?: number
 ) {
-  const scale = useTimelineEditorAPI.getState().scale
+  // Data means time
+  if (!scale) {
+    scale = useTimelineEditorAPI.getState().scale
+  }
   return startLeft + (data / scale) * ONE_SECOND_UNIT_WIDTH;
 }
 
-/** 像素转时间 */
+
 export function parserPixelToTime(
   data: number,
   startLeft: number,
-  truncate?: boolean
+  truncate?: boolean,
+  scale?: number
 ) {
-  const scale = useTimelineEditorAPI.getState().scale  
+  // Data means pixels ( left value ) 
+  if(!scale){
+    scale = useTimelineEditorAPI.getState().scale
+  }
   const value = ((data - startLeft) / ONE_SECOND_UNIT_WIDTH) * scale;
-  
-  if(truncate)
+
+  if (truncate)
     return truncateToDecimals(value)
 
   return value;
+}
+
+export function updatePixelByScale(
+  prevLeft: number,
+  oldScale: number,
+  newScale: number,
+  startLeft: number
+): number {
+  const time = ((prevLeft - startLeft) / ONE_SECOND_UNIT_WIDTH) * oldScale;
+  
+  return startLeft + (time / newScale) * ONE_SECOND_UNIT_WIDTH;
 }
 
 /** 位置 + 宽度 转 start + end */

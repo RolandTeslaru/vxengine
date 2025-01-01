@@ -17,7 +17,6 @@ export const startLeft = 0;
 
 const TimelineArea = (() => {
   const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
-  const editAreaRef = useRefStore(state => state.editAreaRef);
   const trackListRef = useRefStore(state => state.trackListRef);
   const scrollSyncId = useRefStore(state => state.scrollSyncId);
   const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
