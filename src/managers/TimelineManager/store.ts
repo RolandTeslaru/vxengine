@@ -16,7 +16,7 @@ import { debounce, isEqual } from 'lodash';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { invalidate } from '@react-three/fiber';
 import { useRefStore } from '@vxengine/utils';
-import { handleKeyframeMutation } from './components/TimelineArea/EditArea/Keyframe';
+import { handleKeyframeMutation } from './components/TimelineArea/EditArea/Keyframe/utils';
 
 export type GroupedPaths = Record<string, PathGroup>;
 

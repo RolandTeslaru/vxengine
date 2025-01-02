@@ -16,18 +16,14 @@ interface Props {
 }
 
 const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey }) => {
-    const removeKeyframe = useTimelineEditorAPI(state => state.removeKeyframe)
-    const selectedKeyframesFlatMap = useTimelineEditorAPI(state => state.selectedKeyframesFlatMap)
-    
-    const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe)
-
+    const selectedKeyframesLength = useTimelineEditorAPI(state => state.selectedKeyframesFlatMap?.length)
 
     return (
         <ContextMenuContent>
             <PopoverShowKeyframeData side="right" trackKey={trackKey} keyframeKey={keyframeKey}>
                 <p className='text-xs'>Show Data</p>
             </PopoverShowKeyframeData>
-            
+
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     <p className='text-xs font-sans-menlo text-center w-full'>
@@ -51,18 +47,10 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
             </ContextMenuSub>
 
             <ContextMenuItem
-                onClick={() => {
-                    selectedKeyframesFlatMap.forEach(kf => {
-                        removeKeyframe({
-                            keyframeKey: kf.keyframeKey,
-                            trackKey: kf.trackKey,
-                            reRender: true
-                        })
-                    })
-                }}
+                onClick={handleRemoveSelectedKeyframes}
             >
                 <p className='font-sans-menlo text-xs text-red-600'>
-                    {selectedKeyframesFlatMap.length < 2
+                    {selectedKeyframesLength < 2
                         ? <>Delete Keyframe</>
                         : <>Delete Keyframes</>
                     }
@@ -71,6 +59,17 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
         </ContextMenuContent>
     )
 })
+
+const handleRemoveSelectedKeyframes = () => {
+    const { removeKeyframe, selectedKeyframesFlatMap} = useTimelineEditorAPI.getState()
+    selectedKeyframesFlatMap.forEach(kf => {
+        removeKeyframe({
+            keyframeKey: kf.keyframeKey,
+            trackKey: kf.trackKey,
+            reRender: true
+        })
+    })
+}
 
 export default KeyframeContextMenu
 

@@ -1,64 +1,28 @@
-import React, { FC, useEffect, useMemo, useState, memo, useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useCallback, useRef, useLayoutEffect } from 'react';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { parserPixelToTime, parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
-import Keyframe from '../Keyframe';
-import { DragLineData } from '../DragLines';
-import { RowDnd } from '../RowDnd';
-import KeyframeContextMenu from '../Keyframe/KeyframeContextMenu';
 import { selectKeyframeSTATIC as selectKeyframe } from '@vxengine/managers/TimelineManager/store';
-import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
 import { DragEvent, Interactable } from "@interactjs/types";
 import { useRefStore } from '@vxengine/utils';
 import interact from 'interactjs';
-import { keyframesRef, trackSegmentsRef } from '@vxengine/utils/useRefStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import Info from '@geist-ui/icons/info';
 import PopoverShowTrackSegmentData from '@vxengine/components/ui/Popovers/PopoverShowTrackSegmentData';
+import {  hydrateKeyframeKeysOrder } from '../Keyframe/utils';
+import { handleTrackDrag } from './utils';
+import { produce } from 'immer';
+import { TimelineEditorStoreProps } from '@vxengine/managers/TimelineManager/types/store';
+import { keyframesRef } from '@vxengine/utils/useRefStore';
 
 export const segmentStartLeft = 22;
 
-const handleOnMove = (e: DragEvent, deltaXRef: { current: number }, trackKey: string, firstKeyframeKey: string, secondKeyframeKey: string, trackSegmentsRef: Map<string, HTMLElement>) => {
-    const target = e.target;
-    if (!target.dataset.left) {
-        target.dataset.left = target.style.left.replace('px', '') || '0';
-    }
-    if (!target.dataset.width) {
-        target.dataset.width = target.style.width.replace('px', '') || '0';
-    }
-
-    const { left, width } = target.dataset;
-    const preLeft = parseFloat(left);
-}
 
 interface TrackSegmentProps { 
     trackKey: string;
     firstKeyframeKey: string;
     secondKeyframeKey: string
-}
-
-interface updateUIProps {
-    firstKeyframeKey: string;
-    secondKeyframeKey: string;
-    newLeft?: number;
-    newWidth?: number;
-}
-
-const updateTrackSegmentUI = (props: updateUIProps) => {
-    const {firstKeyframeKey, secondKeyframeKey, newLeft, newWidth} = props
-    const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
-
-    const tsElement = trackSegmentsRef.get(trackSegmentKey);
-    if(newLeft){
-        tsElement.style.left = `${newLeft}px`
-        Object.assign(tsElement.dataset, { left: newLeft + segmentStartLeft })
-    }
-    if(newWidth){
-        tsElement.style.width = `${newWidth}px`;
-        Object.assign(tsElement.dataset, {width: newWidth})
-    }
 }
 
 const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
@@ -70,7 +34,6 @@ const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
     const deltaX = useRef(0);
 
     useLayoutEffect(() => {
-        console.log("Reinitializing Track Segment", trackKey)
         const timelineEditorState = useTimelineEditorAPI.getState();
         const initialScale = timelineEditorState.scale;
         const firstKeyframe = timelineEditorState.tracks[trackKey].keyframes[firstKeyframeKey];
@@ -97,7 +60,8 @@ const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
         interactableRef.current = interact(elementRef.current);
 
         interactableRef.current.draggable({
-            onmove: (e) => handleOnMove(e, deltaX, trackKey, firstKeyframeKey, secondKeyframeKey, trackSegmentsRef)
+            onmove: (e) => handleOnMove(e, deltaX, trackKey, firstKeyframeKey, secondKeyframeKey),
+            onend: (e) => handleOnMoveEnd(e)
         })
 
         return () => {
@@ -166,3 +130,46 @@ const TrackSegmentContextMenu: React.FC<TrackSegmentProps> = React.memo((props) 
       </ContextMenuContent>
     )
 })
+
+const handleOnMove = (
+    e: DragEvent, 
+    deltaXRef: { current: number }, 
+    trackKey: string, 
+    firstKeyframeKey: string, 
+    secondKeyframeKey: string, 
+) => {
+    const target = e.target;
+    if (!target.dataset.left) {
+        target.dataset.left = target.style.left.replace('px', '') || '0';
+    }
+    if (!target.dataset.width) {
+        target.dataset.width = target.style.width.replace('px', '') || '0';
+    }
+
+    const prevLeft = parseFloat(target.dataset.left);
+    deltaXRef.current += e.dx;
+
+    let newLeft = prevLeft + e.dx;
+
+    handleTrackDrag(newLeft, prevLeft, trackKey, firstKeyframeKey, secondKeyframeKey)
+}
+
+const handleOnMoveEnd = (e: DragEvent) => {
+    const { selectedKeyframesFlatMap } = useTimelineEditorAPI.getState();
+
+    useTimelineEditorAPI.setState(
+        produce((state: TimelineEditorStoreProps) => {
+            selectedKeyframesFlatMap.forEach(selectKeyframeFlat => {
+                const { trackKey, keyframeKey } = selectKeyframeFlat;
+                const kfElement = keyframesRef.get(keyframeKey);
+                const hydratedKfTime = parseFloat(kfElement.dataset.time);
+
+                if (hydratedKfTime !== null && hydratedKfTime !== undefined && !isNaN(hydratedKfTime)) {
+                    state.tracks[trackKey].keyframes[keyframeKey].time = hydratedKfTime;
+                }
+            })
+        })
+    )
+
+    hydrateKeyframeKeysOrder();
+}

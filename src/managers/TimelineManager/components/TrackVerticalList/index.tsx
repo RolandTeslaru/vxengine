@@ -14,6 +14,7 @@ import PopoverShowTrackData from "@vxengine/components/ui/Popovers/PopoverShowTr
 import Box from '@geist-ui/icons/box'
 import Maximize2 from "@geist-ui/icons/maximize2";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
+import s from "./entityList.module.scss"
 
 const TRACK_HEIGHT = 34;
 
@@ -51,10 +52,10 @@ const TrackVerticalList = memo(() => {
     }, [trackTree, searchQuery])
 
     return (
-        <div className="w-full h-full mr-2 px-1 flex flex-col bg-neutral-950 border border-neutral-800 rounded-2xl">
-            <div className={`h-[30px] flex flex-row`}>
+        <div className={`w-full h-full mr-2 flex flex-col rounded-2xl relative overflow-hidden ${s.gradient_border_mask}`}>
+            <div className={`h-[30px] flex flex-row px-2 `}>
                 <Search
-                    className="w-36 px-2 bg-neutral-900 ml-auto my-auto"
+                    className="w-36 px-2 bg-neutral-800 ml-auto my-auto"
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
@@ -84,28 +85,21 @@ const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: num
     //           object2 > scale > y
 
     return (
-        <li
-            key={node.key}
-            role="treeitem"
-            className="list-none"
-            aria-level={level}
-            aria-selected="false"
-            tabIndex={-1}
-        >
-            <div className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center hover:bg-neutral-800 w-full`}>
+        <>
+            <li className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center hover:bg-blue-800 w-full`}>
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
                     {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed}/>}
                     {renderPaths(paths, isLinearTrack, node.track)}
                 </div>
-            </div>
+            </li>
             {!isCollapsed && hasChildren && (
-                <ul role="group" className="list-none m-0 p-0">
+                <>
                     {Object.values(node.children).map((node, index) =>
                         <TreeNode node={node} level={level + 1} key={index} />
                     )}
-                </ul>
+                </>
             )}
-        </li>
+        </>
     )
 })
 

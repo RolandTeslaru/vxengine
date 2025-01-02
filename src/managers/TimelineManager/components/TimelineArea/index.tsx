@@ -53,7 +53,7 @@ const TimelineArea = (() => {
 
   return (
     <div 
-        className={`w-full h-full border border-neutral-800 bg-neutral-950 
+        className={`w-full h-full border border-neutral-700 bg-neutral-900 
                     rounded-2xl relative flex flex-col !overflow-hidden  `}
     >
       <div

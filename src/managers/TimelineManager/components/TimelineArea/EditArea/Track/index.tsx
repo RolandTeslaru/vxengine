@@ -13,10 +13,6 @@ const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
     const orderedKeyframeKeys = useTimelineEditorAPI(state => state.tracks[trackKey].orderedKeyframeKeys);
     const selectedKeyframeKeysOnTrack = useTimelineEditorAPI(state => state.selectedKeyframeKeys[trackKey])
 
-    useEffect(() => {
-        console.log("Effect triggered by Ordered Keyframe Keys ", orderedKeyframeKeys)
-    }, [orderedKeyframeKeys])
-
     return (
         <>
             {/* Render Keyframes */}
