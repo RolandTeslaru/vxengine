@@ -10,16 +10,17 @@ import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/util
 import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import PopoverShowTrackSegmentData from '@vxengine/components/ui/Popovers/PopoverShowTrackSegmentData';
-import {  hydrateKeyframeKeysOrder } from '../Keyframe/utils';
+import { hydrateKeyframeKeysOrder } from '../Keyframe/utils';
 import { handleTrackDrag } from './utils';
 import { produce } from 'immer';
 import { TimelineEditorStoreProps } from '@vxengine/managers/TimelineManager/types/store';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
+import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 
 export const segmentStartLeft = 22;
 
 
-interface TrackSegmentProps { 
+interface TrackSegmentProps {
     trackKey: string;
     firstKeyframeKey: string;
     secondKeyframeKey: string
@@ -30,6 +31,8 @@ const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
     const elementRef = useRef<HTMLElement>();
     const interactableRef = useRef<Interactable>()
+
+    const { externalContainer } = useWindowContext();
 
     const deltaX = useRef(0);
 
@@ -57,7 +60,11 @@ const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
         // Handle Interactable
         if (interactableRef.current)
             interactableRef.current.unset();
-        interactableRef.current = interact(elementRef.current);
+        
+        interactableRef.current = interact(elementRef.current,
+            externalContainer && {
+                context: externalContainer.ownerDocument
+        });
 
         interactableRef.current.draggable({
             onmove: (e) => handleOnMove(e, deltaX, trackKey, firstKeyframeKey, secondKeyframeKey),
@@ -118,25 +125,25 @@ const TrackSegmentContextMenu: React.FC<TrackSegmentProps> = React.memo((props) 
     const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     return (
-      <ContextMenuContent>
-        <PopoverShowTrackSegmentData {...props}>
-            <p className='text-xs font-sans-menlo'>Show Data...</p>
-        </PopoverShowTrackSegmentData>
-        <ContextMenuItem onClick={() => 
-            pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath}/>, "alert")}
-        >
-            <p className='text-xs font-sans-menlo text-red-600'>Make Property Static </p>
-        </ContextMenuItem>
-      </ContextMenuContent>
+        <ContextMenuContent>
+            <PopoverShowTrackSegmentData {...props}>
+                <p className='text-xs font-sans-menlo'>Show Data...</p>
+            </PopoverShowTrackSegmentData>
+            <ContextMenuItem onClick={() =>
+                pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
+            >
+                <p className='text-xs font-sans-menlo text-red-600'>Make Property Static </p>
+            </ContextMenuItem>
+        </ContextMenuContent>
     )
 })
 
 const handleOnMove = (
-    e: DragEvent, 
-    deltaXRef: { current: number }, 
-    trackKey: string, 
-    firstKeyframeKey: string, 
-    secondKeyframeKey: string, 
+    e: DragEvent,
+    deltaXRef: { current: number },
+    trackKey: string,
+    firstKeyframeKey: string,
+    secondKeyframeKey: string,
 ) => {
     const target = e.target;
     if (!target.dataset.left) {

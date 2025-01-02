@@ -33,7 +33,6 @@ export const EditArea = () => {
   }, [trackTree, searchQuery])
 
   const timelineClientWidth = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
-  console.log("TIme client width ", timelineClientWidth)
 
   // Handle UI Mutations 
   useLayoutEffect(() => {
@@ -84,8 +83,11 @@ const TrackNode: React.FC<TrackNodeProps> = memo(({ node, timelineClientWidth })
   return (
     <>
       <div
-          className={`relative border-t-[0.5px] border-b-[0.5px] h-[${DEFAULT_ROW_HEIGHT}px] border-neutral-800 ${!isTrack && "bg-black"}`}
-          style={{ width: timelineClientWidth}}
+          className={`relative border-t-[0.5px] border-b-[0.5px] border-neutral-800 ${!isTrack && "bg-black"}`}
+          style={{ 
+            width: timelineClientWidth, 
+            height: DEFAULT_ROW_HEIGHT
+          }}
       >
         {isTrack && <Track trackKey={node.track} />}
       </div>

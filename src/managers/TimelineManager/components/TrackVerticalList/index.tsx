@@ -41,10 +41,10 @@ const TrackVerticalList = memo(() => {
     }, [])
 
     const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
-        if(!searchQuery) return trackTree;
+        if (!searchQuery) return trackTree;
 
         return Object.entries(trackTree).reduce((filtredNode, [key, node]) => {
-            if(key && key.toLowerCase().includes(searchQuery.toLowerCase())){
+            if (key && key.toLowerCase().includes(searchQuery.toLowerCase())) {
                 filtredNode[key] = node;
             }
             return filtredNode;
@@ -53,7 +53,7 @@ const TrackVerticalList = memo(() => {
 
     return (
         <div className={`w-full h-full mr-2 flex flex-col rounded-2xl relative overflow-hidden ${s.gradient_border_mask}`}>
-            <div className={`h-[30px] flex flex-row px-2 `}>
+            <div className={`h-[31px] flex flex-row px-2 `}>
                 <Search
                     className="w-36 px-2 bg-neutral-800 ml-auto my-auto"
                     searchQuery={searchQuery}
@@ -86,9 +86,11 @@ const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: num
 
     return (
         <>
-            <li className={`h-[${DEFAULT_ROW_HEIGHT}px] flex items-center hover:bg-blue-800 w-full`}>
+            <li className={`flex items-center hover:bg-blue-800 w-full`}
+                style={{ height: DEFAULT_ROW_HEIGHT}}
+            >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
-                    {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed}/>}
+                    {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed} />}
                     {renderPaths(paths, isLinearTrack, node.track)}
                 </div>
             </li>
@@ -119,7 +121,7 @@ const renderPaths = (paths: string[], isLinearTrack: boolean, trackKey?: string)
 const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
-            <p className="text-xs font-light text-neutral-200" style={{ fontSize: "11px" }}>
+            <p className="font-light text-neutral-200" style={{ fontSize: "11px" }}>
                 {pathKey}
             </p>
             {showArrow &&
@@ -140,14 +142,14 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger className="h-full ml-auto flex items-center gap-2">
-                    <p className="text-xs text-neutral-500">
-                        {pathKey}
-                    </p>
-                    <KeyframeControl
-                        propertyKey={trackKey}
-                    />
+                <p className=" text-neutral-500" style={{ fontSize: "10px" }}>
+                    {pathKey}
+                </p>
+                <div className="scale-90">
+                    <KeyframeControl propertyKey={trackKey} />
+                </div>
             </ContextMenuTrigger>
-            <FinalPathContextMenu {...props}/>
+            <FinalPathContextMenu {...props} />
         </ContextMenu>
     )
 }
@@ -165,11 +167,11 @@ const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <ContextMenuItem onClick={() => selectAllKeyframesOnTrack(trackKey)}>
-                        <Maximize2 size={15} className='rotate-45'/>
+                        <Maximize2 size={15} className='rotate-45' />
                         <p className="text-xs">All on Track</p>
                     </ContextMenuItem>
                     <ContextMenuItem onClick={() => selectAllKeyframesOnObject(trackKey)}>
-                        <Box size={15}/>
+                        <Box size={15} />
                         <p>All on Object</p>
                     </ContextMenuItem>
                 </ContextMenuSubContent>
@@ -179,7 +181,7 @@ const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
 }
 
 
-const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: {nodeKey: string, isCollapsed: boolean}) => {
+const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string, isCollapsed: boolean }) => {
     return (
         <div className="mr-[3px]">
             <button

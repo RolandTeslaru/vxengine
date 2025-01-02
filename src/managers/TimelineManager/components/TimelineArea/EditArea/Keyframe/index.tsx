@@ -13,6 +13,7 @@ import { handleKeyframeDrag, hydrateKeyframeKeysOrder } from './utils';
 import { TimelineEditorStoreProps } from '@vxengine/managers/TimelineManager/types/store';
 import { produce } from 'immer';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
+import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 
 export type EditKeyframeProps = {
     keyframeKey: string;
@@ -35,6 +36,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
 }) => {
     const elementRef = useRef<SVGSVGElement>(null);
     const interactableRef = useRef<Interactable>()
+    const { externalContainer } = useWindowContext();
 
     const deltaX = useRef(0)
 
@@ -60,7 +62,11 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
         // Handle Interactable
         if (interactableRef.current)
             interactableRef.current.unset();
-        interactableRef.current = interact(elementRef.current)
+
+        interactableRef.current = interact(elementRef.current,
+            externalContainer && {
+                context: externalContainer.ownerDocument
+        })
 
         interactableRef.current.draggable({
             onmove: (e) => handleOnMove(e, deltaX, trackKey, keyframeKey),
@@ -74,7 +80,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
 
             keyframesRef.delete(keyframeKey);
         };
-    }, [])
+    }, [externalContainer])
 
     // Repair the dataset 
     useLayoutEffect(() => {
