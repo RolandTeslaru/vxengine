@@ -10,7 +10,7 @@ enableMapSet();
 export { VXEngineProvider } from "./engine"
 export { useVXEngine } from "./engine"
 
-export { VXEngineCoreRenderer, VXEngineCoreUI } from "./core"
+export { VXRenderer, VXStudio } from "./core"
 export { vx } from "./vxobject"
 
 export { useAnimationEngineAPI } from "./AnimationEngine/store"

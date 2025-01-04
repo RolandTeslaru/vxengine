@@ -15,6 +15,7 @@ import Box from '@geist-ui/icons/box'
 import Maximize2 from "@geist-ui/icons/maximize2";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
 import s from "./entityList.module.scss"
+import { useVXEngine } from "@vxengine/engine";
 
 const TRACK_HEIGHT = 34;
 
@@ -27,6 +28,8 @@ const TrackVerticalList = memo(() => {
     const scrollSyncId = useRefStore(state => state.scrollSyncId)
 
     const trackTree = useTimelineEditorAPI(state => state.trackTree);
+
+    const IS_PRODUCTION = useVXEngine(state => state.IS_PRODUCTION)
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target;
@@ -60,6 +63,13 @@ const TrackVerticalList = memo(() => {
                     setSearchQuery={setSearchQuery}
                 />
             </div>
+            {IS_PRODUCTION && 
+                <div className="absolute top-1/2 -translate-y-1/2">
+                    <p className="text-xs font-sans-menlo text-center text-red-600 px-2">
+                        TrackTree is not generated in Production Mode!
+                    </p>
+                </div>  
+            }
             <div
                 className="overflow-y-scroll w-full h-full text-xs"
                 ref={trackListRef}

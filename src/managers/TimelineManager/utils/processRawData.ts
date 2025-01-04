@@ -2,7 +2,7 @@ import { IKeyframe, ISpline, IStaticProps, ITrack, RawObjectProps, RawSpline } f
 import { EditorObjectProps } from "../types/store";
 import { buildTrackTree } from "./trackDataProcessing";
 
-import { IS_DEVELOPMENT } from "@vxengine/constants";
+import { getNodeEnv } from "@vxengine/constants";
 
 export default function processRawData(
     rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>
@@ -78,11 +78,13 @@ export default function processRawData(
     });
 
     let trackTree;
+
+    const IS_DEVELOPMENT = getNodeEnv() === "development"
     if(IS_DEVELOPMENT)
         trackTree = buildTrackTree(tracks);
     else 
         trackTree = {}
-    
+
     // Just to be sure recreate the edSpline object
     Object.values(rawSplines).forEach(rawSpline => {
         splines[rawSpline.splineKey] = rawSpline

@@ -25,12 +25,12 @@ import { DIALOG_createKeyframe, DIALOG_createStaticProp, DIALOG_makePropertyStat
 export const scaleWidth = 160;
 export const scale = 5;
 
-interface Props{
+interface Props {
     id: string
 }
 
-export const TimelineEditorUI = React.memo(({id}: Props) => {
-    const timelineEditorAttached = useUIManagerAPI(state =>state.getAttachmentState(id))
+export const TimelineEditorUI = React.memo(({ id }: Props) => {
+    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
 
     return (
         <>
@@ -38,7 +38,7 @@ export const TimelineEditorUI = React.memo(({id}: Props) => {
             <div className={`flex flex-row gap-2 w-full py-2 
                             ${timelineEditorAttached ? "pr-2" : "px-2"}`}
             >
-                <MinimizeButton id={id}/>
+                <MinimizeButton id={id} />
 
                 <p className='font-sans-menlo text-sm my-auto h-auto'>
                     Timeline Editor
@@ -52,12 +52,12 @@ export const TimelineEditorUI = React.memo(({id}: Props) => {
             {/* M A I N  */}
             <TimelineEditorContent />
 
-            <TimelineEditorFooter/>
+            <TimelineEditorFooter />
         </>
     )
 })
 
-const MinimizeButton = ({id}: {id: string}) => {
+const MinimizeButton = ({ id }: { id: string }) => {
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
     const setOpen = useUIManagerAPI(state => state.setTimelineEditorOpen)
     const open = useUIManagerAPI(state => state.timelineEditorOpen);
@@ -168,33 +168,25 @@ const TimelineEditorFooter = () => {
     }, [])
 
     return (
-        <AnimatePresence>
-            {open && (
-                <motion.div className='mt-auto relative pl-2 flex flex-row gap-4 font-sans-menlo'
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                >
-                    <ScaleSlider />
-                    <div className='flex flex-row gap-2'>
-                        <p className='font-light h-auto my-auto' style={{fontSize: "10px"}}>Snap</p>
-                        <Switch
-                            className='my-auto scale-75'
-                            onClick={() => setSnap(!snap)}
-                            checked={snap}
-                        />
-                    </div>
-                    <div className='flex flex-row h-fit text-xs gap-2'>
-                        <p className='h-auto my-auto font-light' style={{fontSize: "10px"}}>length</p>
-                        <Input className='px-1 py-0 font-light my-auto h-fit w-10' style={{fontSize: "10px"}}
-                            value={currentTimelineLength}
-                            onChange={handleTimelineLengthChange}
-                            type='number'
-                        ></Input>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        <div className='mt-auto relative pl-2 flex flex-row gap-4 font-sans-menlo'>
+            <ScaleSlider />
+            <div className='flex flex-row gap-2'>
+                <p className='font-light h-auto my-auto' style={{ fontSize: "10px" }}>Snap</p>
+                <Switch
+                    className='my-auto scale-75'
+                    onClick={() => setSnap(!snap)}
+                    checked={snap}
+                />
+            </div>
+            <div className='flex flex-row h-fit text-xs gap-2'>
+                <p className='h-auto my-auto font-light' style={{ fontSize: "10px" }}>length</p>
+                <Input className='px-1 py-0 font-light my-auto h-fit w-10' style={{ fontSize: "10px" }}
+                    value={currentTimelineLength}
+                    onChange={handleTimelineLengthChange}
+                    type='number'
+                ></Input>
+            </div>
+        </div>
     )
 }
 
@@ -204,7 +196,7 @@ const ScaleSlider = () => {
 
     return (
         <div className='flex flex-row gap-2'>
-            <p className='font-light h-auto my-auto whitespace-nowrap' style={{fontSize: "10px"}}>Scale {scale}</p>
+            <p className='font-light h-auto my-auto whitespace-nowrap' style={{ fontSize: "10px" }}>Scale {scale}</p>
             <Slider
                 defaultValue={[scale]}
                 max={20}
@@ -302,23 +294,23 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Keyframe</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_createKeyframe/>, "normal")}>Create Keyframe</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeTime/>, "normal")}>Set Keyframe Time</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeValue/>, "normal")}>Set Keyframe Value</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeKeyframe/>, "normal")}>Remove Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_createKeyframe />, "normal")}>Create Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeTime />, "normal")}>Set Keyframe Time</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeValue />, "normal")}>Set Keyframe Value</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeKeyframe />, "normal")}>Remove Keyframe</MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Static Prop Sub menu */}
                 <MenubarSub>
                     <MenubarSubTrigger>StaticProp</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_createStaticProp/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_createStaticProp />, "normal")}>
                             Create StaticProp
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setStaticPropValue/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_setStaticPropValue />, "normal")}>
                             Set StaticProp Value
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeStaticProp/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeStaticProp />, "normal")}>
                             Remove StaticProp
                         </MenubarItem>
                     </MenubarSubContent>
@@ -339,10 +331,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Move Cursor</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToNextKeyframe/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToNextKeyframe />, "normal")}>
                             Move To Next Keyframe
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToPreviousKeyframe/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToPreviousKeyframe />, "normal")}>
                             Move To Previous Keyframe
                         </MenubarItem>
                     </MenubarSubContent>
@@ -351,10 +343,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Make</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyTracked/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyTracked />, "normal")}>
                             Make Property Tracked
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyStatic/>, "normal")}>
+                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyStatic />, "normal")}>
                             Make Property Static
                         </MenubarItem>
                     </MenubarSubContent>

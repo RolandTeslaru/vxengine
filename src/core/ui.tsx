@@ -24,20 +24,21 @@ import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
-import { getNodeEnv } from "@vxengine/constants"
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
+import { useVXEngine } from "@vxengine/engine"
 
-export const CoreUI = () => {
+export const VXStudio = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
+    const IS_PRODUCTION= useVXEngine(state => state.IS_PRODUCTION)
 
     return (
         <div id="VXEngineCoreUI" className='fixed top-0 left-0 z-50'>
-            {getNodeEnv() === "production" && (
-                <div className="fixed bottom-[20px] left-[330px] flex gap-4 text-red-600">   
+            {IS_PRODUCTION && (
+                <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">   
                     <AlertTriangle size={30} className="h-auto my-auto"/>
                     <div className="text-xs font-sans-menlo">
                         <p>VXEngine Running in Production Mode</p>
-                        <p>CoreUI should not be mounted</p>
+                        <p>VXStudio should not be mounted</p>
 
                     </div>
                 </div>
@@ -120,7 +121,7 @@ const VXBottomRightBar = () => {
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
         >
-            <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[960px]
+            <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
                                         bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col px-2
                                     ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
                                   `}

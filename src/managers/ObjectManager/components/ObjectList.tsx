@@ -21,6 +21,7 @@ import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Dange
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import JsonView from 'react18-json-view'
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
+import { useVXEngine } from '@vxengine/engine';
 
 let lastSelectedIndex = 0;
 
@@ -74,6 +75,8 @@ const ObjectList = () => {
 
     const filteredTree = useMemo(() => filterTree(tree, searchQuery), [tree, searchQuery]);
 
+    const IS_PRODUCTION = useVXEngine(state => state.IS_PRODUCTION);
+
     return (
         <CollapsiblePanel
             title="Object List"
@@ -91,6 +94,13 @@ const ObjectList = () => {
             <div className='mt-2 max-h-[500px] rounded-b-xl overflow-y-scroll text-sm'>
                 <ObjectTree nodes={filteredTree} onNodeClick={handleObjectClick} onNodeContext={handleObjectContext} />
             </div>
+            {IS_PRODUCTION && 
+                <div>
+                    <p className='text-xs text-center font-sans-menlo text-red-600'> 
+                        Object Tree is not generated in Production Mode
+                    </p>
+                </div>
+            }
         </CollapsiblePanel>
     )
 }

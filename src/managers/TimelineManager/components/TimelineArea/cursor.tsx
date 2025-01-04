@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo } from 'react';
 import { prefix } from '../../utils/deal_class_prefix';
 import { parserTimeToPixel } from '../../utils/deal_data';
 import { useRefStore } from '@vxengine/utils/useRefStore';
@@ -10,7 +10,6 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, Conte
 import ArrowRight from '@geist-ui/icons/arrowRight';
 import Maximize2 from '@geist-ui/icons/maximize2';
 import ArrowLeft from '@geist-ui/icons/arrowLeft';
-import { forEach } from 'lodash';
 
 export const CursorLine = ({ rows }: { rows: number }) => {
   const cursorLineRef = useRefStore(state => state.cursorLineRef)
@@ -18,7 +17,7 @@ export const CursorLine = ({ rows }: { rows: number }) => {
 
   const scale = useTimelineEditorAPI(state => state.scale);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const cursorTime = useTimelineEditorAPI.getState().cursorTime;
     const newLeft = parserTimeToPixel(cursorTime, cursorStartLeft);
 

@@ -11,7 +11,6 @@ import { round } from 'lodash'
 import { EffectsManagerDriver } from '../managers/EffectsManager'
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { RenderPass } from 'three-stdlib'
-import { Stats } from '@react-three/drei'
 
 import * as THREE from "three"
 
@@ -48,7 +47,7 @@ export interface RendererCoreProps {
 }
 
 // VXEngineCoreRenderer
-export const CoreRenderer: React.FC<RendererCoreProps> = ({
+export const VXRenderer: React.FC<RendererCoreProps> = ({
   canvasProps = { gl: {}, dpr: {}, performance: {} },
   children,
   powerPreferences = 'high-performance',

@@ -1030,13 +1030,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     let rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
-    if (!rawObject) {
+    if (!rawObject) 
       rawObject = this._initRawObjectOnTimeline(vxkey);
-    }
 
-    if (DEBUG_REFRESHER) {
+    if (DEBUG_REFRESHER)
       console.log(`AnimationEngine: Refreshing track on object '${vxkey}'.`);
-    }
+    
 
     switch (action) {
       case 'create': {
