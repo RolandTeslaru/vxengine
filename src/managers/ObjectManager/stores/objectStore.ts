@@ -5,14 +5,21 @@
 import { create } from 'zustand';
 import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
 import { useObjectManagerAPI } from './managerStore';
+import { getNodeEnv } from '@vxengine/constants';
+import { IS_DEVELOPMENT } from '@vxengine/constants';
 
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     objects: {},
     addObject: (vxobject, props = {}) => set((state) => {
         const { addToTree, type: icon} = props
-        if(addToTree === undefined || addToTree === true){
-            const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
-            addToTreeFunc(vxobject, icon)
+
+        // Generate Object Tree 
+        if(IS_DEVELOPMENT){
+            console.log("Generating Object Tree ", IS_DEVELOPMENT)
+            if(addToTree === undefined || addToTree === true){
+                const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
+                addToTreeFunc(vxobject, icon)
+            }
         }
         
         return ({

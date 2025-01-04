@@ -24,12 +24,24 @@ import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
+import { getNodeEnv } from "@vxengine/constants"
+import AlertTriangle from '@geist-ui/icons/alertTriangle'
 
 export const CoreUI = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
 
     return (
         <div id="VXEngineCoreUI" className='fixed top-0 left-0 z-50'>
+            {getNodeEnv() === "production" && (
+                <div className="fixed bottom-[20px] left-[330px] flex gap-4 text-red-600">   
+                    <AlertTriangle size={30} className="h-auto my-auto"/>
+                    <div className="text-xs font-sans-menlo">
+                        <p>VXEngine Running in Production Mode</p>
+                        <p>CoreUI should not be mounted</p>
+
+                    </div>
+                </div>
+            )}
             <VXMenubar/>
             <VXLeftPanel/>
             <VXRightPanel/>

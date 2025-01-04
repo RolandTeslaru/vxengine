@@ -17,7 +17,6 @@ import { setNodeEnv, getNodeEnv } from "./constants"
 let animationEngineInstance: AnimationEngine | undefined
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
-
 let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 
 // This flag ensures that the timelines are loaded only once.
@@ -33,15 +32,13 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
     nodeEnv
   } = props;
 
-  if (!nodeEnv) {
+  if (!nodeEnv)
     throw new Error("VXEngine: Missing required property 'nodeEnv'. Please provide the 'process.env.NODE_ENV'");
-  } else if (nodeEnv !== 'development' && nodeEnv !== 'production' && nodeEnv !== 'test') {
+  else if (nodeEnv !== 'development' && nodeEnv !== 'production' && nodeEnv !== 'test')
     throw new TypeError(`Invalid value for 'nodeEnv': ${nodeEnv}. Expected 'development', 'production', or 'test'.`);
-  }
 
-  if (typeof window !== 'undefined' && !animationEngineInstance) {
+  if (typeof window !== 'undefined' && !animationEngineInstance) 
     animationEngineInstance = new AnimationEngine(nodeEnv);
-  }
 
   const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath;
   setDiskFilePath(diskUrl);
@@ -75,13 +72,12 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   setNodeEnv(nodeEnv);
   const IS_DEVELOPMENT = nodeEnv === "development"
 
-  // Initialize the store with the given props
   const store = useRef(createVXEngineStore(props)).current;
   
   useEffect(() => {
     const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
 
-    if (IS_DEVELOPMENT)
+    if (IS_DEVELOPMENT) 
       window.addEventListener('beforeunload', handleBeforeUnload)
 
     return () => {

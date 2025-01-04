@@ -23,19 +23,19 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     loadTimelines(timelines: Record<string, ITimeline>): void;
     setCurrentTime(time: number, isTick?: boolean);
 
-    refreshTrack(
+    hydrateTrack(
       trackKey: string ,
       action: 'create' | 'remove'
     ): void;
 
-    refreshKeyframe(
+    hydrateKeyframe(
       trackKey: string, 
       action:  'create' | 'remove' | 'update',
       keyframeKey: string,
       reRender: boolean
     ): void
 
-    refreshStaticProp: (
+    hydrateStaticProp: (
       action:  'create' | 'remove' | 'update',
       staticPropKey: string,
       reRender: boolean

@@ -59,9 +59,9 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             // Refresh the animation engine settings outside of the produce block
             const animationEngine = getVXEngineState().getState().animationEngine
             if (isDefaultValue) {
-                animationEngine.refreshSetting("remove", settingKey, vxkey);
+                animationEngine.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngine.refreshSetting("set", settingKey, vxkey);
+                animationEngine.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
@@ -80,9 +80,9 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             const animationEngine = getVXEngineState().getState().animationEngine;
 
             if (isDefaultValue) {
-                animationEngine.refreshSetting("remove", settingKey, vxkey);
+                animationEngine.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngine.refreshSetting("set", settingKey, vxkey);
+                animationEngine.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write

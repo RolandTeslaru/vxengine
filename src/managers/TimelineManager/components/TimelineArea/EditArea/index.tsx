@@ -11,6 +11,8 @@ import { CursorLine } from '../cursor';
 import { useRefStore } from '@vxengine/utils';
 import { parserPixelToTime, parserTimeToPixel, updatePixelByScale } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import { keyframesRef, trackSegmentsRef } from '@vxengine/utils/useRefStore';
+import { keyframeStartLeft } from './Keyframe';
+import { segmentStartLeft } from './Track/TrackSegment';
 
 const startLeft = 22
 
@@ -43,7 +45,7 @@ export const EditArea = () => {
             const { left: prevLeftStr } = kfElement.dataset
             const prevLeft = parseFloat(prevLeftStr);
 
-            const newLeft = updatePixelByScale(prevLeft, prevScale, currentScale, startLeft)
+            const newLeft = updatePixelByScale(prevLeft, prevScale, currentScale, keyframeStartLeft)
             kfElement.style.left = `${newLeft}px`;
             Object.assign(kfElement.dataset, {left: newLeft})
           })
@@ -52,7 +54,7 @@ export const EditArea = () => {
             const prevLeft = parseFloat(tsElement.dataset.left);
             const prevWidth = parseFloat(tsElement.dataset.width)
 
-            const newLeft = updatePixelByScale(prevLeft, prevScale, currentScale, startLeft);
+            const newLeft = updatePixelByScale(prevLeft, prevScale, currentScale, segmentStartLeft);
             const newWidth = updatePixelByScale(prevWidth, prevScale, currentScale, 0);
             tsElement.style.left = `${newLeft}px`;
             tsElement.style.width = `${newWidth}px`

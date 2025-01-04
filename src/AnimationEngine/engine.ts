@@ -29,7 +29,6 @@ import init, {
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
-import { getNodeEnv, IS_DEVELOPMENT, IS_PRODUCTION } from '@vxengine/constants';
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -185,14 +184,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * @param timelines - A record of timelines to load.
   */
   loadTimelines(timelines: Record<string, ITimeline>) {
-    if (IS_DEVELOPMENT) {
+    if (this._IS_DEVELOPMENT) {
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
 
       if (syncResult?.status === 'out_of_sync') {
         this.setIsPlaying(false);
       }
     }
-    else if (IS_PRODUCTION) {
+    else if (this._IS_PRODUCTION) {
       useAnimationEngineAPI.setState({ timelines: timelines })
     }
 
@@ -1008,7 +1007,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   //
-  //  R E F R R E S H     F U N C T I O N S
+  //  H Y D R A T E    F U N C T I O N S
   //
   // Used to synchronize the data structure from the Timeline editor with animation engine data structure
 
@@ -1018,11 +1017,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param action - The action to perform: 'create' or 'remove'.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  refreshTrack(
+  hydrateTrack(
     trackKey: string,
     action: 'create' | 'remove',
     reRender: boolean = true,
   ) {
+    if(this._IS_PRODUCTION){
+      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      return;
+    }
+
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     let rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
@@ -1074,7 +1078,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshTrack.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateTrack.`);
         return;
       }
     }
@@ -1099,13 +1103,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param keyframeKey - The key identifying the keyframe.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  refreshKeyframe(
+  hydrateKeyframe(
     trackKey: string,
     action: 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles',
     keyframeKey: string,
     reRender: boolean = true,
     newData?: number | [number, number, number, number]
   ) {
+    if(this._IS_PRODUCTION){
+      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      return;
+    }
+
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
     if (DEBUG_REFRESHER) {
@@ -1225,7 +1234,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshKeyframe.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateKeyframe.`);
         return;
       }
     }
@@ -1249,11 +1258,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param staticPropKey - The key identifying the static property.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  refreshStaticProp(
+  hydrateStaticProp(
     action: 'create' | 'remove' | 'update',
     staticPropKey: string,
     reRender: boolean = true,
   ) {
+    if(this._IS_PRODUCTION){
+      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      return;
+    }
+
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
 
     if (DEBUG_REFRESHER) {
@@ -1292,7 +1306,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshStaticProp.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateStaticProp.`);
         return;
       }
     }
@@ -1316,11 +1330,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param splineKey - The key identifying the spline.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  refreshSpline(
+  hydrateSpline(
     action: 'create' | 'remove' | 'update',
     splineKey: string,
     reRender: boolean = true,
   ) {
+    if(this._IS_PRODUCTION){
+      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      return;
+    }
+
     const splineState = useTimelineEditorAPI.getState().splines;
 
     switch (action) {
@@ -1384,7 +1403,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSpline.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateSpline.`);
         return;
       }
     }
@@ -1407,11 +1426,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param settingKey - The key identifying the setting.
    * @param vxkey - The unique identifier for the object.
    */
-  refreshSetting(
+  hydrateSetting(
     action: 'set' | 'remove',
     settingKey: string,
     vxkey: string,
   ) {
+    if(this._IS_PRODUCTION){
+      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      return;
+    }
+
     if (!this.currentTimeline.settings) {
       this.currentTimeline.settings = {};
     }
@@ -1441,7 +1465,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for refreshSetting.`);
+        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateSetting.`);
         return;
       }
     }
@@ -1476,7 +1500,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns An array of validation error messages if any values needed correction.
    */
   static validateAndFixTimelines(timelines: Record<string, ITimeline>): string[] {
-    console.log("Valding timelines ", timelines)
+    console.log("AnimationEngine: Validating Timelines ", timelines)
     const precision = AnimationEngine.ENGINE_PRECISION;
     const errors: string[] = [];
 
