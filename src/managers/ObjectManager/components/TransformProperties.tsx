@@ -55,32 +55,32 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
         >
             <div className="w-full h-auto flex flex-col gap-2">
                 <div className="flex gap-1 flex-row ml-auto">
-                    <p className="mx-[16.5px] text-red-400"
+                    <p className="mx-[16.5px] font-semibold text-red-400"
                         style={{ textShadow: "#f87171 0px 0px 10px" }}
                     >x</p>
-                    <p className="mx-[16.5px] text-green-400"
+                    <p className="mx-[16.5px] font-semibold text-green-400"
                         style={{ textShadow: "#4ade80 0px 0px 10px" }}
                     >y</p>
-                    <p className="mx-[16.5px] text-blue-400"
+                    <p className="mx-[16.5px] font-semibold text-blue-400"
                         style={{ textShadow: "#60a5fa 0px 0px 10px " }}
                     >z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-500" >position</p>
+                    <p className="text-xs font-normal text-neutral-500" >position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position', isPositionDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-500">scale</p>
+                    <p className="text-xs font-normal text-neutral-500">scale</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('scale', isScaleDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row gap-2'>
-                    <p className="text-xs font-light text-neutral-500">rotation</p>
+                    <p className="text-xs font-normal text-neutral-500">rotation</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('rotation', isRotationDisabled)}
                     </div>
@@ -88,7 +88,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                 {additionalSettings && <>
                     {"showPositionPath" in additionalSettings && !isUsingSplinePath && (
                         <div className="flex flex-row mb-1">
-                            <p className="text-xs font-light text-neutral-500">show postion path</p>
+                            <p className="text-xs font-normal text-neutral-500">show position path</p>
                             <Switch
                                 onClick={() => toggleAdditionalSetting(vxkey, "showPositionPath")}
                                 checked={additionalSettings["showPositionPath"]}
@@ -123,7 +123,7 @@ const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
 
     return (
         <div className="flex flex-row mb-1">
-            <p className="text-xs font-light text-neutral-500">use spline path</p>
+            <p className="text-xs font-normal text-neutral-500">use spline path</p>
             <Switch
                 onClick={handleSwitchToggle}
                 checked={settings["useSplinePath"]}

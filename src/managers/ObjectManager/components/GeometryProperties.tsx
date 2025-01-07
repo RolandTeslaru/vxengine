@@ -28,7 +28,7 @@ export const GeometryProperties:FC<VXGeometryProps> = ({ vxobject }) => {
     const GeomPropRender = ({ _key, value}) => {
         return (
             <div className='flex flex-row py-1'>
-                <p className='text-xs font-light text-neutral-500'>{_key}</p>
+                <p className='text-xs font-normal text-neutral-500'>{_key}</p>
                 <PropInput
                     vxObject={vxobject}
                     type="number"

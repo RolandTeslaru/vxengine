@@ -24,7 +24,7 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
             contentClassName='gap-2'
         >
             <div className='flex flex-row justify-between'>
-                <p className="text-xs font-light text-neutral-500">show spline</p>
+                <p className="text-xs font-normal text-neutral-500">show spline</p>
                 <Switch 
                     onClick={() => toggleAdditionalSetting(vxSpline.objectVxKey, "showPositionPath")}
                     checked={additionalSettings?.["showPositionPath"]}

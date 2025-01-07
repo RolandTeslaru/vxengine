@@ -25,7 +25,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     const ParamRenderer = ({ param, index }) => {
         return (
             <div key={index} className='flex flex-row py-1'>
-                <p className='text-xs font-light text-neutral-500'>{param}</p>
+                <p className='text-xs font-normal text-neutral-500'>{param}</p>
                 <PropInput 
                     vxObject={vxobject}
                     type="number"

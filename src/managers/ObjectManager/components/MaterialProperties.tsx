@@ -32,7 +32,7 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
         if (typeof value === "number") {
             return (
                 <div className='flex flex-row py-1' key={_key}>
-                    <p className='text-xs font-light text-neutral-500'>{_key}</p>
+                    <p className='text-xs font-normal text-neutral-500'>{_key}</p>
                     <PropInput
                         vxObject={vxobject}
                         type="number"

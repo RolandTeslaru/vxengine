@@ -25,7 +25,7 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
 
     const RenderSetting = ({ settingKey, value, onClick }) => (
         <div key={settingKey} className="flex flex-row py-1">
-            <p className="text-xs font-light text-neutral-500">{settingKey}</p>
+            <p className="text-xs font-normal text-neutral-500">{settingKey}</p>
             <Switch
                 onClick={onClick}
                 checked={value}

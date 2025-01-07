@@ -131,7 +131,7 @@ const renderPaths = (paths: string[], isLinearTrack: boolean, trackKey?: string)
 const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
-            <p className="font-light text-neutral-200" style={{ fontSize: "11px" }}>
+            <p className="font-normal text-neutral-200" style={{ fontSize: "11px" }}>
                 {pathKey}
             </p>
             {showArrow &&
@@ -152,7 +152,7 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger className="h-full ml-auto flex items-center gap-2">
-                <p className=" text-neutral-500" style={{ fontSize: "10px" }}>
+                <p className="font-semibold text-neutral-500" style={{ fontSize: "10px" }}>
                     {pathKey}
                 </p>
                 <div className="scale-90">
