@@ -48,14 +48,13 @@ export interface RendererCoreProps {
 
 // VXEngineCoreRenderer
 export const VXRenderer: React.FC<RendererCoreProps> = ({
-  canvasProps = { gl: {}, dpr: {}, performance: {} },
+  canvasProps = { gl: {}, dpr: [1,2], performance: {}, frameloop: "demand" },
   children,
   powerPreferences = 'high-performance',
   effectsNode,
   className
 }) => {
-  const [dpr_state, setDpr_state] = useState(1)
-  const { gl, dpr, performance, ...restCanvasProps } = canvasProps
+  const { gl, dpr, performance, frameloop,  ...restCanvasProps } = canvasProps
 
   const IS_DEVELOPMENT = getNodeEnv() === "development"
 
@@ -67,26 +66,26 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
           precision: 'highp',
+          ...gl
         }}
-        dpr={dpr_state}
         performance={{
           min: 0.1,
           max: 0.4,
           ...performance
         }}
-        frameloop={"demand"}
+        {...restCanvasProps}
       >
         <SceneDriver/>
         <PerformanceMonitor
-          onChange={({ factor }) => {
-            const isPlaying = useAnimationEngineAPI.getState().isPlaying;
-            const cameraMode = useCameraManagerAPI.getState().mode;
-            // When the animations are playing, chaning the dpr state can cause a slight flicker
-            if (!isPlaying && cameraMode === "attached") {
-              const value = round(0.2 + 1.1 * factor, 1)
-              setDpr_state(value)
-            }
-          }}
+          // onChange={({ factor }) => {
+          //   const isPlaying = useAnimationEngineAPI.getState().isPlaying;
+          //   const cameraMode = useCameraManagerAPI.getState().mode;
+          //   // When the animations are playing, chaning the dpr state can cause a slight flicker
+          //   // if (!isPlaying && cameraMode === "attached") {
+          //   //   const value = round(0.2 + 1.1 * factor, 1)
+          //   //   setDpr_state(value)
+          //   // }
+          // }}
         >
           {/* <color attach="background" args={['gray']} /> */}
           {IS_DEVELOPMENT && <>
