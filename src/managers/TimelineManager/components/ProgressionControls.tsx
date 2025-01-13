@@ -9,11 +9,12 @@ import SkipForward from "@geist-ui/icons/skipForward"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useVXEngine } from "@vxengine/engine";
 import TimeRender from "./TimeRender";
-import { handleSetCursor } from "../utils/handleSetCursor";
+import { useTimelineEditorAPI } from "..";
 
 const ProgressionControls = React.memo(() => {
     const animationEngine = useVXEngine(state => state.animationEngine)
     const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
+    const setTime = useTimelineEditorAPI(state => state.setTime)
     //Start or pause
     const handlePlayOrPause = () => {
         if (isPlaying)
@@ -22,13 +23,14 @@ const ProgressionControls = React.memo(() => {
             animationEngine.play({ autoEnd: true });
     };
 
-    const handleReset = () => handleSetCursor({ time: 0 })
+    const handleReset = () => {
+        setTime(0)
+    }
 
     return (
         <div className='flex flex-row gap-2 w-auto ml-auto'>
-            <p className="font-sans-menlo text-lg text-center h-auto my-auto mx-2">
-                <TimeRender />
-            </p>
+            <TimeRender />
+            
             <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
                 onClick={handleReset}
             >

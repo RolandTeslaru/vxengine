@@ -179,6 +179,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
+  getCurrentTime(){
+    return this._currentTime;
+  }
+
+
+
+  
+
   /**
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
   * @param timelines - A record of timelines to load.

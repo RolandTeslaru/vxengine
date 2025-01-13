@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
 import { edObjectProps, IKeyframe, ITrack, ITrackTreeNode, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
-import { useRefStore } from "@vxengine/utils/useRefStore";
+import { cursorRef, useRefStore } from "@vxengine/utils/useRefStore";
 import { useTimelineEditorAPI } from "../..";
 import Search from "@vxengine/components/ui/Search";
 import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
@@ -32,14 +32,15 @@ const TrackVerticalList = memo(() => {
     const IS_PRODUCTION = useVXEngine(state => state.IS_PRODUCTION)
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        const scrollContainer = e.target;
+        const scrollContainer = e.target as HTMLDivElement;
         if (!timelineAreaRef.current) return
-
+        
         if (scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
-
+        
         scrollSyncId.current = requestAnimationFrame(() => {
-            // @ts-expect-error
-            timelineAreaRef.current.scrollTop = scrollContainer.scrollTop;
+            const newScrollTop = scrollContainer.scrollTop;
+            timelineAreaRef.current.scrollTop = newScrollTop;
+
         })
     }, [])
 
@@ -71,7 +72,7 @@ const TrackVerticalList = memo(() => {
                 </div>  
             }
             <div
-                className="overflow-y-scroll w-full h-full text-xs"
+                className="overflow-y-scroll w-full h-full text-xs pl-1"
                 ref={trackListRef}
                 onScroll={handleOnScroll}
             >

@@ -22,8 +22,10 @@ export interface refStoreProps {
 }
 
 export const keyframesRef = new Map<string, HTMLElement>()
-
 export const trackSegmentsRef =  new Map<string, HTMLElement>()
+export const cursorRef = {
+    current: null
+}
 
 export const useRefStore = create<refStoreProps>((set, get) => ({
     editAreaRef: React.createRef<HTMLDivElement>(),

@@ -6,10 +6,10 @@ import React, { useEffect } from 'react';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { useTimelineEditorAPI } from '../..';
-import { handleSetCursor } from '../../utils/handleSetCursor';
 import { TimeArea } from './TimeArea';
 import { EditArea } from './EditArea';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
+import Cursor from './EditorCursor';
 
 export const startLeft = 0;
 
@@ -22,7 +22,6 @@ const TimelineArea = (() => {
   useAnimationEngineEvent(
     'timeUpdatedByEngine',
     ({ time }) => {
-      handleSetCursor({ time, rerender: false })
 
       const clientWidth = timelineAreaRef.current.offsetWidth
 
@@ -33,7 +32,7 @@ const TimelineArea = (() => {
     }
   );
 
-  
+
 
   useEffect(() => {
     const handleCopy = (event: KeyboardEvent) => {
@@ -85,6 +84,7 @@ const TimelineArea = (() => {
         ref={timelineAreaRef}
         onScroll={handleOnScroll}
       >
+        <Cursor />
         <TimeArea />
         <EditArea />
       </div>
@@ -114,3 +114,5 @@ const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
     trackListRef.current.scrollTop = scrollContainer.scrollTop;
   })
 }
+
+

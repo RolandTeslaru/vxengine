@@ -1,27 +1,22 @@
-import { START_CURSOR_TIME } from '@vxengine/AnimationEngine/interface/const';
-import { getVXEngineState, useVXEngine } from '@vxengine/engine';
+import { getVXEngineState } from '@vxengine/engine';
 import { IKeyframe, ISpline, IStaticProps, ITrack, PathGroup, RawObjectProps, RawSpline } from '@vxengine/AnimationEngine/types/track';
 import { createWithEqualityFn } from 'zustand/traditional';
-import { handleSetCursor } from './utils/handleSetCursor';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { updateProperty, useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
+import { updateProperty } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
-import { ObjectStoreStateProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { EditorObjectProps, SelectedKeyframe, TimelineEditorStoreProps } from './types/store';
 import { useVXObjectStore } from '../ObjectManager';
 import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
-import { debounce, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
-import { invalidate } from '@react-three/fiber';
-import { useRefStore } from '@vxengine/utils';
 import { handleKeyframeMutation } from './components/TimelineArea/EditArea/Keyframe/utils';
+import { parserPixelToTime, parserTimeToPixel } from './utils/deal_data';
+import { cursorStartLeft, handleCursorMutation } from './components/TimelineArea/EditorCursor/utils';
 
 export type GroupedPaths = Record<string, PathGroup>;
-
-const DEBUG_REFRESHER = true;
-const startLeft = 13.616;
 
 function removeStaticPropLogic(state: TimelineEditorStoreProps, staticPropKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
@@ -62,10 +57,13 @@ function createKeyframeLogic(
     const track = state.tracks[trackKey]
     if (!track) return;
 
+    const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
+
     // Check if the cursor is on an exsting keyframe
     // if so, return because we cannot create overlapped keyframes
     const keyframesOnTrackArray = Object.values(track.keyframes)
-    const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === state.cursorTime);
+    const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
     if (isCursorOnExistingKeyframe) return
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
@@ -76,7 +74,7 @@ function createKeyframeLogic(
 
     const newKeyframe: IKeyframe = {
         id: keyframeKey,
-        time: truncateToDecimals(state.cursorTime),
+        time: truncateToDecimals(time),
         value: value,
         vxkey: vxkey,
         propertyPath: propertyPath,
@@ -191,11 +189,27 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         });
     },
 
+    setTime: (time) => {
+        time = truncateToDecimals(time);
+
+        const animationEngine = getVXEngineState().getState().animationEngine;
+        animationEngine.setCurrentTime(time, false);
+
+        const cursorLeft = parserTimeToPixel(time, cursorStartLeft, get().scale);
+        handleCursorMutation(cursorLeft);
+    },
+    setTimeByPixel: (left) => {
+        let time = parserPixelToTime(left, cursorStartLeft)
+        time = truncateToDecimals(time);
+
+        const animationEngine = getVXEngineState().getState().animationEngine;
+        animationEngine.setCurrentTime(time, false);
+
+        handleCursorMutation(left);
+    },
+
     scale: 6,
     setScale: (count) => set({ scale: count }),
-
-    cursorTime: START_CURSOR_TIME,
-    setCursorTime: (time: number) => set({ cursorTime: time }),
 
     activeTool: "mouse",
     setActiveTool: (tool) => set({ activeTool: tool }),
@@ -286,36 +300,38 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         return [];
     },
 
-    // Cursor funcitons
+    // Cursor Functions
 
     moveToNextKeyframe: (trackKey) => {
         const track = get().tracks[trackKey]
         if (!track) return
-        const { cursorTime } = get();
+
+        const animationEngine = getVXEngineState().getState().animationEngine
+        const time = animationEngine.getCurrentTime();
 
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
-        const nextKeyframe = sortedKeyframes.find(kf => kf.time > cursorTime);
+        const nextKeyframe = sortedKeyframes.find(kf => kf.time > time);
 
-        if (nextKeyframe) {
-            handleSetCursor({ time: nextKeyframe.time, });
-        }
+        if (nextKeyframe)
+            get().setTime(nextKeyframe.time)
     },
     moveToPreviousKeyframe: (trackKey) => {
         const track = get().tracks[trackKey]
         if (!track) return
 
-        const { cursorTime } = get();
+        const animationEngine = getVXEngineState().getState().animationEngine
+        const time = animationEngine.getCurrentTime();
+
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
-        const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < cursorTime);
+        const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < time);
 
-        if (prevKeyframe) {
-            handleSetCursor({ time: prevKeyframe.time });
-        }
+        if (prevKeyframe)
+            get().setTime(prevKeyframe.time)
     },
 
-    // Writer functions
+    // Writer Functions
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => {
         // Check if the object is already in the editorObjects.
@@ -776,10 +792,13 @@ export const handlePropertyValueChange = (vxkey: string, propertyPath: string, n
         const trackKey = generalKey;
         const keyframesOnTrack = Object.values(state.tracks[trackKey].keyframes)
 
+        const animationEngine = getVXEngineState().getState().animationEngine
+        const time = animationEngine.getCurrentTime();
+
         // Check if the cursor is under any keyframe
         let targetedKeyframe: IKeyframe | undefined;
         keyframesOnTrack.some((kf: IKeyframe) => {
-            if (kf.time === state.cursorTime) {
+            if (kf.time === time) {
                 targetedKeyframe = kf;
                 return true;  // Exit early once we find the keyframe
             }

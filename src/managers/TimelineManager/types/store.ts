@@ -24,10 +24,11 @@ export interface TimelineEditorStoreProps {
     collapsedTrackNodes: Record<string, boolean>
     setCollapsedTrackNodes: (groupKey: string) => void;
 
+    setTime: (time: number) => void;
+    setTimeByPixel: (left: number) => void;
+
     scale: number;
     setScale: (count: number) => void;
-    cursorTime: number;
-    setCursorTime: (time: number) => void;
     activeTool: string;
     setActiveTool: (tool: string) => void;
     snap: boolean;

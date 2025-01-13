@@ -1,11 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import './timeArea.scss';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_prefix';
-import { parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
-import { handleSetCursor } from '@vxengine/managers/TimelineManager/utils/handleSetCursor';
-import { CursorThumb } from '../cursor';
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import { useRefStore } from '@vxengine/utils';
 
@@ -13,6 +9,7 @@ const maxScaleCount = 100;
 
 export const TimeArea = () => {
   const scale = useTimelineEditorAPI((state) => state.scale);
+  const setTimeByPixel = useTimelineEditorAPI(state => state.setTimeByPixel)
 
   const currentTimelineLength = useTimelineEditorAPI((state) => state.currentTimelineLength);
 
@@ -30,8 +27,7 @@ export const TimeArea = () => {
     const left = Math.max(position, startLeft);
     if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + startLeft - scrollLeft) return;
 
-    const time = parserPixelToTime(left, startLeft);
-    handleSetCursor({ time });
+    setTimeByPixel(left)
   };
 
   const displayInterval = Math.ceil(scale); // Adjust display interval smoothly with scale
@@ -43,7 +39,7 @@ export const TimeArea = () => {
         style={{width: `${timelineClientWidth}px`}}
         onClick={handleOnClick}
       >
-        <CursorThumb />
+        {/* <CursorThumb /> */}
         {Array.from({ length: totalUnits + 1 }).map((_, index) => {
           const isIntegerUnit = index % OneSecondUnitSplitCount === 0;
           const classNames = ["time-unit"];

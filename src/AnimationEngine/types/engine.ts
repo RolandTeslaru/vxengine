@@ -22,6 +22,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
     setCurrentTimeline(timelineId: string): void;
     loadTimelines(timelines: Record<string, ITimeline>): void;
     setCurrentTime(time: number, isTick?: boolean);
+    getCurrentTime(): number
 
     hydrateTrack(
       trackKey: string ,

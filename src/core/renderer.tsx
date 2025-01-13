@@ -31,14 +31,12 @@ declare module '@react-three/fiber' {
 import { CanvasProps } from "@react-three/fiber";
 import { getNodeEnv } from '@vxengine/constants'
 import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/ObjectManager'
-import { vx } from '@vxengine/vxobject'
-import { EffectComposer, LensFlare } from '@react-three/postprocessing'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
 import VXEngineUtils from '@vxengine/utils/rendererUtils'
 
 export interface RendererCoreProps {
-  canvasProps?: CanvasProps;
+  canvasProps?: Partial<CanvasProps>;
   children?: React.ReactNode;
   mount?: boolean;
   powerPreferences?: 'high-performance' | 'low-power';
@@ -48,13 +46,13 @@ export interface RendererCoreProps {
 
 // VXEngineCoreRenderer
 export const VXRenderer: React.FC<RendererCoreProps> = ({
-  canvasProps = { gl: {}, dpr: [1,2], performance: {}, frameloop: "demand" },
+  canvasProps = {},
   children,
   powerPreferences = 'high-performance',
   effectsNode,
   className
 }) => {
-  const { gl, dpr, performance, frameloop,  ...restCanvasProps } = canvasProps
+  const { gl: glProps,  ...restCanvasProps } = canvasProps
 
   const IS_DEVELOPMENT = getNodeEnv() === "development"
 
@@ -66,9 +64,11 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
           precision: 'highp',
-          ...gl
+          ...glProps
         }}
-        performance={{
+        dpr={canvasProps.dpr ?? [1,2]}
+        frameloop={canvasProps.frameloop ?? "demand"}
+        performance={canvasProps.performance ?? {
           min: 0.1,
           max: 0.4,
           ...performance

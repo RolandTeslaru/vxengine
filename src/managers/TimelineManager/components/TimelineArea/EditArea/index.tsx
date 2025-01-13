@@ -7,12 +7,11 @@ import { ITrackTreeNode, PathGroup } from '@vxengine/AnimationEngine/types/track
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import Track from './Track';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
-import { CursorLine } from '../cursor';
-import { useRefStore } from '@vxengine/utils';
-import { parserPixelToTime, parserTimeToPixel, updatePixelByScale } from '@vxengine/managers/TimelineManager/utils/deal_data';
+import { updatePixelByScale } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import { keyframesRef, trackSegmentsRef } from '@vxengine/utils/useRefStore';
 import { keyframeStartLeft } from './Keyframe';
 import { segmentStartLeft } from './Track/TrackSegment';
+import { handleCursorMutation, handleCursorMutationByScale } from '../EditorCursor/utils';
 
 const startLeft = 22
 
@@ -41,15 +40,16 @@ export const EditArea = () => {
     const unsubscribe = useTimelineEditorAPI.subscribe(
       ({ scale: currentScale }, { scale: prevScale }) => {
         if (currentScale !== prevScale) {
+          // Rehydrate Keyframe positions
           keyframesRef.forEach((kfElement, keyframeKey) => {
-            const { left: prevLeftStr } = kfElement.dataset
-            const prevLeft = parseFloat(prevLeftStr);
+            const prevLeft = parseFloat(kfElement.dataset.left);
 
             const newLeft = updatePixelByScale(prevLeft, prevScale, currentScale, keyframeStartLeft)
             kfElement.style.left = `${newLeft}px`;
             Object.assign(kfElement.dataset, {left: newLeft})
           })
 
+          // Rehydrate TrackSegment positions
           trackSegmentsRef.forEach((tsElement, key) => {
             const prevLeft = parseFloat(tsElement.dataset.left);
             const prevWidth = parseFloat(tsElement.dataset.width)
@@ -60,7 +60,9 @@ export const EditArea = () => {
             tsElement.style.width = `${newWidth}px`
             Object.assign(tsElement.dataset, { left: newLeft, width: newWidth })
           })
-          
+
+          // Rehydrate Cursor position
+          handleCursorMutationByScale(currentScale, prevScale);
         }
       })
 
@@ -69,7 +71,6 @@ export const EditArea = () => {
 
   return (
     <>
-      <CursorLine rows={10 + 1} />
       {Object.values(filteredTree).map((node, index) =>
         <TrackNode key={index} node={node} timelineClientWidth={timelineClientWidth} />
       )}

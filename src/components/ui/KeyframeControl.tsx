@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState, FC, memo } from 'react';
+import React, { useEffect, useMemo, useRef, useState, FC, memo, useLayoutEffect } from 'react';
 import Square from "@geist-ui/icons/square"
 import ChevronLeft from "@geist-ui/icons/chevronLeft"
 import ChevronRight from "@geist-ui/icons/chevronRight"
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
+import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
+import { getVXEngineState } from '@vxengine/engine';
 
 interface TimelineKeyframeControlProps {
     propertyKey: string,
@@ -26,21 +28,20 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
         return null;
     }, [track?.keyframes])
     
-    const checkIfOnKeyframe = () => {
+    const checkIfOnKeyframe = ({ time }) => {
         if(!isPropertyTracked) return ;
         const isCursorOnKeyframe = sortedKeyframes.some(
-            (kf: IKeyframe) => kf.time === useTimelineEditorAPI.getState().cursorTime
+            (kf: IKeyframe) => kf.time === time
         );
         setIsOnKeyframe(isCursorOnKeyframe);
     };
 
-    useEffect(() => {
-        const unsubscribe = useTimelineEditorAPI.subscribe(() => checkIfOnKeyframe());
-        return () => unsubscribe();
-    }, [propertyKey, sortedKeyframes]);
+    useAnimationEngineEvent("timeUpdated", checkIfOnKeyframe)
 
-    useEffect(() => {
-        checkIfOnKeyframe()
+    useLayoutEffect(() => {
+        const animationEngine = getVXEngineState().getState().animationEngine;
+        const time = animationEngine.getCurrentTime();
+        checkIfOnKeyframe({ time })
     }, [propertyKey, sortedKeyframes])
 
     const handleMiddleButton = () => {

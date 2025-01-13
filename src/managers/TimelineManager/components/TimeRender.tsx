@@ -1,29 +1,35 @@
-import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
-import { useTimelineEditorAPI } from "../store";
-import React, { useEffect, useRef } from "react";
+import { useAnimationEngineEvent } from "@vxengine/AnimationEngine";
+import { getVXEngineState } from "@vxengine/engine";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
+
+const parseTimeToTimeRenderString = (time: number): string => {
+  const float = (parseInt((time % 1) * 100 + '') + '').padStart(2, '0');
+  const min = (parseInt(time / 60 + '') + '').padStart(2, '0');
+  const second = (parseInt((time % 60) + '') + '').padStart(2, '0');
+
+  return `${min}:${second}.${float.replace('0.', '')}`;
+}
 
 const TimeRender = () => {
-    const displayRef = useRef(null);
-  
-    useEffect(() => {
-      if (displayRef.current) {
-        displayRef.current.textContent = "00:00.00";
-      }
+  const displayRef = useRef<HTMLParagraphElement>(null);
 
-      const unsubscribe = useTimelineEditorAPI.subscribe(
-        ({cursorTime}, prevState) => {
-          const float = (parseInt((cursorTime % 1) * 100 + '') + '').padStart(2, '0');
-          const min = (parseInt(cursorTime / 60 + '') + '').padStart(2, '0');
-          const second = (parseInt((cursorTime % 60) + '') + '').padStart(2, '0');
-          if (displayRef.current) {
-            displayRef.current.textContent = `${min}:${second}.${float.replace('0.', '')}`;
-          }
-        }
-      );
-  
-      return unsubscribe;
-    }, []);
-  
-    return <span ref={displayRef} />;
-  };
+  useEffect(() => {
+    if(displayRef.current){
+      const animationEngine = getVXEngineState().getState().animationEngine;
+      const initialTime = animationEngine.getCurrentTime();
+
+      displayRef.current.textContent = parseTimeToTimeRenderString(initialTime)
+    }
+  }, [])
+
+  useAnimationEngineEvent("timeUpdated", ({ time }) => {
+    if (displayRef.current) 
+      displayRef.current.textContent = parseTimeToTimeRenderString(time)
+  }, [])
+
+  return <p 
+      className="font-sans-menlo text-lg text-center h-auto my-auto mx-2" 
+      ref={displayRef}
+      />
+};
 export default TimeRender;

@@ -1,6 +1,6 @@
 {
   "name": "@vexr-labs/vxengine",
-  "version": "1.0.85",
+  "version": "1.0.89",
   "private": false,
   "scripts": {
     "build": "webpack --mode production",
@@ -38,7 +38,7 @@
     "@types/howler": "^2.2.11",
     "@types/lodash": "^4.14.202",
     "@types/node": "latest",
-    "@types/three": "^0.169.0",
+    "@types/three": "^0.169.0 || ^0.172.0",
     "baffle": "^0.3.6",
     "framer-motion": "^11.11.8",
     "howler": "^2.2.4",

@@ -94,7 +94,7 @@ const CameraTarget = () => {
             <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={isVisible} icon="CameraTarget">
                 {/* YZ Plane */}
                 <mesh ref={verticalPlaneRef}>
-                    <planeGeometry args={[20, 20]} />
+                    <planeGeometry args={[10, 10]} />
                     <meshBasicMaterial
                         map={pointerTexture}
                         transparent={true}
@@ -107,7 +107,7 @@ const CameraTarget = () => {
 
             {/* Floor Projection */}
             <mesh ref={FloorProjectionRef} visible={isVisible}>
-                <planeGeometry args={[20, 20]} />
+                <planeGeometry args={[10, 10]} />
                 <meshBasicMaterial
                     map={floorProjectionTexture}
                     transparent={true}
