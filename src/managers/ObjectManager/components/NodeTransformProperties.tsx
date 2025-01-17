@@ -19,7 +19,7 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
             <PropInput
                 vxObject={vxobject}
                 key={`${property}-${axis}`}
-                type="number"
+                param={{ type: "number"}}
                 propertyPath={`${property}.${axis}`}
                 horizontal={true}
                 disabled={disabled}
@@ -45,7 +45,7 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
                     >z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-500">position</p>
+                    <p className="text-xs font-light text-neutral-400">position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position', isUsingSplinePath)}
                     </div>

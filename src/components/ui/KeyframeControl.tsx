@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, FC, memo, useLayoutEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState, FC, memo, useLayoutEffect, useCallback } from 'react';
 import Square from "@geist-ui/icons/square"
 import ChevronLeft from "@geist-ui/icons/chevronLeft"
 import ChevronRight from "@geist-ui/icons/chevronRight"
@@ -13,10 +13,8 @@ interface TimelineKeyframeControlProps {
 }
 
 const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, disabled }) => {        
-    const createKeyframe = useTimelineEditorAPI(state => state.createKeyframe)
     const moveToNextKeyframe = useTimelineEditorAPI(state => state.moveToNextKeyframe)
     const moveToPreviousKeyframe = useTimelineEditorAPI(state => state.moveToPreviousKeyframe)
-    const makePropertyTracked = useTimelineEditorAPI(state => state.makePropertyTracked)
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
     const track = useTimelineEditorAPI(state => state.tracks[propertyKey]);
@@ -44,7 +42,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
         checkIfOnKeyframe({ time })
     }, [propertyKey, sortedKeyframes])
 
-    const handleMiddleButton = () => {
+    const handleMiddleButton = useCallback(() => {
+        const makePropertyTracked = useTimelineEditorAPI.getState().makePropertyTracked;
+        const createKeyframe = useTimelineEditorAPI.getState().createKeyframe
         if(isPropertyTracked === true){
             const trackKey = propertyKey
             createKeyframe({trackKey}) // auto sets the value to the ref property path of the object
@@ -54,19 +54,18 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
             const staticPropKey = propertyKey;
             makePropertyTracked(staticPropKey)
         }
-    }
+    }, [isPropertyTracked])
 
     return (
-        <div className={`flex flex-row h-[12px] ${disabled && "opacity-0"}`}>
+        <div className={`flex gap-[1px] h-[12px] ${disabled && "opacity-0"}`}>
             {isPropertyTracked &&
                 <button
                     onClick={() => moveToPreviousKeyframe(propertyKey)}
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                     disabled={disabled}
                 >
-                    <ChevronLeft className=' w-3 h-3' />
+                    <ChevronLeft className=' w-2 h-2 scale-150' />
                 </button>
-
             }
             <button
                 onClick={handleMiddleButton}
@@ -81,7 +80,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ propertyKey, d
                     className='hover:*:stroke-[5] hover:*:stroke-white'
                     disabled={disabled}
                 >
-                    <ChevronRight className='w-3 h-3 ' />
+                    <ChevronRight className='w-2 h-2 scale-150' />
                 </button>
 
             }

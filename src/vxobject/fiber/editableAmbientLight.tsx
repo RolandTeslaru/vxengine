@@ -3,7 +3,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectParams } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { AmbientLight } from "three";
@@ -16,6 +16,10 @@ export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> &
 
 export const defaultSettings_AmbientLight = {
     useSplinePath: false,
+}
+
+const ambientLightProps: VXObjectParams = {
+    'intensity': {type: "number"}
 }
 
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {
@@ -35,14 +39,12 @@ export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLigh
         showPositionPath: false,
     }
 
-    const params = [
-        'intensity'
-    ]
+    
 
     return (
         <VXEntityWrapper 
             ref={internalRef} 
-            params={params}
+            params={ambientLightProps}
             defaultSettings={mergeddefaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...rest}

@@ -9,19 +9,23 @@ import ValueRenderer from '../ValueRenderer'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import PopoverShowTrackData from '../Popovers/PopoverShowTrackData';
 import PopoverShowStaticPropData from '../Popovers/PopoverShowStaticPropData';
+import { Slider } from '@vxengine/components/shadcn/slider';
+import { VXParamInputType } from '@vxengine/vxobject/types';
+import PropSlider from './PropSlider';
 
 interface Props extends InputProps {
-    propertyPath: string
     vxObject: vxObjectProps
+    propertyPath: string
+    param: VXParamInputType
     vxkey?: string;   // spline has a vxkey with the ".spline" prefix
     horizontal?: boolean
     disableTracking?: boolean
 }
 export const PropInput: FC<Props> = (props) => {
-    const { vxObject, propertyPath, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
-    
+    const { vxObject, propertyPath, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
+
     let { vxkey } = props
-    if(!vxkey)
+    if (!vxkey)
         vxkey = vxObject.vxkey
 
     const trackKey = vxkey + "." + propertyPath
@@ -33,7 +37,14 @@ export const PropInput: FC<Props> = (props) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger className={className}>
-                <div className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} `}>
+                <div className={`flex relative ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} `}>
+                    {param.type === "slider" &&
+                        <PropSlider 
+                            param={param}
+                            vxkey={vxkey}
+                            propertyPath={propertyPath}
+                        />
+                    }
                     <div className={(horizontal ? "w-auto mx-auto" : "h-auto my-auto")}>
                         <KeyframeControl
                             propertyKey={trackKey}
@@ -44,7 +55,7 @@ export const PropInput: FC<Props> = (props) => {
                         vxObject={vxObject}
                         vxkey={vxkey}
                         propertyPath={propertyPath}
-                        inputProps={{...inputProps, disabled}}
+                        inputProps={{ ...inputProps, disabled }}
                         isPropertyTracked={isPropertyTracked}
                     />
                 </div>
@@ -60,7 +71,7 @@ export const PropInput: FC<Props> = (props) => {
                             <p>Show Data</p>
                         </PopoverShowStaticPropData>
                     }
-                    {isPropertyTracked && 
+                    {isPropertyTracked &&
                         <ContextMenuItem
                             onClick={(e) => {
                                 pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")
@@ -85,3 +96,11 @@ export const PropInput: FC<Props> = (props) => {
 }
 
 export default PropInput
+
+
+interface NumberInputProps extends Props {
+    trackKey: string
+    disabled: boolean
+    inputProps: any
+    isPropertyTracked: boolean
+}

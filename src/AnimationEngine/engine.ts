@@ -9,10 +9,10 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { IKeyframe, RawSpline, IStaticProps, ITimeline, ITrack, RawKeyframeProps, RawObjectProps, RawTrackProps, edObjectProps } from './types/track';
+import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
-import { updateProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
+import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
 import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
@@ -61,12 +61,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   constructor(nodeEnv: "production" | "development" | "test") {
     super(new Events());
 
-    if (nodeEnv === "production") {
+    if (nodeEnv === "production")
       this._IS_PRODUCTION = true;
-    }
-    else if (nodeEnv === "development") {
+    else if (nodeEnv === "development")
       this._IS_DEVELOPMENT = true;
-    }
 
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
     console.log("VXEngine AnimationEngine: Created instance with ID:", this._id);
@@ -552,7 +550,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       camera.updateProjectionMatrix();
       this._cameraRequiresPerspectiveMatrixRecalculation = false;
     } else {
-      console.warn('AnimationEngine: Perspective camera not found in object cache.');
+      console.warn('AnimationEngine: PerspectiveCamera not found in object cache.');
     }
   }
 
@@ -1124,9 +1122,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-    if (DEBUG_REFRESHER) {
+    if (DEBUG_REFRESHER) 
       console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
-    }
 
     let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
     if (!rawObject) {

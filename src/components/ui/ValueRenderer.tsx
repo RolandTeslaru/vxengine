@@ -22,14 +22,11 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const trackKey = `${vxkey}.${propertyPath}`
         const ref = vxObject.ref.current;
         
-        const isEntity = vxObject.type === "entity" || vxObject.type === "virtualEntity"
         const inputRef = useRef<HTMLInputElement>(null);
-
+        
         useLayoutEffect(() => {
             inputRef.current.value = getDefaultValue(vxkey, propertyPath, ref);
-        }, [vxkey, propertyPath, isPropertyTracked])
-
-        useLayoutEffect(() => {
+            
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = state.properties[trackKey];
 

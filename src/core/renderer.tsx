@@ -34,6 +34,7 @@ import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/Object
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
 import VXEngineUtils from '@vxengine/utils/rendererUtils'
+import { VXObjectParams } from '@vxengine/vxobject/types'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -106,6 +107,13 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
   )
 }
 
+
+const sceneParams: VXObjectParams = {
+  "environmentIntensity": {type: "number"},
+  "backgroundBlurriness": {type: "number"},
+  "backgroundIntensity": {type: "number"},
+}
+
 const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);
 
@@ -119,13 +127,6 @@ const SceneDriver = React.memo(() => {
     }
 
     const vxkey = "scene"
-
-    const params = [
-      "environmentIntensity",
-      "backgroundBlurriness",
-      "backgroundIntensity",
-    ]
-
     const disabledParams = [
       "position",
       "rotation",
@@ -137,7 +138,7 @@ const SceneDriver = React.memo(() => {
       ref: sceneRef,
       vxkey,
       name: "Scene",
-      params,
+      params: sceneParams,
       disabledParams,
       parentKey: "global"
     }

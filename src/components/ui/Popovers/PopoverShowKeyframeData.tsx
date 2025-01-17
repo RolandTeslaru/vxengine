@@ -1,7 +1,7 @@
 import Info from '@geist-ui/icons/info';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Input } from '@vxengine/components/shadcn/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
+import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
@@ -23,8 +23,7 @@ export const PopoverShowKeyframeData: React.FC<Props> = (props) => {
 
     return (
         <Popover>
-            <PopoverTrigger className={triggerClassName}>
-                <Info size={15}/>
+            <PopoverTrigger icon={<Info size={15}/>}>
                 {children}
             </PopoverTrigger>
             <Content {...props} />
@@ -39,7 +38,7 @@ const Content: React.FC<Props> = (props) => {
     const currentTimeline = useAnimationEngineAPI(state => state.currentTimeline);
 
     const rawKeyframe = useMemo(() => {
-        const rawObj = currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey );
+        const rawObj = currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
         const rawTrack = rawObj?.tracks.find(rawTrack => rawTrack.propertyPath === propertyPath);
         const rawKeyframe = rawTrack?.keyframes.find(rawKeyframe => rawKeyframe.id === keyframeKey)
         return rawKeyframe
@@ -108,4 +107,4 @@ export default PopoverShowKeyframeData
 function extractDatasetFromObject(element) {
     if (!element || !element.dataset) return null;
     return { ...element.dataset }; // Spread the dataset into a plain object
-  }
+}

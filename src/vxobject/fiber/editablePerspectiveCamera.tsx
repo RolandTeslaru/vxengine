@@ -1,7 +1,7 @@
 'use client'
 
 import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectParams } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
@@ -28,6 +28,17 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
 export const defaultSettings_perspectiveCamera = {
     useSplinePath: false,
     setingPerspectiveCamera: true,
+}
+
+const perspectiveCameraParams: VXObjectParams = {
+    "localRotationZ": {type: "number"},
+    "far": {type: "number"},
+    "near": {type: "number"},
+    "fov": {type: "number"},
+    "zoom": {type: "number"},
+    "focus": {type: "number"},
+    "filmGauge": {type: "number"}, 
+    "filmOffset": {type: "number"}
 }
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
@@ -102,16 +113,7 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
         ...settings
     }
 
-    const params = [
-        "localRotationZ",
-        "far",
-        "near",
-        "fov",
-        "zoom",
-        "focus",
-        "filmGauge",
-        "filmOffset"
-    ]
+    
 
     const disabledParams = [
         "rotation",
@@ -122,7 +124,7 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
         <VXEntityWrapper
             vxkey={vxkey}
             ref={cameraRef}
-            params={params}
+            params={perspectiveCameraParams}
             disabledParams={disabledParams}
             defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}

@@ -13,6 +13,7 @@ export interface VXEngineProviderProps {
     children: React.ReactNode;
     mount?: boolean;
     animations_json: any;
+    autoWriteToDisk?: boolean
     nodeEnv: 'development' | 'production' | 'test';
 }
 

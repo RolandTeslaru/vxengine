@@ -45,11 +45,9 @@ export const EditableLightFormer = memo(
                 "Show In Scene": false,
             }
 
-            const params = []
-
             const vxSceneEntity = useVXObjectStore(state => state.objects["scene"]);
             const isShowingAll = useObjectSettingsAPI(state => state.additionalSettings["environment"]?.["Show All"])
-            const viz = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.["Show In Scene"]);
+            const viz = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.["Show In Scene"]) 
             const isVisibleInScene = viz || isShowingAll
 
             const realMeshRef = useRef<THREE.Mesh>(null);
@@ -66,6 +64,7 @@ export const EditableLightFormer = memo(
                     if (!realMeshRef.current) {
                         realMeshRef.current = (internalRef.current as THREE.Mesh).clone();
                         realMeshRef.current.material = outlineMaterial;
+                        realMeshRef.current.material.side = THREE.FrontSide;
                         realMeshRef.current.scale.multiplyScalar(1.05)
                         refScene.add(realMeshRef.current);
                     }
@@ -107,13 +106,12 @@ export const EditableLightFormer = memo(
                 <>
                     <VXEntityWrapper
                         ref={internalRef}
-                        params={params}
                         defaultSettings={defaultSettings}
                         isVirtual={true}
                         defaultAdditionalSettings={defaultAdditionalSettings}
                         {...props}
                     >
-                        <Lightformer />
+                        <Lightformer/>
                     </VXEntityWrapper>
                 </>
             )

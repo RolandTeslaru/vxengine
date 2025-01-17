@@ -5,6 +5,7 @@ import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { VXParamInputType } from '@vxengine/vxobject/types'
 
 interface Props {
     vxobject: vxObjectProps
@@ -18,19 +19,20 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     const threeObjectType = refObject.type
 
-    const params = vxobject.params
-    if(!params) return
-    if (params.length === 0) return
+    const params = vxobject.params ?? {}
 
-    const ParamRenderer = ({ param, index }) => {
+    if (Object.entries(params).length === 0) return
+
+    const ParamRenderer = (props: { param: VXParamInputType, index: number, paramKey: string}) => {
+        const { paramKey, param } = props;
         return (
-            <div key={index} className='flex flex-row py-1'>
-                <p className='text-xs font-normal text-neutral-500'>{param}</p>
+            <div className={`flex ${param.type === "slider" ? "flex-col": "flex-row"} py-1`}>
+                <p className='text-xs font-light text-neutral-400'>{paramKey}</p>
                 <PropInput 
+                    param={param}
                     vxObject={vxobject}
-                    type="number"
                     className="ml-auto w-fit"
-                    propertyPath={param}
+                    propertyPath={paramKey}
                 />
             </div>
         )
@@ -41,9 +43,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             title={threeObjectType ? threeObjectType : "Object Params"}
         >
             <div className='flex flex-col'>
-                {params.map(
-                    (param, index) => <ParamRenderer param={param} index={index} key={index}/>
-                )}
+                {Object.entries(params).map(([paramKey, param], index) => <ParamRenderer param={param} index={index} key={paramKey} paramKey={paramKey} />)}
             </div>
 
         </CollapsiblePanel>

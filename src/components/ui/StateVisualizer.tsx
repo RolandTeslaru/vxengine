@@ -134,7 +134,7 @@ const State_ObjectPropertyAPI = () => {
 
 function extractDatasetFromMap(map: Map<string, any>) {
     const obj = {}
-    for(let [key, value] of map ){
+    for (let [key, value] of map) {
         obj[key] = (value as HTMLElement)?.dataset ? { dataset: { ...value.dataset } } : value;
     }
 
@@ -152,7 +152,7 @@ const State_RefStore = () => {
         <>
             <JsonView
                 src={convertedState}
-                collapsed={({depth}) => depth > 3}
+                collapsed={({ depth }) => depth > 3}
                 dark={true}
             />
         </>
@@ -203,25 +203,30 @@ const stateComponents = {
     }
 };
 
+const StateComponent = ({ activeData }: {activeData: string}) => {
+    const useStateAPI = stateComponents[activeData].store;
+    const CustomComponent = stateComponents[activeData].component
+    const depth = stateComponents[activeData].depth;
+
+    if (CustomComponent)
+        return <CustomComponent />
+    return <StateVisualizerComponent useStateAPI={useStateAPI} collapsedDepth={depth} />;
+};
 const StateVisualizer = () => {
     const id = "stateVisualizerWindow"
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
     const isAttached = useUIManagerAPI(state => state.getAttachmentState(id))
 
-    const renderStateComponent = () => {
-        const useStateAPI = stateComponents[activeData].store;
-        const CustomComponent = stateComponents[activeData].component
-        const depth = stateComponents[activeData].depth;
-
-        if (CustomComponent)
-            return <CustomComponent />
-        return <StateVisualizerComponent useStateAPI={useStateAPI} collapsedDepth={depth} />;
-    };
-
     const [refresh, setRefresh] = useState(0);
 
-    const memoizedChildren = React.useMemo(() => {
-        return (
+    return (
+        <VXEngineWindow
+            id={id}
+            title="VXEngine: State Visualizer"
+            windowClasses='width=717,height=450,left=100,top=200,resizable=0'
+            className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
+            detachedClassName=" top-1 !left-1 !h-[100%] !min-w-[100%] "
+        >
             <>
                 <div className="w-full flex flex-row pb-1"
                 >
@@ -252,22 +257,10 @@ const StateVisualizer = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className={`${isAttached ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll	 mb-auto `}>
-                    {renderStateComponent()}
+                <div className={`${isAttached ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll mb-auto`}>
+                    <StateComponent activeData={activeData}/>
                 </div>
             </>
-        )
-    }, [isAttached, activeData, refresh])
-
-    return (
-        <VXEngineWindow
-            id={id}
-            title="VXEngine: State Visualizer"
-            windowClasses='width=717,height=450,left=100,top=200,resizable=0'
-            className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-xl"
-            detachedClassName=" top-1 !left-1 !h-[100%] !min-w-[100%] "
-        >
-            {memoizedChildren}
         </VXEngineWindow>
     )
 

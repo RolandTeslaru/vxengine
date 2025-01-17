@@ -121,8 +121,8 @@ const VXBottomRightBar = () => {
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
         >
-            <motion.div className={`fixed backdrop-blur-sm  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
-                                        bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col px-2
+            <motion.div className={`fixed backdrop-blur-lg  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
+                                        bg-opacity-70 border-neutral-400 border-opacity-20 border-[1px] rounded-3xl flex flex-col px-2
                                     ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
                                   `}
                 id="VXEngineTimelinePanel"

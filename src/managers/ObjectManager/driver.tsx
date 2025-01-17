@@ -83,12 +83,15 @@ export const ObjectManagerDriver = () => {
     type === "PerspectiveCamera" ||
     type === "CubeCamera" ||
     type === "Environment"
+
+
   const isTransformDisabled =
     isUsingSplinePath ||
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
 
-  console.log("Object ManagerDriver Render with isValid:", isValid, "  isTransformDisabled:", isTransformDisabled)
+  console.log("Is transform Disabled", isTransformDisabled)
+  console.log("Is transform disabled isUsingSplinePath:", isUsingSplinePath, " disabledParams:", vxobject?.disabledParams?.includes("position"), " !isValid", !isValid, " type:", type)
 
   const intialProps = useRef({
     position: new THREE.Vector3,
@@ -339,6 +342,9 @@ export const ObjectManagerDriver = () => {
       controls.showZ = axis.includes('Z')
     }
   }, [vxobject])
+
+
+  console.log("ObjectManager Driver: Rendering TrasnformControls with vxRef:", vxRef, "and is mounted:", vxRef && !isTransformDisabled)
 
   return (
     <>

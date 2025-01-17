@@ -14,16 +14,25 @@ const PopoverAnchor = PopoverPrimitive.Anchor
 
 const PopoverTrigger = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger>
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger> & {
+    disableStyling?: boolean
+    icon?: React.ReactNode
+  }
 >((props, ref) => {
-  const { children, className, ...rest } = props
+  const { children, className, icon, disableStyling, ...rest } = props
   return (
     <PopoverPrimitive.Trigger
-      className={'hover:bg-neutral-800 px-2 gap-2 py-1.5 text-xs flex font-sans-menlo rounded-md w-full hover:shadow-md shadow-black' + " " + className }
+      className={`w-full ${className}`}
       ref={ref}
       {...rest}
     >
-      {children}
+      {disableStyling ? 
+        <>{children}</>
+        : 
+        <PopoverItem icon={icon}>
+          {children}
+        </PopoverItem>
+      }
     </PopoverPrimitive.Trigger>
   )
 })
@@ -54,4 +63,26 @@ const PopoverContent = React.forwardRef<
 })
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }
+interface PopoverItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode; // Ensure children are ReactNode
+  icon?: React.ReactNode
+}
+
+const PopoverItem: React.FC<PopoverItemProps> = (props) => {
+  const {children, className, icon, ...rest} = props
+  return (
+    <div 
+      className={`cursor-pointer font-sans-menlo relative w-full gap-2 hover:bg-neutral-800 border border-transparent hover:border-neutral-700 px-2 py-[6px] rounded-lg flex flex-row text-xs ${className}`}
+      {...rest}
+    >
+      <div className="absolute top-1/2 -translate-y-1/2 "> 
+        {icon}
+      </div>
+      <div className={`${icon && "pl-5"} `}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export { Popover, PopoverTrigger, PopoverItem, PopoverContent, PopoverAnchor }

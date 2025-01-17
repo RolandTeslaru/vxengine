@@ -8,12 +8,13 @@ import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { ReactThreeFiber, useFrame, createPortal, useThree } from '@react-three/fiber';
 import VXEntityWrapper from "./entityWrapper";
+import { VXObjectParams } from "./types";
 
 export interface VXVirtualEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
     name?: string;
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
-    params?: string[]
+    params?: VXObjectParams
     disabledParams?: string[]
     disableClickSelect?: boolean
 
@@ -34,7 +35,7 @@ const VXVirtualEntityWrapper = forwardRef<THREE.Object3D, VXVirtualEntityWrapper
 
         return (
             <>
-                <VXEntityWrapper ref={internalRef} {...rest} isVirtual={true}>
+                <VXEntityWrapper  ref={internalRef} {...rest} isVirtual={true}>
                     {children}
                 </VXEntityWrapper>
             </>

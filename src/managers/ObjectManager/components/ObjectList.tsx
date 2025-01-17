@@ -18,8 +18,6 @@ import X from '@geist-ui/icons/x'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
-import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import JsonView from 'react18-json-view'
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 import { useVXEngine } from '@vxengine/engine';
 

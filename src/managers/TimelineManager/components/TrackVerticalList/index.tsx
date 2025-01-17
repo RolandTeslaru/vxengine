@@ -56,8 +56,8 @@ const TrackVerticalList = memo(() => {
     }, [trackTree, searchQuery])
 
     return (
-        <div className={`w-full h-full mr-2 flex flex-col rounded-2xl relative overflow-hidden ${s.gradient_border_mask}`}>
-            <div className={`h-[31px] flex flex-row px-2 `}>
+        <div className={`w-full h-full flex flex-col rounded-2xl relative overflow-hidden border border-neutral-800 bg-neutral-900`}>
+            <div className={`h-[32px] flex flex-row px-2 `}>
                 <Search
                     className="w-36 px-2 bg-neutral-800 ml-auto my-auto"
                     searchQuery={searchQuery}
@@ -132,7 +132,7 @@ const renderPaths = (paths: string[], isLinearTrack: boolean, trackKey?: string)
 const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
-            <p className="font-normal text-neutral-200" style={{ fontSize: "11px" }}>
+            <p className="font-normal text-neutral-400" style={{ fontSize: "11px" }}>
                 {pathKey}
             </p>
             {showArrow &&

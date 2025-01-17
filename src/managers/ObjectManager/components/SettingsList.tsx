@@ -50,7 +50,7 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
         Object.entries(settingsObj).map(([settingKey, value]) => (
             !excludeSettingsKeys.includes(settingKey) && (
                 <div key={settingKey} className="flex flex-row py-1">
-                    <p className="text-xs font-normal text-neutral-500">{settingKey}</p>
+                    <p className="text-xs font-light text-neutral-400">{settingKey}</p>
                     <Switch
                         onClick={() => toggleFunction(vxkey, settingKey)}
                         checked={value as any}

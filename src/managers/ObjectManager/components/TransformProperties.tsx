@@ -41,7 +41,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
             <PropInput
                 vxObject={vxobject}
                 key={`${property}-${axis}`}
-                type="number"
+                param={{ type: "number" }}
                 propertyPath={`${property}.${axis}`}
                 horizontal={true}
                 disabled={disabled}
@@ -66,21 +66,21 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                     >z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p className="text-xs font-normal text-neutral-500" >position</p>
+                    <p className="text-xs font-light text-neutral-400" >position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position', isPositionDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row'>
-                    <p className="text-xs font-normal text-neutral-500">scale</p>
+                    <p className="text-xs font-light text-neutral-400">scale</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('scale', isScaleDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row gap-2'>
-                    <p className="text-xs font-normal text-neutral-500">rotation</p>
+                    <p className="text-xs font-light text-neutral-400">rotation</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('rotation', isRotationDisabled)}
                     </div>
@@ -88,7 +88,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                 {additionalSettings && <>
                     {"showPositionPath" in additionalSettings && !isUsingSplinePath && (
                         <div className="flex flex-row mb-1">
-                            <p className="text-xs font-normal text-neutral-500">show position path</p>
+                            <p className="text-xs font-light text-neutral-400">show position path</p>
                             <Switch
                                 onClick={() => toggleAdditionalSetting(vxkey, "showPositionPath")}
                                 checked={additionalSettings["showPositionPath"]}
@@ -123,7 +123,7 @@ const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
 
     return (
         <div className="flex flex-row mb-1">
-            <p className="text-xs font-normal text-neutral-500">use spline path</p>
+            <p className="text-xs font-light text-neutral-400">use spline path</p>
             <Switch
                 onClick={handleSwitchToggle}
                 checked={settings["useSplinePath"]}

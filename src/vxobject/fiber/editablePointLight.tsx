@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectParams } from "../types"
 
 import { PointLightHelper } from "three";
 
@@ -19,6 +19,12 @@ export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
 
 export const defaultSettings_pointLight = {
     useSplinePath: false,
+}
+
+const pointLightParams: VXObjectParams= {
+    'distance': { type: "number" },
+    'intensity': { type: "number" },
+    'decay': { type: "number" },
 }
 
 export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps>((props, ref) => {
@@ -43,16 +49,12 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
     useHelper(internalRef, isHelperEnabled && PointLightHelper)
 
-    const params = [
-        'distance',
-        'intensity',
-        'decay',
-    ]
+    
 
     return (
         <VXEntityWrapper 
             ref={internalRef} 
-            params={params}
+            params={pointLightParams}
             defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}

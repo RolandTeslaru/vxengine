@@ -96,7 +96,8 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
     const { children, className, isDetached, detachedClassName, onClick } = props
     return (
         <div
-            className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-70 border-neutral-800 border-[1px] rounded-3xl flex flex-col p-2 pb-1 gap-2 shadow-lg shadow-neutral-950
+            className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
+                        rounded-3xl flex flex-col p-2 pb-1 gap-2 shadow-lg shadow-neutral-950
                     ${className} ${isDetached && detachedClassName}`}
             onClick={onClick}
         >

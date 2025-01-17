@@ -4,8 +4,6 @@
 
 'use client'
 
-import "./globals.css"
-
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { EffectComposer } from 'three-stdlib'
 import { VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
@@ -29,7 +27,8 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   const {
     mount,
     animations_json: diskUrl,
-    nodeEnv
+    nodeEnv,
+    autoWriteToDisk
   } = props;
 
   if (!nodeEnv)

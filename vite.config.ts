@@ -1,7 +1,8 @@
 import { defineConfig, type PluginOption } from 'vite';
 import wasm from 'vite-plugin-wasm';
 import path from 'path';
-import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
+import { libInjectCss } from 'vite-plugin-lib-inject-css';
+
 import topLevelAwait from 'vite-plugin-top-level-await';
 import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
 
@@ -69,7 +70,7 @@ export default defineConfig({
   plugins: [
     wasm(),
     topLevelAwait(),
-    cssInjectedByJsPlugin(),
+    libInjectCss(),
     obfuscatorPlugin({
       options: {
         compact: true, // Minify the obfuscated code
@@ -80,7 +81,7 @@ export default defineConfig({
         stringArrayThreshold: 0.75, // Obfuscate 75% of strings
         deadCodeInjection: false, // Avoid unnecessary bundle size increase
         transformObjectKeys: true, // Obfuscate object keys for added security
-        disableConsoleOutput: true, // Remove console.log statements
+        disableConsoleOutput: false, // Remove console.log statements
       }
     }),
   ],

@@ -24,7 +24,7 @@ export type EditKeyframeProps = {
     isSelected: boolean
 };
 
-export const keyframeStartLeft = 13.616;
+export const keyframeStartLeft = 15;
 
 const Keyframe: React.FC<EditKeyframeProps> = memo(({
     keyframeKey,

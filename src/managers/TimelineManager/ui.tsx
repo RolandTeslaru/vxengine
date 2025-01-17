@@ -232,7 +232,7 @@ export const TimelineSelect = () => {
                 <SelectGroup>
                     {Object.entries(timelines).map(([key, timeline]) =>
                         <SelectItem value={timeline.id} key={key}>
-                            <p className='text-xs'>
+                            <p style={{ fontSize: "11px"}} >
                                 {timeline.name}
                             </p>
                         </SelectItem>

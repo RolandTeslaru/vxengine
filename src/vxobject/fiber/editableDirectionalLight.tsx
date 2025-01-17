@@ -49,8 +49,6 @@ export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, Editab
         })
     }, [])
 
-    console.log("Ref DirectionalLight ", ref)
-
     return (
         <directionalLight ref={ref} {...props} />
     )

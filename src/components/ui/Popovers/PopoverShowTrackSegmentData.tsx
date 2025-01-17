@@ -19,8 +19,7 @@ const PopoverShowTrackSegmentData: React.FC<Props> = (props) => {
     const { children, triggerClassName } = props;
     return (
         <Popover>
-            <PopoverTrigger className={triggerClassName}>
-                <Info size={15}/>
+            <PopoverTrigger className={triggerClassName} icon={<Info size={15}/>}>
                 {children}
             </PopoverTrigger>
             <Content {...props}/>

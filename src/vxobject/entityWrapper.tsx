@@ -14,12 +14,13 @@ import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/t
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import { VXObjectParams } from "./types";
 
 export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
     name?: string;
     children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
-    params?: string[]
+    params?: VXObjectParams
     disabledParams?: string[]
     disableClickSelect?: boolean
     isVirtual?: boolean
@@ -95,14 +96,14 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             const addToTree = useObjectManagerAPI.getState().addToTree;
 
             const name = props.name || vxkey
-            const parentKey = overrideNodeTreeParentKey || internalRef.current.parent.vxkey || null
+            const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
 
             const newVXEntity: vxObjectProps = {
                 type: isVirtual ? "virtualEntity" : "entity",
                 ref: internalRef,
                 vxkey,
                 name,
-                params: params || [],
+                params: params || {},
                 disabledParams: disabledParams || [],
                 parentKey,
             };            

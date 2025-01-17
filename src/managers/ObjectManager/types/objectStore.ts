@@ -1,3 +1,5 @@
+import { VXObjectParams } from "@vxengine/vxobject/types"
+
 export type vxObjectTypes = "entity" 
     | "effect" 
     | "splineNode" 
@@ -7,7 +9,7 @@ export type vxObjectTypes = "entity"
 export interface BaseVxProps {
     ref: React.MutableRefObject<any>
     vxkey: string
-    params?: string[]
+    params?: VXObjectParams
     disabledParams?: string[]
     name: string
     parentKey: string;

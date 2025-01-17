@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectParams } from "../types"
 
 import { SpotLightHelper } from "three";
 
@@ -14,11 +14,17 @@ import { useHelper } from "@react-three/drei";
 
 export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
     ref?: React.Ref<SpotLight>;
-    settings?: {}
 };
 
 export const defaultSettings_spotlight = {
     useSplinePath: false,
+}
+
+const spotLightParams: VXObjectParams = {
+    'intensity': { type: "number" },
+    'distance': { type: "number" },
+    'penumbra': { type: "number" },
+    'decay': { type: "number" },
 }
 
 export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {
@@ -44,18 +50,10 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
     const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
     useHelper(internalRef, isHelperEnabled && SpotLightHelper)
 
-
-    const params = [
-        'intensity',
-        'distance',
-        'penumbra',
-        'decay',
-    ]
-
     return (
         <VXEntityWrapper 
             ref={internalRef} 
-            params={params}
+            params={spotLightParams}
             defaultSettings={defaultSettings}
             defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}

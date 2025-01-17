@@ -19,9 +19,6 @@ export const EditableCubeCamera = memo(
     forwardRef<THREE.CubeCamera, EditableCubeCameraProps>((props, ref) => {
         const { vxkey, ...rest } = props;
 
-        const params = [];
-        const disabledParams = [];
-
         return (
             <VXEntityWrapper
                 vxkey={vxkey}

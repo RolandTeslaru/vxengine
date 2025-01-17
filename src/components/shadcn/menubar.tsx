@@ -82,10 +82,10 @@ const MenubarSubContent = React.forwardRef<
   <MenubarPrimitive.SubContent
     ref={ref}
     className={cn(
-      `z-50 min-w-[12rem] backdrop-blur-sm  rounded-xl border !bg-opacity-85 p-1 shadow-md 
+      `z-50 min-w-[12rem] backdrop-blur-xl  rounded-xl border p-1 shadow-md 
        data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
        data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-       border-neutral-800 bg-neutral-950 text-neutral-50`,
+       border-neutral-400 border-opacity-20 bg-neutral-900 bg-opacity-80 text-neutral-50`,
       className
     )}
     {...props}
@@ -108,10 +108,10 @@ const MenubarContent = React.forwardRef<
         alignOffset={alignOffset}
         sideOffset={sideOffset}
         className={cn(
-          `z-50 min-w-[12rem] backdrop-blur-sm rounded-xl border !bg-opacity-85 p-1 shadow-md 
+          `z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 shadow-md 
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-          border-neutral-800 bg-neutral-950 text-neutral-50`,
+          border-neutral-400 border-opacity-20 bg-neutral-900 bg-opacity-80 text-neutral-50`,
           className
         )}
         {...props}
@@ -211,7 +211,7 @@ const MenubarSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <MenubarPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-neutral-800", className)}
+    className={cn("-mx-1 my-1 h-px bg-neutral-400 bg-opacity-25", className)}
     {...props}
   />
 ))

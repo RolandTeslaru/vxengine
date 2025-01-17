@@ -3,7 +3,7 @@
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useLayoutEffect } from "react";
 import { useObjectManagerAPI, useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useAnimationEngineAPI } from "../../AnimationEngine";
-import { EditableObjectProps } from "../types";
+import { EditableObjectProps, VXObjectParams } from "../types";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 
 import { SelectiveBloomProps } from "@react-three/postprocessing";
@@ -16,18 +16,18 @@ import { BloomEffectOptions } from "postprocessing";
 
 export type EditableBloomProps = EditableObjectProps<BloomEffectOptions>;
 
+const bloomParams: VXObjectParams = {
+  "intensity": {type: "number"},
+  "luminanceThreshold": {type: "number"},
+  "luminanceSmoothing": {type: "number"},
+};
+
 export const EditableBloom = memo(
   forwardRef<EditableBloomProps, BloomEffectOptions>(
     (props, ref) => {
       const { ...rest } = props;
       const vxkey = "bloom"
       const name = "Bloom";
-
-      const params = [
-        "intensity",
-        "luminanceThreshold",
-        "luminanceSmoothing",
-      ];
 
       const internalRef = useRef<any>(null); // Use 'any' to bypass type mismatch
       useImperativeHandle(ref, () => internalRef.current);
@@ -45,7 +45,7 @@ export const EditableBloom = memo(
           ref: internalRef,
           vxkey,
           name,
-          params,
+          params: bloomParams,
           parentKey: "effects"
         };
 

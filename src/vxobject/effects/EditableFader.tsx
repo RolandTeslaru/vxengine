@@ -6,6 +6,7 @@ import { Effect } from 'postprocessing'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { useVXEngine } from '@vxengine/engine'
+import { VXObjectParams } from '../types'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -30,6 +31,10 @@ class FadeShaderEffectImpl extends Effect {
     }
 }
 
+const fadeProps: VXObjectParams = {
+    "uniforms.fadeIntensity": { type: "slider", min: 0, max: 1, step: 0.01}
+}
+
 export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     const vxkey = "fadeEffect"
     const name = "Fade Effect"
@@ -43,10 +48,6 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
 
     const animationEngine = useVXEngine((state) => state.animationEngine);
 
-    const params = [
-        "uniforms.fadeIntensity"
-    ]
-
     useEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -58,7 +59,7 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
             ref: internalRef,
             vxkey,
             name,
-            params: params,
+            params: fadeProps,
             parentKey: "effects"
         }
 
