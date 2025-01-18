@@ -26,7 +26,7 @@ export const EditableColor = memo(forwardRef<ColorProps, EditableColorProps>((pr
     const colorDefaultSettings = {}
     const colorDefaultAdditionalSettings = {}
 
-    console.log("COLOR REF ", internalRef)
+    // console.log("COLOR REF ", internalRef)
 
     return (
         <VXEntityWrapper

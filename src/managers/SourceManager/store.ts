@@ -8,43 +8,46 @@ import debounce from "lodash/debounce"
 import { useTimelineEditorAPI } from '../TimelineManager'
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine'
 import { cloneDeep } from 'lodash'
+import { DiskProjectProps } from '@vxengine/types/engine'
 
 const DEBUG = true;
 
 const PAUSED_DISK_SAVING = false;
 
 export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
-  diskFilePath: "",
-  setDiskFilePath: (path) => set({ diskFilePath: path }),
-
   autoSaveInterval: 10,
   setAutoSaveInterval: (interval: number) => set({ autoSaveInterval: interval }),
 
   showSyncPopup: false,
   setShowSyncPopup: (value: boolean) => set({ showSyncPopup: value }),
 
-  saveDataToDisk: async () => {
-    const showSyncPopup = get().showSyncPopup;
+  saveDataToDisk: async ({force = false, reloadOnSuccess = false} = {}) => {
+    if(force === false){
+      const showSyncPopup = get().showSyncPopup;
+      if (showSyncPopup) return;
+      if (PAUSED_DISK_SAVING) return;
+    }
 
-    if (showSyncPopup) return;
+    if (DEBUG) console.log(`VXEngine SourceManager: Saving data to disk ${force && "with force"}`);
 
-    if (PAUSED_DISK_SAVING) return;
+    const state = useAnimationEngineAPI.getState();
+    const projectName = state.projectName;
+    const timelines = state.timelines;
+    const clonedTimelines = cloneDeep(timelines);
 
-    if (DEBUG) console.log("VXEngine SourceManager: Saving data to disk");
-
-    const timelines = useAnimationEngineAPI.getState().timelines
-    const data = cloneDeep(timelines);
-    // validateAndFixTimelines(data)
     try {
       const response = await fetch('/api/vxSaveTimelines', {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ timelines: data })
+        body: JSON.stringify({ project: {projectName, timelines: clonedTimelines} })
       })
-      if (response.ok)
-        console.log('VXEngine SourceManager: Timelines saved successfully to disk.');
+      if (response.ok){
+        console.log(`VXEngine SourceManager: Project "${projectName}" saved successfully to disk.`);
+        if(reloadOnSuccess)
+          window.location.reload();
+      }
       else
         console.error('VXEngine SourceManager ERROR: Failed to save timelines to disk.');
 
@@ -53,17 +56,48 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     }
   },
 
-  saveDataToLocalStorage: debounce(() => {
+  saveDataToLocalStorage: debounce(({force = false} = {}) => {
     const showSyncPopup = get().showSyncPopup;
-    if (showSyncPopup) return;
+    if (showSyncPopup && force === false) return;
 
     if (DEBUG) console.log("VXEngine SourceManager: Saving Data To LocalStorage")
 
-    const timelines = useAnimationEngineAPI.getState().timelines
-    localStorage.setItem('timelines', JSON.stringify(timelines));
+    const state = useAnimationEngineAPI.getState()
+    const timelines = state.timelines
+    const projectName = state.projectName;
+
+    const localStorageData =  JSON.parse(localStorage.getItem("VXEngineProjects")) as LocalStorageDataType
+    localStorageData[projectName].timelines = timelines;
+
+    localStorage.setItem("VXEngineProjects",JSON.stringify(localStorageData));
   }, 500),
 
 
+  initializeLocalStorage: (diskData) => {
+    console.log("VXEngine SourceManager: Initializing Local Storage")
+    const localStorageTemplate: Record<string, DiskProjectProps> = {}
+    localStorageTemplate[diskData.projectName] = diskData;
+
+    localStorage.setItem("VXEngineProjects", JSON.stringify(localStorageTemplate));
+
+    useAnimationEngineAPI.setState({ 
+      timelines: diskData.timelines, 
+      projectName: diskData.projectName 
+    })
+  },
+
+  initializeProjectInLocalStorage: (localStorageData, diskData) => {
+    const showSyncPopup = get().showSyncPopup;
+    if (showSyncPopup) return;
+
+    console.log(`VXEngine SourceManager: Initializing project:${diskData.projectName} in Local Storage`)
+    localStorageData[diskData.projectName] = diskData;
+
+    useAnimationEngineAPI.setState({ 
+      timelines: diskData.timelines, 
+      projectName: diskData.projectName 
+    })
+  },
 
   /**
    * Synchronizes the current timelines in the application state with localStorage.
@@ -83,77 +117,57 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
    *  - `out_of_sync`: If the timelines in localStorage and the current state are not synchronized.
    *  - `in_sync`: If the timelines are synchronized.
    */
-  syncLocalStorage: (diskData: Record<string, ITimeline>) => {
-    if (DEBUG)
-      console.log("VXEngine SourceManager: Validating LocalStorage")
+  syncLocalStorage: (diskData: DiskProjectProps) => {
+    if (DEBUG) console.log("VXEngine SourceManager: Validating LocalStorage")
 
-    // validateAndFixTimelines(diskData);
-    const savedTimelines = localStorage.getItem('timelines');
-
-
-    if (!savedTimelines) {
-      // Initialize local storage if there is no data
-      console.log("VXEngine SourceManager: Initializing LocalStorage with disk data.");
-      useAnimationEngineAPI.setState({ timelines: diskData })
-      get().saveDataToLocalStorage();
-
+    // Check if Local Storage exists
+    const localStorageString = localStorage.getItem("VXEngineProjects");
+    if(!localStorageString){
+      get().initializeLocalStorage(diskData)
       return { status: 'init' };
-    } else {
-      // Compare disk data with localstorage
-      console.log("VXEngine SourceManager: Restoring timelines from LocalStorage");
-      const localStorageData = JSON.parse(savedTimelines);
-      // validateAndFixTimelines(localStorageData);
+    }
+    
+    // Check if the project exists in local storage
+    const localStorageData = JSON.parse(localStorageString) as LocalStorageDataType;
+    if(!localStorageData[diskData.projectName]){
+      get().initializeProjectInLocalStorage(localStorageData, diskData)
+      return { status: 'init' };
+    } 
+    else{
+      if(DEBUG) console.log(`VXEngine SourceManager: Restoring project "${diskData.projectName}" from local storage`);
 
-      const areTimelinesInSync = deepEqual(diskData, localStorageData);
+      const localStorageProject = localStorageData[diskData.projectName]
+      const diskTimelines = diskData.timelines;
+      const localStorageTimelines = localStorageProject.timelines;
+      const areTimelinesInSync = deepEqual(diskData.timelines, localStorageTimelines)
 
-      if (!areTimelinesInSync) {
-        get().setShowSyncPopup(true)
-        useAnimationEngineAPI.setState({ timelines: diskData });
-        return { status: 'out_of_sync', localStorageData, diskData };
+      if(areTimelinesInSync){
+        useAnimationEngineAPI.setState({
+          timelines: localStorageProject.timelines,
+          projectName: localStorageProject.projectName
+        })
+        return { status: 'in_sync' };
       }
-
-      useAnimationEngineAPI.setState({ timelines: localStorageData });
-
-      return { status: 'in_sync' };
+      else{
+        if(DEBUG) console.log(`VXEngine SourceManager: Timelines from project "${diskData.projectName}" are out of sync. Awaiting resolve...`)
+        get().setShowSyncPopup(true);
+        // Provisionary load the timelines from disk. 
+        useAnimationEngineAPI.setState({
+          timelines: diskData.timelines,
+          projectName: diskData.projectName
+        })
+        return { status: 'out_of_sync', localStorageTimelines, diskTimelines };
+      }
     }
   },
 
-  overwriteLocalStorageData: (data: Record<string, ITimeline>) => {
-    localStorage.setItem('timelines', JSON.stringify(data))
-  },
-
-  overwriteDiskData: async (data: Record<string, ITimeline>) => {
-    if (DEBUG)
-      console.log("VXEngine SourceManager: Overwriting disk data: ", data)
-    try {
-      const response = await fetch('/api/vxSaveTimelines', {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ timelines: data })
-      })
-      if (response.ok) {
-        console.log('VXEngine SourceManager: Timelines overwritten successfully to disk.');
-      } else {
-        console.error('VXEngine SourceManager ERROR: Failed to overwrite timelines to disk.');
-      }
-    } catch (error) {
-      console.error('VXEngine SourceManager ERROR: Unable to overwrite timelines to disk:', error);
-    }
-
-    // TODO: fix lazyness
-    // Because its hard to redo all the initalizations of the timelines in the animaiton engine
-    // its easier to just reload the page and have the animation engnine reintialize 
-    window.location.reload();
-  },
 
   handleBeforeUnload: (event: BeforeUnloadEvent) => {
     const changes = useTimelineEditorAPI.getState().changes
     const saveDataToDisk = get().saveDataToDisk;
     
     if (changes > 0) {
-      if(DEBUG) console.log("SourceManager: handle before unload triggered with ", changes, "changes")
+      if(DEBUG) console.log("VXEngine SourceManager: handle before unload triggered with ", changes, "changes")
       
       saveDataToDisk();
       event.preventDefault();
@@ -165,7 +179,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
 const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
   const precision = AnimationEngine.ENGINE_PRECISION;
-  console.log("Valding timelines ", timelines, " with precision ", precision)
+  console.log("Validating timelines ", timelines, " with precision ", precision)
   const errors: string[] = [];
 
   const isValidPrecision = (value: number): boolean => {
@@ -220,3 +234,6 @@ const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
 
   return errors;
 }
+
+
+export type LocalStorageDataType = Record<string, DiskProjectProps>

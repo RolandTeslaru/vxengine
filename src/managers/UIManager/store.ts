@@ -37,7 +37,7 @@ interface UIManagerProps {
     setSelectedWindow: (window: string) => void;
 
     dialogContent: DialogEntry[];
-    pushDialog: (content: React.ReactNode, type: DialogType, className?: string) => void;
+    pushDialog: (content: React.ReactNode, type: DialogType, className?: string, id?: string) => void;
     openedDialogs: string[];
     closeDialog: (id: string) => void;
 
@@ -86,11 +86,11 @@ export const useUIManagerAPI = create<UIManagerProps>()(
             setSelectedWindow: (window: string) => set({ selectedWindow: window }),
 
             dialogContent: [],
-            pushDialog: (content, type, className) => {
-                const id = `${type}-${Date.now()}`;
+            pushDialog: (content, type, className, id) => {
+                const _id = id ?? `${type}-${Date.now()}`;
                 set({
-                    openedDialogs: [...get().openedDialogs, id],
-                    dialogContent: [...get().dialogContent, { id, content, type, className }],
+                    openedDialogs: [...get().openedDialogs, _id],
+                    dialogContent: [...get().dialogContent, { id: _id, content, type, className }],
                 });
             },
             openedDialogs: [],
@@ -122,3 +122,36 @@ export const useUIManagerAPI = create<UIManagerProps>()(
         }
     )
 );
+
+
+export const pushDialogStatic = (content: React.ReactNode, type: DialogType, className: string, id?: string) => {
+    const _id = id ?? `${type}-${Date.now()}`;
+    const state = useUIManagerAPI.getState();
+
+    // Ensure only one dialog with the same id is opened
+    if(id && state.openedDialogs.find((openedDialogId) => {
+        openedDialogId === id
+    }))
+        return
+    
+    useUIManagerAPI.setState({
+        openedDialogs: [...state.openedDialogs, _id],
+        dialogContent: [...state.dialogContent, { id: _id, content, type, className }],
+    })
+}
+
+export const closeDialogStatic = (id: string, delay = true) => {
+    console.log('Closing Dialog with id ', id);
+    const state = useUIManagerAPI.getState();
+    useUIManagerAPI.setState({
+        openedDialogs: state.openedDialogs.filter((dialogId) => dialogId !== id),
+        dialogContent: delay === false ? state.dialogContent.filter((dialog) => dialog.id !== id) : state.dialogContent,
+    });
+
+    if(delay)
+        setTimeout(() => {
+            useUIManagerAPI.setState({
+                dialogContent: state.dialogContent.filter((dialog) => dialog.id !== id),
+            });
+        }, 300);
+}

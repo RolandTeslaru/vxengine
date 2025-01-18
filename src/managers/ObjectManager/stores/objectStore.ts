@@ -16,7 +16,6 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
 
         // Generate Object Tree 
         if(IS_DEVELOPMENT){
-            console.log("Generating Object Tree ", IS_DEVELOPMENT)
             if(addToTree === undefined || addToTree === true){
                 const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
                 addToTreeFunc(vxobject, icon)

@@ -9,10 +9,9 @@ import { getVXEngineState } from '@vxengine/engine';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
 
 interface ObjectSettingsStoreProps {
-
+    settings: Record<string, ISettings>
     defaultSettings: Record<string, ISettings>
 
-    settings: Record<string, ISettings>
     setSetting: (vxkey: string, settingKey: string, settingValue: string | boolean) => void
     toggleSetting: (vxkey: string, settingKey: string) => void
 

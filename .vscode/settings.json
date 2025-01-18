@@ -3,6 +3,7 @@
         "immer",
         "interactable",
         "overscan",
+        "partialize",
         "precompute",
         "reinitializations",
         "Toolset",

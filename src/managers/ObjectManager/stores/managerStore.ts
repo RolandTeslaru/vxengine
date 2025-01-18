@@ -9,8 +9,6 @@ import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
 import { useVXObjectStore } from './objectStore';
 import { useRefStore } from '@vxengine/utils';
-import * as THREE from "three"
-import { assert } from 'console';
 
 const selectObjects = (
     state: ObjectManagerStoreProps,
@@ -99,7 +97,6 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         const name = (vxobject as vxEntityProps).name ?? vxkey;
 
         if (nodesPresent[vxkey] === true) {
-            // console.warn("Tryng to add an already present node");
             return;
         } else {
             nodesPresent[vxkey] = true;

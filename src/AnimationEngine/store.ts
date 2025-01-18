@@ -9,6 +9,7 @@ export interface TimelineStoreStateProps {
     timelines: Record<string, ITimeline>;
     currentTimelineID: string;
     currentTimeline: ITimeline;
+    projectName: string
     isPlaying: boolean;
     playRate: number;
     setPlayRate: (rate: number) => void;
@@ -25,6 +26,7 @@ export const useAnimationEngineAPI = createWithEqualityFn<TimelineStoreStateProp
         splines: {},
         settings: {}
     },
+    projectName: null,
     isPlaying: false,
     playRate: 1,
     setPlayRate: (rate: number) => set((state) => ({...state, playRate: rate })),

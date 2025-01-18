@@ -29,6 +29,7 @@ import init, {
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
+import { DiskProjectProps } from '@vxengine/types/engine';
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -189,9 +190,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
   * @param timelines - A record of timelines to load.
   */
-  loadTimelines(timelines: Record<string, ITimeline>) {
+  loadProject(diskData: DiskProjectProps) {
+    const timelines = diskData.timelines
+    useAnimationEngineAPI.setState({ projectName: diskData.projectName })
+
     if (this._IS_DEVELOPMENT) {
-      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(timelines);
+      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
 
       if (syncResult?.status === 'out_of_sync') {
         this.setIsPlaying(false);
@@ -207,7 +211,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setCurrentTimeline(firstTimelineID);
 
-    console.log('AnimationEngine: Loading timelines', firstTimeline);
+    console.log('AnimationEngine: Finished Loading Project:',diskData.projectName, " with ", diskData.projectName.length, " timelines");
 
     // Initialize the core UI
     useUIManagerAPI.getState().setMountCoreUI(true);

@@ -1,3 +1,4 @@
+import { DiskProjectProps } from "@vxengine/types/engine";
 import { Emitter } from "../emitter";
 import { EventTypes } from "../events";
 import { edObjectProps, IKeyframe, IStaticProps, ITimeline, ITrack } from "./track";
@@ -20,7 +21,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   
     setIsPlaying(value: boolean): void;  
     setCurrentTimeline(timelineId: string): void;
-    loadTimelines(timelines: Record<string, ITimeline>): void;
+    loadProject(diskData: DiskProjectProps): void;
     setCurrentTime(time: number, isTick?: boolean);
     getCurrentTime(): number
 

@@ -4,14 +4,17 @@
 
 'use client'
 
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EffectComposer } from 'three-stdlib'
 import { VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
 import { createStore, useStore, StoreApi } from 'zustand'
 import { useSourceManagerAPI } from './managers/SourceManager/store'
 import { AnimationEngine } from './AnimationEngine/engine'
 import { setNodeEnv, getNodeEnv } from "./constants"
+import { ITimeline } from './AnimationEngine/types/track'
 
+import { closeDialogStatic, pushDialogStatic } from './managers/UIManager/store'
+import { AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from './components/shadcn/alertDialog'
 let animationEngineInstance: AnimationEngine | undefined
 
 const VXEngineContext = createContext<ReturnType<typeof createVXEngineStore> | null>(null);
@@ -22,11 +25,11 @@ let VXEngineStore: StoreApi<VXEngineStoreProps> | null = null;
 let areTimelinesLoaded = false;
 
 
-
 const createVXEngineStore = (props: VXEngineProviderProps) => {
   const {
     mount,
-    animations_json: diskUrl,
+    projectName,
+    animations_json,
     nodeEnv,
     autoWriteToDisk
   } = props;
@@ -36,17 +39,16 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   else if (nodeEnv !== 'development' && nodeEnv !== 'production' && nodeEnv !== 'test')
     throw new TypeError(`Invalid value for 'nodeEnv': ${nodeEnv}. Expected 'development', 'production', or 'test'.`);
 
-  if (typeof window !== 'undefined' && !animationEngineInstance) 
+  if (typeof window !== 'undefined' && !animationEngineInstance)
     animationEngineInstance = new AnimationEngine(nodeEnv);
 
-  const setDiskFilePath = useSourceManagerAPI.getState().setDiskFilePath;
-  setDiskFilePath(diskUrl);
+  console.log("Animations JSON ", animations_json)
 
-  // Ensure that timelines are loaded only once.
-  // Without this flag, React Fast Refresh or component re-renders could repeatedly trigger
-  // the `loadTimelines` function, leading to an infinite loop and unnecessary reinitializations.
+  // // Ensure that timelines are loaded only once.
+  // // Without this flag, React Fast Refresh or component re-renders could repeatedly trigger
+  // // the `loadTimelines` function, leading to an infinite loop and unnecessary reinitializations.
   if (!areTimelinesLoaded) {
-    animationEngineInstance?.loadTimelines(diskUrl);
+    animationEngineInstance?.loadProject(animations_json);
     areTimelinesLoaded = true;  // Set the flag to true after the first load to prevent re-execution
   }
 
@@ -58,25 +60,38 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
     animationEngine: animationEngineInstance,
 
     IS_DEVELOPMENT: nodeEnv === "development",
-    IS_PRODUCTION: nodeEnv === "production"
+    IS_PRODUCTION: nodeEnv === "production",
   }));
 
   return VXEngineStore;
 };
 
 
+let propsValidated = false;
+
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
-  const { children, nodeEnv } = props;
+  const { children, nodeEnv, projectName, animations_json } = props;
 
   setNodeEnv(nodeEnv);
   const IS_DEVELOPMENT = nodeEnv === "development"
 
-  const store = useRef(createVXEngineStore(props)).current;
-  
+  // Validate Props
+  useLayoutEffect(() => {
+    if(propsValidated) return;
+
+    let id_alertProjectNameUnSync;
+
+    if (projectName !== animations_json.projectName) {
+      id_alertProjectNameUnSync = "id-unsyncProjectName"
+      pushDialogStatic(<DANGER_ProjectNameUnSync diskJsonProjectName={animations_json.projectName} providerProjectName={projectName} />, "danger", "", id_alertProjectNameUnSync)
+    }
+    propsValidated = true;
+  }, [props])
+
   useEffect(() => {
     const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
 
-    if (IS_DEVELOPMENT) 
+    if (IS_DEVELOPMENT)
       window.addEventListener('beforeunload', handleBeforeUnload)
 
     return () => {
@@ -84,6 +99,8 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
         window.removeEventListener('beforeunload', handleBeforeUnload);
     }
   }, [])
+
+  const store = useRef(createVXEngineStore(props)).current;
 
   return (
     <VXEngineContext.Provider value={store}>
@@ -104,4 +121,44 @@ export const getVXEngineState = () => {
     throw new Error("VXEngineStore is not initialized. Make sure to initialize it inside VXEngineProvider.");
   }
   return VXEngineStore
+}
+
+const DANGER_ProjectNameUnSync = ({ diskJsonProjectName, providerProjectName }: any) => {
+  return (
+    <div className='flex flex-col gap-4'>
+      <AlertDialogHeader className='flex flex-col'>
+        <AlertDialogTitle>Project Name Sync Conflict</AlertDialogTitle>
+        <AlertDialogDescription>
+          <div className='gap-2 flex flex-col'>
+            <p>
+              Project Name from Disk Json is not the same as the one from config provider!
+            </p>
+            <div className='flex flex-col gap-2'>
+              <p>Disk Json projectName = <span className='text-red-600'>{`${diskJsonProjectName}`}</span></p>
+              <p>Provider projectName = <span className='text-red-600'>{`${providerProjectName}`}</span></p>
+            </div>
+          </div>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+    </div>
+  )
+}
+
+let hasBeenValidated = false;
+
+const validateProps = (props: VXEngineProviderProps): boolean => {
+  let isReady = true;
+  if (hasBeenValidated) return isReady;
+
+  const { projectName, animations_json } = props
+
+  if (projectName !== animations_json.projectName) {
+    pushDialogStatic(<DANGER_ProjectNameUnSync diskJsonProjectName={animations_json.projectName} providerProjectName={projectName} />, "danger", "")
+    isReady = false
+  }
+
+  console.log("Validation Result ", isReady)
+
+  hasBeenValidated = true;
+  return isReady
 }

@@ -1,7 +1,7 @@
 import { Button } from "@vxengine/components/shadcn/button"
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { useSourceManagerAPI } from "./store"
+import { LocalStorageDataType, useSourceManagerAPI } from "./store"
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"
 import HardDrive from '@geist-ui/icons/hardDrive'
 import Server from '@geist-ui/icons/server'
@@ -69,40 +69,31 @@ const defaultStyles = {
 export const SourceManagerUI = () => {
     const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)
     const saveDataToLocalStorage = useSourceManagerAPI(state => state.saveDataToLocalStorage)
-    
-    const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData)
-    const overwriteLocalStorageData = useSourceManagerAPI(state => state.overwriteLocalStorageData)
 
     return (
         <CollapsiblePanel
             title='Source Manager'
         >
             <div className="flex flex-col gap-2">
-                <Button onClick={saveToDisk} variant='default' className="mx-auto" size="sm">
+                <Button onClick={() => saveToDisk()} variant='default' className="mx-auto" size="sm">
                     <p className="text-xs font-sans-menlo">
                         Save to Disk
                     </p>
                 </Button>
-                <Button onClick={saveDataToLocalStorage} variant='default' className="mx-auto" size="sm">
+                <Button onClick={() => saveDataToLocalStorage()} variant='default' className="mx-auto" size="sm">
                     <p className="text-xs font-sans-menlo">
                         Save to LS
                     </p>
                 </Button>
                 <Button variant='default' className="mx-auto" size="sm"
-                    onClick={() => {
-                        const timelines = useAnimationEngineAPI.getState().timelines
-                        overwriteDiskData(timelines)
-                    }}
+                    onClick={() => saveToDisk({force: true, reloadOnSuccess: true})}
                 >
                     <p className="text-xs font-sans-menlo">
                         Overwrite Disk
                     </p>
                 </Button>
                 <Button variant='default' className="mx-auto" size="sm"
-                    onClick={() => {
-                        const timelines = useAnimationEngineAPI.getState().timelines
-                        overwriteLocalStorageData(timelines);
-                    }}
+                    onClick={() => saveDataToLocalStorage({force: true})}
                 >
                     <p className="text-xs font-sans-menlo">
                         Overwrite LS
@@ -114,25 +105,28 @@ export const SourceManagerUI = () => {
 }
 
 export const DataSyncPopup = () => {
-    const diskData = useAnimationEngineAPI(state => state.timelines)
-    const diskDataString = useMemo(() => JSON.stringify(diskData, null, 2), [diskData])
+    const diskTimelines = useAnimationEngineAPI(state => state.timelines)
+    const projectName = useAnimationEngineAPI(state => state.projectName);
+    const diskTimelinesString = useMemo(() => JSON.stringify(diskTimelines, null, 2), [diskTimelines])
 
-    const overwriteLocalStorageData = useSourceManagerAPI(state => state.overwriteLocalStorageData)
-    const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData);
+    const saveDataToLocalStorage = useSourceManagerAPI(state => state.saveDataToLocalStorage)
+    const saveDataToDisk = useSourceManagerAPI(state => state.saveDataToDisk);
     const setShowSyncPopup = useSourceManagerAPI(state => state.setShowSyncPopup)
 
-    const localStorageData = useMemo(() => JSON.parse(localStorage.getItem("timelines")), [])
-    const localStorageDataString = useMemo(() => JSON.stringify(localStorageData, null, 2), [localStorageData])
+    const lsTimelinesString = useMemo(() => {
+        const lsString = localStorage.getItem("VXEngineProjects")
+        const lsData = JSON.parse(lsString) as LocalStorageDataType;
+        const lsTimelines = lsData[projectName].timelines;
+        return JSON.stringify(lsTimelines, null, 2)
+    }, [])
 
     const onClickKeepDisk = () => {
-        const timelines = useAnimationEngineAPI.getState().timelines
-        overwriteLocalStorageData(timelines)
+        saveDataToLocalStorage({force: true})
         setShowSyncPopup(false)
     }
 
     const onClickLocalStorage = () => {
-        const data = JSON.parse(localStorage.getItem("timelines"))
-        overwriteDiskData(data)
+        saveDataToDisk({force: true, reloadOnSuccess: true})
         setShowSyncPopup(false);
     }
 
@@ -154,6 +148,9 @@ export const DataSyncPopup = () => {
                         <p className="text-xs text-neutral-400 font-sans-menlo">
                             A conflict between the local storage data and the disk data has been found.
                         </p>
+                        <p className="font-sans-menlo text-xs text-neutral-400">
+                            project name: <span className="text-red-500">{projectName}</span>
+                        </p>
                     </div>
                 </div>
                 {/* Content */}
@@ -172,7 +169,12 @@ export const DataSyncPopup = () => {
                         </div>
                         {/* Data Difs */}
                         <div className="max-h-[500px] bg-neutral-950 overflow-scroll  text-xs">
-                            <ReactDiffViewer styles={defaultStyles} oldValue={diskDataString} newValue={localStorageDataString} splitView={true} />
+                            <ReactDiffViewer 
+                                styles={defaultStyles} 
+                                oldValue={diskTimelinesString} 
+                                newValue={lsTimelinesString} 
+                                splitView={true} 
+                            />
                         </div>
                         {/* Buttons */}
                         <div className="flex flex-row py-3 justify-items-center">
@@ -198,8 +200,6 @@ export const DataSyncPopup = () => {
 export const SourceManagerSubMenu = () => {
     const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)
     const saveToLocalStorage = useSourceManagerAPI(state => state.saveDataToLocalStorage)
-    const overwriteDiskData = useSourceManagerAPI(state => state.overwriteDiskData)
-    const overwriteLocalStorage = useSourceManagerAPI(state => state.overwriteLocalStorageData)
     return (
         <MenubarSub>
             <MenubarSubTrigger>Source Manager API</MenubarSubTrigger>
@@ -207,15 +207,12 @@ export const SourceManagerSubMenu = () => {
                 <MenubarItem onClick={() => saveToDisk()}>Save Data to Disk</MenubarItem>
                 <MenubarItem onClick={() => saveToLocalStorage()}>Save Data to Local Storage</MenubarItem>
                 <MenubarSeparator />
-                <MenubarItem onClick={() => {
-                    const timelines = useAnimationEngineAPI.getState().timelines
-                    overwriteDiskData(timelines)
-                }}>Override Disk</MenubarItem>
-                <MenubarItem onClick={() => {
-                    const timelines = useAnimationEngineAPI.getState().timelines
-                    overwriteLocalStorage(timelines)
-                }}
-                >Override Local Storage</MenubarItem>
+                <MenubarItem onClick={() => saveToDisk({force: true, reloadOnSuccess: true})}>
+                    Override Disk
+                </MenubarItem>
+                <MenubarItem onClick={() => saveToLocalStorage({force: true})}>
+                    Override Local Storage
+                </MenubarItem>
             </MenubarSubContent>
         </MenubarSub>
     )

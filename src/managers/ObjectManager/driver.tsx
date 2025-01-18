@@ -11,8 +11,6 @@ import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
 
-const AXES = ['x', 'y', 'z'];
-
 const axisMap = {
   X: 'x',
   Y: 'y',
@@ -33,21 +31,12 @@ const dispatchVirtualEntityChangeEvent = (e: any, vxobject: vxObjectProps) => {
   document.dispatchEvent(virtualEntityChangeEvent as any);
 }
 
-
-const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
-  const lowerCaseKey = keyframeKey.toLowerCase();
-  if (lowerCaseKey.includes('.x')) return 'x';
-  if (lowerCaseKey.includes('.y')) return 'y';
-  if (lowerCaseKey.includes('.z')) return 'z';
-  return 'x';
-};
-
 /**
  * ObjectManagerDriver Component
  *
  * Description:
- * This component manages transformations (translate, rotate, scale) for objects in a Three.js scene 
- * using `TransformControls`. It handles updates to the selected object's properties, supports debounced
+ * This component manages transformations (translate, rotate, scale) for objects in a R3F scene
+ * using `TransformControls` from drei. It handles updates to the selected object's properties, supports debounced
  * updates for performance, and manages specific logic for different types of objects, such as 
  * entities, keyframe nodes, and spline nodes.
  *
@@ -67,15 +56,17 @@ const getKeyframeAxis = (keyframeKey: string): "x" | "y" | "z" => {
 
 export const ObjectManagerDriver = () => {
   const vxobject = useObjectManagerAPI(state => state.selectedObjects[0]);
-  const transformMode = useObjectManagerAPI(state => state.transformMode);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
+  const transformMode = useObjectManagerAPI(state => state.transformMode);
+  const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
-
 
   const vxkey = vxobject?.vxkey;
   const vxRef: THREE.Object3D = vxobject?.ref.current;
   const type = vxRef?.type
   const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
+
+  const setSplineNodePosition = useTimelineEditorAPI(state => state.setSplineNodePosition);
 
   const isValid =
     type === "Mesh" ||
@@ -84,14 +75,10 @@ export const ObjectManagerDriver = () => {
     type === "CubeCamera" ||
     type === "Environment"
 
-
   const isTransformDisabled =
     isUsingSplinePath ||
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
-
-  console.log("Is transform Disabled", isTransformDisabled)
-  console.log("Is transform disabled isUsingSplinePath:", isUsingSplinePath, " disabledParams:", vxobject?.disabledParams?.includes("position"), " !isValid", !isValid, " type:", type)
 
   const intialProps = useRef({
     position: new THREE.Vector3,
@@ -191,7 +178,6 @@ export const ObjectManagerDriver = () => {
       handleSpaceTransform(axes, vxkey)
     }
     else if (transformSpace === "local") {
-
       switch (transformMode) {
         case 'translate': {
           currentProps.current.position = vxRef.position.clone()
@@ -295,7 +281,6 @@ export const ObjectManagerDriver = () => {
   }, 300)
 
 
-  const setSplineNodePosition = useTimelineEditorAPI(state => state.setSplineNodePosition);
 
   // 
   //  Handle SPLINE Nodes 
@@ -320,7 +305,7 @@ export const ObjectManagerDriver = () => {
     if (!vxobject) return
     if (!controls) return
 
-    useObjectManagerAPI.getState().setTransformMode("translate");
+    setTransformMode("translate");
 
     // We need to store initial values when dealing with local space, 
     // because we need to compare them when the entity is changed
@@ -342,9 +327,6 @@ export const ObjectManagerDriver = () => {
       controls.showZ = axis.includes('Z')
     }
   }, [vxobject])
-
-
-  console.log("ObjectManager Driver: Rendering TrasnformControls with vxRef:", vxRef, "and is mounted:", vxRef && !isTransformDisabled)
 
   return (
     <>
