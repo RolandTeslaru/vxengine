@@ -124,7 +124,7 @@ export const useUIManagerAPI = create<UIManagerProps>()(
 );
 
 
-export const pushDialogStatic = (content: React.ReactNode, type: DialogType, className: string, id?: string) => {
+export const pushDialogStatic = (content: React.ReactNode, type: DialogType, className?: string, id?: string) => {
     const _id = id ?? `${type}-${Date.now()}`;
     const state = useUIManagerAPI.getState();
 

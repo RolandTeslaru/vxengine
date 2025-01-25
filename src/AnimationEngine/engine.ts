@@ -211,7 +211,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setCurrentTimeline(firstTimelineID);
 
-    console.log('AnimationEngine: Finished Loading Project:',diskData.projectName, " with ", diskData.projectName.length, " timelines");
+    console.log('AnimationEngine: Finished Loading Project:',diskData.projectName, " with ", Object.entries(diskData.timelines).length, " timelines");
 
     // Initialize the core UI
     useUIManagerAPI.getState().setMountCoreUI(true);

@@ -42,14 +42,12 @@ const createVXEngineStore = (props: VXEngineProviderProps) => {
   if (typeof window !== 'undefined' && !animationEngineInstance)
     animationEngineInstance = new AnimationEngine(nodeEnv);
 
-  console.log("Animations JSON ", animations_json)
-
   // // Ensure that timelines are loaded only once.
   // // Without this flag, React Fast Refresh or component re-renders could repeatedly trigger
   // // the `loadTimelines` function, leading to an infinite loop and unnecessary reinitializations.
   if (!areTimelinesLoaded) {
     animationEngineInstance?.loadProject(animations_json);
-    areTimelinesLoaded = true;  // Set the flag to true after the first load to prevent re-execution
+    areTimelinesLoaded = true;
   }
 
   VXEngineStore = createStore<VXEngineStoreProps>((set) => ({

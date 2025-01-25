@@ -9,7 +9,7 @@ const TrackSegmentProperties = React.memo(() => {
 
     return (
         <> 
-            {selectedTrackSegment && 
+            {selectedTrackSegment?.trackKey && 
                 <CollapsiblePanel
                     title="Track Segment Props."
                     className='gap-2'

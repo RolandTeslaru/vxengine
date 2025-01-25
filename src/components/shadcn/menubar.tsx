@@ -41,9 +41,12 @@ const MenubarTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       `flex cursor-default select-none items-center rounded-lg px-3 py-1 text-xs font-medium outline-none border-transparent border
-        focus:bg-neutral-800 focus:text-neutral-50
-        hover:bg-neutral-800 hover:border-neutral-700 hover:border-opacity-35
-      data-[state=open]:bg-neutral-800 data-[state=open]:text-neutral-50 data-[state=open]:border-neutral-700 data-[state=open]:border-opacity-35`,
+        focus:bg-neutral-700 focus:bg-opacity-50 focus:text-neutral-50
+        hover:bg-neutral-700 hover:bg-opacity-50 
+        hover:border-neutral-400 hover:border-opacity-20
+        data-[state=open]:bg-neutral-700 data-[state=open]:bg-opacity-50 
+        data-[state=open]:text-neutral-50 
+        data-[state=open]:border-neutral-400 data-[state=open]:border-opacity-20`,
       className
     )}
     {...props}
@@ -61,9 +64,9 @@ const MenubarSubTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-none border border-transparent
-        focus:bg-neutral-800 focus:text-neutral-50 focus:border-neutral-700 focus:border-opacity-35
-         hover:bg-neutral-800 hover:border-neutral-700 hover:border-opacity-35
-      data-[state=open]:bg-neutral-800 data-[state=open]:text-neutral-50 data-[state=open]:border-neutral-700 data-[state=open]:border-opacity-35`,
+        focus:text-neutral-50 focus:border-opacity-35
+         hover:bg-blue-600 hover:border-neutral-700 hover:border-opacity-35
+      data-[state=open]:bg-blue-600 data-[state=open]:text-neutral-50 data-[state=open]:border-blue-500`,
       inset && "pl-8",
       className
     )}
@@ -131,8 +134,8 @@ const MenubarItem = React.forwardRef<
     ref={ref}
     className={cn(
       `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-none border border-transparent
-       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-neutral-800 focus:text-neutral-50
-       focus:border-neutral-700 focus:border-opacity-35
+       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-blue-600 focus:text-neutral-50
+       focus:border-blue-500
        `,
       inset && "pl-8",
       className

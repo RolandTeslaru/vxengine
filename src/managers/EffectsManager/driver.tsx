@@ -131,7 +131,7 @@ export const EffectsManagerDriver = React.memo(
         parentKey: "global",
       };
 
-      addObject(newVXEntity, { type: "Effects"});
+      addObject(newVXEntity, { icon: "Effects"});
     }, [])
 
     useLayoutEffect(() => {

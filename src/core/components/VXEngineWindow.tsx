@@ -31,7 +31,6 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
 
     const registerWindow = useUIManagerAPI((state) => state.registerWindow);
     const isVisible = useUIManagerAPI((state) => state.windowVisibility[id])
-    const setWindowVisibility = useUIManagerAPI((state) => state.setWindowVisibility);
     const setWindowAttachment = useUIManagerAPI((state) => state.setWindowAttachment);
     const isAttached = useUIManagerAPI((state) => state.getAttachmentState(id))
     const isStoreHydrated = useUIManagerAPI(state => state.hydrated);
@@ -56,8 +55,6 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
                 >
                     <WindowControlDots
                         isAttached={isAttached}
-                        setAttach={setWindowAttachment}
-                        setMount={setWindowVisibility}
                         id={id}
                     />
                     {children}
@@ -98,7 +95,7 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
         <div
             className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
                         rounded-3xl flex flex-col p-2 pb-1 gap-2 shadow-lg shadow-neutral-950
-                    ${className} ${isDetached && detachedClassName}`}
+                    ${isDetached && detachedClassName} ${className} `}
             onClick={onClick}
         >
             {children}

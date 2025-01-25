@@ -17,23 +17,22 @@ export type EditableObjectProps<T> = Omit<T, 'ref'> & {
 
 export type VXBaseInputType = {
     type: string,
+    propertyPath?: string
 }
-export type VXNumberInputType = {
+export type VXNumberInputType = VXBaseInputType & {
     type: "number"
 }
 
-export type VXSliderInputType = {
+export type VXSliderInputType = VXBaseInputType & {
     type: "slider"
     min: number
     max: number
     step?: number
 }
 
-export interface VXColorInputType {
+
+export type VXColorInputType = VXBaseInputType & {
     type: "color",
-    r?: number
-    g?: number
-    b?: number
 }
 
 export type VXParamInputType = VXNumberInputType | VXSliderInputType | VXColorInputType;

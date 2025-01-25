@@ -21,6 +21,7 @@ export const defaultSettings_spotlight = {
 }
 
 const spotLightParams: VXObjectParams = {
+    "color": { type: "color"},
     'intensity': { type: "number" },
     'distance': { type: "number" },
     'penumbra': { type: "number" },

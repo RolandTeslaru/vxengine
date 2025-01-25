@@ -2,12 +2,10 @@ import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
 import React, { useState } from "react"
 
-
 interface Props {
     vxkey: string,
     propertyPath: string
 }
-
 
 export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const trackKey = vxkey + "." + propertyPath
@@ -44,14 +42,14 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
     const trackKey = vxkey + "." + propertyPath
     const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
     const keyframes = track?.keyframes;
-    if(!keyframes) 
-        return null
-    const keyframesLength = Object.values(keyframes).length;
-
     const staticProp = useTimelineEditorAPI(state => state.staticProps[key])
     const removeProperty = useTimelineEditorAPI(state => state.removeProperty)
+    
+    if(!keyframes) 
+        return null    
 
-
+    const keyframesLength = Object.values(keyframes).length;
+    
     return (
 
         <div className='flex flex-col gap-4'>

@@ -26,6 +26,7 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     isVirtual?: boolean
     addToNodeTree?: boolean
     overrideNodeTreeParentKey?: string;
+    overrideNodeType?: string
 
     defaultSettings?: {},
     defaultAdditionalSettings?: {}
@@ -87,13 +88,10 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         const internalRef = useRef<THREE.Object3D | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
 
-        const memoizedSelectObjects = useCallback(selectObjects, []);
-
         // Initializations
         useLayoutEffect(() => {
             const addObject = useVXObjectStore.getState().addObject;
             const removeObject = useVXObjectStore.getState().removeObject;
-            const addToTree = useObjectManagerAPI.getState().addToTree;
 
             const name = props.name || vxkey
             const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
@@ -108,7 +106,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
                 parentKey,
             };            
             
-            addObject(newVXEntity);
+            addObject(newVXEntity, {icon});
             animationEngine.initObjectOnMount(newVXEntity);
 
             return () => removeObject(vxkey)

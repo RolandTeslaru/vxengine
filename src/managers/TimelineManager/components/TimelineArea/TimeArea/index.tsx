@@ -35,7 +35,7 @@ export const TimeArea = () => {
   return (
     <>
       <div
-        className="sticky top-0 h-[28px] bg-neutral-950 z-20 border-b border-neutral-800"
+        className="sticky top-0 h-[28px] bg-neutral-950 bg-opacity-90 z-20 border-b border-neutral-800"
         style={{width: `${timelineClientWidth}px`}}
         onClick={handleOnClick}
       >

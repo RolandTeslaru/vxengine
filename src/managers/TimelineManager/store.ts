@@ -86,6 +86,7 @@ function createKeyframeLogic(
 
     track.keyframes[keyframeKey] = newKeyframe;
 
+    updatedOrderedKeyframeIdsLogic(state, trackKey)
     state.addChange();
 }
 
@@ -136,7 +137,7 @@ export function updatedOrderedKeyframeIdsLogic(state: TimelineEditorStoreProps, 
         (a, b) => track.keyframes[a].time - track.keyframes[b].time
     )
 
-    if(!isEqual(sortedKeys, track.orderedKeyframeKeys)){
+    if (!isEqual(sortedKeys, track.orderedKeyframeKeys)) {
         track.orderedKeyframeKeys = sortedKeys
     }
 }
@@ -629,11 +630,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     createKeyframe: ({ trackKey, value, reRender = true }) => {
         const keyframeKey = `keyframe-${Date.now()}`
 
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineEditorStoreProps) => 
             createKeyframeLogic(state, trackKey, keyframeKey, value)
-
-            updatedOrderedKeyframeIdsLogic(state, trackKey);
-        }))
+        ))
         const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh Raw Data and ReRender
         animationEngine.hydrateKeyframe(trackKey, 'create', keyframeKey, reRender)
@@ -655,13 +654,13 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         // Handle State Update
         set(produce((state: TimelineEditorStoreProps) => {
             const track = state.tracks[trackKey];
-            if (!track) 
+            if (!track)
                 return;
             const keyframe = track.keyframes[keyframeKey];
 
-            if (!keyframe) { 
+            if (!keyframe) {
                 console.warn(`TimelineManagerAPI: Keyframe does not exist ${keyframeKey}`, track.keyframes);
-                 return; 
+                return;
             }
 
             track.keyframes[keyframeKey].time = newTime;
@@ -674,7 +673,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         animationEngine.hydrateKeyframe(trackKey, "update", keyframeKey, reRender)
 
         // Handle UI Mutation
-        if(mutateUI)
+        if (mutateUI)
             handleKeyframeMutation(keyframeKey, newTime, true);
 
         get().addChange()
@@ -716,7 +715,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     //
     //      S T A T I C     P R O P 
     //
-
 
     createStaticProp: ({ vxkey, propertyPath, value, reRender, state }) => {
         value = truncateToDecimals(value);
@@ -834,4 +832,36 @@ export const selectKeyframeSTATIC = (trackKey: string, keyframeKey: string) => {
 
 export const setKeyframeTimeSTATIC = (trackKey: string, keyframeKey: string) => {
 
+}
+
+export const moveToNextKeyframeSTATIC = (trackKey: string) => {
+    const state = useTimelineEditorAPI.getState();
+    const track = state.tracks[trackKey]
+    if (!track) return
+
+    const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
+
+    const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
+
+    const nextKeyframe = sortedKeyframes.find(kf => kf.time > time);
+
+    if (nextKeyframe)
+        state.setTime(nextKeyframe.time)
+}
+
+export const moveToPreviousKeyframeSTATIC = (trackKey: string) => {
+    const state = useTimelineEditorAPI.getState();
+    const track = state.tracks[trackKey]
+    if (!track) return
+
+    const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
+
+    const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
+
+    const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < time);
+
+    if (prevKeyframe)
+        state.setTime(prevKeyframe.time)
 }

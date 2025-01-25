@@ -9,7 +9,6 @@ import React from 'react'
 import CameraTarget from './components/CameraTarget'
 import { useCameraManagerAPI } from './store'
 import { OrbitControls } from '@react-three/drei'
-import { useVXObjectStore } from '../ObjectManager'
 
 const CameraManagerDriver = React.memo(() => {
     const mode = useCameraManagerAPI(state => state.mode)
@@ -30,13 +29,5 @@ const CameraManagerDriver = React.memo(() => {
         </>
     )
 })
-
-const VXOrbitControls = () => {
-    const cameraVxObject = useVXObjectStore(state => state.objects["perspectiveCamera"]);
-
-    return (
-        <OrbitControls makeDefault />
-    )
-}
 
 export default CameraManagerDriver

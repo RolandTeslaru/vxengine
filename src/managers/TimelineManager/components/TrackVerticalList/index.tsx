@@ -56,7 +56,7 @@ const TrackVerticalList = memo(() => {
     }, [trackTree, searchQuery])
 
     return (
-        <div className={`w-full h-full flex flex-col rounded-2xl relative overflow-hidden border border-neutral-800 bg-neutral-900`}>
+        <div className={`w-full h-full flex flex-col rounded-2xl relative overflow-hidden border border-neutral-800 bg-neutral-900 bg-opacity-90`}>
             <div className={`h-[32px] flex flex-row px-2 `}>
                 <Search
                     className="w-36 px-2 bg-neutral-800 ml-auto my-auto"
@@ -67,12 +67,12 @@ const TrackVerticalList = memo(() => {
             {IS_PRODUCTION && 
                 <div className="absolute top-1/2 -translate-y-1/2">
                     <p className="text-xs font-sans-menlo text-center text-red-600 px-2">
-                        TrackTree is not generated in Production Mode!
+                        Track Tree is not generated in Production Mode!
                     </p>
                 </div>  
             }
             <div
-                className="overflow-y-scroll w-full h-full text-xs pl-1"
+                className="overflow-y-scroll w-full h-full text-xs"
                 ref={trackListRef}
                 onScroll={handleOnScroll}
             >
@@ -97,12 +97,12 @@ const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: num
 
     return (
         <>
-            <li className={`flex items-center hover:bg-blue-800 w-full`}
+            <li className={`flex items-center hover:bg-neutral-800 w-full`}
                 style={{ height: DEFAULT_ROW_HEIGHT}}
             >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
                     {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed} />}
-                    {renderPaths(paths, isLinearTrack, node.track)}
+                    <RenderPaths paths={paths} isLinearTrack={isLinearTrack} trackKey={node.track}/>
                 </div>
             </li>
             {!isCollapsed && hasChildren && (
@@ -116,7 +116,7 @@ const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: num
     )
 })
 
-const renderPaths = (paths: string[], isLinearTrack: boolean, trackKey?: string) => {
+const RenderPaths = ({paths, isLinearTrack, trackKey}: {paths: string[], isLinearTrack: boolean, trackKey: string}) => {
     return paths.map((path, index) => {
         const isFinal = index === paths.length - 1;
         const showArrow = index < paths.length - (isLinearTrack ? 2 : 1);
@@ -157,7 +157,7 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
                     {pathKey}
                 </p>
                 <div className="scale-90">
-                    <KeyframeControl propertyKey={trackKey} />
+                    <KeyframeControl trackKey={trackKey} />
                 </div>
             </ContextMenuTrigger>
             <FinalPathContextMenu {...props} />
@@ -194,7 +194,7 @@ const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
 
 const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string, isCollapsed: boolean }) => {
     return (
-        <div className="mr-[3px]">
+        <div className="mr-[3px] h-[16px] my-auto">
             <button
                 type="button"
                 aria-label="Toggle children"
@@ -206,7 +206,9 @@ const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string,
                     useTimelineEditorAPI.getState().setCollapsedTrackNodes(nodeKey);
                 }}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="m10 8 4 4-4 4" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m10 8 4 4-4 4" />
+                </svg>
             </button>
         </div>
     )

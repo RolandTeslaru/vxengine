@@ -15,6 +15,7 @@ import Search from "./Search";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useRefStore } from "@vxengine/utils";
 import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
+import { useVXEngine } from "@vxengine/engine";
 
 
 const filterOutFunctions = (state: any) => {
@@ -109,14 +110,21 @@ const State_ObjectPropertyAPI = () => {
         properties: filterProperties(sanitizedState.properties, searchQuery),
     };
 
+    const IS_PRODUCTION = useVXEngine(state => state.IS_PRODUCTION)
 
     return (
         <>
-            <div className="absolute right-4 top-10 flex flex-row gap-2 text-yellow-400">
-                <AlertTriangle className="" size={30} />
-                <div className="text-xs font-sans-menlo">
-                    <p>Highly volatile state!</p>
-                    <p>Rendering this will cause lag!</p>
+            <div className=" absolute right-2 top-9 gap-2 z-10">
+                <div className="flex gap-2 text-yellow-400">
+                    <AlertTriangle className="" size={30} />
+                    <div className="text-xs font-sans-menlo">
+                        <p>Highly volatile state!</p>
+                        <p>Rendering this will cause lag!</p>
+                    </div>
+                </div>
+                <div className="text-red-600 flex gap-2">
+                    <AlertTriangle className="" size={30} />
+                    <p className="text-xs my-auto font-sans-menlo">This store is not updated in Production Mode!</p>
                 </div>
             </div>
 

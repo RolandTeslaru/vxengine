@@ -3,4 +3,3 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 export { useTimelineEditorAPI } from "./store"
-export { TimelineEditorUI } from "./ui"

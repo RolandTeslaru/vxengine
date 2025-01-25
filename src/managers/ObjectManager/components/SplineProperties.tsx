@@ -14,9 +14,13 @@ interface Props {
     vxobject: vxSplineProps
 }
 
+const handleShowSpline = (objectVxKey: string ) => {
+    const toggleAdditionalSetting = useObjectSettingsAPI.getState().toggleAdditionalSetting;
+    toggleAdditionalSetting(objectVxKey, "showPositionPath")
+}
+
 const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxSpline.objectVxKey])
-    const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
 
     return (
         <CollapsiblePanel
@@ -26,7 +30,7 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
             <div className='flex flex-row justify-between'>
                 <p className="text-xs font-light my-auto text-neutral-400">show spline</p>
                 <Switch
-                    onClick={() => toggleAdditionalSetting(vxSpline.objectVxKey, "showPositionPath")}
+                    onClick={() => handleShowSpline(vxSpline.objectVxKey)}
                     checked={additionalSettings?.["showPositionPath"]}
                 />
             </div>

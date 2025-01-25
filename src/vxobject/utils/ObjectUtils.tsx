@@ -31,11 +31,11 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
 
-    const showPositionPath = additionalSettings["showPositionPath"]
+    const showPositionPath = additionalSettings?.["showPositionPath"]
 
     return (
         <>
-            {settings.useSplinePath && (
+            {settings?.useSplinePath && (
                 <Spline splineKey={"spline1"} vxkey={vxkey} visible={showPositionPath} />
             )}
             {/* <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
@@ -44,7 +44,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
             <Edges lineWidth={1.5} scale={1.1} visible={containsSupportedGeometries && selectedObjectKeys.includes(vxkey)} renderOrder={1000} color="#949494">
             </Edges> */}
 
-            {additionalSettings["showPositionPath"] && <>
+            {showPositionPath && <>
                     <PositionPath vxkey={vxkey} />
             </>
             }

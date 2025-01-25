@@ -1,32 +1,28 @@
 import React, { useCallback, useRef, useLayoutEffect } from 'react';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
-import { parserPixelToTime, parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
+import { parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import { selectKeyframeSTATIC as selectKeyframe } from '@vxengine/managers/TimelineManager/store';
 import { DragEvent, Interactable } from "@interactjs/types";
 import { useRefStore } from '@vxengine/utils';
 import interact from 'interactjs';
-import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
-import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import PopoverShowTrackSegmentData from '@vxengine/components/ui/Popovers/PopoverShowTrackSegmentData';
 import { hydrateKeyframeKeysOrder } from '../Keyframe/utils';
 import { handleTrackDrag } from './utils';
 import { produce } from 'immer';
 import { TimelineEditorStoreProps } from '@vxengine/managers/TimelineManager/types/store';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
+import TrackSegmentContextMenu from './TrackSegmentContextMenu';
 
 export const segmentStartLeft = 22;
 
-
-interface TrackSegmentProps {
+interface Props {
     trackKey: string;
     firstKeyframeKey: string;
     secondKeyframeKey: string
 }
 
-const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
+const TrackSegment: React.FC<Props> = (props) => {
     const { trackKey, firstKeyframeKey, secondKeyframeKey } = props
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
     const elementRef = useRef<HTMLElement>();
@@ -119,24 +115,6 @@ const TrackSegment: React.FC<TrackSegmentProps> = (props) => {
 export default TrackSegment
 
 
-const TrackSegmentContextMenu: React.FC<TrackSegmentProps> = React.memo((props) => {
-    const { trackKey } = props;
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-    const pushDialog = useUIManagerAPI(state => state.pushDialog);
-
-    return (
-        <ContextMenuContent>
-            <PopoverShowTrackSegmentData {...props}>
-                <p className='text-xs font-sans-menlo'>Show Data...</p>
-            </PopoverShowTrackSegmentData>
-            <ContextMenuItem onClick={() =>
-                pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
-            >
-                <p className='text-xs font-sans-menlo text-red-600'>Make Property Static </p>
-            </ContextMenuItem>
-        </ContextMenuContent>
-    )
-})
 
 const handleOnMove = (
     e: DragEvent,

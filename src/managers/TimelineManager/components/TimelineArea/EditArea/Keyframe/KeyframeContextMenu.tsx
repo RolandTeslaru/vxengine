@@ -1,6 +1,4 @@
 import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu'
-import { Input } from '@vxengine/components/shadcn/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
 import PopoverShowKeyframeData from '@vxengine/components/ui/Popovers/PopoverShowKeyframeData'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager'
 import ArrowRight from '@geist-ui/icons/arrowRight'

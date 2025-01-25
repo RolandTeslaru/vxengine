@@ -10,16 +10,16 @@ import { GizmoHelper } from '@vxengine/components/renderer/gizmoHelper'
 import { GizmoViewport } from '@vxengine/components/renderer/gizmoViewport'
 import { Stats } from '@react-three/drei'
 
-const VXEngineUtils = () => {
+const VXRendererUtils = () => {
   return (
     <>
       {/* <VXFrameLimiter maxFps={120} /> */}
       {/* <Stats/> */}
-      {/* <Ground /> */}
+      <Ground />
       <GizmoHelper renderPriority={2} alignment="top-right" margin={[350, 100]}>
         <GizmoViewport labelColor="white" axisHeadScale={1} />
       </GizmoHelper>
     </>
   )
 }
-export default VXEngineUtils
+export default VXRendererUtils

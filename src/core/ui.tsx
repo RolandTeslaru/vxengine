@@ -6,9 +6,9 @@
 
 import React, { useEffect, useState } from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
-import { TimelineEditorUI, TimelineTools } from "../managers/TimelineManager/ui"
+import { TimelineEditorContent, TimelineEditorFooter, TimelineEditorHeader } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
-import EntityList from "../managers/ObjectManager/components/ObjectList"
+import ObjectList from "../managers/ObjectManager/components/ObjectList"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
@@ -32,13 +32,13 @@ export const VXStudio = () => {
     const IS_PRODUCTION= useVXEngine(state => state.IS_PRODUCTION)
 
     return (
-        <div id="VXEngineCoreUI" className='fixed top-0 left-0 z-50'>
+        <div id="VXEngineStudio" className='fixed top-0 left-0 z-50'>
             {IS_PRODUCTION && (
                 <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">   
                     <AlertTriangle size={30} className="h-auto my-auto"/>
                     <div className="text-xs font-sans-menlo">
-                        <p>VXEngine Running in Production Mode</p>
-                        <p>VXStudio should not be mounted</p>
+                        <p>VXEngine Running in Production Mode!</p>
+                        <p>VXStudio should not be mounted!</p>
 
                     </div>
                 </div>
@@ -63,15 +63,16 @@ export const VXStudio = () => {
 }
 
 const VXRightPanel = () => {
+    const vxWindowId = "VXEngineRightPanel"
     const vxObject = useObjectManagerAPI(state => state.selectedObjects[0]);
 
     return (
         <VXEngineWindow
-            id="VXEngineRightPanel"
+            id={vxWindowId}
             title="VXEngine: RightPanel"
             windowClasses='width=256,height=702,right=200,top=200,resizable=0'
             className="w-60 h-[686px] top-32 right-6 pt-3"
-            detachedClassName="top-2 right-2"
+            detachedClassName="!top-2 !right-2 !left-2 w-auto"
         >
             <div className="w-full h-full flex flex-col gap-2 rounded-2xl  overflow-y-scroll">
                 {vxObject && (
@@ -87,16 +88,17 @@ const VXRightPanel = () => {
 }
 
 const VXLeftPanel = () => {
+    const vxWindowId = "VXEngineLeftPanel"
     return (
         <VXEngineWindow
-            id="VXEngineLeftPanel"
+            id={vxWindowId}
             title="VXEngine: LeftPanel"
             windowClasses='width=310,height=702,left=200,top=200,resizable=0'
-            className="w-60 h-[686px] top-[128px] left-[24px] pt-3"
-            detachedClassName="top-[8px] left-[8px]"
+            className="w-60 h-[686px] top-32 left-6 pt-3"
+            detachedClassName="!top-2 !left-2 !right-2 w-[calc(100%-8px-8px-44px-8px)]"
         >
             <div className="w-full  flex flex-col gap-2 rounded-2xl overflow-y-scroll">
-                <EntityList />
+                <ObjectList />
                 <TrackSegmentProperties />
             </div>
 
@@ -106,26 +108,24 @@ const VXLeftPanel = () => {
 }
 
 const VXBottomRightBar = () => {
-    const id = "rightBar"
+    const vxWindowId = "VXEngineBottomRightBar"
 
     const timelineEditorOpen = useUIManagerAPI(state => state.timelineEditorOpen)
-    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id));
-
-    const setWindowVisibility = useUIManagerAPI(state => state.setWindowVisibility);
-    const setWindowAttachment = useUIManagerAPI(state => state.setWindowAttachment)
+    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId));
 
     return (
         <VXEngineWindow
-            id={id}
+            id={vxWindowId}
             title="VXEngine: TimelineEditor"
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
         >
-            <motion.div className={`fixed backdrop-blur-lg  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
-                                        bg-opacity-70 border-neutral-400 border-opacity-20 border-[1px] rounded-3xl flex flex-col px-2
-                                    ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
-                                  `}
+            <motion.div 
                 id="VXEngineTimelinePanel"
+                className={`fixed backdrop-blur-lg  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
+                            bg-opacity-70 border-neutral-400 border-opacity-20 border-[1px] rounded-3xl flex flex-col px-2
+                            ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
+                          `}
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
                     width: timelineEditorAttached ? 'auto' : 'calc(100% - 68px)',
@@ -136,15 +136,12 @@ const VXBottomRightBar = () => {
                 }
             >
                 <WindowControlDots
-                    id={id}
+                    id={vxWindowId}
                     isAttached={timelineEditorAttached}
-                    setAttach={setWindowAttachment}
-                    setMount={setWindowVisibility}
                 />
-                <TimelineEditorUI id={id}/>
-                <TimelineTools
-                    visible={timelineEditorOpen}
-                />
+                <TimelineEditorHeader id={vxWindowId}/>
+                <TimelineEditorContent/>
+                <TimelineEditorFooter />
             </motion.div>
 
         </VXEngineWindow>

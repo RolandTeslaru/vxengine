@@ -39,7 +39,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
             name: `node ${index}`
         }
 
-        addObject(splineNodeObject, { type: "splineNode"});
+        addObject(splineNodeObject, { icon: "SplineNode"});
 
         return () => removeObject(nodeKey)
     }, [])

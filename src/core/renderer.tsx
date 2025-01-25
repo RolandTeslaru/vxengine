@@ -33,7 +33,7 @@ import { getNodeEnv } from '@vxengine/constants'
 import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
-import VXEngineUtils from '@vxengine/utils/rendererUtils'
+import VXRendererUtils from '@vxengine/utils/rendererUtils'
 import { VXObjectParams } from '@vxengine/vxobject/types'
 
 export interface RendererCoreProps {
@@ -90,7 +90,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
         >
           {/* <color attach="background" args={['gray']} /> */}
           {IS_DEVELOPMENT && <>
-            <VXEngineUtils />
+            <VXRendererUtils />
             <ObjectManagerDriver />
           </>
           }

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, forwardRef, useRef, useImperativeHandle } from "react";
+import React, { memo, forwardRef, useRef, useImperativeHandle, useLayoutEffect } from "react";
 import { EditableObjectProps, VXObjectParams } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { ColorProps } from "@react-three/fiber";
@@ -10,7 +10,10 @@ export type EditableColorProps = EditableObjectProps<ColorProps> & {
 }
 
 const colorParams: VXObjectParams = {
-    color: { type: "color" }
+    color: {
+        type: "color",  
+        propertyPath: "_"
+    }
 }
 const colorDisabledParams = [
     "position",
@@ -26,8 +29,6 @@ export const EditableColor = memo(forwardRef<ColorProps, EditableColorProps>((pr
     const colorDefaultSettings = {}
     const colorDefaultAdditionalSettings = {}
 
-    // console.log("COLOR REF ", internalRef)
-
     return (
         <VXEntityWrapper
             ref={internalRef}
@@ -35,6 +36,7 @@ export const EditableColor = memo(forwardRef<ColorProps, EditableColorProps>((pr
             defaultSettings={colorDefaultSettings}
             defaultAdditionalSettings={colorDefaultAdditionalSettings}
             disabledParams={colorDisabledParams}
+            icon="Color"
             {...props}
         >
             <color />

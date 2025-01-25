@@ -5,19 +5,19 @@ import { handlePropertyValueChange, useTimelineEditorAPI } from '@vxengine/manag
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { invalidate } from '@react-three/fiber'
+import { ContextMenu } from '../shadcn/contextMenu'
 
 interface ValueRendererProps {
     vxObject: vxObjectProps
     vxkey: string
     propertyPath: string
-    inputProps: React.InputHTMLAttributes<HTMLInputElement>
-    isPropertyTracked: boolean
+    inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
 const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey,propertyPath) || getNestedProperty(ref, propertyPath) || 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxObject, vxkey, propertyPath, inputProps, isPropertyTracked}) => {
+    ({ vxObject, vxkey, propertyPath, inputProps}) => {
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
         const ref = vxObject.ref.current;
@@ -38,7 +38,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             });
 
             return () => unsubscribe();
-        }, [vxkey, propertyPath, isPropertyTracked]);
+        }, [vxkey, propertyPath]);
 
         const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
@@ -58,16 +58,14 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         }, [vxObject]);
 
         return (
-            <div className="relative">
-                <Input
-                    ref={inputRef}
-                    onChange={handleChange}
-                    type='number'
-                    className="h-fit text-[10px] bg-neutral-800 p-0.5 max-w-[40px] border border-neutral-700"
-                    {...inputProps}
-                    style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
-                />
-            </div >
+            <Input
+                ref={inputRef}
+                onChange={handleChange}
+                type='number'
+                className="h-fit text-[10px] bg-neutral-800 p-0.5 max-w-[40px] border border-neutral-700"
+                {...inputProps}
+                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
+            />
         );
     }
 );

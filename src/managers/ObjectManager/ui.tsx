@@ -14,6 +14,7 @@ import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@
 import { useUIManagerAPI } from '../UIManager/store'
 import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 import SplineProperties from './components/SplineProperties'
+import SplineNodePanel from './components/SplineNodePanel'
 
 const ObjectPropertiesConfig = {
   entity: [
@@ -27,7 +28,7 @@ const ObjectPropertiesConfig = {
     MaterialProperties
   ],
   spline: [SplineProperties],
-  splineNode: [NodeTransformProperties],
+  splineNode: [NodeTransformProperties, SplineNodePanel],
   keyframeNode: [NodeTransformProperties],
 };
 

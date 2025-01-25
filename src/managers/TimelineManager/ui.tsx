@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ChevronRight from "@geist-ui/icons/chevronRight"
 import Navigation2 from "@geist-ui/icons/navigation2"
 
@@ -29,34 +29,6 @@ interface Props {
     id: string
 }
 
-export const TimelineEditorUI = React.memo(({ id }: Props) => {
-    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
-
-    return (
-        <>
-            {/*  H E A D E R */}
-            <div className={`flex flex-row gap-2 w-full py-2 
-                            ${timelineEditorAttached ? "pr-2" : "px-2"}`}
-            >
-                <MinimizeButton id={id} />
-
-                <p className='font-sans-menlo text-sm my-auto h-auto'>
-                    Timeline Editor
-                </p>
-
-                <TimelineSelect />
-
-                <ProgressionControls />
-            </div>
-
-            {/* M A I N  */}
-            <TimelineEditorContent />
-
-            <TimelineEditorFooter />
-        </>
-    )
-})
-
 const MinimizeButton = ({ id }: { id: string }) => {
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
     const setOpen = useUIManagerAPI(state => state.setTimelineEditorOpen)
@@ -74,19 +46,37 @@ const MinimizeButton = ({ id }: { id: string }) => {
     )
 }
 
-const TimelineEditorContent = () => {
+export const TimelineEditorHeader = ({id}: {id: string}) => {
+    const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(id))
+
+    return (
+        <div className={`flex flex-row gap-2 w-full py-2 
+            ${timelineEditorAttached ? "pr-2" : "px-2"}`}
+        >
+            <MinimizeButton id={id} />
+
+            <p className='font-sans-menlo text-sm my-auto h-auto'>
+                Timeline Editor
+            </p>
+
+            <TimelineSelect />
+
+            <ProgressionControls />
+        </div>
+    )
+}
+
+export const TimelineEditorContent = () => {
     return (
         <ResizablePanelGroup
             className='relative flex flex-row w-full flex-grow overflow-hidden'
             direction='horizontal'
         >
-            <ResizablePanel defaultSize={32}>
-                <div className='h-full flex flex-col overflow-hidden'>
-                    <TrackVerticalList />
-                </div>
+            <ResizablePanel defaultSize={28}>
+                <TrackVerticalList />
             </ResizablePanel>
             <ResizableHandle withHandle className='mx-1' />
-            <ResizablePanel defaultSize={68}>
+            <ResizablePanel defaultSize={72}>
                 <TimelineArea />
             </ResizablePanel>
         </ResizablePanelGroup>
@@ -108,7 +98,7 @@ const shouldIgnoreKeyEvent = (event: KeyboardEvent): boolean => {
     return false;
 }
 
-const TimelineEditorFooter = () => {
+export const TimelineEditorFooter = () => {
     const setCurrentTimelineLength = useTimelineEditorAPI(state => state.setCurrentTimelineLength)
     const currentTimelineLength = useTimelineEditorAPI(state => state.currentTimelineLength)
     const setSnap = useTimelineEditorAPI(state => state.setSnap)
@@ -193,6 +183,20 @@ const TimelineEditorFooter = () => {
 const ScaleSlider = () => {
     const scale = useTimelineEditorAPI(state => state.scale);
     const setScale = useTimelineEditorAPI(state => state.setScale);
+    // const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
+    // const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
+
+    // const animationEngine = useVXEngine(state => state.animationEngine)
+
+    const handleScaleChange = useCallback((value: number[]) => {
+        setScale(value[0])
+        // const clientWidth = timelineAreaRef.current.offsetWidth
+        // const autoScrollFrom = clientWidth * 70 / 100;
+        // const time = animationEngine.getCurrentTime()
+        // const left = time * (ONE_SECOND_UNIT_WIDTH / scale) + 0 - autoScrollFrom;
+        // timelineAreaRef.current.scrollLeft = left;
+        // scrollLeftRef.current = left
+    }, [])
 
     return (
         <div className='flex flex-row gap-2'>
@@ -203,9 +207,7 @@ const ScaleSlider = () => {
                 step={0.1}
                 min={0.1}
                 className='w-24 my-auto'
-                onValueChange={(value) => {
-                    setScale(value[0])
-                }}
+                onValueChange={handleScaleChange}
             />
         </div>
     )
@@ -232,7 +234,7 @@ export const TimelineSelect = () => {
                 <SelectGroup>
                     {Object.entries(timelines).map(([key, timeline]) =>
                         <SelectItem value={timeline.id} key={key}>
-                            <p style={{ fontSize: "11px"}} >
+                            <p style={{ fontSize: "11px" }} >
                                 {timeline.name}
                             </p>
                         </SelectItem>

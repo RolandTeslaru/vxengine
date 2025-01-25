@@ -1,16 +1,15 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { create } from 'zustand'
 import { SourceManagerAPIProps } from './types'
-import { IKeyframe, ITimeline } from '@vxengine/AnimationEngine/types/track'
+import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
 import { useTimelineEditorAPI } from '../TimelineManager'
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine'
-import { cloneDeep } from 'lodash'
 import { DiskProjectProps } from '@vxengine/types/engine'
 
-const DEBUG = true;
+const DEBUG = false;
 
 const PAUSED_DISK_SAVING = false;
 
@@ -21,6 +20,18 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
   showSyncPopup: false,
   setShowSyncPopup: (value: boolean) => set({ showSyncPopup: value }),
 
+  getLocalStorageProject: (projectName: string) => {
+    const lsString = localStorage.getItem("VXEngineProjects")
+    if(!lsString) return null;
+
+    const ls = JSON.parse(lsString) as LocalStorageDataType
+    const project = ls[projectName]
+    if(project)
+      return project
+    else
+      return null
+  },
+
   saveDataToDisk: async ({force = false, reloadOnSuccess = false} = {}) => {
     if(force === false){
       const showSyncPopup = get().showSyncPopup;
@@ -30,10 +41,13 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
     if (DEBUG) console.log(`VXEngine SourceManager: Saving data to disk ${force && "with force"}`);
 
-    const state = useAnimationEngineAPI.getState();
-    const projectName = state.projectName;
-    const timelines = state.timelines;
-    const clonedTimelines = cloneDeep(timelines);
+    const projectName = useAnimationEngineAPI.getState().projectName;
+
+    const project = get().getLocalStorageProject(projectName);
+    if(!project)
+      return
+
+    const timelines = project.timelines
 
     try {
       const response = await fetch('/api/vxSaveTimelines', {
@@ -41,7 +55,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ project: {projectName, timelines: clonedTimelines} })
+        body: JSON.stringify({ project: {projectName, timelines} })
       })
       if (response.ok){
         console.log(`VXEngine SourceManager: Project "${projectName}" saved successfully to disk.`);

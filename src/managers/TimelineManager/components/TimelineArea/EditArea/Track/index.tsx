@@ -30,7 +30,8 @@ const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
 
             {/* Render Track Segments */}
             {orderedKeyframeKeys.map((keyframeKey: string, index: number) => {
-                if (index === 0) return null;
+                if (index === 0) 
+                    return null;
 
                 const firstKeyframeKey = orderedKeyframeKeys[index - 1];
                 const secondKeyframeKey = keyframeKey

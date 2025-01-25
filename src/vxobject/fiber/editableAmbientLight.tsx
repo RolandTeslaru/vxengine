@@ -19,7 +19,8 @@ export const defaultSettings_AmbientLight = {
 }
 
 const ambientLightProps: VXObjectParams = {
-    'intensity': {type: "number"}
+    'intensity': {type: "number"},
+    "color": {type: "color", propertyPath: "color"}
 }
 
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {

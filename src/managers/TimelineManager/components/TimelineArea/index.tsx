@@ -22,7 +22,6 @@ const TimelineArea = (() => {
   useAnimationEngineEvent(
     'timeUpdatedByEngine',
     ({ time }) => {
-
       const clientWidth = timelineAreaRef.current.offsetWidth
 
       const autoScrollFrom = clientWidth * 70 / 100;
@@ -32,7 +31,7 @@ const TimelineArea = (() => {
     }
   );
 
-
+  
 
   useEffect(() => {
     const handleCopy = (event: KeyboardEvent) => {
@@ -76,18 +75,15 @@ const TimelineArea = (() => {
 
   return (
     <div
-      className={`w-full h-full border border-neutral-800 bg-neutral-900 
-                    rounded-2xl relative flex flex-col !overflow-hidden  `}
+      className={`w-full h-full border border-neutral-800 bg-neutral-900 bg-opacity-90
+                    rounded-2xl relative overflow-auto `}
+      ref={timelineAreaRef}
+      onScroll={handleOnScroll}
     >
-      <div
-        className={"w-full h-full relative !overflow-y-scroll"}
-        ref={timelineAreaRef}
-        onScroll={handleOnScroll}
-      >
-        <Cursor />
-        <TimeArea />
-        <EditArea />
-      </div>
+      <Cursor />
+
+      <TimeArea />
+      <EditArea />
 
     </div>
   );

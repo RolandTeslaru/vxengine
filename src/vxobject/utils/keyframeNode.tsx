@@ -46,7 +46,7 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
             },
             parentKey: parentVxKey
         }
-        addObject(keyframeNode);
+        addObject(keyframeNode, { icon: "Keyframe"});
 
         return () => removeObject(nodeKey)
     }, [keyframeKeys])

@@ -1,10 +1,7 @@
 import { invalidate } from '@react-three/fiber'
-import { Input } from '@vxengine/components/shadcn/input'
 import { Slider } from '@vxengine/components/shadcn/slider'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
-import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { handlePropertyValueChange } from '@vxengine/managers/TimelineManager/store'
-import { getNestedProperty } from '@vxengine/utils'
 import { VXSliderInputType } from '@vxengine/vxobject/types'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
@@ -36,7 +33,6 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
 
     const handleChange = useCallback((newValue: number) => {
         handlePropertyValueChange(vxkey, propertyPath, newValue);
-        setValue(newValue)
         invalidate();
     }, [vxkey, propertyPath]);
 
@@ -45,7 +41,7 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
             max={param.max}
             min={param.min}
             step={param.step ?? 0.1}
-            className={"w-36 " + className}
+            className={"w-28 " + className}
             value={[value]}
             onValueChange={(newValue) => handleChange(newValue[0])}
         />

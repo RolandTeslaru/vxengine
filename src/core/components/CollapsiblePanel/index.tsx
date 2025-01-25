@@ -11,16 +11,15 @@ interface Props {
     noPadding?: boolean
 }
 
-const CollapsiblePanel: React.FC<Props> = memo(
+const  CollapsiblePanel: React.FC<Props> = memo(
     ({ title, children, className, defaultOpen = true, noPadding = false, contentClassName }) => {
 
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl ${noPadding === false && "px-1"} ${styles.gradient_border_mask} bg-neutral-900
+        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl shadow-md shadow-neutral-900 ${noPadding === false && "px-1"} ${styles.gradient_border_mask} bg-neutral-900
             ${open === false && "!h-[40px]"} ` +
             className}
-        style={{ boxShadow: "0px 0px 5px 1px rgba(0,0,0, 0.6)" }}
         >
             {/* Title */}
             <div className={`py-2 ${noPadding ? "px-2" : "px-0"} relative`}>

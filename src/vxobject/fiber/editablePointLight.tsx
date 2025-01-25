@@ -22,6 +22,7 @@ export const defaultSettings_pointLight = {
 }
 
 const pointLightParams: VXObjectParams= {
+    "color": { type: "color" },
     'distance': { type: "number" },
     'intensity': { type: "number" },
     'decay': { type: "number" },

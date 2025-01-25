@@ -10,7 +10,7 @@ import { getNodeEnv } from '@vxengine/constants';
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     objects: {},
     addObject: (vxobject, props = {}) => set((state) => {
-        const { addToTree, type: icon} = props
+        const { addToTree, icon} = props
         
         const IS_DEVELOPMENT = getNodeEnv() === "development";
 
