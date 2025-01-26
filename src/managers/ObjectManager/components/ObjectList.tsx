@@ -79,7 +79,7 @@ const ObjectList = () => {
         <CollapsiblePanel
             title="Object List"
             noPadding={true}
-            contentClassName='pb-0 !px-0'
+            contentClassName='pb-0 !px-0' 
         >
             {/* Head */}
             <div className='text-xs flex flex-row px-2 text-neutral-400'>
@@ -89,7 +89,7 @@ const ObjectList = () => {
                 <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             {/* Content */}
-            <div className='mt-2 max-h-[500px] rounded-b-xl overflow-y-scroll text-sm'>
+            <div className='mt-2 max-h-[550px] rounded-b-xl overflow-y-scroll text-sm'>
                 <ObjectTree nodes={filteredTree} onNodeClick={handleObjectClick} onNodeContext={handleObjectContext} />
             </div>
             {IS_PRODUCTION && 

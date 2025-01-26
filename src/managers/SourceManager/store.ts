@@ -81,7 +81,14 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     const projectName = state.projectName;
 
     const localStorageData =  JSON.parse(localStorage.getItem("VXEngineProjects")) as LocalStorageDataType
-    localStorageData[projectName].timelines = timelines;
+    if(!localStorageData[projectName]){
+      localStorageData[projectName] = {
+        projectName,
+        timelines
+      }
+    }else {
+      localStorageData[projectName].timelines = timelines;
+    }
 
     localStorage.setItem("VXEngineProjects",JSON.stringify(localStorageData));
   }, 500),

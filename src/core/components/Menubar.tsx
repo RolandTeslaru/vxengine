@@ -16,10 +16,10 @@ const VXMenubar = () => {
     return (
         <div
             className={`fixed top-6 left-6 z-10 w-fit border-neutral-400 border-opacity-20 border-[1px] text-white 
-                    backdrop-blur-lg bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-3 
-                        shadow-md shadow-neutral-950
+                        backdrop-blur-lg bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-3 
                     `}
             id="VXEngineMenubar"
+            style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6"}}
         >
             {/* Icon */}
 

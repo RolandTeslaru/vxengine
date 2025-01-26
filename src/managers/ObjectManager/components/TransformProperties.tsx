@@ -32,7 +32,7 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     const isRotationDisabled = disabledParams?.includes("rotation");
     const isScaleDisabled = disabledParams?.includes("scale");
 
-    const isPanelDisabled = isPositionDisabled && isRotationDisabled && isScaleDisabled
+    const isPanelDisabled = isPositionDisabled && isRotationDisabled && isScaleDisabled && !isUsingSplinePath
 
     if (isPanelDisabled) return;
 

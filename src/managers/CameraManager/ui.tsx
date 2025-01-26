@@ -8,7 +8,9 @@ const CameraManagerUI = () => {
 
     return (
         <div className={`fixed w-[240px] bg-neutral-900 bg-opacity-70 backdrop-blur-sm border-neutral-400 border-opacity-20 border-[1px] rounded-3xl
-                         top-6 right-6 flex flex-row pl-2 pr-1 py-1 shadow-md shadow-neutral-950`}>
+                         top-6 right-6 flex flex-row pl-2 pr-1 py-1`}
+        style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -2px rgb(0 0 0 / 0.6"}}
+        >
             <p className='font-sans-menlo text-xs my-auto mx-auto h-auto'>Camera</p>
             <div className='h-auto my-auto'>
                 <Tabs

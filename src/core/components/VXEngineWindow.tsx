@@ -94,9 +94,10 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
     return (
         <div
             className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
-                        rounded-3xl flex flex-col p-2 pb-1 gap-2 shadow-lg shadow-neutral-950
+                        rounded-3xl flex flex-col p-2 pb-1 gap-2 
                     ${isDetached && detachedClassName} ${className} `}
             onClick={onClick}
+            style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6"}}
         >
             {children}
         </div>

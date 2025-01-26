@@ -17,9 +17,10 @@ const  CollapsiblePanel: React.FC<Props> = memo(
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl shadow-md shadow-neutral-900 ${noPadding === false && "px-1"} ${styles.gradient_border_mask} bg-neutral-900
-            ${open === false && "!h-[40px]"} ` +
-            className}
+        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl bg-neutral-900 bg-opacity-80
+                        shadow-md shadow-neutral-900 ${noPadding === false && "px-1"} 
+                        border border-neutral-300 border-opacity-10 
+                        ${open === false && "!h-[40px]"} ` + className}
         >
             {/* Title */}
             <div className={`py-2 ${noPadding ? "px-2" : "px-0"} relative`}>

@@ -97,7 +97,7 @@ const VXLeftPanel = () => {
             className="w-60 h-[686px] top-32 left-6 pt-3"
             detachedClassName="!top-2 !left-2 !right-2 w-[calc(100%-8px-8px-44px-8px)]"
         >
-            <div className="w-full  flex flex-col gap-2 rounded-2xl overflow-y-scroll">
+            <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
                 <ObjectList />
                 <TrackSegmentProperties />
             </div>
