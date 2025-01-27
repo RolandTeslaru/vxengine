@@ -36,6 +36,7 @@ const config = {
       },
       fontFamily: {
         'sans-menlo': ['Sans Menlo', 'sans'], 
+        'roboto-mono': ['Roboto Mono', 'sans'],
         'work-sans': ['Work Sans', 'sans-menlo'],
         'inter': ['Inter', 'sans-menlo'],
       },

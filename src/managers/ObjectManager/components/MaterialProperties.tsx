@@ -4,6 +4,94 @@ import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import PropInput from '@vxengine/components/ui/PropInput';
 import Search from '@vxengine/components/ui/Search';
 import { vxEntityProps, vxObjectProps } from '../types/objectStore';
+import JsonView from 'react18-json-view';
+import Tree from '@vxengine/components/ui/Tree';
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData';
+
+interface PropertyTreeNode {
+    key: string; // The name of the property
+    propertyPath?: string; // The full property path (e.g., "parent.child.key")
+    type?: "number" | "color";
+    children: Record<string, PropertyTreeNode>; // Nested children
+}
+type PropertyTree = Record<string, PropertyTreeNode>
+
+const isValidValue = (value: any) =>
+    typeof value === "number" || (value instanceof THREE.Color && value.isColor);
+
+const getValueType = (value: any) => {
+    if(typeof value === "number")
+        return "number"
+    else if(value instanceof THREE.Color || value.isColor)
+        return "color"
+}
+
+function createPropertyTree(
+    obj: Record<string, any>, 
+    parentKey = "", 
+    visited = new WeakSet(), // Keep track of visited objects
+    depth = 0, 
+    maxDepth = 10 // Limit the depth to prevent infinite recursion
+): PropertyTree {
+    // Base case: Prevent too deep recursion
+    if (depth > maxDepth) return {};
+
+    // Check for circular references
+    if (visited.has(obj)) {
+        // @ts-expect-error
+        return { circularReference: true };
+    }
+
+    // Mark this object as visited
+    visited.add(obj);
+
+    const tree: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+        if (isValidValue(value)) {
+            // Add valid values as leaf nodes
+            tree[key] = { 
+                key,
+                propertyPath: `material.${fullKey}`, 
+                children: {},
+                type: getValueType(value)
+            };
+        } else if (typeof value === "object" && value !== null) {
+            // Recursively traverse child objects
+            const children = createPropertyTree(value, fullKey, visited, depth + 1, maxDepth);
+            if (Object.keys(children).length > 0) {
+                tree[key] = { key, children };
+            }
+        }
+    }
+
+    // Remove the object from visited before returning to allow other branches to visit it
+    visited.delete(obj);
+
+    return tree;
+}
+
+const filterTree = (tree: Record<string, PropertyTreeNode>, query: string): Record<string, PropertyTreeNode> => {
+    const result: Record<string, PropertyTreeNode> = {};
+
+    Object.entries(tree).forEach(([key, node]) => {
+        if(!node.key) return
+        const isMatch = node.key.toLowerCase().includes(query.toLowerCase());
+        const filteredChildren = filterTree(node.children, query);
+
+        if (isMatch || Object.keys(filteredChildren).length > 0) {
+            result[key] = {
+                ...node,
+                children: filteredChildren,
+            };
+        }
+    });
+
+    return result;
+};
 
 const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const refObject = (vxobject.ref.current as THREE.Mesh)
@@ -14,37 +102,42 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
     if (!material)
         return null;
 
-    const properties = useMemo(() => {
-        return Object.entries(material).filter(
-            ([key, value]) => typeof value === "number" && !key.startsWith("_")
-        );
-    }, [material]);
-
+    const propertiesTree = useMemo(() => {
+        return createPropertyTree(material)
+    },[vxobject])
+    
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredProperties = useMemo(() => {
-        const lowerCaseQuery = searchQuery.toLowerCase();
-        return properties.filter(([key]) => key.toLowerCase().includes(lowerCaseQuery));
-    }, [properties, searchQuery]);
+    const filteredPropertiesTree = useMemo(() =>
+        filterTree(propertiesTree, searchQuery), [material, searchQuery])
 
 
-    const renderProperty = (_key, value) => {
-        if (typeof value === "number") {
-            return (
-                <div className='flex flex-row py-1' key={_key}>
-                    <p className='text-xs font-light text-neutral-400'>{_key}</p>
-                    <PropInput
-                        vxObject={vxobject}
-                        param={{ type: "number"}}
-                        className="ml-auto w-fit"
-                        propertyPath={`material.${_key}`}
-                    />
-                </div>
-            )
-        }
-        else return null;
+    const renderNodeContent = (node: PropertyTreeNode, level, siblings, indexToParent) => {
+        return (
+            <ContextMenu>
+                <ContextMenuTrigger className='w-full'>
+                    <div className='flex flex-row w-full'>
+                        <p className={`text-xs font-light text-neutral-400`}>
+                            {node.key}
+                        </p>
+                        {node.propertyPath && (
+                            <PropInput
+                                vxObject={vxobject}
+                                param={{ type: node.type}}
+                                className="ml-auto w-fit"
+                                propertyPath={node.propertyPath}
+                            />
+                        )}
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <PopoverShowObjectData object={node} title='TreeNode Data' >
+                        Show data
+                    </PopoverShowObjectData>
+                </ContextMenuContent>
+            </ContextMenu>
+        )
     }
-
 
     return (
         <CollapsiblePanel
@@ -52,20 +145,11 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
             defaultOpen={true}
         >
             <div className='text-xs flex flex-row text-neutral-400'>
-                <p className='mr-auto text-xs' style={{ fontSize: "10px" }}>
-                    {filteredProperties.length} properties
-                </p>
                 {/* Search input */}
-                <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <div className='flex flex-col mt-2 max-h-80 overflow-scroll rounded-lg'>
-                {filteredProperties.map(([key, value]) => {
-                    if (key.startsWith('_') || typeof value === 'function') {
-                        // Skip private properties and methods
-                        return null;
-                    }
-                    return renderProperty(key, value);
-                })}
+            <div className='flex flex-col mt-2 max-h-96 overflow-scroll rounded-lg'>
+                <Tree tree={filteredPropertiesTree as Record<string, PropertyTreeNode>} renderNodeContent={renderNodeContent}/>
             </div>
         </CollapsiblePanel>
     )

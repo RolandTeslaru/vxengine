@@ -13,6 +13,8 @@ import { AnimationEngine } from './AnimationEngine/engine'
 import { setNodeEnv, getNodeEnv } from "./constants"
 import { ITimeline } from './AnimationEngine/types/track'
 
+import "./globals.css"
+
 import { closeDialogStatic, pushDialogStatic } from './managers/UIManager/store'
 import { AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from './components/shadcn/alertDialog'
 let animationEngineInstance: AnimationEngine | undefined

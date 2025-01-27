@@ -61,7 +61,7 @@ const LogoButton = () => {
 const FileButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>File</p></MenubarTrigger>
+            <MenubarTrigger><p style={{ fontFamily: "Roboto Mono"}}>File</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>New</MenubarItem>
                 <MenubarItem>Open</MenubarItem>

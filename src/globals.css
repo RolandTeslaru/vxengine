@@ -7,14 +7,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 
 @layer utilities {
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-   /* Hide scrollbar for IE, Edge and Firefox */
-    .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }
 
@@ -23,29 +27,34 @@
 }
 
 @font-face {
-    font-family: 'Sans Menlo';
-    src: url('./assets/fonts/Menlo-Regular.woff2') format("woff2");
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  
-  @font-face {
-    font-family: 'Work Sans';
-    src: url('./assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations'); 
-  }
-  
-  @font-face {
-    font-family: 'Inter';
-    src: url('./assets/fonts/Inter-VariableFont_slnt_wght.ttf') format('truetype-variations'); 
-  }
+  font-family: 'Sans Menlo';
+  src: url('../assets/fonts/Menlo-Regular.woff2') format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
 
-  /* Reset defaults on Chrome’s spinner */
+
+@font-face {
+  font-family: 'Work Sans';
+  src: url('../assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter-VariableFont_slnt_wght.ttf') format('truetype-variations');
+}
+
+@font-face {
+  font-family: "Robot Mono";
+  src: url("../assets/fonts/WorkSans-VariableFont_wght.ttf")
+}
+
+/* Reset defaults on Chrome’s spinner */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   margin-left: -8px;
 }
 
 input[type="number"] {
-  position: relative; 
+  position: relative;
 }

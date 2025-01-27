@@ -6,7 +6,8 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
 
-import visualizer from 'rollup-plugin-visualizer';
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+
 
 export default defineConfig({
   assetsInclude: ['**/*.wasm'], 
@@ -83,7 +84,7 @@ export default defineConfig({
         transformObjectKeys: true, // Obfuscate object keys for added security
         disableConsoleOutput: false, // Remove console.log statements
       }
-    }),
+    })
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'), // Define NODE_ENV for frontend compatibility

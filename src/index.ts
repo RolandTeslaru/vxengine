@@ -2,9 +2,8 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import "./globals.css";
 import { enableMapSet } from "immer";
-
+import "./globals.css"
 enableMapSet();
 
 export { VXEngineProvider } from "./engine"

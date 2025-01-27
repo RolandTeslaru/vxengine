@@ -1,0 +1,38 @@
+.tree_container {
+    width: 100%;
+
+    .listItem {
+        position: relative;
+        .verticalLine {
+            content: " ";
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 100%;
+        }
+        .groupVerticalLine {
+            content: " ";
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 100%;
+        }
+
+        &.group-expanded {
+            >div {
+                &::after {
+                    // Additional styles if necessary when the group is expanded
+                }
+            }
+        }
+
+        &.group-collapsed {
+            >div {
+                &::after {
+                    // Additional styles if necessary when the group is collapsed
+                }
+            }
+        }
+    }
+
+}
