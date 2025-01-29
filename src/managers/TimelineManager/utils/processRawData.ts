@@ -3,6 +3,7 @@ import { EditorObjectProps } from "../types/store";
 import { buildTrackTree } from "./trackDataProcessing";
 
 import { getNodeEnv } from "@vxengine/constants";
+import { useTimelineEditorAPI } from "../TimelineEditor/store";
 
 export default function processRawData(
     rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>
@@ -77,18 +78,16 @@ export default function processRawData(
         };
     });
 
-    let trackTree;
-
+    
     const IS_DEVELOPMENT = getNodeEnv() === "development"
-    if(IS_DEVELOPMENT)
-        trackTree = buildTrackTree(tracks);
-    else 
-        trackTree = {}
+    if(IS_DEVELOPMENT){
+        useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
+    }
 
     // Just to be sure recreate the edSpline object
     Object.values(rawSplines).forEach(rawSpline => {
         splines[rawSpline.splineKey] = rawSpline
     })
 
-    return { editorObjects, tracks, staticProps, splines, trackTree };
+    return { editorObjects, tracks, staticProps, splines };
 }

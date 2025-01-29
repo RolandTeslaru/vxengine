@@ -2,7 +2,7 @@ import Info from '@geist-ui/icons/info';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Input } from '@vxengine/components/shadcn/input';
 import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
 import React, { useCallback, useMemo, useState } from 'react'
@@ -54,10 +54,10 @@ const Content: React.FC<Props> = (props) => {
             const handleChange = (e) => {
                 const newValue = parseFloat(e.target.value);
                 if (key === "value") {
-                    const setKeyframeValue = useTimelineEditorAPI.getState().setKeyframeValue;
+                    const setKeyframeValue = useTimelineManagerAPI.getState().setKeyframeValue;
                     setKeyframeValue(keyframeKey, trackKey, newValue, true);
                 } else if (key === "time") {
-                    const setKeyframeTime = useTimelineEditorAPI.getState().setKeyframeTime;
+                    const setKeyframeTime = useTimelineManagerAPI.getState().setKeyframeTime;
                     setKeyframeTime(keyframeKey, trackKey, newValue, true);
                 }
             };
@@ -79,7 +79,7 @@ const Content: React.FC<Props> = (props) => {
         return undefined;
     }, [trackKey, keyframeKey]);
 
-    const keyframe = useTimelineEditorAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
+    const keyframe = useTimelineManagerAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
 
     return (
         <PopoverContent className={contentClassName + " gap-2 flex flex-col"} side={side} align={align}>

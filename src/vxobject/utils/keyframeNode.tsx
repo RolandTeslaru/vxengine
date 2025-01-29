@@ -5,7 +5,7 @@ import { ThreeEvent } from "@react-three/fiber";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { useRef } from "react";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { selectKeyframeSTATIC as selectKeyframe } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import * as THREE from "three"
 import { Html } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
@@ -23,10 +23,7 @@ export interface KeyframeNodeProps {
 
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, index, axis, position, color = "yellow", size = 0.3 }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-    
-    const selectKeyframe = useTimelineEditorAPI(state => state.selectKeyframe)
 
     const ref = useRef<THREE.Mesh>(null);
 

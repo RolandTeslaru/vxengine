@@ -4,7 +4,7 @@ import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 import { Slider } from "@vxengine/components/shadcn/slider";
 import { getNestedProperty } from "@vxengine/utils";

@@ -332,7 +332,7 @@ const ColorPicker = forwardRef<ColorPickerHandle, ColorPickerProps>((props, ref)
           "--thumb-ring-color": "#666666",
         } as React.CSSProperties
       }
-      className="z-30 flex w-full max-w-[300px] select-none flex-col items-center gap-3 overscroll-none "
+      className="z-30 flex w-full max-w-[200px] select-none flex-col items-center gap-3 overscroll-none "
     >
       <DraggableColorCanvas
         ref={draggableColorCanvasRef}

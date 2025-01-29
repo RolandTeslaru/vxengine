@@ -11,7 +11,7 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import * as THREE from "three"
 import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps } from './types/track';
 import { IAnimationEngine } from './types/engine';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
@@ -143,8 +143,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     });
 
     // Set the editor data
-    useTimelineEditorAPI.getState().setEditorData(rawObjects, rawSplines);
-    useTimelineEditorAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
+    useTimelineManagerAPI.getState().setEditorData(rawObjects, rawSplines);
+    useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
   }
 
 
@@ -178,13 +178,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  getCurrentTime(){
+  getCurrentTime() {
     return this._currentTime;
   }
 
 
 
-  
+
 
   /**
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
@@ -211,7 +211,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setCurrentTimeline(firstTimelineID);
 
-    console.log('AnimationEngine: Finished Loading Project:',diskData.projectName, " with ", Object.entries(diskData.timelines).length, " timelines");
+    console.log('AnimationEngine: Finished Loading Project:', diskData.projectName, " with ", Object.entries(diskData.timelines).length, " timelines");
 
     // Initialize the core UI
     useUIManagerAPI.getState().setMountCoreUI(true);
@@ -352,7 +352,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param vxObject - The object to add.
    */
   private _addToEditorData(vxObject: vxObjectProps) {
-    useTimelineEditorAPI.getState().addObjectToEditorData(vxObject);
+    useTimelineManagerAPI.getState().addObjectToEditorData(vxObject);
   }
 
 
@@ -936,10 +936,27 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       // Traverse the property path
       for (let i = 0; i < propertyKeys.length - 1; i++) {
-        target = target[propertyKeys[i]];
+        let key = propertyKeys[i];
+
+        // Check if target is an array
+        if (Array.isArray(target)) {
+          // Try to parse the key as an integer index
+          const index = parseInt(key, 10);
+          if (Number.isNaN(index)) {
+            console.warn(
+              `AnimationEngine: Key '${key}' is not a valid array index in '${propertyPath}'.`
+            );
+            return;
+          }
+          target = target[index];
+        } else {
+          // Regular object property access
+          target = target[key];
+        }
+
         if (target === undefined) {
           console.warn(
-            `AnimationEngine: Property '${propertyKeys[i]}' is undefined in path '${propertyPath}'.`
+            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`
           );
           return;
         }
@@ -947,8 +964,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
 
-      if (target instanceof Map) {
-        // Handle Map-based properties (e.g., uniforms in post-processing effects)
+      // The final property might also be on an array, so handle that too
+      if (Array.isArray(target)) {
+        const index = parseInt(finalPropertyKey, 10);
+        if (Number.isNaN(index)) {
+          console.warn(
+            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`
+          );
+          return;
+        }
+        target[index] = newValue;
+      } else if (target instanceof Map) {
         const mapValue = target.get(finalPropertyKey);
         if (mapValue) {
           mapValue.value = newValue;
@@ -957,18 +983,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
             `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`
           );
         }
-      } else if (target !== undefined) {
-        // Regular object properties
-        target[finalPropertyKey] = newValue;
       } else {
-        console.warn(
-          `AnimationEngine: Unable to set property '${finalPropertyKey}' on undefined target at path '${propertyPath}'.`
-        );
+        target[finalPropertyKey] = newValue;
       }
     };
   }
-
-
 
 
 
@@ -1032,7 +1051,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     action: 'create' | 'remove',
     reRender: boolean = true,
   ) {
-    if(this._IS_PRODUCTION){
+    if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
@@ -1040,16 +1059,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     let rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
-    if (!rawObject) 
+    if (!rawObject)
       rawObject = this._initRawObjectOnTimeline(vxkey);
 
     if (DEBUG_REFRESHER)
       console.log(`AnimationEngine: Refreshing track on object '${vxkey}'.`);
-    
+
 
     switch (action) {
       case 'create': {
-        const keyframesForTrack = useTimelineEditorAPI.getState().tracks[trackKey].keyframes;
+        const keyframesForTrack = useTimelineManagerAPI.getState().tracks[trackKey].keyframes;
         const sortedKeyframes = Object.values(keyframesForTrack).sort((a, b) => a.time - b.time)
 
         const rawKeyframes = sortedKeyframes.map(edKeyframe => {
@@ -1096,6 +1115,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
     }
 
+    invalidate();
+
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
@@ -1119,14 +1140,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender: boolean = true,
     newData?: number | [number, number, number, number]
   ) {
-    if(this._IS_PRODUCTION){
+    if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-    if (DEBUG_REFRESHER) 
+    if (DEBUG_REFRESHER)
       console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
 
     let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
@@ -1144,7 +1165,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     switch (action) {
       case 'create': {
-        const track = useTimelineEditorAPI.getState().tracks[trackKey];
+        const track = useTimelineManagerAPI.getState().tracks[trackKey];
         const edKeyframe = track.keyframes[keyframeKey]
         const rawKeyframe: RawKeyframeProps = {
           id: edKeyframe.id,
@@ -1167,7 +1188,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       case 'update': {
-        const track = useTimelineEditorAPI.getState().tracks[trackKey];
+        const track = useTimelineManagerAPI.getState().tracks[trackKey];
         const edKeyframe = track.keyframes[keyframeKey];
         keyframes.forEach((kf, index) => {
           if (kf.id === keyframeKey) {
@@ -1251,6 +1272,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
     }
 
+    invalidate();
+
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
@@ -1271,7 +1294,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     staticPropKey: string,
     reRender: boolean = true,
   ) {
-    if(this._IS_PRODUCTION){
+    if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
@@ -1289,7 +1312,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     switch (action) {
       case 'create': {
-        const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
+        const staticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
         const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
 
         if (!propExists) {
@@ -1301,7 +1324,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       case 'update': {
-        const staticProp = useTimelineEditorAPI.getState().staticProps[staticPropKey];
+        const staticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
         rawObject.staticProps = rawObject.staticProps.map(prop =>
           prop.propertyPath === propertyPath ? staticProp : prop
         );
@@ -1323,6 +1346,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
     }
 
+    invalidate();
+
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
@@ -1343,12 +1368,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     splineKey: string,
     reRender: boolean = true,
   ) {
-    if(this._IS_PRODUCTION){
+    if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
 
-    const splineState = useTimelineEditorAPI.getState().splines;
+    const splineState = useTimelineManagerAPI.getState().splines;
 
     switch (action) {
       case "update": {
@@ -1419,6 +1444,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
 
+    invalidate();
+
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
@@ -1439,7 +1466,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     settingKey: string,
     vxkey: string,
   ) {
-    if(this._IS_PRODUCTION){
+    if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
@@ -1477,6 +1504,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         return;
       }
     }
+
+    invalidate();
 
     // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();

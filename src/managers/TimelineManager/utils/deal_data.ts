@@ -1,8 +1,9 @@
 import { TimelineAction, TimelineRow } from "@vxengine/AnimationEngine/interface/action";
 import { ADD_SCALE_COUNT } from "@vxengine/AnimationEngine/interface/const";
-import { useTimelineEditorAPI } from "../store";
+import { useTimelineManagerAPI } from "../store";
 import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 import { truncateToDecimals } from "../store";
+import { useTimelineEditorAPI } from "../TimelineEditor/store";
 
 export function parserTimeToPixel(
   data: number,

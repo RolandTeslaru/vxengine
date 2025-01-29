@@ -1,6 +1,6 @@
 import Info from '@geist-ui/icons/info';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import React, { useCallback } from 'react'
 import JsonView from 'react18-json-view';
 
@@ -29,7 +29,7 @@ const PopoverShowTrackData: React.FC<Props> = (props) => {
 const Content: React.FC<Props> = (props) => {
     const { trackKey, contentClassName, side, align } = props;
 
-    const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
+    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
 
     return (
         <PopoverContent className={contentClassName} side={side} align={align}>

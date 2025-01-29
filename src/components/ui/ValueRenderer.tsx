@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, FC, memo, useCallback, useLayoutEffect } from 'react'
 import { getProperty, useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { getNestedProperty } from '@vxengine/utils/nestedProperty'
-import { handlePropertyValueChange, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store'
+import { handlePropertyValueChange, useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { invalidate } from '@react-three/fiber'

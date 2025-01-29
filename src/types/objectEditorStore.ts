@@ -1,7 +1,7 @@
 import { vxObjectProps, vxObjectTypes } from "../managers/ObjectManager/types/objectStore";
 
 export interface ObjectTreeNodeProps {
-    vxkey: string
+    key: string
     name: string;
     type: string;
     children: Record<string, ObjectTreeNodeProps>;

@@ -6,12 +6,10 @@
 
 import React, { useEffect, useState } from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
-import { TimelineEditorContent, TimelineEditorFooter, TimelineEditorHeader } from "../managers/TimelineManager/ui"
 import { motion } from "framer-motion"
-import ObjectList from "../managers/ObjectManager/components/ObjectList"
+import ObjectList from "../managers/ObjectManager/components/ObjectTree"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
-import TrackSegmentProperties from "@vxengine/managers/TimelineManager/components/TrackSegmentProperties"
 import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
@@ -26,6 +24,8 @@ import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
 import { useVXEngine } from "@vxengine/engine"
+import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
+import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
 
 export const VXStudio = () => {
     const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
@@ -68,7 +68,7 @@ const VXRightPanel = () => {
 
     return (
         <VXEngineWindow
-            id={vxWindowId}
+            vxWindowId={vxWindowId}
             title="VXEngine: RightPanel"
             windowClasses='width=256,height=702,right=200,top=200,resizable=0'
             className="w-60 h-[686px] top-32 right-6 pt-3"
@@ -91,7 +91,7 @@ const VXLeftPanel = () => {
     const vxWindowId = "VXEngineLeftPanel"
     return (
         <VXEngineWindow
-            id={vxWindowId}
+            vxWindowId={vxWindowId}
             title="VXEngine: LeftPanel"
             windowClasses='width=310,height=702,left=200,top=200,resizable=0'
             className="w-60 h-[686px] top-32 left-6 pt-3"
@@ -115,7 +115,7 @@ const VXBottomRightBar = () => {
 
     return (
         <VXEngineWindow
-            id={vxWindowId}
+            vxWindowId={vxWindowId}
             title="VXEngine: TimelineEditor"
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
@@ -136,12 +136,9 @@ const VXBottomRightBar = () => {
                 }
             >
                 <WindowControlDots
-                    id={vxWindowId}
                     isAttached={timelineEditorAttached}
                 />
-                <TimelineEditorHeader id={vxWindowId}/>
-                <TimelineEditorContent/>
-                <TimelineEditorFooter />
+                <TimelineEditor/>
             </motion.div>
 
         </VXEngineWindow>

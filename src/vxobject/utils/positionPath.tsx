@@ -5,19 +5,19 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"
 import { IKeyframe } from "@vxengine/AnimationEngine/types/track";
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { shallow } from "zustand/shallow";
 import KeyframeNode from "./keyframeNode";
 
 const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
-    const trackKeys = useTimelineEditorAPI(state => state.editorObjects[vxkey].trackKeys, shallow);
+    const trackKeys = useTimelineManagerAPI(state => state.editorObjects[vxkey].trackKeys, shallow);
 
-    const trackX = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.x`]);
-    const trackY = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.y`]);
-    const trackZ = useTimelineEditorAPI(state => state.tracks[`${vxkey}.position.z`]);
+    const trackX = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.x`]);
+    const trackY = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.y`]);
+    const trackZ = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.z`]);
 
-    const staticProps = useTimelineEditorAPI(state => state.staticProps);
+    const staticProps = useTimelineManagerAPI(state => state.staticProps);
 
     const getAxisValueAtTime = (
         keyframesForAxis: Record<string, IKeyframe>, 

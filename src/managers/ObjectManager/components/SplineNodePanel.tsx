@@ -4,22 +4,22 @@ import { vxSplineNodeProps } from '../types/objectStore'
 import ArrowUp from '@geist-ui/icons/arrowUp'
 import ArrowDown from '@geist-ui/icons/arrowDown'
 import X from '@geist-ui/icons/x'
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager'
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
 
 interface Props {
     vxobject: vxSplineNodeProps
 }
 
 const handleInsertBefore = (splineKey: string, nodeIndex) => {
-    const insertNode = useTimelineEditorAPI.getState().insertNode
+    const insertNode = useTimelineManagerAPI.getState().insertNode
     insertNode({ splineKey, index: nodeIndex })
 }
 const handleDelete = (splineKey: string, nodeIndex) => {
-    const removeNode = useTimelineEditorAPI.getState().removeNode
+    const removeNode = useTimelineManagerAPI.getState().removeNode
     removeNode({ splineKey, index: nodeIndex })
 }
 const handleInsertAfter = (splineKey: string, nodeIndex) => {
-    const insertNode = useTimelineEditorAPI.getState().insertNode
+    const insertNode = useTimelineManagerAPI.getState().insertNode
     insertNode({ splineKey, index: nodeIndex })
 }
 const SplineNodePanel: React.FC<Props> = ({vxobject: vxSplineNode}) => {

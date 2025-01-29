@@ -4,7 +4,7 @@ import { ThreeEvent } from '@react-three/fiber';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useObjectManagerAPI, useVXObjectStore } from '../../ObjectManager';
 import { IKeyframe } from '@vxengine/AnimationEngine/types/track';
-import { useTimelineEditorAPI } from '../../TimelineManager/store';
+import { useTimelineManagerAPI } from '../../TimelineManager/store';
 import { useVXEngine } from '@vxengine/engine';
 
 import * as THREE from "three"
@@ -25,9 +25,9 @@ const SplineKeyframeNode = ({ splineKey, keyframeKey, color = "blue" }) => {
 
     // const firstObjectSelectedVxkey = useObjectManagerAPI(state => state.selectedObjects[0]?.vxkey);
     
-    // const spline = useTimelineEditorAPI(state => state.splines[splineKey])
+    // const spline = useTimelineManagerAPI(state => state.splines[splineKey])
 
-    // const keyframeProgress = useTimelineEditorAPI(state => state.keyframes[keyframeKey]?.value)
+    // const keyframeProgress = useTimelineManagerAPI(state => state.keyframes[keyframeKey]?.value)
     // const animationEngine = useVXEngine(state => state.animationEngine)
 
     // const nodeKey = useMemo(() => `${splineKey}.keyframeNode.${keyframeKey}`,[])

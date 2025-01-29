@@ -1,4 +1,4 @@
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager";
+import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
 import React, { useState } from "react"
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
@@ -6,7 +6,7 @@ import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
 
 export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey: string, isUsingSplinePath: boolean}) => {
     const { tracks, staticProps, removeTrack, removeStaticProp, createSpline, removeSpline }
-        = useTimelineEditorAPI(state => ({
+        = useTimelineManagerAPI(state => ({
             tracks: [
                 state.tracks[`${objVxKey}.position.x`],
                 state.tracks[`${objVxKey}.position.y`],
@@ -68,7 +68,7 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
                         )}
                     </> : <>
                     {/* Remove Spline Actin */}
-                        <p>Disabling the spline path will remove the current spline and allow position tracks and keyframes to be created. </p>
+                        <p>Deleting the spline will also remove the spline progress track, allowing position tracks and keyframes to be created.</p>
                         <br />
                         <p>Spline <span className="text-red-600">{`${objVxKey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
                         {tracks.map((track: ITrack, index) =>

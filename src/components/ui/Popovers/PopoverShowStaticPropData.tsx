@@ -1,7 +1,7 @@
 import Info from '@geist-ui/icons/info';
 import { Input } from '@vxengine/components/shadcn/input';
 import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import React, { useCallback } from 'react'
 import JsonView from 'react18-json-view';
 
@@ -30,7 +30,7 @@ const PopoverShowStaticPropData: React.FC<Props> = (props) => {
 const Content: React.FC<Props> = (props) => {
     const { staticPropKey, contentClassName, side, align } = props;
 
-    const staticProp = useTimelineEditorAPI(state => state.staticProps[staticPropKey]);
+    const staticProp = useTimelineManagerAPI(state => state.staticProps[staticPropKey]);
 
     return (
         <PopoverContent className={contentClassName} side={side} align={align}>

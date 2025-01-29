@@ -6,7 +6,7 @@ import { WindowControlDots } from '../../components/ui/WindowControlDots';
 export interface VXEngineWindowProps {
     children: React.ReactNode;
     title: string;
-    id: string;
+    vxWindowId: string;
     windowClasses: string;
     className?: string;
     detachedClassName?: string;
@@ -14,11 +14,13 @@ export interface VXEngineWindowProps {
 }
 
 interface WindowContextProps {
+    vxWindowId: string
     externalContainer: HTMLElement | null
     setExternalContainer: (element: HTMLElement | null) => void
 }
 
 const WindowContext = createContext<WindowContextProps>({ 
+    vxWindowId: "",
     externalContainer: null,
     setExternalContainer: (element) => {}
 });
@@ -26,22 +28,22 @@ const WindowContext = createContext<WindowContextProps>({
 export const useWindowContext = () => useContext(WindowContext);
 
 export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
-    const { children, title, windowClasses, id, className,
+    const { children, title, windowClasses, vxWindowId, className,
            detachedClassName, noStyling = false } = props;
 
     const registerWindow = useUIManagerAPI((state) => state.registerWindow);
-    const isVisible = useUIManagerAPI((state) => state.windowVisibility[id])
+    const isVisible = useUIManagerAPI((state) => state.windowVisibility[vxWindowId])
     const setWindowAttachment = useUIManagerAPI((state) => state.setWindowAttachment);
-    const isAttached = useUIManagerAPI((state) => state.getAttachmentState(id))
+    const isAttached = useUIManagerAPI((state) => state.getAttachmentState(vxWindowId))
     const isStoreHydrated = useUIManagerAPI(state => state.hydrated);
 
     const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
-        registerWindow({ id, title })
+        registerWindow({ id: vxWindowId, title })
     }, [])
 
-    const handleAttach = () => { setWindowAttachment(id, true) }
+    const handleAttach = () => { setWindowAttachment(vxWindowId, true) }
 
     const Content = useMemo(() => {
         if (noStyling) {
@@ -55,7 +57,6 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
                 >
                     <WindowControlDots
                         isAttached={isAttached}
-                        id={id}
                     />
                     {children}
                 </StandardWindowStyling>
@@ -68,7 +69,7 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     if (isVisible === false) return null;
 
     return (
-        <WindowContext.Provider value={{ externalContainer, setExternalContainer }}>
+        <WindowContext.Provider value={{ externalContainer, setExternalContainer, vxWindowId }}>
             {isAttached ? (
                     Content
             ) : (

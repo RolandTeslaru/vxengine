@@ -7,7 +7,7 @@
 import React, { useCallback, useLayoutEffect } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
 import SplineNode from './components/SplineNode';
-import { useTimelineEditorAPI } from '../TimelineManager/store';
+import { useTimelineManagerAPI } from '../TimelineManager/store';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { useVXObjectStore } from '../ObjectManager';
 import { vxSplineProps } from '../ObjectManager/types/objectStore';
@@ -27,7 +27,7 @@ interface SplineProps {
 
 const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
     const splineKey = `${vxkey}.spline`
-    const nodes = useTimelineEditorAPI(state => state.splines[splineKey].nodes)
+    const nodes = useTimelineManagerAPI(state => state.splines[splineKey].nodes)
     const trackKey = `${vxkey}.splineProgress`
 
     const segmentMultiplier = 10;

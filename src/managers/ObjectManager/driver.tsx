@@ -4,7 +4,7 @@ import { TransformControls, useCamera } from "@react-three/drei";
 import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
-import { handlePropertyValueChange, useTimelineEditorAPI } from "../TimelineManager/store";
+import { handlePropertyValueChange, useTimelineManagerAPI } from "../TimelineManager/store";
 import { vxEntityProps, vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
@@ -66,7 +66,7 @@ export const ObjectManagerDriver = () => {
   const type = vxRef?.type
   const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
 
-  const setSplineNodePosition = useTimelineEditorAPI(state => state.setSplineNodePosition);
+  const setSplineNodePosition = useTimelineManagerAPI(state => state.setSplineNodePosition);
 
   const isValid =
     type === "Mesh" ||
@@ -261,11 +261,11 @@ export const ObjectManagerDriver = () => {
   // 
   const handleKeyframeNodeChange = throttle(() => {
     const { data, ref } = (vxobject as vxKeyframeNodeProps);
-    const setKeyframeValue = useTimelineEditorAPI.getState().setKeyframeValue;
+    const setKeyframeValue = useTimelineManagerAPI.getState().setKeyframeValue;
 
     // (data.keyframeKeys as string[])?.forEach(
     //   (keyframeKey) => {
-    //     const keyframe = useTimelineEditorAPI.getState().keyframes[keyframeKey]
+    //     const keyframe = useTimelineManagerAPI.getState().keyframes[keyframeKey]
     //     // Update keyframe in the store from the the ref stored in the utility node 
     //     const newPosition = ref.current.position;
     //     const axis = getKeyframeAxis(keyframe.propertyPath);

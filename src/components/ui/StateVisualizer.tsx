@@ -2,7 +2,7 @@ import { VXEngineWindow } from "../../core/components/VXEngineWindow";
 import React, { useEffect, useMemo, useState } from "react";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/store";
+import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
 import { useUIManagerAPI } from "../../managers/UIManager/store";
 import JsonView from 'react18-json-view'
@@ -16,6 +16,7 @@ import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useRefStore } from "@vxengine/utils";
 import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
 import { useVXEngine } from "@vxengine/engine";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 
 
 const filterOutFunctions = (state: any) => {
@@ -45,8 +46,8 @@ const StateVisualizerComponent = ({
 };
 
 // Component for TimelineEditorAPI
-const State_TimelineEditorAPI = () => {
-    const state = useTimelineEditorAPI();
+const State_TimelineManagerAPI = () => {
+    const state = useTimelineManagerAPI();
 
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
 
@@ -172,9 +173,12 @@ const stateComponents = {
         store: useObjectManagerAPI,
         depth: 1
     },
+    TimelineManagerAPI: {
+        store: useTimelineManagerAPI,
+        component: State_TimelineManagerAPI, // Custom component
+    },
     TimelineEditorAPI: {
         store: useTimelineEditorAPI,
-        component: State_TimelineEditorAPI, // Custom component
     },
     SourceManagerAPI: {
         store: useSourceManagerAPI,
@@ -221,15 +225,15 @@ const StateComponent = ({ activeData }: {activeData: string}) => {
     return <StateVisualizerComponent useStateAPI={useStateAPI} collapsedDepth={depth} />;
 };
 const StateVisualizer = () => {
-    const id = "stateVisualizerWindow"
+    const vxWindowId = "stateVisualizerWindow"
     const [activeData, setActiveData] = useState("ObjectManagerAPI");
-    const isAttached = useUIManagerAPI(state => state.getAttachmentState(id))
+    const isAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId))
 
     const [refresh, setRefresh] = useState(0);
 
     return (
         <VXEngineWindow
-            id={id}
+            vxWindowId={vxWindowId}
             title="VXEngine: State Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"

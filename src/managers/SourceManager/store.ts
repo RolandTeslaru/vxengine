@@ -5,7 +5,7 @@ import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
-import { useTimelineEditorAPI } from '../TimelineManager'
+import { useTimelineManagerAPI } from '../TimelineManager'
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine'
 import { DiskProjectProps } from '@vxengine/types/engine'
 
@@ -184,7 +184,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
 
   handleBeforeUnload: (event: BeforeUnloadEvent) => {
-    const changes = useTimelineEditorAPI.getState().changes
+    const changes = useTimelineManagerAPI.getState().changes
     const saveDataToDisk = get().saveDataToDisk;
     
     if (changes > 0) {

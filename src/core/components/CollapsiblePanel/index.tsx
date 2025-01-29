@@ -1,6 +1,7 @@
 import ChevronRight from "@geist-ui/icons/chevronRight"
 import React, { useState, memo } from 'react'
 import styles from "./styles.module.scss"
+import classNames from "classnames"
 
 interface Props {
     title: string,
@@ -17,10 +18,11 @@ const  CollapsiblePanel: React.FC<Props> = memo(
     const [open, setOpen] = useState(defaultOpen);
 
     return (
-        <div className={`z-20 w-full h-fit relative !transform-gpu rounded-2xl bg-neutral-900 bg-opacity-80
-                        shadow-md shadow-neutral-900 ${noPadding === false && "px-1"} 
-                        border border-neutral-300 border-opacity-10 
-                        ${open === false && "!h-[40px]"} ` + className}
+        <div className={
+            classNames(classNames, {"!h-[40px]": open === false}, {"px-1": noPadding === false}, 
+                        `z-20 w-full h-fit relative !transform-gpu rounded-2xl bg-neutral-900 bg-opacity-80
+                        shadow-md shadow-neutral-900 border border-neutral-300 border-opacity-10 
+                      `)}
         >
             {/* Title */}
             <div className={`py-2 ${noPadding ? "px-2" : "px-0"} relative`}>
@@ -34,7 +36,9 @@ const  CollapsiblePanel: React.FC<Props> = memo(
                 </p>
             </div>
             {open && 
-                <div className={'text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400 px-1 ' + contentClassName}
+                <div className={
+                    classNames(contentClassName, {"px-1": noPadding === false},
+                               'text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400')}
                     style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                 >
                     {children}

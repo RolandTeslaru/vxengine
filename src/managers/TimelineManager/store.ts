@@ -6,19 +6,19 @@ import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProces
 import { updateProperty } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { EditorObjectProps, SelectedKeyframe, TimelineEditorStoreProps } from './types/store';
+import { EditorObjectProps, TimelineMangerAPIProps } from './types/store';
 import { useVXObjectStore } from '../ObjectManager';
 import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { isEqual } from 'lodash';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
-import { handleKeyframeMutation } from './components/TimelineArea/EditArea/Keyframe/utils';
-import { parserPixelToTime, parserTimeToPixel } from './utils/deal_data';
-import { cursorStartLeft, handleCursorMutation } from './components/TimelineArea/EditorCursor/utils';
+import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea/EditArea/Keyframe/utils';
+import { useTimelineEditorAPI } from './TimelineEditor/store';
+import { getNodeEnv } from '@vxengine/constants';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
-function removeStaticPropLogic(state: TimelineEditorStoreProps, staticPropKey: string) {
+function removeStaticPropLogic(state: TimelineMangerAPIProps, staticPropKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
     delete state.staticProps[staticPropKey] // Delete from record
 
@@ -27,7 +27,7 @@ function removeStaticPropLogic(state: TimelineEditorStoreProps, staticPropKey: s
     edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
 }
 
-function removeKeyframeLogic(state: TimelineEditorStoreProps, trackKey: string, keyframeKey: string) {
+function removeKeyframeLogic(state: TimelineMangerAPIProps, trackKey: string, keyframeKey: string) {
     const track = state.tracks[trackKey]
     if (!track) return;
 
@@ -35,7 +35,7 @@ function removeKeyframeLogic(state: TimelineEditorStoreProps, trackKey: string, 
     updatedOrderedKeyframeIdsLogic(state, trackKey)
 }
 
-function removeTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
+function removeTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     const track = state.tracks[trackKey]
 
@@ -49,7 +49,7 @@ function removeTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
 }
 
 function createKeyframeLogic(
-    state: TimelineEditorStoreProps,
+    state: TimelineMangerAPIProps,
     trackKey: string,
     keyframeKey: string,
     value?: number
@@ -90,7 +90,7 @@ function createKeyframeLogic(
     state.addChange();
 }
 
-function createStaticPropLogic(state: TimelineEditorStoreProps, vxkey: string, propertyPath: string, value: number) {
+function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, value: number) {
     const staticPropKey = `${vxkey}.${propertyPath}`
     const newStaticProp: IStaticProps = {
         vxkey: vxkey,
@@ -102,7 +102,7 @@ function createStaticPropLogic(state: TimelineEditorStoreProps, vxkey: string, p
 }
 
 
-function createTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
+function createTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
     state.editorObjects[vxkey].trackKeys.push(trackKey);
@@ -116,22 +116,7 @@ function createTrackLogic(state: TimelineEditorStoreProps, trackKey: string) {
     state.tracks[trackKey] = newTrack;
 }
 
-const createFlatMap = (state: TimelineEditorStoreProps): SelectedKeyframe[] => {
-    const { selectedKeyframeKeys } = state;
-    return Object.entries(selectedKeyframeKeys).reduce(
-        (acc: SelectedKeyframe[], [trackKey, keyframeKeys]) => {
-            Object.keys(keyframeKeys).forEach((keyframeKey) => {
-                acc.push({
-                    trackKey,
-                    keyframeKey,
-                    isSelected: keyframeKeys[keyframeKey],
-                });
-            });
-            return acc;
-        }, []);
-};
-
-export function updatedOrderedKeyframeIdsLogic(state: TimelineEditorStoreProps, trackKey: string) {
+export function updatedOrderedKeyframeIdsLogic(state: TimelineMangerAPIProps, trackKey: string) {
     const track = state.tracks[trackKey];
     const sortedKeys = Object.keys(track.keyframes).sort(
         (a, b) => track.keyframes[a].time - track.keyframes[b].time
@@ -143,24 +128,12 @@ export function updatedOrderedKeyframeIdsLogic(state: TimelineEditorStoreProps, 
 }
 
 
-function selectKeyframeLogic(state: TimelineEditorStoreProps, trackKey: string, keyframeKey: string) {
-    if (!state.selectedKeyframeKeys[trackKey])
-        state.selectedKeyframeKeys[trackKey] = {};
-
-    state.selectedKeyframeKeys[trackKey][keyframeKey] = true;
-
-    // Update the flat map using the reusable function
-    state.selectedKeyframesFlatMap = createFlatMap(state);
-}
 
 
-
-
-export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProps>((set, get) => ({
+export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
     staticProps: {},
-    trackTree: {},
     splines: {},
 
     currentTimelineLength: 0,
@@ -171,115 +144,24 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         set({ currentTimelineLength: length })
     },
 
-    collapsedTrackNodes: {},
-    setCollapsedTrackNodes: (nodeKey: string) => {
-        set(produce((state: TimelineEditorStoreProps) => {
-            const value = state.collapsedTrackNodes[nodeKey]
-            state.collapsedTrackNodes[nodeKey] = !value
-        }), false)
-    },
-
     setEditorData: (rawObjects, rawSplines) => {
-        const { editorObjects, tracks, staticProps, splines, trackTree } = processRawData(rawObjects, rawSplines);
+        const { editorObjects, tracks, staticProps, splines } = processRawData(rawObjects, rawSplines);
         set({
             editorObjects,
             tracks,
             staticProps,
             splines,
-            trackTree
         });
     },
 
-    setTime: (time) => {
-        time = truncateToDecimals(time);
-
-        const animationEngine = getVXEngineState().getState().animationEngine;
-        animationEngine.setCurrentTime(time, false);
-
-        const cursorLeft = parserTimeToPixel(time, cursorStartLeft, get().scale);
-        handleCursorMutation(cursorLeft);
-    },
-    setTimeByPixel: (left) => {
-        let time = parserPixelToTime(left, cursorStartLeft)
-        time = truncateToDecimals(time);
-
-        const animationEngine = getVXEngineState().getState().animationEngine;
-        animationEngine.setCurrentTime(time, false);
-
-        handleCursorMutation(left);
-    },
-
-    scale: 6,
-    setScale: (count) => set({ scale: count }),
-
-    activeTool: "mouse",
-    setActiveTool: (tool) => set({ activeTool: tool }),
-
-    snap: true,
-    setSnap: (value) => set({ snap: value }),
-
-    searchQuery: "",
-    setSearchQuery: (query) => set({ searchQuery: query }),
-
     changes: 0,
     addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
-
-    clipboard: {},
-    setClipboard: (content) => set({ clipboard: content }),
-
-    selectedKeyframeKeys: {},
-    selectedKeyframesFlatMap: [],
-    selectKeyframe: (trackKey, keyframeKey) => {
-        set(
-            produce((state: TimelineEditorStoreProps) => selectKeyframeLogic(state, trackKey, keyframeKey))
-        )
-    },
-    removeSelectedKeyframe: (trackKey, keyframeKey) => {
-        set(
-            produce((state: TimelineEditorStoreProps) => {
-                if (!state.selectedKeyframeKeys[trackKey]) return;
-
-                delete state.selectedKeyframeKeys[trackKey][keyframeKey];
-                if (Object.entries(state.selectedKeyframeKeys[trackKey]).length === 0)
-                    delete state.selectedKeyframeKeys[trackKey];
-
-                // Update the flat map using the reusable function
-                state.selectedKeyframesFlatMap = createFlatMap(state);
-            })
-        )
-    },
-    clearSelectedKeyframes: () => {
-        set(
-            produce((state: TimelineEditorStoreProps) => {
-                state.selectedKeyframeKeys = {};
-                state.selectedKeyframesFlatMap = [];
-            })
-        )
-    },
-    isKeyframeSelected: (trackKey, keyframeKey) => {
-        return get().selectedKeyframeKeys[trackKey]?.[keyframeKey] ?? false
-    },
-
-    lastKeyframeSelectedIndex: null,
-    setLastKeyframeSelectedIndex: (newIndex: number) => set({ lastKeyframeSelectedIndex: newIndex }),
-
-    selectedTrackSegment: undefined,
-    setSelectedTrackSegment: (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorStoreProps) => {
-        state.selectedTrackSegment = {
-            firstKeyframeKey: firstKeyframeKey,
-            secondKeyframeKey: secondKeyframeKey,
-            trackKey: trackKey
-        }
-    })),
 
 
     //
     // Getter functions
     //
 
-
-    getTrack: (trackKey) => { return get().tracks[trackKey]; },
-    getStaticProp: (staticPropKey) => { return get().staticProps[staticPropKey]; },
     getAllKeyframes: () => {
         const tracks = get().tracks;
         return Object.values(tracks)
@@ -301,37 +183,6 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         return [];
     },
 
-    // Cursor Functions
-
-    moveToNextKeyframe: (trackKey) => {
-        const track = get().tracks[trackKey]
-        if (!track) return
-
-        const animationEngine = getVXEngineState().getState().animationEngine
-        const time = animationEngine.getCurrentTime();
-
-        const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
-
-        const nextKeyframe = sortedKeyframes.find(kf => kf.time > time);
-
-        if (nextKeyframe)
-            get().setTime(nextKeyframe.time)
-    },
-    moveToPreviousKeyframe: (trackKey) => {
-        const track = get().tracks[trackKey]
-        if (!track) return
-
-        const animationEngine = getVXEngineState().getState().animationEngine
-        const time = animationEngine.getCurrentTime();
-
-        const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
-
-        const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < time);
-
-        if (prevKeyframe)
-            get().setTime(prevKeyframe.time)
-    },
-
     // Writer Functions
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => {
@@ -345,7 +196,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             trackKeys: [],
             staticPropKeys: []
         }
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             state.editorObjects[newVxObject.vxkey] = newEdObject
         }))
     },
@@ -367,7 +218,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const keyframeKey = `keyframe-${Date.now()}`
         animationEngine.hydrateStaticProp("remove", staticPropKey, false)
 
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             let value;
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
@@ -390,7 +241,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             createKeyframeLogic(state, trackKey, keyframeKey, value,)
 
             // Recompute Track Tree
-            state.trackTree = buildTrackTree(state.tracks)
+            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
         // Refresh Raw Data and ReRender
         animationEngine.hydrateKeyframe(trackKey, "create", keyframeKey, false)
@@ -403,10 +254,10 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const staticPropKey = trackKey;
         let doesTrackExist = false;
 
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             const vxObject = useVXObjectStore.getState().objects[vxkey]
             const value = getNestedProperty(vxObject?.ref?.current, propertyPath) || 0
-            const edObject = useTimelineEditorAPI.getState().editorObjects[vxkey];
+            const edObject = useTimelineManagerAPI.getState().editorObjects[vxkey];
 
             doesTrackExist = !!edObject.trackKeys.find(key => key === trackKey)
 
@@ -416,7 +267,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
             createStaticPropLogic(state, vxkey, propertyPath, value)
 
             // Recompute grouped Paths for Visual 
-            state.trackTree = buildTrackTree(state.tracks)
+            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -435,9 +286,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
 
     createTrack: (trackKey) => {
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             createTrackLogic(state, trackKey)
-            state.trackTree = buildTrackTree(state.tracks)
+            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -447,9 +298,9 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     removeTrack: ({ trackKey, reRender }) => {
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             removeTrackLogic(state, trackKey)
-            state.trackTree = buildTrackTree(state.tracks)
+            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
 
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -470,7 +321,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
         const vxObject = useVXObjectStore.getState().objects[vxkey];
         if (!vxObject) {
-            console.error("useTimelineEditorAPI createSpline(): Could not find the vxobject")
+            console.error("useTimelineManagerAPI createSpline(): Could not find the vxobject")
             return;
         }
 
@@ -496,7 +347,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         ]
 
         set(
-            produce((state: TimelineEditorStoreProps) => {
+            produce((state: TimelineMangerAPIProps) => {
                 const edSpline: ISpline = {
                     splineKey,
                     vxkey,
@@ -526,7 +377,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         const splineKey = `${vxkey}.spline`;
 
         set(
-            produce((state: TimelineEditorStoreProps) => {
+            produce((state: TimelineMangerAPIProps) => {
                 delete state.splines[splineKey];
             })
         )
@@ -542,10 +393,10 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     insertNode: ({ splineKey, index }) => {
         set(
-            produce((state: TimelineEditorStoreProps) => {
+            produce((state: TimelineMangerAPIProps) => {
                 const spline = state.splines[splineKey]
                 if (!spline) {
-                    console.error(`useTimelineEditorAPI insertNode(): Spline with vxkey ${splineKey} does not exist`)
+                    console.error(`useTimelineManagerAPI insertNode(): Spline with vxkey ${splineKey} does not exist`)
                     return;
                 }
 
@@ -579,7 +430,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     removeNode: ({ splineKey, index }) => {
         set(
-            produce((state: TimelineEditorStoreProps) => {
+            produce((state: TimelineMangerAPIProps) => {
                 const spline = state.splines[splineKey]
                 if (!spline) {
                     console.error(`removeNode(): Spline with vxkey "${splineKey}" does not exist`);
@@ -605,7 +456,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     setSplineNodePosition: (splineKey, nodeIndex, newPosition) => {
         set(
-            produce((state: TimelineEditorStoreProps) => {
+            produce((state: TimelineMangerAPIProps) => {
                 const spline = state.splines[splineKey];
                 spline.nodes[nodeIndex] = [
                     newPosition.x,
@@ -630,7 +481,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     createKeyframe: ({ trackKey, value, reRender = true }) => {
         const keyframeKey = `keyframe-${Date.now()}`
 
-        set(produce((state: TimelineEditorStoreProps) => 
+        set(produce((state: TimelineMangerAPIProps) => 
             createKeyframeLogic(state, trackKey, keyframeKey, value)
         ))
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -640,7 +491,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     removeKeyframe: ({ keyframeKey, trackKey, reRender }) => {
-        set(produce((state: TimelineEditorStoreProps) => removeKeyframeLogic(state, trackKey, keyframeKey)))
+        set(produce((state: TimelineMangerAPIProps) => removeKeyframeLogic(state, trackKey, keyframeKey)))
         // Only refresh the currentTimeline if removeKeyframe is not used inside a nested immer produce
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         const animationEngine = getVXEngineState().getState().animationEngine
@@ -652,7 +503,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender = true, mutateUI = true) => {
         newTime = truncateToDecimals(newTime)
         // Handle State Update
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             const track = state.tracks[trackKey];
             if (!track)
                 return;
@@ -681,7 +532,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     setKeyframeValue: (keyframeKey, trackKey, newValue, reRender = true) => {
         newValue = truncateToDecimals(newValue);
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             const track = state.tracks[trackKey];
             if (!track) return;
 
@@ -695,7 +546,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     setKeyframeHandles: (keyframeKey, trackKey, inHandle, outHandle, reRender = true) => {
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             const track = state.tracks[trackKey];
             if (!track) return;
 
@@ -723,7 +574,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         if (state)
             createStaticPropLogic(state, vxkey, propertyPath, value)
         else {
-            set(produce((state: TimelineEditorStoreProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
+            set(produce((state: TimelineMangerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.hydrateStaticProp("create", staticPropKey, reRender)
         }
@@ -734,7 +585,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
         if (state)
             removeStaticPropLogic(state, staticPropKey)
         else {
-            set(produce((state: TimelineEditorStoreProps) => removeStaticPropLogic(state, staticPropKey)))
+            set(produce((state: TimelineMangerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
             // Refresh Keyframe
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.hydrateStaticProp("remove", staticPropKey, reRender)
@@ -744,7 +595,7 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
 
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender = true) => {
         newValue = truncateToDecimals(newValue)
-        set(produce((state: TimelineEditorStoreProps) => {
+        set(produce((state: TimelineMangerAPIProps) => {
             state.staticProps[staticPropKey].value = newValue;
         }))
 
@@ -755,18 +606,18 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorStoreProp
     },
 
     removeProperty: (vxkey, propertyPath) => {
-        const key = `${vxkey}.${propertyPath}`
-        const track = get().getTrack(key);
-        const staticProp = get().getStaticProp(key)
+        const trackKey = `${vxkey}.${propertyPath}`
+        const track = get().tracks[trackKey]
+        const staticProp = get().staticProps[trackKey]
 
         const doesTrackExist = !!track;
         const doesStaticPropExist = !!staticProp;
 
         if (doesTrackExist) {
-            get().removeTrack({ trackKey: key, reRender: true })
+            get().removeTrack({ trackKey: trackKey, reRender: true })
         }
         if (doesStaticPropExist) {
-            get().removeStaticProp({ staticPropKey: key, reRender: true })
+            get().removeStaticProp({ staticPropKey: trackKey, reRender: true })
         }
         get().addChange()
     }
@@ -778,13 +629,57 @@ export const truncateToDecimals = (value: number) => {
 }
 
 
+export const handlePropertyValueChangeDuring = (vxkey: string, propertyPath: string, newValue: any) => {
+    newValue = truncateToDecimals(newValue);
+
+    const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
+    const state = useTimelineManagerAPI.getState();
+    const track = state.tracks[generalKey];
+    const isPropertyTracked = !!track;
+
+    const animationEngine = getVXEngineState().getState().animationEngine
+
+    if(isPropertyTracked){
+        const trackKey = generalKey;
+        const keyframesOnTrack = Object.values(state.tracks[trackKey].keyframes)
+        
+        const time = animationEngine.getCurrentTime();
+
+        // Check if the cursor is under any keyframe
+        let targetedKeyframe: IKeyframe | undefined;
+        keyframesOnTrack.some((kf: IKeyframe) => {
+            if (kf.time === time) {
+                targetedKeyframe = kf;
+                return true;  // Exit early once we find the keyframe
+            }
+            return false;
+        });
+        // if keyframe exists, update its value
+        // else create a new keyframe at cursortime
+        if(!targetedKeyframe)
+            return
+
+        animationEngine.hydrateKeyframe(trackKey, "update", targetedKeyframe.id, true )
+    } else {
+        const staticPropKey = generalKey;
+        // Check if the static prop exists
+        const staticProp = state.staticProps[staticPropKey]
+        if(!staticProp)
+            return
+
+        animationEngine.hydrateStaticProp("update", staticPropKey,true);
+    }
+    updateProperty(vxkey, propertyPath, newValue);
+}
+
 export const handlePropertyValueChange = (vxkey: string, propertyPath: string, newValue: any, reRender = true) => {
     newValue = truncateToDecimals(newValue);
 
     const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
-    const state = useTimelineEditorAPI.getState();
-    const track = state.getTrack(generalKey);
+    const state = useTimelineManagerAPI.getState();
+    const track = state.tracks[generalKey];
     const isPropertyTracked = !!track;
+
 
     if (isPropertyTracked) {
         const trackKey = generalKey;
@@ -811,7 +706,7 @@ export const handlePropertyValueChange = (vxkey: string, propertyPath: string, n
     } else {
         const staticPropKey = generalKey;
         // Check if the static prop exists
-        const staticProp = state.getStaticProp(staticPropKey);
+        const staticProp = state.staticProps[staticPropKey]
 
         if (staticProp)
             state.setStaticPropValue(staticPropKey, newValue, reRender);
@@ -824,44 +719,7 @@ export const handlePropertyValueChange = (vxkey: string, propertyPath: string, n
     state.addChange()
 }
 
-export const selectKeyframeSTATIC = (trackKey: string, keyframeKey: string) => {
-    useTimelineEditorAPI.setState(
-        produce((state: TimelineEditorStoreProps) => selectKeyframeLogic(state, trackKey, keyframeKey))
-    )
-}
 
 export const setKeyframeTimeSTATIC = (trackKey: string, keyframeKey: string) => {
 
-}
-
-export const moveToNextKeyframeSTATIC = (trackKey: string) => {
-    const state = useTimelineEditorAPI.getState();
-    const track = state.tracks[trackKey]
-    if (!track) return
-
-    const animationEngine = getVXEngineState().getState().animationEngine
-    const time = animationEngine.getCurrentTime();
-
-    const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
-
-    const nextKeyframe = sortedKeyframes.find(kf => kf.time > time);
-
-    if (nextKeyframe)
-        state.setTime(nextKeyframe.time)
-}
-
-export const moveToPreviousKeyframeSTATIC = (trackKey: string) => {
-    const state = useTimelineEditorAPI.getState();
-    const track = state.tracks[trackKey]
-    if (!track) return
-
-    const animationEngine = getVXEngineState().getState().animationEngine
-    const time = animationEngine.getCurrentTime();
-
-    const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
-
-    const prevKeyframe = sortedKeyframes.reverse().find(kf => kf.time < time);
-
-    if (prevKeyframe)
-        state.setTime(prevKeyframe.time)
 }

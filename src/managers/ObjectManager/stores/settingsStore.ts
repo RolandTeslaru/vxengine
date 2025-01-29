@@ -6,7 +6,7 @@ import { create } from 'zustand';
 import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
 import { getVXEngineState } from '@vxengine/engine';
-import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
@@ -64,7 +64,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
-            useTimelineEditorAPI.getState().addChange();
+            useTimelineManagerAPI.getState().addChange();
         },
 
         toggleSetting: (vxkey, settingKey) => {
@@ -85,7 +85,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
-            useTimelineEditorAPI.getState().addChange();
+            useTimelineManagerAPI.getState().addChange();
         },
         
         initSettingsForObject: (vxkey, newSettings, defaultSettingsForObject) => {

@@ -2,7 +2,8 @@ import React, { useMemo, useState, FC, memo, useLayoutEffect, useCallback } from
 import Square from "@geist-ui/icons/square"
 import ChevronLeft from "@geist-ui/icons/chevronLeft"
 import ChevronRight from "@geist-ui/icons/chevronRight"
-import { moveToNextKeyframeSTATIC, moveToPreviousKeyframeSTATIC, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/store';
+import { moveToNextKeyframeSTATIC, moveToPreviousKeyframeSTATIC } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
 import { getVXEngineState } from '@vxengine/engine';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu';
@@ -24,7 +25,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
 
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
-    const track = useTimelineEditorAPI(state => state.tracks[trackKey]);
+    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
     const orderedKeyframeKeys = track?.orderedKeyframeKeys
     const isPropertyTracked = !!track;
 
@@ -61,8 +62,8 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
     useAnimationEngineEvent("timeUpdated", checkIfOnKeyframe)
 
     const handleMiddleButton = useCallback(() => {
-        const makePropertyTracked = useTimelineEditorAPI.getState().makePropertyTracked;
-        const createKeyframe = useTimelineEditorAPI.getState().createKeyframe
+        const makePropertyTracked = useTimelineManagerAPI.getState().makePropertyTracked;
+        const createKeyframe = useTimelineManagerAPI.getState().createKeyframe
         if (isPropertyTracked === true) {
             createKeyframe({ trackKey }) // auto sets the value to the ref property path of the object
         }

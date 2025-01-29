@@ -1,5 +1,5 @@
 import { edObjectProps, ITrack, ITrackTreeNode, PathGroup, RawObjectProps, RawTrackProps } from "@vxengine/AnimationEngine/types/track";
-import { useTimelineEditorAPI } from "../store";
+import { useTimelineManagerAPI } from "../store";
 
 
 // The trackKeys array from an edObject looks like this "RedBox.material.thing1.thign2"

@@ -112,30 +112,37 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
         filterTree(propertiesTree, searchQuery), [material, searchQuery])
 
 
-    const renderNodeContent = (node: PropertyTreeNode, level, siblings, indexToParent) => {
+    useEffect(() => {
+        console.log("MATERIAL ", material)
+    }, [vxobject])
+
+
+    const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate}) => {
         return (
-            <ContextMenu>
-                <ContextMenuTrigger className='w-full'>
-                    <div className='flex flex-row w-full'>
-                        <p className={`text-xs font-light text-neutral-400`}>
-                            {node.key}
-                        </p>
-                        {node.propertyPath && (
-                            <PropInput
-                                vxObject={vxobject}
-                                param={{ type: node.type}}
-                                className="ml-auto w-fit"
-                                propertyPath={node.propertyPath}
-                            />
-                        )}
-                    </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent>
-                    <PopoverShowObjectData object={node} title='TreeNode Data' >
-                        Show data
-                    </PopoverShowObjectData>
-                </ContextMenuContent>
-            </ContextMenu>
+            <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+                <ContextMenu>
+                    <ContextMenuTrigger className='w-full'>
+                        <div className='flex flex-row w-full h-[22px]'>
+                            <p className={`text-xs my-auto font-light text-neutral-400`}>
+                                {node.key}
+                            </p>
+                            {node.propertyPath && (
+                                <PropInput
+                                    vxObject={vxobject}
+                                    param={{ type: node.type}}
+                                    className="ml-auto w-fit"
+                                    propertyPath={node.propertyPath}
+                                />
+                            )}
+                        </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                        <PopoverShowObjectData object={node} title='TreeNode Data' >
+                            Show data
+                        </PopoverShowObjectData>
+                    </ContextMenuContent>
+                </ContextMenu>
+            </NodeTemplate>
         )
     }
 
@@ -143,16 +150,25 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
         <CollapsiblePanel
             title={(material as any).type}
             defaultOpen={true}
+            noPadding={true}
+            contentClassName='!pb-0'
         >
-            <div className='text-xs flex flex-row text-neutral-400'>
+            <div className='text-xs px-2 flex flex-row text-neutral-400'>
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <div className='flex flex-col mt-2 max-h-96 overflow-scroll rounded-lg'>
+            <div className='flex flex-col mt-2 max-h-96 overflow-scroll'>
                 <Tree tree={filteredPropertiesTree as Record<string, PropertyTreeNode>} renderNodeContent={renderNodeContent}/>
             </div>
         </CollapsiblePanel>
     )
 }
+
+
+// const MaterialPropertyNode = () => {
+//     return (
+        
+//     )
+// }
 
 export default MaterialProperties

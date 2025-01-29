@@ -52,14 +52,14 @@ const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
 const initialTree: Record<string, ObjectTreeNodeProps> = {
     ["scene"]: {
-        vxkey: "scene",
+        key: "scene",
         name: "Scene",
         type: "Scene",
         children: {},
         isSelectable: true
     },
     ["splines"]: {
-        vxkey: "splines",
+        key: "splines",
         name: "Splines",
         type: "Splines",
         children: {},
@@ -108,7 +108,7 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         set(
             produce((state) => {
                 const newNode: ObjectTreeNodeProps = {
-                    vxkey,
+                    key: vxkey,
                     name,
                     type,
                     children: {},
