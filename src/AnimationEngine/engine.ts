@@ -10,7 +10,7 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 
 import * as THREE from "three"
 import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps } from './types/track';
-import { IAnimationEngine } from './types/engine';
+import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateStaticPropAction, HydrateStaticPropParams, IAnimationEngine } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
@@ -1133,15 +1133,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param keyframeKey - The key identifying the keyframe.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  hydrateKeyframe(
-    trackKey: string,
-    action: 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles',
-    keyframeKey: string,
-    reRender: boolean = true,
-    newData?: number | [number, number, number, number]
-  ) {
+  hydrateKeyframe<A extends HydrateKeyframeAction>(params: HydrateKeyframeParams<A>) {
+    const { trackKey, action, keyframeKey, reRender = true, newData } = params;
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      console.error("AnimationEngine: Keyframe Hydration is NOT allowed in Production Mode!")
       return;
     }
 
@@ -1289,11 +1284,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param staticPropKey - The key identifying the static property.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  hydrateStaticProp(
-    action: 'create' | 'remove' | 'update',
-    staticPropKey: string,
-    reRender: boolean = true,
-  ) {
+  hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
+    const { action, staticPropKey, reRender = true, newValue } = params;
     if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;

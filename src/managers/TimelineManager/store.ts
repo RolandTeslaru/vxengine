@@ -18,114 +18,6 @@ import { getNodeEnv } from '@vxengine/constants';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
-function removeStaticPropLogic(state: TimelineMangerAPIProps, staticPropKey: string) {
-    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
-    delete state.staticProps[staticPropKey] // Delete from record
-
-    // Delete from editorObjects vxobject
-    const edObject = state.editorObjects[vxkey];
-    edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
-}
-
-function removeKeyframeLogic(state: TimelineMangerAPIProps, trackKey: string, keyframeKey: string) {
-    const track = state.tracks[trackKey]
-    if (!track) return;
-
-    delete track.keyframes[keyframeKey];
-    updatedOrderedKeyframeIdsLogic(state, trackKey)
-}
-
-function removeTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-    const track = state.tracks[trackKey]
-
-    if (!track) return;
-
-    delete state.tracks[trackKey]
-
-    // Remove the track key from the editor object
-    const trackKeys = state.editorObjects[vxkey].trackKeys.filter(key => key !== trackKey)
-    state.editorObjects[vxkey].trackKeys = trackKeys;
-}
-
-function createKeyframeLogic(
-    state: TimelineMangerAPIProps,
-    trackKey: string,
-    keyframeKey: string,
-    value?: number
-) {
-    const track = state.tracks[trackKey]
-    if (!track) return;
-
-    const animationEngine = getVXEngineState().getState().animationEngine
-    const time = animationEngine.getCurrentTime();
-
-    // Check if the cursor is on an exsting keyframe
-    // if so, return because we cannot create overlapped keyframes
-    const keyframesOnTrackArray = Object.values(track.keyframes)
-    const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
-    if (isCursorOnExistingKeyframe) return
-
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-    if (value === undefined || value === null) {
-        const vxobject = useVXObjectStore.getState().objects[vxkey]
-        value = getNestedProperty(vxobject.ref.current, propertyPath)
-    }
-
-    const newKeyframe: IKeyframe = {
-        id: keyframeKey,
-        time: truncateToDecimals(time),
-        value: value,
-        vxkey: vxkey,
-        propertyPath: propertyPath,
-        handles: {
-            in: { x: 0.7, y: 0.7 },
-            out: { x: 0.3, y: 0.3 }
-        },
-    };
-
-    track.keyframes[keyframeKey] = newKeyframe;
-
-    updatedOrderedKeyframeIdsLogic(state, trackKey)
-    state.addChange();
-}
-
-function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, value: number) {
-    const staticPropKey = `${vxkey}.${propertyPath}`
-    const newStaticProp: IStaticProps = {
-        vxkey: vxkey,
-        propertyPath: propertyPath,
-        value: value
-    }
-    state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
-    state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
-}
-
-
-function createTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-
-    state.editorObjects[vxkey].trackKeys.push(trackKey);
-
-    const newTrack: ITrack = {
-        vxkey,
-        propertyPath,
-        keyframes: {},
-        orderedKeyframeKeys: []
-    }
-    state.tracks[trackKey] = newTrack;
-}
-
-export function updatedOrderedKeyframeIdsLogic(state: TimelineMangerAPIProps, trackKey: string) {
-    const track = state.tracks[trackKey];
-    const sortedKeys = Object.keys(track.keyframes).sort(
-        (a, b) => track.keyframes[a].time - track.keyframes[b].time
-    )
-
-    if (!isEqual(sortedKeys, track.orderedKeyframeKeys)) {
-        track.orderedKeyframeKeys = sortedKeys
-    }
-}
 
 
 
@@ -216,7 +108,11 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const animationEngine = getVXEngineState().getState().animationEngine
         // Default Keyframe that will be added when creating a new track
         const keyframeKey = `keyframe-${Date.now()}`
-        animationEngine.hydrateStaticProp("remove", staticPropKey, false)
+        animationEngine.hydrateStaticProp({
+            action: "remove", 
+            staticPropKey, 
+            reRender: false
+        })
 
         set(produce((state: TimelineMangerAPIProps) => {
             let value;
@@ -244,7 +140,12 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
         // Refresh Raw Data and ReRender
-        animationEngine.hydrateKeyframe(trackKey, "create", keyframeKey, false)
+        animationEngine.hydrateKeyframe({
+            trackKey, 
+            action: "create", 
+            keyframeKey, 
+            reRender: false
+        })
         animationEngine.hydrateTrack(trackKey, "create", true)
         get().addChange()
     },
@@ -274,7 +175,11 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         if (doesTrackExist)
             animationEngine.hydrateTrack(trackKey, "remove")
 
-        animationEngine.hydrateStaticProp("create", staticPropKey, true)
+        animationEngine.hydrateStaticProp({
+            action: "create", 
+            staticPropKey, 
+            reRender: true
+        })
         get().addChange()
     },
 
@@ -481,12 +386,17 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     createKeyframe: ({ trackKey, value, reRender = true }) => {
         const keyframeKey = `keyframe-${Date.now()}`
 
-        set(produce((state: TimelineMangerAPIProps) => 
+        set(produce((state: TimelineMangerAPIProps) =>
             createKeyframeLogic(state, trackKey, keyframeKey, value)
         ))
         const animationEngine = getVXEngineState().getState().animationEngine
-        // Refresh Raw Data and ReRender
-        animationEngine.hydrateKeyframe(trackKey, 'create', keyframeKey, reRender)
+        // Refresh Raw Data and ReRender (optionally)
+        animationEngine.hydrateKeyframe({
+            trackKey, 
+            action: 'create', 
+            keyframeKey, 
+            reRender
+        })
         get().addChange()
     },
 
@@ -495,7 +405,12 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Only refresh the currentTimeline if removeKeyframe is not used inside a nested immer produce
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         const animationEngine = getVXEngineState().getState().animationEngine
-        animationEngine.hydrateKeyframe(trackKey, "remove", keyframeKey, reRender)
+        animationEngine.hydrateKeyframe({
+            trackKey, 
+            action: "remove", 
+            keyframeKey, 
+            reRender
+        })
         get().addChange()
     },
 
@@ -521,7 +436,13 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Handle Raw Timeline Update
         const animationEngine = getVXEngineState().getState().animationEngine
-        animationEngine.hydrateKeyframe(trackKey, "update", keyframeKey, reRender)
+        animationEngine.hydrateKeyframe({
+            trackKey, 
+            action: "updateTime", 
+            keyframeKey, 
+            reRender, 
+            newData: newTime
+        })
 
         // Handle UI Mutation
         if (mutateUI)
@@ -530,18 +451,27 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         get().addChange()
     },
 
-    setKeyframeValue: (keyframeKey, trackKey, newValue, reRender = true) => {
+    setKeyframeValue: (keyframeKey, trackKey, newValue, reRender = true, updateStore = true) => {
         newValue = truncateToDecimals(newValue);
-        set(produce((state: TimelineMangerAPIProps) => {
-            const track = state.tracks[trackKey];
-            if (!track) return;
-
-            track.keyframes[keyframeKey].value = newValue;
-        }))
+        
+        if(updateStore){
+            set(produce((state: TimelineMangerAPIProps) => {
+                const track = state.tracks[trackKey];
+                if (!track) return;
+    
+                track.keyframes[keyframeKey].value = newValue;
+            }))
+        }
 
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
-        animationEngine.hydrateKeyframe(trackKey, "update", keyframeKey, reRender)
+        animationEngine.hydrateKeyframe({
+            trackKey,
+            action: "updateValue", 
+            keyframeKey, 
+            reRender,
+            newData: newValue
+        })
         get().addChange()
     },
 
@@ -558,7 +488,13 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
-        animationEngine.hydrateKeyframe(trackKey, "update", keyframeKey, reRender)
+        animationEngine.hydrateKeyframe({
+            trackKey, 
+            action: "updateHandles", 
+            keyframeKey, 
+            reRender,
+            newData: [inHandle.x, inHandle.y, outHandle.x, outHandle.y]
+        })
         get().addChange()
     },
 
@@ -575,8 +511,13 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             createStaticPropLogic(state, vxkey, propertyPath, value)
         else {
             set(produce((state: TimelineMangerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
+            
             const animationEngine = getVXEngineState().getState().animationEngine
-            animationEngine.hydrateStaticProp("create", staticPropKey, reRender)
+            animationEngine.hydrateStaticProp({
+                action: "create", 
+                staticPropKey, 
+                reRender
+            })
         }
         get().addChange()
     },
@@ -588,7 +529,11 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             set(produce((state: TimelineMangerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
             // Refresh Keyframe
             const animationEngine = getVXEngineState().getState().animationEngine
-            animationEngine.hydrateStaticProp("remove", staticPropKey, reRender)
+            animationEngine.hydrateStaticProp({
+                action: "remove", 
+                staticPropKey, 
+                reRender
+            })
         }
         get().addChange()
     },
@@ -601,7 +546,12 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
-        animationEngine.hydrateStaticProp("update", staticPropKey, reRender)
+        animationEngine.hydrateStaticProp({
+            action: "update", 
+            staticPropKey, 
+            newValue: newValue,
+            reRender
+        })
         get().addChange()
     },
 
@@ -620,9 +570,194 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             get().removeStaticProp({ staticPropKey: trackKey, reRender: true })
         }
         get().addChange()
+    },
+
+
+    modifyPropertyValue: (mode, vxkey, propertyPath, newValue) => {
+        newValue = truncateToDecimals(newValue);
+
+        const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
+        const state = get()
+        const tracks = state.tracks;
+        const track = state.tracks[generalKey];
+        const isPropertyTracked = !!track;
+
+        const animationEngine = getVXEngineState().getState().animationEngine
+        const time = animationEngine.getCurrentTime();
+
+        if (isPropertyTracked) {
+            const trackKey = generalKey;
+            const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
+
+            // Check if the cursor is under any keyframe
+            let targetKeyframe: IKeyframe | undefined;
+            keyframesOnTrack.some((kf: IKeyframe) => {
+                if (kf.time === time) {
+                    targetKeyframe = kf;
+                    return true;  // Exit early once we find the keyframe
+                }
+                return false;
+            });
+            let targetKeyframeKey = targetKeyframe?.id
+
+            if (!targetKeyframe) {
+                state.createKeyframe({ trackKey, value: newValue, reRender: true });
+            }
+            else {
+                if(mode === "start" || mode === "changing"){
+                    animationEngine.hydrateKeyframe({
+                        trackKey,
+                        action: "updateValue",
+                        keyframeKey: targetKeyframeKey,
+                        reRender: true,
+                        newData: newValue
+                    })
+                }
+                else if(mode === "end" || mode === "press"){
+                    state.setKeyframeValue(targetKeyframeKey, trackKey, newValue)
+                }
+            }
+        }
+        else {
+            const staticPropKey = generalKey;
+            const staticProp = state.staticProps[staticPropKey];
+
+            if(!staticProp){
+                state.createStaticProp({ vxkey, propertyPath, value: newValue, reRender: true})
+            }
+            else{
+                if(mode === "start" || mode === "changing"){
+                    animationEngine.hydrateStaticProp({
+                        staticPropKey,
+                        action: "update",
+                        newValue,
+                        reRender: true
+                    })
+                }
+                else if(mode === "end" || mode === "press"){
+                    state.setStaticPropValue(staticPropKey, newValue, true);
+                }
+            }
+        }
+
+        updateProperty(vxkey, propertyPath, newValue);
     }
 }))
 
+
+
+
+
+
+function createKeyframeLogic(
+    state: TimelineMangerAPIProps,
+    trackKey: string,
+    keyframeKey: string,
+    value?: number
+) {
+    const track = state.tracks[trackKey]
+    if (!track) return;
+
+    const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
+
+    // Check if the cursor is on an exsting keyframe
+    // if so, return because we cannot create overlapped keyframes
+    const keyframesOnTrackArray = Object.values(track.keyframes)
+    const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
+    if (isCursorOnExistingKeyframe) return
+
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
+    if (value === undefined || value === null) {
+        const vxobject = useVXObjectStore.getState().objects[vxkey]
+        value = getNestedProperty(vxobject.ref.current, propertyPath)
+    }
+
+    const newKeyframe: IKeyframe = {
+        id: keyframeKey,
+        time: truncateToDecimals(time),
+        value: value,
+        vxkey: vxkey,
+        propertyPath: propertyPath,
+        handles: {
+            in: { x: 0.7, y: 0.7 },
+            out: { x: 0.3, y: 0.3 }
+        },
+    };
+
+    track.keyframes[keyframeKey] = newKeyframe;
+
+    updatedOrderedKeyframeIdsLogic(state, trackKey)
+    state.addChange();
+}
+
+function removeStaticPropLogic(state: TimelineMangerAPIProps, staticPropKey: string) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
+    delete state.staticProps[staticPropKey] // Delete from record
+
+    // Delete from editorObjects vxobject
+    const edObject = state.editorObjects[vxkey];
+    edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
+}
+
+function removeKeyframeLogic(state: TimelineMangerAPIProps, trackKey: string, keyframeKey: string) {
+    const track = state.tracks[trackKey]
+    if (!track) return;
+
+    delete track.keyframes[keyframeKey];
+    updatedOrderedKeyframeIdsLogic(state, trackKey)
+}
+
+function removeTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    const track = state.tracks[trackKey]
+
+    if (!track) return;
+
+    delete state.tracks[trackKey]
+
+    // Remove the track key from the editor object
+    const trackKeys = state.editorObjects[vxkey].trackKeys.filter(key => key !== trackKey)
+    state.editorObjects[vxkey].trackKeys = trackKeys;
+}
+
+
+function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, value: number) {
+    const staticPropKey = `${vxkey}.${propertyPath}`
+    const newStaticProp: IStaticProps = {
+        vxkey: vxkey,
+        propertyPath: propertyPath,
+        value: value
+    }
+    state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
+    state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
+}
+
+
+function createTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+
+    state.editorObjects[vxkey].trackKeys.push(trackKey);
+
+    const newTrack: ITrack = {
+        vxkey,
+        propertyPath,
+        keyframes: {},
+        orderedKeyframeKeys: []
+    }
+    state.tracks[trackKey] = newTrack;
+}
+
+export function updatedOrderedKeyframeIdsLogic(state: TimelineMangerAPIProps, trackKey: string) {
+    const track = state.tracks[trackKey];
+    const sortedKeys = Object.keys(track.keyframes).sort(
+        (a, b) => track.keyframes[a].time - track.keyframes[b].time
+    )
+
+    if (!isEqual(sortedKeys, track.orderedKeyframeKeys)) {
+        track.orderedKeyframeKeys = sortedKeys
+    }
+}
 
 export const truncateToDecimals = (value: number) => {
     return AnimationEngine.truncateToDecimals(value, AnimationEngine.ENGINE_PRECISION)
@@ -639,10 +774,10 @@ export const handlePropertyValueChangeDuring = (vxkey: string, propertyPath: str
 
     const animationEngine = getVXEngineState().getState().animationEngine
 
-    if(isPropertyTracked){
+    if (isPropertyTracked) {
         const trackKey = generalKey;
         const keyframesOnTrack = Object.values(state.tracks[trackKey].keyframes)
-        
+
         const time = animationEngine.getCurrentTime();
 
         // Check if the cursor is under any keyframe
@@ -656,18 +791,28 @@ export const handlePropertyValueChangeDuring = (vxkey: string, propertyPath: str
         });
         // if keyframe exists, update its value
         // else create a new keyframe at cursortime
-        if(!targetedKeyframe)
+        if (!targetedKeyframe)
             return
 
-        animationEngine.hydrateKeyframe(trackKey, "update", targetedKeyframe.id, true )
+        animationEngine.hydrateKeyframe({
+            trackKey,
+            action: "update", 
+            keyframeKey:targetedKeyframe.id, 
+            reRender: true
+        })
     } else {
         const staticPropKey = generalKey;
         // Check if the static prop exists
         const staticProp = state.staticProps[staticPropKey]
-        if(!staticProp)
+        if (!staticProp)
             return
 
-        animationEngine.hydrateStaticProp("update", staticPropKey,true);
+        animationEngine.hydrateStaticProp({
+            action: "update", 
+            staticPropKey, 
+            reRender: true,
+            newValue: newValue
+        });
     }
     updateProperty(vxkey, propertyPath, newValue);
 }

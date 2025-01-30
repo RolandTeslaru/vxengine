@@ -47,7 +47,7 @@ export interface TimelineMangerAPIProps {
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;
     removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
     setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
-    setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean) => void;
+    setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: VXVector2, outHandle: VXVector2, reRender?: boolean) => void;
     // StaticProp function
     createStaticProp: (props: {vxkey: string, propertyPath: string, value: number, reRender: boolean, state?: TimelineMangerAPIProps}) => void;
@@ -55,7 +55,7 @@ export interface TimelineMangerAPIProps {
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
     removeProperty: (vxkey: string, propertyPath: string) => void;
-
+    modifyPropertyValue: (mode: "start" | "changing" | "end" | "press", vxkey: string, propertyPath: string, newValue: number) => void
 }
 
 export interface EditorObjectProps {
@@ -63,3 +63,4 @@ export interface EditorObjectProps {
     trackKeys: string[]; 
     staticPropKeys: string[]
 }
+
