@@ -6,7 +6,7 @@ import ValueRenderer from '../ValueRenderer';
 import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store';
 import { getNestedProperty } from '@vxengine/utils';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { hslToRgb } from './utils';
+import { hslToRgb, rgbToHsl } from './utils';
 import { invalidate } from '@react-three/fiber';
 import { RgbaColorPicker } from "react-colorful";
 import ColorPicker from '../ColorPicker';
@@ -72,35 +72,33 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("changing", vxkey, rPropertyPath, r);
-        modifyPropertyValue("changing", vxkey, gPropertyPath, g);
-        modifyPropertyValue("changing", vxkey, bPropertyPath, b);
+        modifyPropertyValue("changing", vxkey, rPropertyPath, r, false);
+        modifyPropertyValue("changing", vxkey, gPropertyPath, g, false);
+        modifyPropertyValue("changing", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
         invalidate();
     }, [])
     const handleColorChangeStart = useCallback((hsl: hsl) => {
-        console.log("Handling color Change Start ")
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("start", vxkey, rPropertyPath, r);
-        modifyPropertyValue("start", vxkey, gPropertyPath, g);
-        modifyPropertyValue("start", vxkey, bPropertyPath, b);
+        modifyPropertyValue("start", vxkey, rPropertyPath, r, false);
+        modifyPropertyValue("start", vxkey, gPropertyPath, g, false);
+        modifyPropertyValue("start", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
         invalidate();
     }, [])
     const handleColorChangeEnd = useCallback((hsl: hsl) => {
-        console.log("Handling Color Change End")
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("end", vxkey, rPropertyPath, r);
-        modifyPropertyValue("end", vxkey, gPropertyPath, g);
-        modifyPropertyValue("end", vxkey, bPropertyPath, b);
+        modifyPropertyValue("end", vxkey, rPropertyPath, r, false);
+        modifyPropertyValue("end", vxkey, gPropertyPath, g, false);
+        modifyPropertyValue("end", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -162,108 +160,4 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
     )
 }
 
-export default PropColor
-
-
-interface PopoverProps {
-    vxObject: vxObjectProps
-    vxkey: string
-    rPropertyPath: string
-    gPropertyPath: string
-    bPropertyPath: string
-    onChange: (newColor: { r: number, g: number, b: number }) => void
-    onDragStart?: (newColor: { r: number, g: number, b: number }) => void
-    onDragEnd?: (newColor: { r: number, g: number, b: number }) => void
-
-}
-const ColorPropPopoverContent = forwardRef(
-    ({ vxObject, vxkey, rPropertyPath, gPropertyPath, bPropertyPath, onChange, onDragStart, onDragEnd }: PopoverProps, ref) => {
-        const rTrackKey = `${vxkey}.${rPropertyPath}`
-        const gTrackKey = `${vxkey}.${gPropertyPath}`
-        const bTrackKey = `${vxkey}.${bPropertyPath}`
-
-        const [color, setColor] = useState({
-            r: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
-            g: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
-            b: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
-            a: 1
-        })
-
-        useImperativeHandle(ref, () => ({
-            setColor
-        }));
-
-        return (
-            <div>
-                <div>
-                    <p>{color.r}</p>
-                    <p>{color.g}</p>
-                    <p>{color.b}</p>
-                </div>
-                <RgbaColorPicker
-                    color={color}
-                    onChange={(newColor) => {
-                        onChange(newColor)
-                    }}
-                />
-                <div className='flex flex-col gap-2'>
-                    <div className='flex gap-2 mt-2 justify-between'>
-                        <p className='text-xs my-auto'>red</p>
-                        <div className='flex flex-row gap-2'>
-                            <div className='my-auto'>
-                                <KeyframeControl trackKey={rTrackKey} disabled={false} />
-                            </div>
-                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={rPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
-                        </div>
-                    </div>
-                    <div className='flex gap-2 justify-between'>
-                        <p className='text-xs my-auto'>green</p>
-                        <div className='flex flex-row gap-2'>
-                            <div className='my-auto'>
-                                <KeyframeControl trackKey={gTrackKey} disabled={false} />
-                            </div>
-                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={gPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
-                        </div>
-                    </div>
-                    <div className='flex gap-2 justify-between'>
-                        <p className='text-xs my-auto'>blue</p>
-                        <div className='flex flex-row gap-2'>
-                            <div className='my-auto'>
-                                <KeyframeControl trackKey={bTrackKey} disabled={false} />
-                            </div>
-                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={bPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    })
-
-
-
-// Convert RGB to HSL and update color
-const rgbToHsl = (r: number, g: number, b: number): hsl => {
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    let s = 0;
-    const l = (max + min) / 2;
-
-    if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            case b:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h *= 60;
-    }
-    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
-};
+export default PropColor    

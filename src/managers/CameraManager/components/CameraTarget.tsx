@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useMemo, useRef } from 'react'
 import { useVXObjectStore, useObjectSettingsAPI } from '@vxengine/managers/ObjectManager'
 import { vx } from '@vxengine/vxobject'

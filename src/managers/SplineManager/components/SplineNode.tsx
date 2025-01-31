@@ -1,6 +1,3 @@
-'use client'
-
-// import { Html } from '@react-three/drei';
 import { ThreeEvent } from '@react-three/fiber';
 import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'

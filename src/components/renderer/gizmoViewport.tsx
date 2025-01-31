@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from 'react'
 import { useThree, ThreeEvent } from '@react-three/fiber'
 import { CanvasTexture } from 'three'

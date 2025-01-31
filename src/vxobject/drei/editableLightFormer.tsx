@@ -1,5 +1,3 @@
-'use client'
-
 import React, { memo, forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { LightProps, useHelper } from "@react-three/drei";
 import { createPortal as createR3FPortal, invalidate, useFrame } from "@react-three/fiber";

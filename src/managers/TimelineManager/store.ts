@@ -16,6 +16,7 @@ import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { getNodeEnv } from '@vxengine/constants';
 import { v4 as uuidv4 } from 'uuid';
+import { invalidate } from '@react-three/fiber';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -546,7 +547,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         animationEngine.hydrateStaticProp({
             action: "update",
             staticPropKey,
-            newValue: newValue,
+            newValue,
             reRender
         })
         get().addChange()

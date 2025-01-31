@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import s from "./s.module.scss"
 import classNames from 'classnames'
-import JsonView from 'react18-json-view'
 
 type TreeNodeType = {
     key: string
@@ -38,6 +37,7 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys, className, ...re
         >
             {Object.values(tree).map((node, i) =>
                 <TreeNode
+                    key={node.key}
                     node={node}
                     siblings={childrenLength}
                     indexToParent={i}

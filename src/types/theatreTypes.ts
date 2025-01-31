@@ -1,5 +1,3 @@
-'use client'
-
 import type { ComponentProps, ComponentType, Ref, RefAttributes } from 'react';
 import React from 'react';
 declare const editable: (<T extends keyof JSX.IntrinsicElements | ComponentType<any>, U extends "spotLight" | "line" | "mesh" | "lineSegments" | "lineLoop" | "points" | "group" | "perspectiveCamera" | "orthographicCamera" | "pointLight" | "hemisphereLight" | "directionalLight" | "ambientLight" | "fog">(Component: T, type: T extends "primitive" ? null : U) => React.ForwardRefExoticComponent<React.PropsWithoutRef<Omit<ComponentProps<T>, "visible"> & {

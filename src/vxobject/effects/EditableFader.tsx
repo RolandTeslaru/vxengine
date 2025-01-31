@@ -1,5 +1,3 @@
-'use client'
-
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'

@@ -2,8 +2,6 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-'use client'
-
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';

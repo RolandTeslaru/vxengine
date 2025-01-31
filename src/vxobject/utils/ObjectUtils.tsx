@@ -1,5 +1,3 @@
-'use client'
-
 import { ReactThreeFiber } from '@react-three/fiber'
 import React, { isValidElement, useEffect, useLayoutEffect, useMemo } from 'react'
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";

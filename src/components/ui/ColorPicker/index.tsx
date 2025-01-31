@@ -1,4 +1,3 @@
-"use client";
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 import { hsl } from "./types";
 

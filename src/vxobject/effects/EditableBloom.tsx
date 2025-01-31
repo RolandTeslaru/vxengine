@@ -1,8 +1,4 @@
-'use client'
-
 import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useLayoutEffect } from "react";
-import { useObjectManagerAPI, useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { useAnimationEngineAPI } from "../../AnimationEngine";
 import { EditableObjectProps, VXObjectParams } from "../types";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 
@@ -10,7 +6,6 @@ import { SelectiveBloomProps } from "@react-three/postprocessing";
 import { Bloom } from "@react-three/postprocessing";
 import { BloomEffect } from "postprocessing";
 import { vxEffectProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { useVXEngine } from "@vxengine/engine";
 import { BloomEffectOptions } from "postprocessing";
 

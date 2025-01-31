@@ -1,5 +1,3 @@
-'use client'
-
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditableObjectProps, VXObjectParams } from "../types"

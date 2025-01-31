@@ -2,14 +2,12 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-'use client'
-
 import { Emitter } from './emitter';
 import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps } from './types/track';
+import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps, RawStaticPropProps, IStaticProps } from './types/track';
 import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateStaticPropAction, HydrateStaticPropParams, IAnimationEngine } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
@@ -1287,14 +1285,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
     const { action, staticPropKey, reRender = true, newValue } = params;
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      console.error("AnimationEngine: Static Prop Hydration is NOT allowed in Production Mode.")
       return;
     }
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
 
     if (DEBUG_REFRESHER) {
-      console.log(`AnimationEngine: Refreshing static property '${staticPropKey}'.`);
+      console.log(`AnimationEngine: Hydrating static property '${staticPropKey}'.`);
     }
 
     let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
@@ -1304,10 +1302,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     switch (action) {
       case 'create': {
-        const staticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
         const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
-
+        
         if (!propExists) {
+          const edStaticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
+          const staticProp:IStaticProps = {
+            value: edStaticProp.value,
+            vxkey: edStaticProp.vxkey,
+            propertyPath: edStaticProp.propertyPath
+          }
           rawObject.staticProps.push(staticProp);
         } else {
           console.warn(`AnimationEngine: Static property '${propertyPath}' already exists on object '${vxkey}'.`);
@@ -1316,10 +1319,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       case 'update': {
-        const staticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
-        rawObject.staticProps = rawObject.staticProps.map(prop =>
-          prop.propertyPath === propertyPath ? staticProp : prop
-        );
+        const targetStaticProp = rawObject.staticProps.find(sp => 
+          `${sp.vxkey}.${sp.propertyPath}` === staticPropKey)
+        
+        if(targetStaticProp)
+          targetStaticProp.value = newValue;
+        else
+          console.warn(`AnimationEngine: Could not find staticProp with key ${staticPropKey}`)
+      
         break;
       }
 

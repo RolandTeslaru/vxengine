@@ -1,5 +1,3 @@
-'use client'
-
 import React, { memo, forwardRef, useEffect } from "react";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"

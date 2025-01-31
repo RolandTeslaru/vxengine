@@ -1,8 +1,4 @@
-'use client'
-
 import React, { memo, forwardRef, useEffect } from "react";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 

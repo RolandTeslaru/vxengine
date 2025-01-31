@@ -1,5 +1,3 @@
-'use client'
-
 import { ThreeEvent } from '@react-three/fiber';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useObjectManagerAPI, useVXObjectStore } from '../../ObjectManager';

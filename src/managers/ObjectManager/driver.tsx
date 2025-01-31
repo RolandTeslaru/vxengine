@@ -1,5 +1,3 @@
-'use client'
-
 import { TransformControls, useCamera } from "@react-three/drei";
 import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";

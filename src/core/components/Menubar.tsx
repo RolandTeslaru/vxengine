@@ -196,7 +196,7 @@ const ViewButton = () => {
             <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
                 {Object.entries(windows).map(([key, window]) =>
-                    <MenubarItem key={window.id} onClick={() => handleClick(window.id)}>
+                    <MenubarItem key={key} onClick={() => handleClick(window.id)}>
                         {window.title} <MenubarShortcut><CheckVisualizer show={windowVisibility[window.id]} /></MenubarShortcut>
                     </MenubarItem>
                 )}

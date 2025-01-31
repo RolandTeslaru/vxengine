@@ -64,7 +64,14 @@ export default defineConfig({
         },
       },
     },
-    minify: true, // Minify the output for better performance
+    minify: "terser", // Minify the output for better performance
+    terserOptions: {
+      mangle: true, // Rename variables aggressively
+      compress: true, // Further optimize
+      format: {
+        beautify: false // Keep it ugly
+      }
+    }, 
     sourcemap: false, // Enable sourcemaps for better debugging
     target: 'esnext', // Ensure modern browser support for Next.js
   },
@@ -75,13 +82,15 @@ export default defineConfig({
     obfuscatorPlugin({
       options: {
         compact: true, // Minify the obfuscated code
-        renameGlobals: true,
-        identifierNamesGenerator: "mangled",
         controlFlowFlattening: false, // Avoid high performance cost
+        controlFlowFlatteningThreshold: 1,
+        numbersToExpressions: true,
+        simplify: true,
         stringArray: true, // Replace strings with array indices
-        stringArrayThreshold: 0.75, // Obfuscate 75% of strings
-        deadCodeInjection: false, // Avoid unnecessary bundle size increase
+        stringArrayEncoding: ['rc4'],
+        stringArrayThreshold: 1,
         transformObjectKeys: true, // Obfuscate object keys for added security
+        deadCodeInjection: false, // Avoid unnecessary bundle size increase
         disableConsoleOutput: false, // Remove console.log statements
       }
     })

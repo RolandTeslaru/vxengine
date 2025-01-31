@@ -1,5 +1,3 @@
-'use client'
-
 import React, {memo, forwardRef } from "react";
 import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
