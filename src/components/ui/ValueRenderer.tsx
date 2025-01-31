@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState, FC, memo, useCallback, useLayoutEffect } from 'react'
-import { getProperty, useObjectManagerAPI, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
+import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { getNestedProperty } from '@vxengine/utils/nestedProperty'
-import { handlePropertyValueChange, useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store'
+import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { invalidate } from '@react-three/fiber'
-import { ContextMenu } from '../shadcn/contextMenu'
 
 interface ValueRendererProps {
     vxObject: vxObjectProps
@@ -42,7 +41,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
-            handlePropertyValueChange(vxkey, propertyPath, newValue);
+            modifyPropertyValue("press", vxkey, propertyPath, newValue);
 
             invalidate();
         }, [vxObject]);

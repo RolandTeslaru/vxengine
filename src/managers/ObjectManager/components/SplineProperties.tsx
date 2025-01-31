@@ -1,14 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import { vxSplineProps } from '../types/objectStore'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
-import { getProperty, useObjectPropertyAPI } from '../stores/managerStore'
-import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
-import { invalidate } from '@react-three/fiber'
-import { Slider } from '@vxengine/components/shadcn/slider'
 import PropInput from '@vxengine/components/ui/PropInput'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '../stores/settingsStore'
-import { handlePropertyValueChange } from '@vxengine/managers/TimelineManager/store'
 
 interface Props {
     vxobject: vxSplineProps

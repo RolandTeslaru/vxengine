@@ -55,7 +55,6 @@ export interface TimelineMangerAPIProps {
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
     removeProperty: (vxkey: string, propertyPath: string) => void;
-    modifyPropertyValue: (mode: "start" | "changing" | "end" | "press", vxkey: string, propertyPath: string, newValue: number) => void
 }
 
 export interface EditorObjectProps {

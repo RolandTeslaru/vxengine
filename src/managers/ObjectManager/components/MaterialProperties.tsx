@@ -112,11 +112,6 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
         filterTree(propertiesTree, searchQuery), [material, searchQuery])
 
 
-    useEffect(() => {
-        console.log("MATERIAL ", material)
-    }, [vxobject])
-
-
     const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate}) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">

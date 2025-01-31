@@ -1,9 +1,9 @@
 import { invalidate } from '@react-three/fiber'
 import { Slider } from '@vxengine/components/shadcn/slider'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
-import { handlePropertyValueChange } from '@vxengine/managers/TimelineManager/store'
 import { VXSliderInputType } from '@vxengine/vxobject/types'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 
 interface Props {
     vxkey: string
@@ -32,7 +32,7 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
     }, [])
 
     const handleChange = useCallback((newValue: number) => {
-        handlePropertyValueChange(vxkey, propertyPath, newValue);
+        modifyPropertyValue("changing", vxkey, propertyPath, newValue);
         invalidate();
     }, [vxkey, propertyPath]);
 
@@ -44,6 +44,12 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
             className={"w-28 " + className}
             value={[value]}
             onValueChange={(newValue) => handleChange(newValue[0])}
+            onDragStart={() => {
+                modifyPropertyValue("start", vxkey, propertyPath, value)
+            }}
+            onDragEnd={() => {
+                modifyPropertyValue("end", vxkey, propertyPath, value)
+            }}
         />
     )
 }

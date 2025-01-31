@@ -94,6 +94,7 @@
     "react-window": "^1.8.10",
     "react18-json-view": "^0.2.8",
     "tslib": "^2.7.0",
+    "uuid": "^11.0.5",
     "vite-plugin-static-copy": "^2.2.0"
   },
   "devDependencies": {

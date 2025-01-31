@@ -15,12 +15,9 @@ import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea/EditArea/Keyframe/utils';
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { getNodeEnv } from '@vxengine/constants';
+import { v4 as uuidv4 } from 'uuid';
 
 export type GroupedPaths = Record<string, PathGroup>;
-
-
-
-
 
 export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps>((set, get) => ({
     editorObjects: {},
@@ -107,10 +104,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         const animationEngine = getVXEngineState().getState().animationEngine
         // Default Keyframe that will be added when creating a new track
-        const keyframeKey = `keyframe-${Date.now()}`
+        const keyframeKey = `keyframe-${uuidv4()}`
         animationEngine.hydrateStaticProp({
-            action: "remove", 
-            staticPropKey, 
+            action: "remove",
+            staticPropKey,
             reRender: false
         })
 
@@ -141,9 +138,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         }))
         // Refresh Raw Data and ReRender
         animationEngine.hydrateKeyframe({
-            trackKey, 
-            action: "create", 
-            keyframeKey, 
+            trackKey,
+            action: "create",
+            keyframeKey,
             reRender: false
         })
         animationEngine.hydrateTrack(trackKey, "create", true)
@@ -176,8 +173,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             animationEngine.hydrateTrack(trackKey, "remove")
 
         animationEngine.hydrateStaticProp({
-            action: "create", 
-            staticPropKey, 
+            action: "create",
+            staticPropKey,
             reRender: true
         })
         get().addChange()
@@ -384,7 +381,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
 
     createKeyframe: ({ trackKey, value, reRender = true }) => {
-        const keyframeKey = `keyframe-${Date.now()}`
+        const keyframeKey = `keyframe-${uuidv4()}`;
 
         set(produce((state: TimelineMangerAPIProps) =>
             createKeyframeLogic(state, trackKey, keyframeKey, value)
@@ -392,9 +389,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const animationEngine = getVXEngineState().getState().animationEngine
         // Refresh Raw Data and ReRender (optionally)
         animationEngine.hydrateKeyframe({
-            trackKey, 
-            action: 'create', 
-            keyframeKey, 
+            trackKey,
+            action: 'create',
+            keyframeKey,
             reRender
         })
         get().addChange()
@@ -406,9 +403,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.hydrateKeyframe({
-            trackKey, 
-            action: "remove", 
-            keyframeKey, 
+            trackKey,
+            action: "remove",
+            keyframeKey,
             reRender
         })
         get().addChange()
@@ -437,10 +434,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Handle Raw Timeline Update
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.hydrateKeyframe({
-            trackKey, 
-            action: "updateTime", 
-            keyframeKey, 
-            reRender, 
+            trackKey,
+            action: "updateTime",
+            keyframeKey,
+            reRender,
             newData: newTime
         })
 
@@ -453,12 +450,12 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     setKeyframeValue: (keyframeKey, trackKey, newValue, reRender = true, updateStore = true) => {
         newValue = truncateToDecimals(newValue);
-        
-        if(updateStore){
+
+        if (updateStore) {
             set(produce((state: TimelineMangerAPIProps) => {
                 const track = state.tracks[trackKey];
                 if (!track) return;
-    
+
                 track.keyframes[keyframeKey].value = newValue;
             }))
         }
@@ -467,8 +464,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.hydrateKeyframe({
             trackKey,
-            action: "updateValue", 
-            keyframeKey, 
+            action: "updateValue",
+            keyframeKey,
             reRender,
             newData: newValue
         })
@@ -489,9 +486,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.hydrateKeyframe({
-            trackKey, 
-            action: "updateHandles", 
-            keyframeKey, 
+            trackKey,
+            action: "updateHandles",
+            keyframeKey,
             reRender,
             newData: [inHandle.x, inHandle.y, outHandle.x, outHandle.y]
         })
@@ -511,11 +508,11 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             createStaticPropLogic(state, vxkey, propertyPath, value)
         else {
             set(produce((state: TimelineMangerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
-            
+
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.hydrateStaticProp({
-                action: "create", 
-                staticPropKey, 
+                action: "create",
+                staticPropKey,
                 reRender
             })
         }
@@ -530,8 +527,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             // Refresh Keyframe
             const animationEngine = getVXEngineState().getState().animationEngine
             animationEngine.hydrateStaticProp({
-                action: "remove", 
-                staticPropKey, 
+                action: "remove",
+                staticPropKey,
                 reRender
             })
         }
@@ -547,8 +544,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Refresh Keyframe
         const animationEngine = getVXEngineState().getState().animationEngine
         animationEngine.hydrateStaticProp({
-            action: "update", 
-            staticPropKey, 
+            action: "update",
+            staticPropKey,
             newValue: newValue,
             reRender
         })
@@ -570,77 +567,6 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             get().removeStaticProp({ staticPropKey: trackKey, reRender: true })
         }
         get().addChange()
-    },
-
-
-    modifyPropertyValue: (mode, vxkey, propertyPath, newValue) => {
-        newValue = truncateToDecimals(newValue);
-
-        const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
-        const state = get()
-        const tracks = state.tracks;
-        const track = state.tracks[generalKey];
-        const isPropertyTracked = !!track;
-
-        const animationEngine = getVXEngineState().getState().animationEngine
-        const time = animationEngine.getCurrentTime();
-
-        if (isPropertyTracked) {
-            const trackKey = generalKey;
-            const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
-
-            // Check if the cursor is under any keyframe
-            let targetKeyframe: IKeyframe | undefined;
-            keyframesOnTrack.some((kf: IKeyframe) => {
-                if (kf.time === time) {
-                    targetKeyframe = kf;
-                    return true;  // Exit early once we find the keyframe
-                }
-                return false;
-            });
-            let targetKeyframeKey = targetKeyframe?.id
-
-            if (!targetKeyframe) {
-                state.createKeyframe({ trackKey, value: newValue, reRender: true });
-            }
-            else {
-                if(mode === "start" || mode === "changing"){
-                    animationEngine.hydrateKeyframe({
-                        trackKey,
-                        action: "updateValue",
-                        keyframeKey: targetKeyframeKey,
-                        reRender: true,
-                        newData: newValue
-                    })
-                }
-                else if(mode === "end" || mode === "press"){
-                    state.setKeyframeValue(targetKeyframeKey, trackKey, newValue)
-                }
-            }
-        }
-        else {
-            const staticPropKey = generalKey;
-            const staticProp = state.staticProps[staticPropKey];
-
-            if(!staticProp){
-                state.createStaticProp({ vxkey, propertyPath, value: newValue, reRender: true})
-            }
-            else{
-                if(mode === "start" || mode === "changing"){
-                    animationEngine.hydrateStaticProp({
-                        staticPropKey,
-                        action: "update",
-                        newValue,
-                        reRender: true
-                    })
-                }
-                else if(mode === "end" || mode === "press"){
-                    state.setStaticPropValue(staticPropKey, newValue, true);
-                }
-            }
-        }
-
-        updateProperty(vxkey, propertyPath, newValue);
     }
 }))
 
@@ -764,58 +690,123 @@ export const truncateToDecimals = (value: number) => {
 }
 
 
-export const handlePropertyValueChangeDuring = (vxkey: string, propertyPath: string, newValue: any) => {
+
+
+export const modifyPropertyValue = (
+    mode: "start" | "changing" | "end" | "press",
+    vxkey: string,
+    propertyPath: string,
+    newValue: number,
+    reRender: boolean = true
+) => {
     newValue = truncateToDecimals(newValue);
 
     const generalKey = `${vxkey}.${propertyPath}`;  // TrackKey or StaticPropKey
     const state = useTimelineManagerAPI.getState();
+    const tracks = state.tracks;
     const track = state.tracks[generalKey];
     const isPropertyTracked = !!track;
 
     const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
 
     if (isPropertyTracked) {
         const trackKey = generalKey;
-        const keyframesOnTrack = Object.values(state.tracks[trackKey].keyframes)
-
-        const time = animationEngine.getCurrentTime();
+        const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
 
         // Check if the cursor is under any keyframe
-        let targetedKeyframe: IKeyframe | undefined;
+        let targetKeyframe: IKeyframe | undefined;
         keyframesOnTrack.some((kf: IKeyframe) => {
             if (kf.time === time) {
-                targetedKeyframe = kf;
+                targetKeyframe = kf;
                 return true;  // Exit early once we find the keyframe
             }
             return false;
         });
-        // if keyframe exists, update its value
-        // else create a new keyframe at cursortime
-        if (!targetedKeyframe)
-            return
+        let targetKeyframeKey = targetKeyframe?.id
 
-        animationEngine.hydrateKeyframe({
-            trackKey,
-            action: "update", 
-            keyframeKey:targetedKeyframe.id, 
-            reRender: true
-        })
-    } else {
-        const staticPropKey = generalKey;
-        // Check if the static prop exists
-        const staticProp = state.staticProps[staticPropKey]
-        if (!staticProp)
-            return
-
-        animationEngine.hydrateStaticProp({
-            action: "update", 
-            staticPropKey, 
-            reRender: true,
-            newValue: newValue
-        });
+        if (!targetKeyframe) {
+            state.createKeyframe({ trackKey, value: newValue, reRender });
+        }
+        else {
+            if (mode === "start" || mode === "changing") {
+                animationEngine.hydrateKeyframe({
+                    trackKey,
+                    action: "updateValue",
+                    keyframeKey: targetKeyframeKey,
+                    reRender,
+                    newData: newValue
+                })
+            }
+            else if (mode === "end" || mode === "press") {
+                state.setKeyframeValue(targetKeyframeKey, trackKey, newValue)
+            }
+        }
     }
+    else {
+        const staticPropKey = generalKey;
+        const staticProp = state.staticProps[staticPropKey];
+
+        if (!staticProp) {
+            state.createStaticProp({ vxkey, propertyPath, value: newValue, reRender })
+        }
+        else {
+            if (mode === "start" || mode === "changing") {
+                animationEngine.hydrateStaticProp({
+                    staticPropKey,
+                    action: "update",
+                    newValue,
+                    reRender
+                })
+            }
+            else if (mode === "end" || mode === "press") {
+                state.setStaticPropValue(staticPropKey, newValue, reRender);
+            }
+        }
+    }
+
     updateProperty(vxkey, propertyPath, newValue);
 }
+
+
+
+export const modifyBatchPropertyValues = (
+    mode: "start" | "changing" | "end" | "press",
+    properties: { vxkey: string, propertyPath: string, newValue: number }[]
+) => {
+    const animationEngine = getVXEngineState().getState().animationEngine
+    const time = animationEngine.getCurrentTime();
+    const state = useTimelineManagerAPI.getState();
+    const tracks = state.tracks;
+
+    properties.forEach(property => {
+        const generalKey = `${property.vxkey}.${property.propertyPath}`;
+        const track = state.tracks[generalKey];
+        const isPropertyTracked = !!track;
+
+        if (isPropertyTracked) {
+            const trackKey = generalKey;
+            const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
+
+            // Check if the cursor is under any keyframe
+            let targetKeyframe: IKeyframe | undefined;
+            keyframesOnTrack.some((kf: IKeyframe) => {
+                if (kf.time === time) {
+                    targetKeyframe = kf;
+                    return true;  // Exit early once we find the keyframe
+                }
+                return false;
+            });
+            let targetKeyframeKey = targetKeyframe?.id
+
+            if (!targetKeyframe) {
+                state.createKeyframe({ trackKey, value: property.newValue, reRender: true });
+            }
+        }
+
+    })
+}
+
 
 export const handlePropertyValueChange = (vxkey: string, propertyPath: string, newValue: any, reRender = true) => {
     newValue = truncateToDecimals(newValue);

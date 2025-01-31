@@ -1,15 +1,16 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
-import ColorPicker, { Color, hsl, hslToHex } from '../ColorPicker';
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import KeyframeControl from '../KeyframeControl';
 import ValueRenderer from '../ValueRenderer';
-import { handlePropertyValueChange } from '@vxengine/managers/TimelineManager/store';
+import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store';
 import { getNestedProperty } from '@vxengine/utils';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { hslToRgb } from './utils';
 import { invalidate } from '@react-three/fiber';
 import { RgbaColorPicker } from "react-colorful";
+import ColorPicker from '../ColorPicker';
+import { hsl } from "../ColorPicker/types"
 
 interface PropColorProps {
     vxkey: string
@@ -46,14 +47,6 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
         colorPreviewRef.current.style.borderColor = `hsl(${hsl.h}, ${hsl.s}%, ${lighterLightness}%)`;
     }, [vxkey])
 
-
-    const updateColorState = () => {
-        if (colorPopoverRef.current) {
-            colorPopoverRef.current.setColor({ r: 0.5, g: 0.3, b: 0.8, a: 1 });
-        }
-    };
-    
-
     useLayoutEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state) => {
             const newRedValue = state.properties[rTrackKey] as number;
@@ -67,14 +60,6 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
             colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
             colorPreviewRef.current.style.borderColor = `hsl(${hsl.h}, ${hsl.s}%, ${lighterLightness}%)`;
 
-            if (colorPopoverRef.current) {
-                colorPopoverRef.current.setColor({ 
-                    r: newRedValue * 256, 
-                    g: newGreenValue * 256, 
-                    b: newBlueValue * 256, 
-                    a: 1 
-                });
-            }
             colorPickerRef.current?.updateRefs(hsl);
         });
 
@@ -82,23 +67,45 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
     }, [vxkey]);
 
     // Handle color changes from ColorPicker
-    const handleColorChange = (newColor: { r: number, g: number, b: number }) => {
-        let { r, g, b } = newColor;
-        colorPreviewRef.current.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-        // use threejs Color values
-        r = r / 256;
-        g = g / 256;
-        b = b / 256;
 
-        handlePropertyValueChange(vxkey, rPropertyPath, r);
-        handlePropertyValueChange(vxkey, gPropertyPath, g);
-        handlePropertyValueChange(vxkey, bPropertyPath, b);
+    const handleColorChange = useCallback((hsl: hsl) => {
+        colorRef.current = hsl
+        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
+        modifyPropertyValue("changing", vxkey, rPropertyPath, r);
+        modifyPropertyValue("changing", vxkey, gPropertyPath, g);
+        modifyPropertyValue("changing", vxkey, bPropertyPath, b);
+
+        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
         invalidate();
-    }
+    }, [])
+    const handleColorChangeStart = useCallback((hsl: hsl) => {
+        console.log("Handling color Change Start ")
+        colorRef.current = hsl
+        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-    const colorPopoverRef = useRef(null);
+        modifyPropertyValue("start", vxkey, rPropertyPath, r);
+        modifyPropertyValue("start", vxkey, gPropertyPath, g);
+        modifyPropertyValue("start", vxkey, bPropertyPath, b);
+
+        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
+        invalidate();
+    }, [])
+    const handleColorChangeEnd = useCallback((hsl: hsl) => {
+        console.log("Handling Color Change End")
+        colorRef.current = hsl
+        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
+
+        modifyPropertyValue("end", vxkey, rPropertyPath, r);
+        modifyPropertyValue("end", vxkey, gPropertyPath, g);
+        modifyPropertyValue("end", vxkey, bPropertyPath, b);
+
+        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
+        invalidate();
+    }, [])
 
 
     return (
@@ -110,15 +117,45 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
                         className={`w-10 h-5 rounded-md border shadow-md`}
                     />
                 </PopoverTrigger>
-                <ColorPropPopoverContent 
-                    ref={colorPopoverRef}
-                    vxObject={vxObject}
-                    vxkey={vxkey}
-                    rPropertyPath={rPropertyPath}
-                    gPropertyPath={gPropertyPath}
-                    bPropertyPath={bPropertyPath}
-                    onChange={handleColorChange}
-                />
+                <PopoverContent className='w-52'>
+                    <ColorPicker
+                        ref={colorPickerRef}
+                        colorRef={colorRef}
+                        handleColorChangeStart={handleColorChangeStart}
+                        handleColorChange={handleColorChange}
+                        handleColorChangeEnd={handleColorChangeEnd}
+                    />
+
+                    <div className='flex flex-col gap-2'>
+                        <div className='flex gap-2 mt-2 justify-between'>
+                            <p className='text-xs my-auto'>red</p>
+                            <div className='flex flex-row gap-2'>
+                                <div className='my-auto'>
+                                    <KeyframeControl trackKey={rTrackKey} disabled={false} />
+                                </div>
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={rPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                            </div>
+                        </div>
+                        <div className='flex gap-2 justify-between'>
+                            <p className='text-xs my-auto'>green</p>
+                            <div className='flex flex-row gap-2'>
+                                <div className='my-auto'>
+                                    <KeyframeControl trackKey={gTrackKey} disabled={false} />
+                                </div>
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={gPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                            </div>
+                        </div>
+                        <div className='flex gap-2 justify-between'>
+                            <p className='text-xs my-auto'>blue</p>
+                            <div className='flex flex-row gap-2'>
+                                <div className='my-auto'>
+                                    <KeyframeControl trackKey={bTrackKey} disabled={false} />
+                                </div>
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={bPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                            </div>
+                        </div>
+                    </div>
+                </PopoverContent>
             </Popover>
 
         </>
@@ -134,62 +171,73 @@ interface PopoverProps {
     rPropertyPath: string
     gPropertyPath: string
     bPropertyPath: string
-    onChange: (newColor: {r: number, g: number, b: number }) => void    
+    onChange: (newColor: { r: number, g: number, b: number }) => void
+    onDragStart?: (newColor: { r: number, g: number, b: number }) => void
+    onDragEnd?: (newColor: { r: number, g: number, b: number }) => void
+
 }
-const ColorPropPopoverContent = forwardRef(({ vxObject, vxkey, rPropertyPath, gPropertyPath, bPropertyPath, onChange }: PopoverProps, ref) => {
-    const rTrackKey = `${vxkey}.${rPropertyPath}`
-    const gTrackKey = `${vxkey}.${gPropertyPath}`
-    const bTrackKey = `${vxkey}.${bPropertyPath}`
+const ColorPropPopoverContent = forwardRef(
+    ({ vxObject, vxkey, rPropertyPath, gPropertyPath, bPropertyPath, onChange, onDragStart, onDragEnd }: PopoverProps, ref) => {
+        const rTrackKey = `${vxkey}.${rPropertyPath}`
+        const gTrackKey = `${vxkey}.${gPropertyPath}`
+        const bTrackKey = `${vxkey}.${bPropertyPath}`
 
-    const [color, setColor] = useState({
-        r: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number,
-        g: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number,
-        b: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number,
-        a: 1
-    })
+        const [color, setColor] = useState({
+            r: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
+            g: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
+            b: getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current) as number * 256,
+            a: 1
+        })
 
-    useImperativeHandle(ref, () => ({
-        setColor
-    }));
+        useImperativeHandle(ref, () => ({
+            setColor
+        }));
 
-    return (
-        <PopoverContent className='w-52'>
-            <RgbaColorPicker color={color} onChange={(newColor) => {
-                setColor(newColor)
-                onChange(newColor)
-            }} />
-            <div className='flex flex-col gap-2'>
-                <div className='flex gap-2 mt-2 justify-between'>
-                    <p className='text-xs my-auto'>red</p>
-                    <div className='flex flex-row gap-2'>
-                        <div className='my-auto'>
-                            <KeyframeControl trackKey={rTrackKey} disabled={false} />
-                        </div>
-                        <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={rPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
-                    </div>
+        return (
+            <div>
+                <div>
+                    <p>{color.r}</p>
+                    <p>{color.g}</p>
+                    <p>{color.b}</p>
                 </div>
-                <div className='flex gap-2 justify-between'>
-                    <p className='text-xs my-auto'>green</p>
-                    <div className='flex flex-row gap-2'>
-                        <div className='my-auto'>
-                            <KeyframeControl trackKey={gTrackKey} disabled={false} />
+                <RgbaColorPicker
+                    color={color}
+                    onChange={(newColor) => {
+                        onChange(newColor)
+                    }}
+                />
+                <div className='flex flex-col gap-2'>
+                    <div className='flex gap-2 mt-2 justify-between'>
+                        <p className='text-xs my-auto'>red</p>
+                        <div className='flex flex-row gap-2'>
+                            <div className='my-auto'>
+                                <KeyframeControl trackKey={rTrackKey} disabled={false} />
+                            </div>
+                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={rPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                         </div>
-                        <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={gPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                     </div>
-                </div>
-                <div className='flex gap-2 justify-between'>
-                    <p className='text-xs my-auto'>blue</p>
-                    <div className='flex flex-row gap-2'>
-                        <div className='my-auto'>
-                            <KeyframeControl trackKey={bTrackKey} disabled={false} />
+                    <div className='flex gap-2 justify-between'>
+                        <p className='text-xs my-auto'>green</p>
+                        <div className='flex flex-row gap-2'>
+                            <div className='my-auto'>
+                                <KeyframeControl trackKey={gTrackKey} disabled={false} />
+                            </div>
+                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={gPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                         </div>
-                        <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={bPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                    </div>
+                    <div className='flex gap-2 justify-between'>
+                        <p className='text-xs my-auto'>blue</p>
+                        <div className='flex flex-row gap-2'>
+                            <div className='my-auto'>
+                                <KeyframeControl trackKey={bTrackKey} disabled={false} />
+                            </div>
+                            <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={bPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                        </div>
                     </div>
                 </div>
             </div>
-        </PopoverContent>
-    )
-})
+        )
+    })
 
 
 
