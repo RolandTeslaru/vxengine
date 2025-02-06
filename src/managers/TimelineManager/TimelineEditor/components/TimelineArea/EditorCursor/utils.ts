@@ -2,7 +2,7 @@ import { DragEvent, Interactable } from "@interactjs/types";
 import { cursorRef } from "@vxengine/utils/useRefStore";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { parserPixelToTime, parserTimeToPixel, updatePixelByScale } from "@vxengine/managers/TimelineManager/utils/deal_data";
-import { getVXEngineState } from "@vxengine/engine";
+import { animationEngineInstance } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import { selectKeyframeSTATIC as selectKeyframe } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 
@@ -32,8 +32,7 @@ export const handleCursorDrag = (newLeft: number, mutateUI = true) => {
 
   // Handle Store Update
   const newTime = parserPixelToTime(newLeft, cursorStartLeft, true, scale)
-  const animationEngine = getVXEngineState().getState().animationEngine;
-  animationEngine.setCurrentTime(newTime)
+  animationEngineInstance.setCurrentTime(newTime)
 
   // Handle Mutation
   if(mutateUI)
@@ -60,8 +59,7 @@ export const handleCursorMutationByScale = (newScale: number, prevScale: number)
 export const selectAllKeyframesAfterCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const timelineManagerAPI = useTimelineManagerAPI.getState();
 
-  const animationEngine = getVXEngineState().getState().animationEngine
-  const currentTime = animationEngine.getCurrentTime();
+  const currentTime = animationEngineInstance.getCurrentTime();
 
   Object.entries(timelineManagerAPI.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {
@@ -76,8 +74,7 @@ export const selectAllKeyframesAfterCursor = (event: React.MouseEvent<HTMLDivEle
 export const selectAllKeyframesBeforeCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const state = useTimelineManagerAPI.getState();
   
-  const animationEngine = getVXEngineState().getState().animationEngine
-  const currentTime = animationEngine.getCurrentTime();
+  const currentTime = animationEngineInstance.getCurrentTime();
 
   Object.entries(state.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {
@@ -103,8 +100,7 @@ export const selectAllKeyframes = (event: React.MouseEvent<HTMLDivElement, Mouse
 export const selectKeyframesOnCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const state = useTimelineManagerAPI.getState();
 
-  const animationEngine = getVXEngineState().getState().animationEngine
-  const currentTime = animationEngine.getCurrentTime();
+  const currentTime = animationEngineInstance.getCurrentTime();
 
   Object.entries(state.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {

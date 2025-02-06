@@ -6,7 +6,7 @@ import { Interactable } from "@interactjs/types";
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { cursorRef, useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorMutation, handleOnMove, selectAllKeyframes, selectAllKeyframesAfterCursor, selectAllKeyframesBeforeCursor, selectKeyframesOnCursor } from './utils';
-import { useVXEngine } from '@vxengine/engine';
+import { animationEngineInstance } from '@vxengine/engine';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { ArrowRight, Maximize2, ArrowLeft } from 'lucide-react';
@@ -20,12 +20,10 @@ const EditorCursor = () => {
 
   const deltaX = useRef(0)
 
-  const animationEngine = useVXEngine(state => state.animationEngine)
-
   useLayoutEffect(() => {
     const initialScale = useTimelineEditorAPI.getState().scale;
 
-    const initialCursorTime = animationEngine.getCurrentTime();
+    const initialCursorTime = animationEngineInstance.getCurrentTime();
 
     cursorRef.current = elementRef.current;
 

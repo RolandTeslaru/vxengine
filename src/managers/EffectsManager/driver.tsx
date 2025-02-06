@@ -61,7 +61,7 @@ export const EffectsManagerDriver = React.memo(
   ) => {
     const vxkey = "effects"
     const { gl, scene, camera, size } = useThree()
-    const composer = useVXEngine(state => state.composer)
+    const { composer } = useVXEngine()
 
     const [normalPass, downSamplingPass] = useMemo(() => {
       const webGL2Available = isWebGL2Available()

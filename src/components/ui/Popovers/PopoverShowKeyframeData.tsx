@@ -83,7 +83,7 @@ const Content: React.FC<Props> = (props) => {
 
     return (
         <PopoverContent className={contentClassName + " gap-2 flex flex-col"} side={side} align={align}>
-            <p className='font-sans-menlo text-xs text-center'>EdKeyframe Data</p>
+            <p className='font-sans-menlo text-xs text-center'>Editor Keyframe Data</p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={keyframe} customizeNode={customizeNode} collapsed={({ depth }) => depth > 1} />
             </div>

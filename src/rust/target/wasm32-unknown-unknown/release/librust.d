@@ -1,1 +1,1 @@
-C:\Users\rolan\Desktop\vxengine-dev-environment\packages\vxengine\src\rust\target\wasm32-unknown-unknown\release\librust.rlib: C:\Users\rolan\Desktop\vxengine-dev-environment\packages\vxengine\src\rust\src\lib.rs
+/Users/rolandteslaru/Desktop/vxengine-dev-environment/packages/vxengine/src/rust/target/wasm32-unknown-unknown/release/librust.rlib: /Users/rolandteslaru/Desktop/vxengine-dev-environment/packages/vxengine/src/rust/src/lib.rs

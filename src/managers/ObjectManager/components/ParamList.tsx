@@ -5,7 +5,7 @@ import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import { VXParamInputType } from '@vxengine/vxobject/types'
+import { VXObjectParam } from '@vxengine/vxobject/types'
 
 interface Props {
     vxobject: vxObjectProps
@@ -14,7 +14,7 @@ interface Props {
 const ParamList: React.FC<Props> = ({ vxobject }) => {
     if (!vxobject) return
 
-    const refObject = vxobject.ref.current as THREE.Object3D;
+    const refObject = vxobject?.ref?.current as THREE.Object3D;
     if (!refObject) return;
 
     const threeObjectType = refObject.type
@@ -23,7 +23,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     if (Object.entries(params).length === 0) return
 
-    const ParamRenderer = (props: { param: VXParamInputType, index: number, paramKey: string}) => {
+    const ParamRenderer = (props: { param: VXObjectParam, index: number, paramKey: string}) => {
         const { paramKey, param } = props;
         return (
             <div className={`flex ${param.type === "slider" ? "flex-col": "flex-row"} py-1`}>

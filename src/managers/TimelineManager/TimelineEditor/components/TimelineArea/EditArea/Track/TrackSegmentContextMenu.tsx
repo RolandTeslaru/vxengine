@@ -2,7 +2,7 @@ import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn
 import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
 import PopoverShowTrackSegmentData from '@vxengine/components/ui/Popovers/PopoverShowTrackSegmentData';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
+import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import React from 'react'
 
 interface Props {
@@ -14,7 +14,6 @@ interface Props {
 const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
     const { trackKey } = props;
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-    const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     return (
         <ContextMenuContent>
@@ -22,7 +21,7 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
                 <p className='text-xs font-sans-menlo'>Show Data...</p>
             </PopoverShowTrackSegmentData>
             <ContextMenuItem onClick={() =>
-                pushDialog(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
+                pushDialogStatic({content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
             >
                 <p className='text-xs font-sans-menlo text-red-600'>Make Property Static </p>
             </ContextMenuItem>

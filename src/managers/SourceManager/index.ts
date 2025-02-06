@@ -3,4 +3,3 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 export { useSourceManagerAPI } from "./store"
-export { SourceManagerUI } from "./ui"

@@ -3,11 +3,13 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import { create } from "zustand";
-
-interface NotificationManagerAPI {
+import React from "react";
+interface NotificationManagerUILayerProps {
     
 }
 
-export const useNotificationManagerAPI = create<NotificationManagerAPI>((set, get) => ({
-    
-}))
+export const NotificationManagerUILayer: React.FC<NotificationManagerUILayerProps> = () => {
+    return (
+        <></>
+    )
+}

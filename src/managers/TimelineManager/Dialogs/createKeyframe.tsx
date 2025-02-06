@@ -5,7 +5,7 @@ import { Label } from "@vxengine/components/shadcn/label";
 import React, { useRef } from "react";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
-import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
+import { pushDialogStatic, useUIManagerAPI } from "@vxengine/managers/UIManager/store";
 import { ALERT_ResetProperty } from "@vxengine/components/ui/DialogAlerts/Alert";
 
 export const DIALOG_createKeyframe = () => {
@@ -38,8 +38,6 @@ export const DIALOG_createKeyframe = () => {
         // Call the createKeyframe function
         createKeyframe({ trackKey, value });
     };
-
-    const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     return (
         <>
@@ -85,8 +83,12 @@ export const DIALOG_createKeyframe = () => {
                         <Button type="submit">Execute</Button>
                     </DialogFooter>
                 </form>
-                <Button onClick={() => pushDialog(<DIALOG_createKeyframe />, "normal")}>OpenDialog</Button>
-                <Button variant="warning" onClick={() => pushDialog(<ALERT_ResetProperty vxkey="dasd" propertyPath="dad" />, "alert")}>Alert OpenDialog</Button>
+                <Button 
+                    onClick={() => pushDialogStatic({
+                        content: <DIALOG_createKeyframe />, 
+                        type:"normal"})
+                    }
+                >OpenDialog</Button>
             </DialogHeader>
         </>
     );

@@ -3,6 +3,7 @@ import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSettingsAPI } from "../stores/settingsStore";
+import ValueRenderer from "@vxengine/components/ui/ValueRenderer";
 
 interface Props {
     vxobject: vxObjectProps
@@ -13,20 +14,6 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const isUsingSplinePath = settings?.useSplinePath
-
-    const renderInputs = (property, disabled = false) => {
-        return ['x', 'y', 'z'].map((axis) => (
-            <PropInput
-                vxObject={vxobject}
-                key={`${property}-${axis}`}
-                param={{ type: "number"}}
-                propertyPath={`${property}.${axis}`}
-                horizontal={true}
-                disabled={disabled}
-                disableTracking={true}
-            />
-        ));
-    };
 
     return (
         <CollapsiblePanel
@@ -47,7 +34,15 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
                 <div className='flex flex-row'>
                     <p className="text-xs font-light text-neutral-400">position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
-                        {renderInputs('position', isUsingSplinePath)}
+                        {['x', 'y', 'z'].map((axis) => (
+                            <>
+                                <ValueRenderer
+                                    vxObject={vxobject}
+                                    vxkey={vxobject.vxkey}
+                                    propertyPath={`position.${axis}`}
+                                />
+                            </>
+                        ))}
                     </div>
                 </div>
 

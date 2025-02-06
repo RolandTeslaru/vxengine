@@ -1,3 +1,5 @@
+import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/track";
+
 export interface VXEntityWrapperProps {
     type: string;
     children: React.ReactNode;
@@ -18,6 +20,7 @@ export type EditableObjectProps<T> = Omit<T, 'ref'> & {
 export type VXBaseInputType = {
     type: string,
     propertyPath?: string
+    sideEffect?: TrackSideEffectCallback
 }
 export type VXNumberInputType = VXBaseInputType & {
     type: "number"
@@ -35,6 +38,6 @@ export type VXColorInputType = VXBaseInputType & {
     type: "color",
 }
 
-export type VXParamInputType = VXNumberInputType | VXSliderInputType | VXColorInputType;
+export type VXObjectParam = VXNumberInputType | VXSliderInputType | VXColorInputType;
 
-export type VXObjectParams = Record<string, VXParamInputType>
+export type VXObjectParams = Record<string, VXObjectParam>

@@ -15,23 +15,23 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Keyframe</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_createKeyframe />, "normal")}>Create Keyframe</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeTime />, "normal")}>Set Keyframe Time</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setKeyframeValue />, "normal")}>Set Keyframe Value</MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeKeyframe />, "normal")}>Remove Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_createKeyframe />,type:  "normal"})}>Create Keyframe</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_setKeyframeTime />,type:  "normal"})}>Set Keyframe Time</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_setKeyframeValue />,type:  "normal"})}>Set Keyframe Value</MenubarItem>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_removeKeyframe />,type:  "normal"})}>Remove Keyframe</MenubarItem>
                     </MenubarSubContent>
                 </MenubarSub>
                 {/* Static Prop Sub menu */}
                 <MenubarSub>
                     <MenubarSubTrigger>StaticProp</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_createStaticProp />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_createStaticProp />,type:  "normal"})}>
                             Create StaticProp
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_setStaticPropValue />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_setStaticPropValue />,type:  "normal"})}>
                             Set StaticProp Value
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_removeStaticProp />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_removeStaticProp />,type:  "normal"})}>
                             Remove StaticProp
                         </MenubarItem>
                     </MenubarSubContent>
@@ -52,10 +52,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Move Cursor</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToNextKeyframe />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_moveToNextKeyframe />,type:  "normal"})}>
                             Move To Next Keyframe
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_moveToPreviousKeyframe />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_moveToPreviousKeyframe />,type:  "normal"})}>
                             Move To Previous Keyframe
                         </MenubarItem>
                     </MenubarSubContent>
@@ -64,10 +64,10 @@ export const TimelineManagerSubMenu = () => {
                 <MenubarSub>
                     <MenubarSubTrigger>Make</MenubarSubTrigger>
                     <MenubarSubContent>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyTracked />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_makePropertyTracked />,type:  "normal"})}>
                             Make Property Tracked
                         </MenubarItem>
-                        <MenubarItem onClick={() => pushDialog(<DIALOG_makePropertyStatic />, "normal")}>
+                        <MenubarItem onClick={() => pushDialog({content: <DIALOG_makePropertyStatic />,type:  "normal"})}>
                             Make Property Static
                         </MenubarItem>
                     </MenubarSubContent>

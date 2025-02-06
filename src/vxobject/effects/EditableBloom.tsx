@@ -6,7 +6,7 @@ import { SelectiveBloomProps } from "@react-three/postprocessing";
 import { Bloom } from "@react-three/postprocessing";
 import { BloomEffect } from "postprocessing";
 import { vxEffectProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useVXEngine } from "@vxengine/engine";
+import { animationEngineInstance, useVXEngine } from "@vxengine/engine";
 import { BloomEffectOptions } from "postprocessing";
 
 export type EditableBloomProps = EditableObjectProps<BloomEffectOptions>;
@@ -27,8 +27,6 @@ export const EditableBloom = memo(
       const internalRef = useRef<any>(null); // Use 'any' to bypass type mismatch
       useImperativeHandle(ref, () => internalRef.current);
 
-      const animationEngine = useVXEngine((state) => state.animationEngine);
-
       useLayoutEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -45,7 +43,7 @@ export const EditableBloom = memo(
         };
 
         addObject(newVXObject);
-        animationEngine.initObjectOnMount(newVXObject);
+        animationEngineInstance.initObjectOnMount(newVXObject);
 
         return () => removeObject(vxkey)        
       }, []);

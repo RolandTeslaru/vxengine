@@ -3,14 +3,14 @@ import { InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import ValueRenderer from '../ValueRenderer'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { VXParamInputType } from '@vxengine/vxobject/types';
+import { VXObjectParam } from '@vxengine/vxobject/types';
 import PropSlider from './PropSlider';
 import PropColor from './PropColor';
 
 interface Props extends InputProps {
     vxObject: vxObjectProps
     propertyPath: string
-    param: VXParamInputType
+    param: VXObjectParam
     vxkey?: string;   // spline has a vxkey with the ".spline" prefix
     horizontal?: boolean
     disableTracking?: boolean

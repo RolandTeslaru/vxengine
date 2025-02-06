@@ -10,7 +10,6 @@ import { motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/components/ObjectTree"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
-import { DataSyncPopup, SourceManagerUI } from "@vxengine/managers/SourceManager/ui"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 import ParamList from "@vxengine/managers/ObjectManager/components/ParamList"
@@ -23,14 +22,11 @@ import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
-import { useVXEngine } from "@vxengine/engine"
+import { IS_PRODUCTION } from "@vxengine/engine"
 import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
 
 export const VXStudio = () => {
-    const showSyncPopup = useSourceManagerAPI(state => state.showSyncPopup)
-    const IS_PRODUCTION= useVXEngine(state => state.IS_PRODUCTION)
-
     return (
         <div id="VXEngineStudio" className='fixed top-0 left-0 z-50'>
             {IS_PRODUCTION && (
@@ -54,13 +50,10 @@ export const VXStudio = () => {
             <UIManagerDialogLayer/>
 
             <Watermark/>
-
-            {showSyncPopup && (
-                <DataSyncPopup />
-            )}
         </div>
     )
 }
+
 
 const VXRightPanel = () => {
     const vxWindowId = "VXEngineRightPanel"

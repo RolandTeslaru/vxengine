@@ -15,20 +15,22 @@ import { useUIManagerAPI } from '../UIManager/store'
 import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 import SplineProperties from './components/SplineProperties'
 import SplineNodePanel from './components/SplineNodePanel'
+import ObjectInfoPanel from './components/ObjectInfoPanel'
 
 const ObjectPropertiesConfig = {
   entity: [
       TransformProperties, 
       GeometryProperties, 
-      MaterialProperties
+      MaterialProperties,
+      ObjectInfoPanel
   ],
   virtualEntity: [
     TransformProperties, 
     GeometryProperties, 
     MaterialProperties
   ],
-  spline: [SplineProperties],
-  splineNode: [NodeTransformProperties, SplineNodePanel],
+  spline: [SplineProperties, ObjectInfoPanel],
+  // splineNode: [SplineNodePanel, ObjectInfoPanel],
   keyframeNode: [NodeTransformProperties],
 };
 
@@ -60,8 +62,8 @@ export const ObjectManagerSubMenu = () => {
     <MenubarSub>
       <MenubarSubTrigger>Object Manager API</MenubarSubTrigger>
       <MenubarSubContent>
-        <MenubarItem onClick={() => pushDialog(<DIALOG_setTransformMode/>, "normal")}>set Transform Mode</MenubarItem>
-        <MenubarItem onClick={() => pushDialog(<DIALOG_setTransformSpace/>, "normal")}>set Transform Space</MenubarItem>
+        <MenubarItem onClick={() => pushDialog({content: <DIALOG_setTransformMode/>, type:"normal"})}>set Transform Mode</MenubarItem>
+        <MenubarItem onClick={() => pushDialog({content: <DIALOG_setTransformSpace/>, type: "normal"})}>set Transform Space</MenubarItem>
         <MenubarItem>select Objects</MenubarItem>
       </MenubarSubContent>
     </MenubarSub>

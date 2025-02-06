@@ -24,8 +24,6 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
 
-        (ref.current as any).nodeIndex = index;
-
         const splineNodeObject: vxSplineNodeProps = {
             type: "splineNode",
             ref,

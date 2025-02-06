@@ -13,6 +13,7 @@ export function vector3_distance_to(a: number, b: number): number;
 export function vector3_lerp(a: number, b: number, c: number): number;
 export function __wbg_spline_free(a: number, b: number): void;
 export function spline_new(a: number, b: number, c: number, d: number): number;
+export function spline_change_tension(a: number, b: number): void;
 export function spline_get_point(a: number, b: number): number;
 export function cubic_bezier(a: number, b: number, c: number, d: number, e: number): number;
 export function cubic_bezier_derivative(a: number, b: number, c: number, d: number, e: number): number;

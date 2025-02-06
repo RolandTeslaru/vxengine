@@ -5,7 +5,7 @@ import { WindowControlDots } from '../../components/ui/WindowControlDots';
 
 export interface VXEngineWindowProps {
     children: React.ReactNode;
-    title: string;
+    title?: string;
     vxWindowId: string;
     windowClasses: string;
     className?: string;
@@ -28,7 +28,7 @@ const WindowContext = createContext<WindowContextProps>({
 export const useWindowContext = () => useContext(WindowContext);
 
 export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
-    const { children, title, windowClasses, vxWindowId, className,
+    const { children, title = "VXEngine Window", windowClasses, vxWindowId, className,
            detachedClassName, noStyling = false } = props;
 
     const registerWindow = useUIManagerAPI((state) => state.registerWindow);

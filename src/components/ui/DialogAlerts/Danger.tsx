@@ -91,3 +91,27 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
     )
 }
 
+
+
+
+
+export const DANGER_ProjectNameUnSync = ({ diskJsonProjectName, providerProjectName }: any) => {
+  return (
+    <div className='flex flex-col gap-4'>
+      <AlertDialogHeader className='flex flex-col'>
+        <AlertDialogTitle>Project Name Sync Conflict</AlertDialogTitle>
+        <AlertDialogDescription>
+          <div className='gap-2 flex flex-col'>
+            <p>
+              Project Name from Disk Json is not the same as the one from config provider!
+            </p>
+            <div className='flex flex-col gap-2'>
+              <p>Disk Json projectName = <span className='text-red-600'>{`${diskJsonProjectName}`}</span></p>
+              <p>Provider projectName = <span className='text-red-600'>{`${providerProjectName}`}</span></p>
+            </div>
+          </div>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+    </div>
+  )
+}

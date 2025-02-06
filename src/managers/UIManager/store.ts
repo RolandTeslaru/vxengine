@@ -10,7 +10,10 @@ interface DialogEntry {
     content: React.ReactNode;
     type: DialogType;
     className?: string
+    showTriangle?: boolean
 }
+
+type PushDialogProps = Omit<DialogEntry, "id"> & Partial<Pick<DialogEntry, "id">>;
 
 interface PartialVXEngineWindowProps {
     title: string;
@@ -37,7 +40,7 @@ interface UIManagerProps {
     setSelectedWindow: (window: string) => void;
 
     dialogContent: DialogEntry[];
-    pushDialog: (content: React.ReactNode, type: DialogType, className?: string, id?: string) => void;
+    pushDialog: (props: PushDialogProps) => void;
     openedDialogs: string[];
     closeDialog: (id: string) => void;
 
@@ -86,11 +89,12 @@ export const useUIManagerAPI = create<UIManagerProps>()(
             setSelectedWindow: (window: string) => set({ selectedWindow: window }),
 
             dialogContent: [],
-            pushDialog: (content, type, className, id) => {
+            pushDialog: (props) => {
+                const {id, type, showTriangle = true } = props;
                 const _id = id ?? `${type}-${Date.now()}`;
                 set({
                     openedDialogs: [...get().openedDialogs, _id],
-                    dialogContent: [...get().dialogContent, { id: _id, content, type, className }],
+                    dialogContent: [...get().dialogContent, { id: _id, showTriangle, ...props }],
                 });
             },
             openedDialogs: [],
@@ -124,7 +128,8 @@ export const useUIManagerAPI = create<UIManagerProps>()(
 );
 
 
-export const pushDialogStatic = (content: React.ReactNode, type: DialogType, className?: string, id?: string) => {
+
+export const pushDialogStatic = ({content, type, className, id, showTriangle = true}: PushDialogProps) => {
     const _id = id ?? `${type}-${Date.now()}`;
     const state = useUIManagerAPI.getState();
 
@@ -136,7 +141,7 @@ export const pushDialogStatic = (content: React.ReactNode, type: DialogType, cla
     
     useUIManagerAPI.setState({
         openedDialogs: [...state.openedDialogs, _id],
-        dialogContent: [...state.dialogContent, { id: _id, content, type, className }],
+        dialogContent: [...state.dialogContent, { id: _id, content, type, className, showTriangle }],
     })
 }
 

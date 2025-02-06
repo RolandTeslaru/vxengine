@@ -16,7 +16,7 @@ export const TimeArea = () => {
 
   const startLeft = 20;
   const timelineClientWidth = startLeft + currentTimelineLength * ONE_SECOND_UNIT_WIDTH / scale
-  
+
   const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
   const totalUnits = OneSecondUnitSplitCount * currentTimelineLength;
 
@@ -33,45 +33,62 @@ export const TimeArea = () => {
 
   const displayInterval = Math.ceil(scale); // Adjust display interval smoothly with scale
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const div = e.currentTarget;
+    const divRect = div.getBoundingClientRect(); // Get div position
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const relativeX = moveEvent.clientX - divRect.left;
+      setTimeByPixel(relativeX);
+    };
+
+    const handleMouseUp = () => {
+      console.log("Drag end");
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
   return (
-    <>
-      <div
-        className="sticky top-0 h-[28px] bg-neutral-950 bg-opacity-90 z-20 border-b border-neutral-800"
-        style={{width: `${timelineClientWidth}px`}}
-        onClick={handleOnClick}
-      >
-        {/* <CursorThumb /> */}
-        {Array.from({ length: totalUnits + 1 }).map((_, index) => {
-          const isIntegerUnit = index % OneSecondUnitSplitCount === 0;
-          const classNames = ["time-unit"];
+    <div
+      className="sticky top-0 h-[28px] bg-neutral-950 bg-opacity-90 z-20 border-b border-neutral-800"
+      style={{ width: `${timelineClientWidth}px` }}
+      onClick={handleOnClick}
+      onMouseDown={handleMouseDown}
+    >
+      {Array.from({ length: totalUnits + 1 }).map((_, index) => {
+        const isIntegerUnit = index % OneSecondUnitSplitCount === 0;
+        const classNames = ["time-unit"];
 
-          // Adjust unit width based on the dynamic split count
-          const unitWidth = (ONE_SECOND_UNIT_WIDTH / OneSecondUnitSplitCount) / scale;
+        // Adjust unit width based on the dynamic split count
+        const unitWidth = (ONE_SECOND_UNIT_WIDTH / OneSecondUnitSplitCount) / scale;
 
-          // Display only at multiples of the displayInterval
-          const shouldDisplayNumber = isIntegerUnit && (index / OneSecondUnitSplitCount) % displayInterval === 0;
+        // Display only at multiples of the displayInterval
+        const shouldDisplayNumber = isIntegerUnit && (index / OneSecondUnitSplitCount) % displayInterval === 0;
 
-          if (isIntegerUnit) 
-            classNames.push("time-unit-big");
-         
-          return (
-            <div
-              key={index}
-              style={{
-                position: "absolute",
-                left: `${startLeft + unitWidth * index}px`,
-              }}
-              className={prefix(...classNames)}
-            >
-              {shouldDisplayNumber && (
-                <div className={prefix("time-unit-scale") + " font-medium select-none"} style={{fontSize: "10px"}}>
-                  {index / OneSecondUnitSplitCount}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </>
+        if (isIntegerUnit)
+          classNames.push("time-unit-big");
+
+        return (
+          <div
+            key={index}
+            style={{
+              position: "absolute",
+              left: `${startLeft + unitWidth * index}px`,
+            }}
+            className={prefix(...classNames)}
+          >
+            {shouldDisplayNumber && (
+              <div className={prefix("time-unit-scale") + " font-medium select-none"} style={{ fontSize: "10px" }}>
+                {index / OneSecondUnitSplitCount}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 };

@@ -7,15 +7,15 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps, RawStaticPropProps, IStaticProps } from './types/track';
-import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateStaticPropAction, HydrateStaticPropParams, IAnimationEngine } from './types/engine';
+import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps, RawStaticPropProps, IStaticProps, TrackSideEffectCallback } from './types/track';
+import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams, IAnimationEngine } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
 import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
 import { js_interpolateNumber } from './utils/interpolateNumber';
-
+import { cloneDeep } from 'lodash';
 // import wasmUrl from "../wasm/pkg/rust_bg.wasm"
 
 import init, {
@@ -28,6 +28,7 @@ import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
 import { DiskProjectProps } from '@vxengine/types/engine';
+import { defaultSideEffects } from './defaultSideEffects';
 
 const DEBUG_REFRESHER = false;
 const DEBUG_RERENDER = false;
@@ -41,9 +42,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
 
-  private _splinesCache: Record<string, any> = {}
+  private _splinesCache: Map<string, any> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
+  private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
 
   private _currentTimeline: ITimeline;
   private _currentTime: number = 0;
@@ -52,18 +54,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _cameraRequiresPerspectiveMatrixRecalculation;
   private readonly _propertiesRequiredToRecalculateCamera = ['fov', 'near', 'far', 'zoom'];
 
-  private readonly _IS_DEVELOPMENT: boolean = false;
-  private readonly _IS_PRODUCTION: boolean = false;
+  private _IS_DEVELOPMENT: boolean = false;
+  private _IS_PRODUCTION: boolean = false;
 
   static readonly ENGINE_PRECISION = 4
 
-  constructor(nodeEnv: "production" | "development" | "test") {
-    super(new Events());
+  static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
 
-    if (nodeEnv === "production")
-      this._IS_PRODUCTION = true;
-    else if (nodeEnv === "development")
-      this._IS_DEVELOPMENT = true;
+  constructor() {
+    super(new Events());
 
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
     console.log("VXEngine AnimationEngine: Created instance with ID:", this._id);
@@ -72,8 +71,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._wasmReady = this._initializeWasm();
     this._currentTimeline = null
   }
-
-
 
 
   /**
@@ -140,9 +137,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       console.error('AnimationEngine: Error caching splines:', error);
     });
 
-    // Set the editor data
-    useTimelineManagerAPI.getState().setEditorData(rawObjects, rawSplines);
-    useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
+    if (this._IS_DEVELOPMENT) {
+      // Set the editor data
+      useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines));
+      useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
+    }
   }
 
 
@@ -180,6 +179,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     return this._currentTime;
   }
 
+  getSpline(splineKey: string) {
+    return this._splinesCache.get(splineKey)
+  }
+
 
 
 
@@ -188,7 +191,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
   * @param timelines - A record of timelines to load.
   */
-  loadProject(diskData: DiskProjectProps) {
+  loadProject(diskData: DiskProjectProps, nodeEnv: "production" | "development") {
+    if (nodeEnv === "production")
+      this._IS_PRODUCTION = true;
+    else if (nodeEnv === "development")
+      this._IS_DEVELOPMENT = true;
+
     const timelines = diskData.timelines
     useAnimationEngineAPI.setState({ projectName: diskData.projectName })
 
@@ -273,9 +281,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Check if is already playing or the current time has exceeded the toTime
     if (this.isPlaying
       || (toTime !== undefined && toTime <= this._currentTime)
-    ) {
+    )
       return;
-    }
 
     this.setIsPlaying(true);
 
@@ -322,6 +329,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Add object to editor data
     this._addToEditorData(vxObject);
+
+    // Initialize all Side Effects
+    Object.values(vxObject.params).forEach(param => {
+      const sideEffect = param.sideEffect;
+      const trackKey = `${vxkey}.${param.propertyPath}`
+      if (sideEffect)
+        this.registerSideEffect(trackKey, sideEffect)
+    })
 
     // Cache the THREE.Object3D reference
     const object3DRef = this._cacheObject3DRef(vxObject);
@@ -370,6 +385,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return object3DRef;
     }
     return null;
+  }
+
+
+
+  public registerSideEffect(trackKey: string, callback: TrackSideEffectCallback): void {
+    this._sideEffectCallbacks.set(trackKey, callback);
+  }
+
+  public getSideEffect(trackKey: string): TrackSideEffectCallback {
+    return this._sideEffectCallbacks.get(trackKey);
   }
 
 
@@ -631,12 +656,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     object3DRef: THREE.Object3D,
     interpolatedValue: number
   ) {
+    const trackKey = `${vxkey}.${propertyPath}`;
     if (DEBUG_OBJECT_INIT) console.log(`Updating property ${propertyPath} for ${vxkey} with value`, interpolatedValue);
 
-    const wasPropertySpecial = this._handleSpecialProperties(vxkey, propertyPath, object3DRef, interpolatedValue);
+    this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
 
-    if (!wasPropertySpecial)
-      this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
+    // const sideEffect = this._sideEffectCallbacks.get(trackKey) || AnimationEngine.defaultSideEffects[propertyPath];
+    // if(sideEffect)
+    //   sideEffect(
+    //     this,  
+    //     vxkey,
+    //     propertyPath,
+    //     object3DRef,
+    //     interpolatedValue
+    //   );
 
     this._checkCameraUpdateRequirement(vxkey, propertyPath);
 
@@ -660,35 +693,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._propertiesRequiredToRecalculateCamera.includes(propertyPath)
     ) {
       this._cameraRequiresPerspectiveMatrixRecalculation = true;
-    }
-  }
-
-
-
-
-
-
-  /**
-   * Handles special properties that require custom logic.
-   * @param vxkey - The unique identifier for the object.
-   * @param propertyPath - The property path to check.
-   * @param object3DRef - Reference to the THREE.Object3D instance.
-   * @param value - The value to apply.
-   * @returns True if a special property was handled, false otherwise.
-   */
-  private _handleSpecialProperties(
-    vxkey: string,
-    propertyPath: string,
-    object3DRef: THREE.Object3D,
-    value: number | THREE.Vector3
-  ): boolean {
-    switch (propertyPath) {
-      case 'splineProgress':
-        this._applySplinePosition(object3DRef, vxkey, (value as number) / 100);
-        return true;
-      // Add more special properties here if necessary
-      default:
-        return false;
     }
   }
 
@@ -848,30 +852,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /**
-   * Applies the spline position to the object based on the spline progress.
-   * @param object3DRef - Reference to the THREE.Object3D instance.
-   * @param vxkey - The unique identifier for the object.
-   * @param splineProgress - The progress along the spline (0 to 1).
-   */
-  private _applySplinePosition(object3DRef: THREE.Object3D, vxkey: string, splineProgress: number) {
-    const splineKey = `${vxkey}.spline`;
-    const spline = this._splinesCache[splineKey];
-
-    const interpolatedPosition = spline.get_point(splineProgress);
-
-    // Apply the interpolated position to the object
-    object3DRef.position.set(
-      interpolatedPosition.x,
-      interpolatedPosition.y,
-      interpolatedPosition.z
-    );
-  }
-
-
-
-
-
 
   /**
    * Retrieves a point on the spline at the specified progress.
@@ -880,7 +860,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns The point on the spline at the given progress.
    */
   getSplinePointAt(splineKey: string, progress: number): { x: number; y: number; z: number } | null {
-    const spline = this._splinesCache[splineKey];
+    const spline = this._splinesCache.get(splineKey);
     return spline.get_point(progress);
   }
 
@@ -1024,7 +1004,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5);
 
       // Cache the WebAssembly spline object
-      this._splinesCache[key] = wasmSpline;
+      this._splinesCache.set(key, wasmSpline);
     }
   }
 
@@ -1300,13 +1280,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       rawObject = this._initRawObjectOnTimeline(vxkey);
     }
 
+
     switch (action) {
       case 'create': {
         const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
-        
+
         if (!propExists) {
           const edStaticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
-          const staticProp:IStaticProps = {
+          const staticProp: IStaticProps = {
             value: edStaticProp.value,
             vxkey: edStaticProp.vxkey,
             propertyPath: edStaticProp.propertyPath
@@ -1319,14 +1300,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       case 'update': {
-        const targetStaticProp = rawObject.staticProps.find(sp => 
-          `${sp.vxkey}.${sp.propertyPath}` === staticPropKey)
-        
-        if(targetStaticProp)
+        const targetStaticProp = rawObject.staticProps.find(sp =>
+          `${vxkey}.${sp.propertyPath}` === staticPropKey)
+
+        if (targetStaticProp)
           targetStaticProp.value = newValue;
         else
           console.warn(`AnimationEngine: Could not find staticProp with key ${staticPropKey}`)
-      
+
         break;
       }
 
@@ -1362,22 +1343,65 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param splineKey - The key identifying the spline.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  hydrateSpline(
-    action: 'create' | 'remove' | 'update',
-    splineKey: string,
-    reRender: boolean = true,
-  ) {
+  hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
+    const { action, splineKey, reRender, nodeIndex, newData } = params
     if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
     }
 
-    const splineState = useTimelineManagerAPI.getState().splines;
+    const timelineManagerAPI = useTimelineManagerAPI.getState();
+
+    const hydrateWasmSpline = () => {
+      const rawSpline = this.currentTimeline.splines[splineKey]
+      const spline = this._splinesCache.get(splineKey)
+      if (spline)
+        spline.free();
+
+      const newWasmSpline = new wasm_Spline(
+        rawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])),
+        false,
+        0.5
+      );
+      this._splinesCache.set(splineKey, newWasmSpline);
+    }
 
     switch (action) {
-      case "update": {
-        const spline = splineState[splineKey];
+      case "create": {
+        const edSpline = timelineManagerAPI.splines[splineKey];
 
+        const newRawSpline: RawSpline = {
+          splineKey: edSpline.splineKey,
+          vxkey: edSpline.vxkey,
+          nodes: [...edSpline.nodes]
+        }
+
+        // set the currentTimeline spline
+        if (!this.currentTimeline.splines)
+          this.currentTimeline.splines = {};
+
+        this.currentTimeline.splines[splineKey] = newRawSpline;
+
+        // Create the WebAssembly spline object in the cache if not already created
+        if (!this._splinesCache.get(splineKey)) {
+          const wasmSpline = new wasm_Spline(newRawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
+          this._splinesCache.set(splineKey, wasmSpline);
+        }
+        break;
+      }
+      case "remove": {
+        delete this.currentTimeline.splines[splineKey];
+
+        const spline = this._splinesCache.get(splineKey)
+        // Free the WebAssembly object in the cache
+        if (spline) {
+          spline.free();
+          this._splinesCache.delete(splineKey)
+        }
+        break;
+      }
+      case "clone": {
+        const spline = timelineManagerAPI.splines[splineKey];
         if (!spline) {
           console.warn(`AnimationEngine: Spline '${splineKey}' not found in spline state.`);
           return;
@@ -1392,48 +1416,34 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           }
         };
 
-        // Free the old WebAssembly spline object in the cache and update it
-        if (this._splinesCache[splineKey]) {
-          this._splinesCache[splineKey].free();
-        }
+        hydrateWasmSpline();
 
-        const newWasmSpline = new wasm_Spline(
-          spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])),
-          false,
-          0.5
-        );
-        this._splinesCache[splineKey] = newWasmSpline;
         break;
       }
+      case "updateNode": {
+        // Clone the entire splines object to make it mutable
+        const rawSpline = this.currentTimeline.splines[splineKey];
+        const newNodes = [...rawSpline.nodes];
+        newNodes[nodeIndex] = newData
 
-      case "create": {
-        const spline = splineState[splineKey];
+        rawSpline.nodes = newNodes;
 
-        // set the currentTimeline spline
-        if (!this.currentTimeline.splines)
-          this.currentTimeline.splines = {};
+        // Reassign the modified spline back to the splines object
+        this.currentTimeline.splines[splineKey] = rawSpline;
 
-        this.currentTimeline.splines[splineKey] = spline;
-
-        // Create the WebAssembly spline object in the cache if not already created
-        if (!this._splinesCache[splineKey]) {
-          const wasmSpline = new wasm_Spline(spline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
-          this._splinesCache[splineKey] = wasmSpline;
-        }
+        hydrateWasmSpline();
         break;
       }
+      case "removeNode": {
+        const rawSpline = this.currentTimeline.splines[splineKey];
+        const newNodes = [...rawSpline.nodes]; // Creates a shallow copy
+        newNodes.splice(nodeIndex, 1);
+        
+        rawSpline.nodes = newNodes
 
-      case "remove": {
-        delete this.currentTimeline.splines[splineKey];
-
-        // Free the WebAssembly object in the cache
-        if (this._splinesCache[splineKey]) {
-          this._splinesCache[splineKey].free();
-          delete this._splinesCache[splineKey];
-        }
+        hydrateWasmSpline();
         break;
       }
-
       default: {
         console.warn(`AnimationEngine: Unknown action '${action}' for hydrateSpline.`);
         return;

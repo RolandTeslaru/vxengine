@@ -162,6 +162,12 @@ export class Spline {
         return this;
     }
     /**
+    * @param {number} new_tension
+    */
+    change_tension(new_tension) {
+        wasm.spline_change_tension(this.__wbg_ptr, new_tension);
+    }
+    /**
     * @param {number} t
     * @returns {Vector3}
     */

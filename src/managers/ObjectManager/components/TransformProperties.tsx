@@ -118,7 +118,10 @@ const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
     const pushDialog = useUIManagerAPI(state => state.pushDialog);
 
     const handleSwitchToggle = () => {
-        pushDialog(<DANGER_UseSplinePath objVxKey={vxkey} isUsingSplinePath={settings["useSplinePath"]} /> , "danger")
+        pushDialog({
+            content: <DANGER_UseSplinePath objVxKey={vxkey} isUsingSplinePath={settings["useSplinePath"]} />, 
+            type: "danger"
+        })
     }
 
     return (

@@ -93,7 +93,7 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         const { vxkey } = vxobject
         let { parentKey } = vxobject
 
-        const type = icon ?? vxobject.ref.current.type;
+        const type = icon ?? vxobject.ref?.current?.type;
         const name = (vxobject as vxEntityProps).name ?? vxkey;
 
         if (nodesPresent[vxkey] === true) {

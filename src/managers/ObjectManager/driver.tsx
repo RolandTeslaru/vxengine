@@ -2,12 +2,13 @@ import { TransformControls, useCamera } from "@react-three/drei";
 import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
-import { modifyPropertyValue, useTimelineManagerAPI } from "../TimelineManager/store";
+import { modifyPropertyValue, truncateToDecimals, useTimelineManagerAPI } from "../TimelineManager/store";
 import { vxEntityProps, vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
+import { TransformControls as TransfromControlsIMPL } from "three-stdlib";
 
 const axisMap = {
   X: 'x',
@@ -60,8 +61,8 @@ export const ObjectManagerDriver = () => {
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
   const vxkey = vxobject?.vxkey;
-  const vxRef: THREE.Object3D = vxobject?.ref.current;
-  const type = vxRef?.type
+  const vxObjectRef: THREE.Object3D = vxobject?.ref?.current;
+  const type = vxObjectRef?.type
   const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
 
   const setSplineNodePosition = useTimelineManagerAPI(state => state.setSplineNodePosition);
@@ -119,21 +120,10 @@ export const ObjectManagerDriver = () => {
         dispatchVirtualEntityChangeEvent(e, vxobject);
         break;
       }
-      case "keyframeNode":
-        handleKeyframeNodeChange();
-        break;
       case "splineNode":
         handleSplineNodeChange();
     }
   };
-
-  const handleTransformChangeStart = () => {
-    console.log("Starting Trasnform Change")
-  }
-  const handleTransformChangeEnd = () => {
-    console.log("Ending Trasnform Change")
-  }
-
 
   const handleSpaceTransform = (axes: string[], vxkey: string,) => {
     axes.forEach((axisLetter: string) => {
@@ -145,13 +135,13 @@ export const ObjectManagerDriver = () => {
 
       switch (transformMode) {
         case 'translate':
-          newValue = vxRef.position[propertyAxis];
+          newValue = vxObjectRef.position[propertyAxis];
           break;
         case 'rotate':
-          newValue = vxRef.rotation[propertyAxis]
+          newValue = vxObjectRef.rotation[propertyAxis]
           break;
         case 'scale':
-          newValue = vxRef.scale[propertyAxis]
+          newValue = vxObjectRef.scale[propertyAxis]
           break;
       }
       // Call the appropriate debounced function
@@ -169,13 +159,11 @@ export const ObjectManagerDriver = () => {
   //  Handle ENTITIES
   // 
   const handleEntityChange = (e) => {
-    if (!vxRef)
+    if (!vxObjectRef)
       return
     const controls = e.target;
     const axis = controls.axis;
     if (!axis) return
-
-    const vxkey = vxobject?.vxkey;
 
     const axes = axis.split('');
 
@@ -185,9 +173,8 @@ export const ObjectManagerDriver = () => {
     else if (transformSpace === "local") {
       switch (transformMode) {
         case 'translate': {
-          currentProps.current.position = vxRef.position.clone()
+          currentProps.current.position = vxObjectRef.position.clone()
           Array('x', 'y', 'z').forEach(axisLetter => {
-
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
             const newValue = currentProps.current.position[axisLetter]
             const oldValue = intialProps.current.position[axisLetter];
@@ -206,7 +193,7 @@ export const ObjectManagerDriver = () => {
         }
         case 'rotate': {
           // Get the current world quaternion
-          vxRef.getWorldQuaternion(currentProps.current.rotation);
+          vxObjectRef.getWorldQuaternion(currentProps.current.rotation);
 
           // Convert both initial and current quaternions to Euler angles for comparison
           const initialEuler = new THREE.Euler().setFromQuaternion(intialProps.current.rotation, 'XYZ');
@@ -236,7 +223,7 @@ export const ObjectManagerDriver = () => {
 
         case 'scale': {
           // Get the current world scale
-          vxRef.getWorldScale(currentProps.current.scale);
+          vxObjectRef.getWorldScale(currentProps.current.scale);
 
           ['x', 'y', 'z'].forEach(axisLetter => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
@@ -262,32 +249,6 @@ export const ObjectManagerDriver = () => {
   }
 
   // 
-  //  Handle KEYFRAME Nodes 
-  // 
-  const handleKeyframeNodeChange = throttle(() => {
-    const { data, ref } = (vxobject as vxKeyframeNodeProps);
-    const setKeyframeValue = useTimelineManagerAPI.getState().setKeyframeValue;
-
-    // (data.keyframeKeys as string[])?.forEach(
-    //   (keyframeKey) => {
-    //     const keyframe = useTimelineManagerAPI.getState().keyframes[keyframeKey]
-    //     // Update keyframe in the store from the the ref stored in the utility node 
-    //     const newPosition = ref.current.position;
-    //     const axis = getKeyframeAxis(keyframe.propertyPath);
-    //     setKeyframeValue(keyframeKey, newPosition[axis]);
-
-    //     updateProperty(
-    //       vxobject.vxkey,
-    //       keyframe.propertyPath,
-    //       newPosition[axis]
-    //     )
-    //   }
-    // );
-  }, 300)
-
-
-
-  // 
   //  Handle SPLINE Nodes 
   // 
   const handleSplineNodeChange = () => {
@@ -306,8 +267,9 @@ export const ObjectManagerDriver = () => {
 
   // Set the Axis of the controls when a node is selected
   useEffect(() => {
-    const controls = transformControlsRef.current as any;
     if (!vxobject) return
+
+    const controls = transformControlsRef?.current as any;
     if (!controls) return
 
     setTransformMode("translate");
@@ -315,9 +277,9 @@ export const ObjectManagerDriver = () => {
     // We need to store initial values when dealing with local space, 
     // because we need to compare them when the entity is changed
     if (transformSpace === "local") {
-      vxRef.getWorldPosition(intialProps.current.position);
-      vxRef.getWorldQuaternion(intialProps.current.rotation);
-      vxRef.getWorldScale(intialProps.current.scale);
+      vxObjectRef.getWorldPosition(intialProps.current.position);
+      vxObjectRef.getWorldQuaternion(intialProps.current.rotation);
+      vxObjectRef.getWorldScale(intialProps.current.scale);
     }
 
     if (vxobject.type === "splineNode") {
@@ -333,13 +295,35 @@ export const ObjectManagerDriver = () => {
     }
   }, [vxobject])
 
+
+  useEffect(() => {
+    const controlsImpl = transformControlsRef?.current
+    if (!controlsImpl) return
+
+    const handleDraggingChanged = (event: any) => {
+      if (event.value) {
+        console.log('Transform started')
+      } else {
+        console.log('Transform ended')
+      }
+    }
+
+    // @ts-expect-error
+    controlsImpl.addEventListener('dragging-changed', handleDraggingChanged)
+
+    return () => {
+      // @ts-expect-error
+      controlsImpl.removeEventListener('dragging-changed', handleDraggingChanged)
+    }
+  }, [!isTransformDisabled])
+
   return (
     <>
       {/* Object Transform Controls */}
-      {vxRef && !isTransformDisabled && (
+      {vxObjectRef && !isTransformDisabled && (
         <TransformControls
           ref={transformControlsRef}
-          object={vxRef}
+          object={vxObjectRef}
           mode={transformMode}
           onObjectChange={handleTransformChange}
           space={transformSpace}
@@ -348,3 +332,19 @@ export const ObjectManagerDriver = () => {
     </>
   );
 };
+
+const handleSplineNodeChange = (
+  vxSplineNode: vxSplineNodeProps
+) => {
+  const { index, splineKey, ref } = vxSplineNode;
+  const vxNodeKey = `${splineKey}.node${index}`;
+  const newPosition = ref.current.position;
+
+  updateProperty(vxNodeKey, 'position.x', newPosition.x)
+  updateProperty(vxNodeKey, 'position.y', newPosition.y)
+  updateProperty(vxNodeKey, 'position.z', newPosition.z)
+
+  const setSplineNodePosition = useTimelineManagerAPI.getState().setSplineNodePosition;
+  setSplineNodePosition(splineKey, index, newPosition)
+}
+

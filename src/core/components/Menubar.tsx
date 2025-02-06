@@ -51,8 +51,8 @@ const LogoButton = () => {
                 <VXEngineLogo />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => pushDialog(<INFO_About/>, "normal", "!p-0")}>About VXEngine</MenubarItem>
-                <MenubarItem onClick={() => pushDialog(<INFO_Settings/> ,"normal")}>Settings</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<INFO_About/>, type: "normal", className:"!p-0"})}>About VXEngine</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<INFO_Settings/> , type:"normal"})}>Settings</MenubarItem>
             </MenubarContent>
         </MenubarMenu >
     )

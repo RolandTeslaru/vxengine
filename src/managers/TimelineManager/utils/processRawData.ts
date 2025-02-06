@@ -2,8 +2,9 @@ import { IKeyframe, ISpline, IStaticProps, ITrack, RawObjectProps, RawSpline } f
 import { EditorObjectProps } from "../types/store";
 import { buildTrackTree } from "./trackDataProcessing";
 
-import { getNodeEnv } from "@vxengine/constants";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
+import { v4 as uuidv4 } from 'uuid';
+import { IS_DEVELOPMENT } from "@vxengine/engine";
 
 export default function processRawData(
     rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>
@@ -20,7 +21,6 @@ export default function processRawData(
 
         // Create Track Record
         rawObj.tracks.forEach((rawTrack) => {
-            const keyframeIds: string[] = [];
             const trackKey = `${rawObj.vxkey}.${rawTrack.propertyPath}`;
 
             const newTrack: ITrack = {
@@ -31,7 +31,7 @@ export default function processRawData(
             };
             // Create Keyframe Record
             rawTrack.keyframes.forEach((rawKeyframe) => {
-                const keyframeId = rawKeyframe.id || `keyframe-${Date.now()}`;
+                const keyframeId = `keyframe-${uuidv4()}`;
                 const newKeyframe: IKeyframe = {
                     id: keyframeId,
                     vxkey: rawObj.vxkey,
@@ -78,15 +78,17 @@ export default function processRawData(
         };
     });
 
-    
-    const IS_DEVELOPMENT = getNodeEnv() === "development"
     if(IS_DEVELOPMENT){
         useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
     }
 
     // Just to be sure recreate the edSpline object
     Object.values(rawSplines).forEach(rawSpline => {
-        splines[rawSpline.splineKey] = rawSpline
+        splines[rawSpline.splineKey] = {
+            splineKey: rawSpline.splineKey,
+            vxkey: rawSpline.vxkey,
+            nodes: rawSpline.nodes.map(node => [...node]) 
+        }
     })
 
     return { editorObjects, tracks, staticProps, splines };

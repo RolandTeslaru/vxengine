@@ -21,7 +21,8 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
 
   setIsPlaying(value: boolean): void;
   setCurrentTimeline(timelineId: string): void;
-  loadProject(diskData: DiskProjectProps): void;
+  loadProject(diskData: DiskProjectProps, nodeEnv: "production" | "development"
+  ): void;
   setCurrentTime(time: number, isTick?: boolean);
   getCurrentTime(): number
 
@@ -53,3 +54,16 @@ export type HydrateStaticPropParams<A extends HydrateKeyframeAction> = {
   staticPropKey: string;
   reRender?: boolean;
 } & (A extends 'update' ? { newValue: number } : { newValue?: undefined });
+
+export type HydrateSplineActions = "create" | "remove" | "clone" | "updateNode" | "removeNode"
+
+export type HydrateSplineParams<A extends HydrateSplineActions> = {
+  action: A,
+  splineKey: string,
+  reRender?: boolean
+} & (A extends "updateNode" 
+  ? { nodeIndex: number, newData: [number, number, number] }
+  : A extends "removeNode" 
+  ? { nodeIndex: number, newData?: undefined }
+  : { nodeIndex?: undefined, newData?: undefined}
+)

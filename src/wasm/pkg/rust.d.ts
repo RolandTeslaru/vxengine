@@ -51,6 +51,10 @@ export class Spline {
 */
   constructor(points: (Vector3)[], closed: boolean, tension: number);
 /**
+* @param {number} new_tension
+*/
+  change_tension(new_tension: number): void;
+/**
 * @param {number} t
 * @returns {Vector3}
 */
@@ -105,6 +109,7 @@ export interface InitOutput {
   readonly vector3_lerp: (a: number, b: number, c: number) => number;
   readonly __wbg_spline_free: (a: number, b: number) => void;
   readonly spline_new: (a: number, b: number, c: number, d: number) => number;
+  readonly spline_change_tension: (a: number, b: number) => void;
   readonly spline_get_point: (a: number, b: number) => number;
   readonly cubic_bezier: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly cubic_bezier_derivative: (a: number, b: number, c: number, d: number, e: number) => number;

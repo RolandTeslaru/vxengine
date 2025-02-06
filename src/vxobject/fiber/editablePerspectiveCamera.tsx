@@ -9,7 +9,7 @@ import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
-import { getNodeEnv } from "@vxengine/constants";
+import { IS_DEVELOPMENT } from "@vxengine/engine";
 
 declare module 'three' {
     interface PerspectiveCamera {
@@ -40,7 +40,6 @@ const perspectiveCameraParams: VXObjectParams = {
 }
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
-    const IS_DEVELOPMENT = getNodeEnv() === "development"
     const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)

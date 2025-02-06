@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { useTimelineManagerAPI } from "..";
-import { getVXEngineState } from "@vxengine/engine";
+import { animationEngineInstance } from "@vxengine/engine";
 import { truncateToDecimals } from "../store";
 import { parserPixelToTime, parserTimeToPixel } from "../utils/deal_data";
 import { cursorStartLeft, handleCursorMutation } from "./components/TimelineArea/EditorCursor/utils";
@@ -93,8 +93,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     setTime: (time) => {
         time = truncateToDecimals(time);
 
-        const animationEngine = getVXEngineState().getState().animationEngine;
-        animationEngine.setCurrentTime(time, false);
+        animationEngineInstance.setCurrentTime(time, false);
 
         const cursorLeft = parserTimeToPixel(time, cursorStartLeft, get().scale);
         handleCursorMutation(cursorLeft);
@@ -103,8 +102,8 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         let time = parserPixelToTime(left, cursorStartLeft)
         time = truncateToDecimals(time);
 
-        const animationEngine = getVXEngineState().getState().animationEngine;
-        animationEngine.setCurrentTime(time, false);
+        
+        animationEngineInstance.setCurrentTime(time, false);
 
         handleCursorMutation(left);
     },
@@ -114,8 +113,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         const track = timelineManagerState.tracks[trackKey]
         if (!track) return
 
-        const animationEngine = getVXEngineState().getState().animationEngine
-        const time = animationEngine.getCurrentTime();
+        const time = animationEngineInstance.getCurrentTime();
 
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -129,8 +127,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         const track = timelineManagerState.tracks[trackKey]
         if (!track) return
 
-        const animationEngine = getVXEngineState().getState().animationEngine
-        const time = animationEngine.getCurrentTime();
+        const time = animationEngineInstance.getCurrentTime();
 
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -243,8 +240,7 @@ export const moveToNextKeyframeSTATIC = (trackKey: string) => {
     const track = timelineManagerAPIState.tracks[trackKey]
     if (!track) return
 
-    const animationEngine = getVXEngineState().getState().animationEngine
-    const time = animationEngine.getCurrentTime();
+    const time = animationEngineInstance.getCurrentTime();
 
     const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -260,8 +256,7 @@ export const moveToPreviousKeyframeSTATIC = (trackKey: string) => {
     const track = timelineManagerAPIState.tracks[trackKey]
     if (!track) return
 
-    const animationEngine = getVXEngineState().getState().animationEngine
-    const time = animationEngine.getCurrentTime();
+    const time = animationEngineInstance.getCurrentTime();
 
     const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 

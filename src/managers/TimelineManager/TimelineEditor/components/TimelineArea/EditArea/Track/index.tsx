@@ -11,8 +11,10 @@ export type EditRowProps = {
 };
 
 const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
-    const orderedKeyframeKeys = useTimelineManagerAPI(state => state.tracks[trackKey].orderedKeyframeKeys);
+    const orderedKeyframeKeys = useTimelineManagerAPI(state => state.tracks[trackKey]?.orderedKeyframeKeys);
     const selectedKeyframeKeysOnTrack = useTimelineEditorAPI(state => state.selectedKeyframeKeys[trackKey])
+
+    if(!orderedKeyframeKeys) return null
 
     return (
         <>

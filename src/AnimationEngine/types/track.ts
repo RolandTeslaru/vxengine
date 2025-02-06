@@ -1,3 +1,4 @@
+import { AnimationEngine } from "../engine";
 
 
 export interface VXVector2 {
@@ -20,12 +21,23 @@ export interface ITimeline {
     length: number
 }
 
+export type TrackSideEffectCallback = (
+    animationEngine: AnimationEngine, 
+    vxkey: string,
+    propertyPath: string,
+    object3DRef: any, 
+    interpolatedValue: number
+) => void
+
 export interface ITrack {
     vxkey: string,
     propertyPath: string;
     keyframes: Record<string, IKeyframe>;
-    orderedKeyframeKeys: string[]
+    orderedKeyframeKeys: string[];
+    sideEffect?: TrackSideEffectCallback
 }
+
+
 export interface IStaticProps {
     vxkey: string
     propertyPath: string;
@@ -104,7 +116,7 @@ export interface edObjectProps {
 export interface RawObjectProps {
     vxkey: string,
     tracks: RawTrackProps[]
-    staticProps: IStaticProps[]
+    staticProps: RawStaticPropProps[]
     positionSplineKey?: string
 }
 

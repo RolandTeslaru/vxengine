@@ -11,6 +11,6 @@ interface NofiticationManagerProps {
 
 }
 
-export const useNotificationManager = create<NofiticationManagerProps>((set, get) => ({
+export const useNotificationManagerAPI = create<NofiticationManagerProps>((set, get) => ({
     
 }))

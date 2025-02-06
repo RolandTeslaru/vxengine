@@ -11,12 +11,13 @@ interface ValueRendererProps {
     vxkey: string
     propertyPath: string
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+    onChange?: (newValue: number) => void;
 }
 
 const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey,propertyPath) || getNestedProperty(ref, propertyPath) || 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxObject, vxkey, propertyPath, inputProps}) => {
+    ({ vxObject, vxkey, propertyPath, inputProps, onChange}) => {
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
         const ref = vxObject.ref.current;
@@ -41,9 +42,13 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
-            modifyPropertyValue("press", vxkey, propertyPath, newValue);
 
-            invalidate();
+            if(onChange){
+                onChange(newValue);
+            }else {
+                modifyPropertyValue("press", vxkey, propertyPath, newValue);
+                invalidate();
+            }
         }, [vxObject]);
  
         const handleSplineNodeChange = useCallback((newValue: number) => {

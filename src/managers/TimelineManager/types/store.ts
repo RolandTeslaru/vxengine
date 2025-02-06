@@ -42,7 +42,8 @@ export interface TimelineMangerAPIProps {
     insertNode: (props: {splineKey: string, index: number}) => void
     removeNode: (props: {splineKey: string, index: number}) => void
     setSplineNodePosition:(splineKey: string, nodeIndex: number, newPosition: {x: number, y:number, z:number}) => void;
-
+    setSplineNodeAxisValue: (splineKey: string, nodeIndex: number, axis: "x" | "y" | "z",  newValue: number, reRender?: boolean) => void;
+    
     // Keyframe functions
     createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;
     removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;

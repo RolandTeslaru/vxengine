@@ -5,15 +5,13 @@
 import { create } from 'zustand';
 import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
 import { useObjectManagerAPI } from './managerStore';
-import { getNodeEnv } from '@vxengine/constants';
+import { IS_DEVELOPMENT } from '@vxengine/engine';
 
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     objects: {},
     addObject: (vxobject, props = {}) => set((state) => {
         const { addToTree, icon} = props
         
-        const IS_DEVELOPMENT = getNodeEnv() === "development";
-
         // Generate Object Tree 
         if(IS_DEVELOPMENT){
             if(addToTree === undefined || addToTree === true){

@@ -1,5 +1,5 @@
 import { useThree } from '@react-three/fiber'
-import { useVXEngine } from '@vxengine/engine'
+import { animationEngineInstance, useVXEngine } from '@vxengine/engine'
 import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { LUT3DEffect, BlendFunction } from 'postprocessing'
@@ -26,8 +26,6 @@ export const EditableLUT = forwardRef(function LUT(
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
 
-    const animationEngine = useVXEngine((state) => state.animationEngine);
-
     useLayoutEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -43,7 +41,7 @@ export const EditableLUT = forwardRef(function LUT(
         }
 
         addObject(newVxObject)
-        animationEngine.initObjectOnMount(newVxObject);
+        animationEngineInstance.initObjectOnMount(newVxObject);
 
         return () => removeObject(vxkey);
     }, [])

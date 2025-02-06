@@ -5,7 +5,7 @@ import ChevronRight from "@geist-ui/icons/chevronRight"
 import { moveToNextKeyframeSTATIC, moveToPreviousKeyframeSTATIC } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
-import { getVXEngineState } from '@vxengine/engine';
+import { animationEngineInstance } from '@vxengine/engine';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu';
 import PopoverShowTrackData from './Popovers/PopoverShowTrackData';
 import PopoverShowStaticPropData from './Popovers/PopoverShowStaticPropData';
@@ -31,8 +31,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
 
     // Initialize
     useLayoutEffect(() => {
-        const animationEngine = getVXEngineState().getState().animationEngine;
-        const time = animationEngine.getCurrentTime();
+        const time = animationEngineInstance.getCurrentTime();
         checkIfOnKeyframe({ time })
     }, [trackKey, orderedKeyframeKeys])
 
@@ -119,7 +118,10 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
                 {isPropertyTracked &&
                     <ContextMenuItem
                         onClick={(e) => {
-                            pushDialogStatic(<ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, "alert")
+                            pushDialogStatic({
+                                content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, 
+                                type: "alert"
+                            })
                         }}
                     >
                         <p className=' text-red-600'>
@@ -128,7 +130,10 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
                     </ContextMenuItem>
                 }
                 <ContextMenuItem
-                    onClick={() => pushDialogStatic(<ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, "alert")}
+                    onClick={() => pushDialogStatic({
+                        content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, 
+                        type: "alert"
+                    })}
                 >
                     <p className=' text-red-600'>
                         Remove Property

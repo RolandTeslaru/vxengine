@@ -5,8 +5,8 @@
 import { create } from 'zustand';
 import { produce } from "immer"
 import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
-import { getVXEngineState } from '@vxengine/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
+import { animationEngineInstance } from '@vxengine/engine';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
@@ -56,11 +56,10 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             set(produce((state: ObjectSettingsStoreProps) => setSettingLogic(state, vxkey, settingKey, settingValue)));
 
             // Refresh the animation engine settings outside of the produce block
-            const animationEngine = getVXEngineState().getState().animationEngine
             if (isDefaultValue) {
-                animationEngine.hydrateSetting("remove", settingKey, vxkey);
+                animationEngineInstance.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngine.hydrateSetting("set", settingKey, vxkey);
+                animationEngineInstance.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
@@ -76,12 +75,11 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             // Notify the animation engine
             const defaultSettings = get().defaultSettings || {};
             const isDefaultValue = defaultSettings[vxkey]?.[settingKey] === newValue;
-            const animationEngine = getVXEngineState().getState().animationEngine;
 
             if (isDefaultValue) {
-                animationEngine.hydrateSetting("remove", settingKey, vxkey);
+                animationEngineInstance.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngine.hydrateSetting("set", settingKey, vxkey);
+                animationEngineInstance.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write

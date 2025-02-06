@@ -48,7 +48,7 @@ const AlertDialogContent = React.forwardRef<
       <AlertDialogPrimitive.Content
         ref={ref}
         className={cn(
-          `fixed left-[50%] ${blockTransparency ? " " : " backdrop-blur-md bg-opacity-90 "}  py-6 px-8 top-[50%] z-50 grid w-auto max-w-xl translate-x-[-50%] translate-y-[-50%] gap-4 border border-neutral-600 border-opacity-80 bg-neutral-950 shadow-lg duration-200 overflow-hidden
+          `fixed left-[50%] ${blockTransparency ? " " : " backdrop-blur-md bg-opacity-90 "}  py-6 px-8 top-[50%] z-50 grid w-auto translate-x-[-50%] translate-y-[-50%] gap-4 border border-neutral-600 border-opacity-80 bg-neutral-900 shadow-lg duration-200 overflow-hidden
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
          data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
          data-[state=open]:slide-in-from-top-[48%] sm:rounded-3xl`,

@@ -15,8 +15,8 @@ const handleShowSpline = (objectVxKey: string ) => {
 }
 
 const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
-    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxSpline.objectVxKey])
-
+    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxSpline?.objectVxKey])
+    
     return (
         <CollapsiblePanel
             title='Spline'
@@ -29,7 +29,7 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
                     checked={additionalSettings?.["showPositionPath"]}
                 />
             </div>
-            <div className="flex flex-col w-full gap-2 border-t-neutral-800 border-t">
+            <div className="flex flex-col w-full gap-1 ">
                 <p className="text-xs font-light my-auto text-neutral-400">progress</p>
                 <PropInput
                     param={{ type: "slider", min: 0, max: 100, step: 0.5 }}

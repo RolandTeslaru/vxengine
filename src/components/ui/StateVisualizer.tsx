@@ -110,9 +110,6 @@ const State_ObjectPropertyAPI = () => {
         ...sanitizedState,
         properties: filterProperties(sanitizedState.properties, searchQuery),
     };
-
-    const IS_PRODUCTION = useVXEngine(state => state.IS_PRODUCTION)
-
     return (
         <>
             <div className=" absolute right-2 top-9 gap-2 z-10">

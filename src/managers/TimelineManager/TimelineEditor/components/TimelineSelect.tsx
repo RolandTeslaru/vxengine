@@ -1,6 +1,6 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
-import { useVXEngine } from '@vxengine/engine';
+import { animationEngineInstance, useVXEngine } from '@vxengine/engine';
 import React from 'react'
 
 
@@ -8,13 +8,11 @@ const TimelineSelect = () => {
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID);
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
-    const animationEngine = useVXEngine(state => state.animationEngine)
-
     return (
         <Select
             defaultValue={currentTimelineID}
             onValueChange={(value) => {
-                animationEngine.setCurrentTimeline(value)
+                animationEngineInstance.setCurrentTimeline(value)
             }}
             value={currentTimelineID}
         >

@@ -6,9 +6,6 @@ export interface SourceManagerAPIProps {
     autoSaveInterval: number,
     setAutoSaveInterval: (interval: number) => void,
 
-    showSyncPopup: boolean,
-    setShowSyncPopup: (value: boolean) => void
-
     getLocalStorageProject: (projectName: string) => DiskProjectProps | null
 
     saveDataToDisk: (props?: { force?: boolean, reloadOnSuccess?: boolean}) => void,

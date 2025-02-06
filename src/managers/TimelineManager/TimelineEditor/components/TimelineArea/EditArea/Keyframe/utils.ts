@@ -4,13 +4,13 @@ import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@v
 import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { isEqual } from 'lodash';
 import { produce } from 'immer';
-import { getVXEngineState } from '@vxengine/engine';
 import { segmentStartLeft } from '../Track/TrackSegment';
 import { keyframeStartLeft } from '.';
 import { handleTrackSegmentMutation } from '../Track/utils';
 import { invalidate } from '@react-three/fiber';
 import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
 import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { animationEngineInstance } from '@vxengine/engine';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();
@@ -78,8 +78,6 @@ export const handleKeyframeDrag = (
     const { selectedKeyframesFlatMap, scale, addChange } = useTimelineEditorAPI.getState();
     const setKeyframeTime = useTimelineManagerAPI.getState().setKeyframeTime
 
-    const animationEngine = getVXEngineState().getState().animationEngine;
-
     if (selectedKeyframesFlatMap.length === 0)
         selectKeyframe(trackKey, keyframeKey)
     // Single Keyframe Drag
@@ -103,7 +101,7 @@ export const handleKeyframeDrag = (
             _newTime = truncateToDecimals(_newTime)
 
             // Handle Raw Timeline Update
-            animationEngine.hydrateKeyframe({
+            animationEngineInstance.hydrateKeyframe({
                 trackKey: _trackKey, 
                 action: "updateTime", 
                 keyframeKey: _kfKey, 

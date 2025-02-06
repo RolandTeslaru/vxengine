@@ -1,5 +1,5 @@
 import { useAnimationEngineEvent } from "@vxengine/AnimationEngine";
-import { getVXEngineState } from "@vxengine/engine";
+import { animationEngineInstance } from "@vxengine/engine";
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 
 const parseTimeToTimeRenderString = (time: number): string => {
@@ -15,8 +15,7 @@ const TimeRender = () => {
 
   useEffect(() => {
     if(displayRef.current){
-      const animationEngine = getVXEngineState().getState().animationEngine;
-      const initialTime = animationEngine.getCurrentTime();
+      const initialTime = animationEngineInstance.getCurrentTime();
 
       displayRef.current.textContent = parseTimeToTimeRenderString(initialTime)
     }

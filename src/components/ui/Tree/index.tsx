@@ -8,11 +8,11 @@ type TreeNodeType = {
 }
 
 interface NodeTemplateProps {
-    NodeTemplate: React.FC<{ 
-        children: React.ReactNode, 
-        className?: string, 
-        onClick?: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void, 
-        onContextMenu?: (e:  React.MouseEvent<HTMLElement, MouseEvent>) => void, 
+    NodeTemplate: React.FC<{
+        children: React.ReactNode,
+        className?: string,
+        onClick?: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void,
+        onContextMenu?: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void,
         listClassNames?: string
     }>;
 }
@@ -27,8 +27,98 @@ interface TreeProps {
     className?: string
 }
 
-const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys, className, ...restNodeProps }) => {
+interface TreeNodeProps {
+    node: TreeNodeType
+    level: number
+    siblings: number
+    indexToParent: number
+    size?: "sm" | "md"
+    renderNodeContent?: RenderNodeContentProps
+}
+
+const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, className, ...restNodeProps }) => {
+    const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>(defaultExpandedKeys)
     const childrenLength = Object.values(tree).length
+
+    const toggleExpand = (key: string) => {
+        setExpandedKeys((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+    }
+
+    const TreeNode: React.FC<TreeNodeProps> =
+        ({ node, level, siblings, indexToParent, renderNodeContent, size = "sm" }) => {
+            const isFinalSibling = siblings - 1 === indexToParent
+            const isExpanded = expandedKeys[node.key] || false;
+
+            const childrenLength = Object.keys(node.children).length
+            const hasChildren = childrenLength > 0;
+
+            return (
+                <>
+                    {renderNodeContent &&
+                        renderNodeContent(node, {
+                            NodeTemplate: ({ children, className, listClassNames, ...rest }) => (
+                                <li
+                                    role="treeitem"
+                                    aria-selected="false"
+                                    aria-expanded={isExpanded}
+                                    aria-level={level}
+                                    tabIndex={-1}
+                                    className={listClassNames + " relative w-full"}
+                                >
+                                    <div style={{ paddingLeft: `${level * 24}px` }}
+                                        className={classNames(s.listItem, { "py-2": size === "md" }, className,
+                                            `relative w-full flex items-center py-1 gap-2 bg-transparent`)}
+                                        {...rest}
+                                    >
+                                        {hasChildren ?
+                                            <TreeCollapseButton
+                                                onClick={() => toggleExpand(node.key)}
+                                                isFinalSibling={isFinalSibling}
+                                                isExpanded={isExpanded}
+                                                level={level}
+                                                size={size}
+                                            />
+                                            :
+                                            <>
+                                                {isFinalSibling ?
+                                                    <TreeLineCorner level={level} size={size} />
+                                                    :
+                                                    <TreeLine level={level} size={size} />
+                                                }
+                                                <TreeLineConnect />
+                                            </>
+                                        }
+                                        {children}
+                                    </div>
+
+                                    {/* Render Children */}
+                                    {isExpanded && hasChildren && (
+                                        <ul role="group" className='m-0 p-0'>
+                                            {Object.values(node.children).map((child, i) =>
+                                                <TreeNode
+                                                    key={`tree-${node.key}-${i}`}
+                                                    node={child}
+                                                    siblings={childrenLength}
+                                                    indexToParent={i}
+                                                    level={level + 1}
+                                                    renderNodeContent={renderNodeContent}
+                                                    size={size}
+                                                />
+                                            )}
+                                        </ul>
+                                    )}
+                                </li>
+                            )
+                        })}
+                </>
+
+            )
+        }
+
+
 
     return (
         <ul
@@ -42,7 +132,6 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys, className, ...re
                     siblings={childrenLength}
                     indexToParent={i}
                     level={0}
-                    defaultExpandedNodes={defaultExpandedKeys?.[node.key]}
                     {...restNodeProps}
                 />
             )}
@@ -51,89 +140,6 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys, className, ...re
 }
 
 export default Tree
-
-
-interface TreeNodeProps {
-    node: TreeNodeType
-    level: number
-    siblings: number
-    indexToParent: number
-    size?: "sm" | "md"
-    renderNodeContent?: RenderNodeContentProps
-    defaultExpandedNodes?: { key: string, children: Record<string, TreeNodeType> }
-}
-const TreeNode: React.FC<TreeNodeProps> =
-    ({ node, level, siblings, indexToParent, renderNodeContent, size = "sm", defaultExpandedNodes }) => {
-        const [isExpanded, setIsExpanded] = useState(defaultExpandedNodes ? true : false);
-        const isFinalSibling = siblings - 1 === indexToParent
-
-        const childrenLength = Object.keys(node.children).length
-        const hasChildren = childrenLength > 0;
-
-        return (
-            <>
-                {renderNodeContent &&
-                    renderNodeContent(node, {
-                        NodeTemplate: ({ children, className, listClassNames, ...rest }) => (
-                            <li
-                                role="treeitem"
-                                aria-selected="false"
-                                aria-expanded={isExpanded}
-                                aria-level={level}
-                                tabIndex={-1}
-                                className={listClassNames + " relative w-full"}
-                            >
-                                <div style={{ paddingLeft: `${level * 24}px` }}
-                                    className={classNames(s.listItem, { "py-2": size === "md" }, className,
-                                        `relative w-full flex items-center py-1 gap-2 bg-transparent`)}
-                                    {...rest}
-                                >
-                                    {hasChildren ?
-                                        <TreeCollapseButton
-                                            onClick={() => setIsExpanded(!isExpanded)}
-                                            isFinalSibling={isFinalSibling}
-                                            isExpanded={isExpanded}
-                                            level={level}
-                                            size={size}
-                                        />
-                                        :
-                                        <>
-                                            {isFinalSibling ?
-                                                <TreeLineCorner level={level} size={size} />
-                                                :
-                                                <TreeLine level={level} size={size} />
-                                            }
-                                            <TreeLineConnect />
-                                        </>
-                                    }
-                                    {children}
-                                </div>
-
-
-                                {/* Render Children */}
-                                {isExpanded && hasChildren && (
-                                    <ul role="group" className='m-0 p-0'>
-                                        {Object.values(node.children).map((child, i) =>
-                                            <TreeNode
-                                                key={`tree-${node.key}-${i}`}
-                                                node={child}
-                                                siblings={childrenLength}
-                                                indexToParent={i}
-                                                level={level + 1}
-                                                renderNodeContent={renderNodeContent}
-                                                size={size}
-                                                defaultExpandedNodes={defaultExpandedNodes?.[child.key]}
-                                            />
-                                        )}
-                                    </ul>
-                                )}
-                            </li>
-                        )
-                    })}
-            </>
-
-        )
-    }
 
 
 

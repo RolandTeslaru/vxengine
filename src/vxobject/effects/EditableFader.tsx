@@ -3,7 +3,7 @@ import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
-import { useVXEngine } from '@vxengine/engine'
+import { animationEngineInstance, useVXEngine } from '@vxengine/engine'
 import { VXObjectParams } from '../types'
 
 const fragmentShader = /* glsl */`
@@ -44,8 +44,6 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
-    const animationEngine = useVXEngine((state) => state.animationEngine);
-
     useEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -62,7 +60,7 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
         }
 
         addObject(newVXObject);
-        animationEngine.initObjectOnMount(newVXObject);
+        animationEngineInstance.initObjectOnMount(newVXObject);
 
         return () => removeObject(vxkey);
     }, [])
