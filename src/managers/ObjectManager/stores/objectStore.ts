@@ -31,11 +31,16 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     removeObject: (vxkey) => set((state) => {
         if (!state.objects[vxkey]) {
             console.warn("ObjectStore: trying to remove a non-existent object",vxkey);
-            return state; // No changes to state
+            return state;
         }
 
-        const removeFromTree = useObjectManagerAPI.getState().removeFromTree;
-        removeFromTree(vxkey);
+        if(IS_DEVELOPMENT){
+            const objectManagerAPI = useObjectManagerAPI.getState();
+            // remove selected is very important
+            // the vxobject is frozen by the objectMangerAPI if its selected so trinyg to remove it would crash the app
+            objectManagerAPI.removeSelectedObject(vxkey)
+            objectManagerAPI.removeFromTree(vxkey)
+        }
         
         const newObjects = { ...state.objects };
         delete newObjects[vxkey];

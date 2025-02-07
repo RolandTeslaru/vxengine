@@ -30,7 +30,7 @@ import { invalidate } from '@react-three/fiber';
 import { DiskProjectProps } from '@vxengine/types/engine';
 import { defaultSideEffects } from './defaultSideEffects';
 
-const DEBUG_REFRESHER = false;
+const DEBUG_HYDRATION = false;
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
 
@@ -42,7 +42,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
 
-  private _splinesCache: Map<string, any> = new Map();
+  private _splinesCache: Map<string,wasm_Spline> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
@@ -77,7 +77,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Initializes the WebAssembly module and sets the interpolation function.
    */
   private async _initializeWasm() {
-
     const wasmUrl = "/assets/wasm/rust_bg.wasm"
     console.log('AnimationEngine: Initializing WASM Driver with URL:', wasmUrl);
     try {
@@ -323,9 +322,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   initObjectOnMount(vxObject: vxObjectProps) {
     const vxkey = vxObject.vxkey;
 
-    if (!this._isReady) {
+    if (!this._isReady)
       return;
-    }
 
     // Add object to editor data
     this._addToEditorData(vxObject);
@@ -341,15 +339,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Cache the THREE.Object3D reference
     const object3DRef = this._cacheObject3DRef(vxObject);
 
-    if (DEBUG_OBJECT_INIT) {
+    if (DEBUG_OBJECT_INIT)
       console.log('AnimationEngine: Initializing object', vxObject);
-    }
 
     const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
-    if (!rawObject) {
+    if (!rawObject)
       return
-    }
 
     this._applyInitialTracks(rawObject, vxkey);
     this._applyInitialStaticProps(rawObject, object3DRef);
@@ -432,7 +428,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
     }
     rawObject.staticProps.forEach(staticProp => {
-      this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value);
+      this._updateObjectProperty(
+        rawObject.vxkey,
+        staticProp.propertyPath, 
+        object3DRef, 
+        staticProp.value
+      );
     });
   }
 
@@ -607,7 +608,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const interpolatedValue = this._calculateInterpolatedValue(keyframes, currentTime, recalculateAll);
 
     if (interpolatedValue !== undefined) {
-      this._updateObjectProperties(vxkey, propertyPath, object3DRef, interpolatedValue);
+      this._updateObjectProperty(vxkey, propertyPath, object3DRef, interpolatedValue);
     }
   }
 
@@ -636,45 +637,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     return this._interpolateKeyframes(keyframes, currentTime);
-  }
-
-
-
-
-
-
-  /**
-   * Updates the object's property with the interpolated value and handles special cases.
-   * @param vxkey - The unique identifier for the object.
-   * @param propertyPath - The path to the property to be updated.
-   * @param object3DRef - Reference to the THREE.Object3D instance.
-   * @param interpolatedValue - The interpolated value to apply.
-   */
-  private _updateObjectProperties(
-    vxkey: string,
-    propertyPath: string,
-    object3DRef: THREE.Object3D,
-    interpolatedValue: number
-  ) {
-    const trackKey = `${vxkey}.${propertyPath}`;
-    if (DEBUG_OBJECT_INIT) console.log(`Updating property ${propertyPath} for ${vxkey} with value`, interpolatedValue);
-
-    this._updateObjectProperty(object3DRef, propertyPath, interpolatedValue);
-
-    // const sideEffect = this._sideEffectCallbacks.get(trackKey) || AnimationEngine.defaultSideEffects[propertyPath];
-    // if(sideEffect)
-    //   sideEffect(
-    //     this,  
-    //     vxkey,
-    //     propertyPath,
-    //     object3DRef,
-    //     interpolatedValue
-    //   );
-
-    this._checkCameraUpdateRequirement(vxkey, propertyPath);
-
-    if (this._IS_DEVELOPMENT)
-      updateProperty(vxkey, propertyPath, interpolatedValue);
   }
 
 
@@ -842,7 +804,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       obj.staticProps.forEach(staticProp => {
-        this._updateObjectProperty(object3DRef, staticProp.propertyPath, staticProp.value);
+        this._updateObjectProperty(
+          vxkey,
+          staticProp.propertyPath, 
+          object3DRef, 
+          staticProp.value
+        );
       });
     });
   }
@@ -877,10 +844,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param newValue - The new value to set.
    */
   private _updateObjectProperty(
-    object3DRef: THREE.Object3D,
+    vxkey: string,
     propertyPath: string,
-    newValue: number | THREE.Vector3
+    object3DRef: THREE.Object3D,
+    newValue: number
   ) {
+    const generalKey = `${vxkey}.${propertyPath}`
     let setter = this._propertySetterCache.get(propertyPath);
 
     if (!setter) {
@@ -891,6 +860,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Use the cached setter function to update the property
     setter(object3DRef, newValue);
+
+    const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
+    if(sideEffect)
+      sideEffect(
+        this,  
+        vxkey,
+        propertyPath,
+        object3DRef,
+        newValue
+      );
+
+    this._checkCameraUpdateRequirement(vxkey, propertyPath);
+    if (this._IS_DEVELOPMENT)
+      updateProperty(vxkey, propertyPath, newValue);
   }
 
 
@@ -1040,7 +1023,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (!rawObject)
       rawObject = this._initRawObjectOnTimeline(vxkey);
 
-    if (DEBUG_REFRESHER)
+    if (DEBUG_HYDRATION)
       console.log(`AnimationEngine: Refreshing track on object '${vxkey}'.`);
 
 
@@ -1049,9 +1032,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const keyframesForTrack = useTimelineManagerAPI.getState().tracks[trackKey].keyframes;
         const sortedKeyframes = Object.values(keyframesForTrack).sort((a, b) => a.time - b.time)
 
-        const rawKeyframes = sortedKeyframes.map(edKeyframe => {
+        const rawKeyframes: RawKeyframeProps[] = sortedKeyframes.map(edKeyframe => {
           return {
-            id: edKeyframe.id,
+            keyframeKey: edKeyframe.id,
             value: edKeyframe.value,
             time: edKeyframe.time,
             handles: [
@@ -1068,7 +1051,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         };
         rawObject.tracks.push(rawTrack);
 
-        if (DEBUG_REFRESHER) {
+        if (DEBUG_HYDRATION) {
           console.log(`AnimationEngine: Track '${trackKey}' was added to '${vxkey}'.`);
         }
         break;
@@ -1077,7 +1060,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       case 'remove': {
         rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath);
 
-        if (DEBUG_REFRESHER) {
+        if (DEBUG_HYDRATION) {
           console.log(`AnimationEngine: Track '${trackKey}' was removed from '${vxkey}'.`);
         }
         break;
@@ -1120,7 +1103,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-    if (DEBUG_REFRESHER)
+    if (DEBUG_HYDRATION)
       console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
 
     let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
@@ -1141,7 +1124,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const track = useTimelineManagerAPI.getState().tracks[trackKey];
         const edKeyframe = track.keyframes[keyframeKey]
         const rawKeyframe: RawKeyframeProps = {
-          id: edKeyframe.id,
+          keyframeKey: edKeyframe.id,
           value: edKeyframe.value,
           time: edKeyframe.time,
           handles: [
@@ -1154,7 +1137,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         keyframes.push(rawKeyframe);
         keyframes.sort((a, b) => a.time - b.time);
 
-        if (DEBUG_REFRESHER) {
+        if (DEBUG_HYDRATION) {
           console.log(`AnimationEngine: Keyframe '${keyframeKey}' added to track '${trackKey}'.`);
         }
         break;
@@ -1164,7 +1147,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const track = useTimelineManagerAPI.getState().tracks[trackKey];
         const edKeyframe = track.keyframes[keyframeKey];
         keyframes.forEach((kf, index) => {
-          if (kf.id === keyframeKey) {
+          if (kf.keyframeKey === keyframeKey) {
             const keyframe = keyframes[index]
             keyframe.value = edKeyframe.value;
             keyframe.time = edKeyframe.time;
@@ -1178,7 +1161,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         });
         keyframes.sort((a, b) => a.time - b.time);
 
-        if (DEBUG_REFRESHER) {
+        if (DEBUG_HYDRATION) {
           console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated in track '${trackKey}'.`);
         }
         break;
@@ -1186,11 +1169,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       case 'updateTime': {
         if (typeof newData === 'number') {
-          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
+          console.log("Tryng to find keyframe with keyframeKey", keyframeKey, "on ", keyframes)
+          console.log("Result ", targetedKeyframe)
           targetedKeyframe.time = newData;
           keyframes.sort((a, b) => a.time - b.time);
 
-          if (DEBUG_REFRESHER) {
+          if (DEBUG_HYDRATION) {
             console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Time in track '${trackKey}' with value '${newData}'`);
           }
         } else {
@@ -1201,10 +1186,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       case 'updateValue': {
         if (typeof newData === 'number') {
-          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
           targetedKeyframe.value = newData;
 
-          if (DEBUG_REFRESHER) {
+          if (DEBUG_HYDRATION) {
             console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Value in track '${trackKey}' with value '${newData}'`);
           }
         } else {
@@ -1215,10 +1200,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
       case 'updateHandles': {
         if (Array.isArray(newData) && newData.length === 4 && newData.every(v => typeof v === 'number')) {
-          const targetedKeyframe = keyframes.find(kf => kf.id === keyframeKey)
+          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
           targetedKeyframe.handles = newData as [number, number, number, number];
 
-          if (DEBUG_REFRESHER) {
+          if (DEBUG_HYDRATION) {
             console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Handles in track '${trackKey}' with value '${newData}'`);
           }
         } else {
@@ -1229,9 +1214,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
       case "remove": {
-        track.keyframes = track.keyframes.filter(kf => kf.id !== keyframeKey);
+        track.keyframes = track.keyframes.filter(kf => kf.keyframeKey !== keyframeKey);
 
-        if (DEBUG_REFRESHER) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
+        if (DEBUG_HYDRATION) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
         break;
       }
 
@@ -1271,7 +1256,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
 
-    if (DEBUG_REFRESHER) {
+    if (DEBUG_HYDRATION) {
       console.log(`AnimationEngine: Hydrating static property '${staticPropKey}'.`);
     }
 
@@ -1344,7 +1329,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
   hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
-    const { action, splineKey, reRender, nodeIndex, newData } = params
+    const { action, splineKey, reRender, nodeIndex, newData, initialTension } = params
     if (this._IS_PRODUCTION) {
       console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
       return;
@@ -1384,7 +1369,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
         // Create the WebAssembly spline object in the cache if not already created
         if (!this._splinesCache.get(splineKey)) {
-          const wasmSpline = new wasm_Spline(newRawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), false, 0.5);
+          const wasmSpline = new wasm_Spline(
+            newRawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), 
+            false, 
+            initialTension
+          );
           this._splinesCache.set(splineKey, wasmSpline);
         }
         break;

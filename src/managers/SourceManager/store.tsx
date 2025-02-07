@@ -12,7 +12,7 @@ import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/
 import { DANGER_SyncConflict } from './dialogs/syncConflict'
 import React from 'react'
 
-const DEBUG = false;
+const DEBUG = true;
 
 let PAUSE_DISK_SAVING = false;
 
@@ -174,7 +174,8 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
           content: <DANGER_SyncConflict dialogId={dialogId}/>,
           type: "danger",
           showTriangle: false,
-          className: "p-0"
+          className: "p-0 max-w-4xl",
+          id: dialogId
         })
 
 
@@ -203,6 +204,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
   },
 
 }))
+
 
 const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
   const precision = AnimationEngine.ENGINE_PRECISION;

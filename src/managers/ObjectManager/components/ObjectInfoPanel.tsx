@@ -10,6 +10,7 @@ const ObjectInfoPanel: React.FC<Props> = ({ vxobject }) => {
   return (
     <CollapsiblePanel
         title="Object Info"
+        defaultOpen={false}
     >
       <JsonView src={vxobject} collapsed={({ depth }) => depth > 1}/>
     </CollapsiblePanel>

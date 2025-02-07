@@ -13,38 +13,10 @@ import { useRefStore } from '@vxengine/utils';
 const selectObjects = (
     state: ObjectManagerStoreProps,
     vxkeys: string[],
-    type?: vxObjectTypes,
-    animate?: boolean
 ): ObjectManagerStoreProps => {
-    const objects = useVXObjectStore.getState().objects
-
-    const selectedObjects = vxkeys.map(vxkey => objects[vxkey]).filter(Boolean);
-
-    if (animate) {
-        if (type === "entity") {
-            const entityListRef = useRefStore.getState().entityListRef
-
-            const entitiesList = Object.fromEntries(
-                Object.entries(objects)
-                    .filter(([key, vxObj]) => vxObj.type === "entity")
-            )
-            const entitiesKeysArray = Object.keys(entitiesList)
-            const firstVxkeyIndex = vxkeys.length > 0
-                ? entitiesKeysArray.indexOf(vxkeys[0])
-                : -1;
-
-            entityListRef.current.scrollToIndex({
-                index: firstVxkeyIndex,
-                align: "center",
-                behavior: "smooth"
-            });
-        }
-    }
-
     return {
         ...state,
         selectedObjectKeys: vxkeys,
-        selectedObjects,
     };
 };
 
@@ -77,9 +49,14 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
     transformSpace: "world",
     setTransformSpace: (space: "world" | "local") => set({ transformSpace: space }),
 
-    selectedObjects: [],
     selectedObjectKeys: [],
-    selectObjects: (vxkeys, type, animate) => set((state) => selectObjects(state, vxkeys, type, animate)),
+    selectObjects: (vxkeys) => set({ selectedObjectKeys: vxkeys }),
+    removeSelectedObject: (vxkey) => set((state) => {
+        return ({
+            ...state,
+            selectedObjectKeys: state.selectedObjectKeys.filter(objKey => objKey !== vxkey)
+        })
+    }),
     hoveredObject: undefined,
     setHoveredObject: (vxobject: vxObjectProps) => set((state) => ({
         ...state,

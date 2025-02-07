@@ -6,7 +6,7 @@ import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { animationEngineInstance, useVXEngine } from "@vxengine/engine";
+import { animationEngineInstance, IS_DEVELOPMENT, useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, ThreeEvent, useFrame } from '@react-three/fiber';
 import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/types/objectStore";
 import ObjectUtils from "./utils/ObjectUtils";
@@ -55,8 +55,6 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
     }, ref) => {
         if (vxkey === undefined)
             throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
-
-        const IS_DEVELOPMENT = useVXEngine(state => state.IS_DEVELOPMENT);
 
         const vxObject = useVXObjectStore(state => state.objects[vxkey])
 

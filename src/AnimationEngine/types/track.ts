@@ -126,7 +126,7 @@ export interface RawTrackProps {
 }
 
 export interface RawKeyframeProps {
-    id: string
+    keyframeKey: string;
     time: number; 
     value: number;
     handles: [number, number, number, number]

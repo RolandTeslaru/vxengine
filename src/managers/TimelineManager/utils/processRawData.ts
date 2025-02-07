@@ -31,9 +31,11 @@ export default function processRawData(
             };
             // Create Keyframe Record
             rawTrack.keyframes.forEach((rawKeyframe) => {
-                const keyframeId = `keyframe-${uuidv4()}`;
+                const keyframeKey = rawKeyframe.keyframeKey || `keyframe-${uuidv4()}`;
+                if(!rawKeyframe.keyframeKey)
+                    rawKeyframe.keyframeKey = keyframeKey;
                 const newKeyframe: IKeyframe = {
-                    id: keyframeId,
+                    id: keyframeKey,
                     vxkey: rawObj.vxkey,
                     propertyPath: rawTrack.propertyPath,
                     time: rawKeyframe.time,
@@ -49,8 +51,8 @@ export default function processRawData(
                         }
                     }
                 }
-                newTrack.keyframes[keyframeId] = newKeyframe;
-                newTrack.orderedKeyframeKeys.push(keyframeId);
+                newTrack.keyframes[keyframeKey] = newKeyframe;
+                newTrack.orderedKeyframeKeys.push(keyframeKey);
             });
 
             

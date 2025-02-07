@@ -16,13 +16,13 @@ export interface ObjectManagerStoreProps {
     transformSpace: "world" | "local";
     setTransformSpace: (space: "world" | "local") => void;
 
-    selectedObjects: vxObjectProps[];
     selectedObjectKeys: string[];
     selectObjects: (
         vxkeys: string[], 
         type?: vxObjectTypes,
         animate?: boolean
     ) => void;
+    removeSelectedObject: (vxkey: string) => void
     
     hoveredObject: vxObjectProps | null;
     setHoveredObject: (vxobject: vxObjectProps) => void;

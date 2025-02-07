@@ -9,6 +9,7 @@ import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
 import { TransformControls as TransfromControlsIMPL } from "three-stdlib";
+import { useVXObjectStore } from "./stores/objectStore";
 
 const axisMap = {
   X: 'x',
@@ -54,13 +55,13 @@ const dispatchVirtualEntityChangeEvent = (e: any, vxobject: vxObjectProps) => {
  */
 
 export const ObjectManagerDriver = () => {
-  const vxobject = useObjectManagerAPI(state => state.selectedObjects[0]);
+  const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
+  const vxobject = useVXObjectStore(state => state.objects[vxkey]);
   const transformSpace = useObjectManagerAPI(state => state.transformSpace)
   const transformMode = useObjectManagerAPI(state => state.transformMode);
   const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
   const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
-  const vxkey = vxobject?.vxkey;
   const vxObjectRef: THREE.Object3D = vxobject?.ref?.current;
   const type = vxObjectRef?.type
   const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);

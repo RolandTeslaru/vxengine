@@ -4,11 +4,13 @@ import React from "react";
 import Move from "@geist-ui/icons/move";
 import RefreshCcw from "@geist-ui/icons/refreshCcw";
 import Globe from "@geist-ui/icons/globe";
+import { useVXObjectStore } from "../stores/objectStore";
 
 export const ObjectTransformControls = () => {
     const transformMode = useObjectManagerAPI(state => state.transformMode)
     const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
-    const selectedObjectType = useObjectManagerAPI(state => state.selectedObjects[0]?.type)
+    const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0])
+    const selectedObjectType = useVXObjectStore(state => state.objects[0]?.type)
     const transformSpace = useObjectManagerAPI(state => state.transformSpace);
     const setTransformSpace = useObjectManagerAPI(state => state.setTransformSpace);
 

@@ -22,15 +22,14 @@ const ObjectPropertiesConfig = {
       TransformProperties, 
       GeometryProperties, 
       MaterialProperties,
-      ObjectInfoPanel
   ],
   virtualEntity: [
     TransformProperties, 
     GeometryProperties, 
     MaterialProperties
   ],
-  spline: [SplineProperties, ObjectInfoPanel],
-  // splineNode: [SplineNodePanel, ObjectInfoPanel],
+  spline: [SplineProperties],
+  splineNode: [SplineNodePanel],
   keyframeNode: [NodeTransformProperties],
 };
 

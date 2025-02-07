@@ -61,9 +61,12 @@ export type HydrateSplineParams<A extends HydrateSplineActions> = {
   action: A,
   splineKey: string,
   reRender?: boolean
-} & (A extends "updateNode" 
-  ? { nodeIndex: number, newData: [number, number, number] }
+} & (
+  A extends "updateNode" 
+  ? { nodeIndex: number, newData: [number, number, number], initialTension?: undefined }
   : A extends "removeNode" 
-  ? { nodeIndex: number, newData?: undefined }
-  : { nodeIndex?: undefined, newData?: undefined}
+  ? { nodeIndex: number, newData?: undefined, initialTension?: undefined }
+  : A extends "create"
+  ? { initialTension: number, nodeIndex?: undefined, newData?: undefined }
+  : { nodeIndex?: undefined, newData?: undefined, initialTension?: undefined}
 )

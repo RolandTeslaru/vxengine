@@ -38,6 +38,15 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
                     vxkey={vxSpline.objectVxKey}
                 />
             </div>
+            <div className="flex flex-col w-full gap-1 ">
+                <p className="text-xs font-light my-auto text-neutral-400">tension</p>
+                <PropInput
+                    param={{ type: "slider", min: 0, max: 1, step: 0.01 }}
+                    propertyPath={"splineTension"}
+                    vxObject={vxSpline}
+                    vxkey={vxSpline.objectVxKey}
+                />
+            </div>
         </CollapsiblePanel>
     )
 }

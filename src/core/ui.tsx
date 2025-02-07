@@ -14,7 +14,7 @@ import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
 import ParamList from "@vxengine/managers/ObjectManager/components/ParamList"
 import SettingsList from "@vxengine/managers/ObjectManager/components/SettingsList"
-import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager"
+import { useObjectManagerAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
 import VXMenubar from "@vxengine/core/components/Menubar"
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
@@ -25,6 +25,7 @@ import AlertTriangle from '@geist-ui/icons/alertTriangle'
 import { IS_PRODUCTION } from "@vxengine/engine"
 import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
+import ObjectInfoPanel from "@vxengine/managers/ObjectManager/components/ObjectInfoPanel"
 
 export const VXStudio = () => {
     return (
@@ -57,7 +58,8 @@ export const VXStudio = () => {
 
 const VXRightPanel = () => {
     const vxWindowId = "VXEngineRightPanel"
-    const vxObject = useObjectManagerAPI(state => state.selectedObjects[0]);
+    const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
+    const vxObject =  useVXObjectStore(state => state.objects[vxkey]);
 
     return (
         <VXEngineWindow
@@ -73,6 +75,7 @@ const VXRightPanel = () => {
                         <ObjectPropertiesPanel vxobject={vxObject} />
                         <ParamList vxobject={vxObject} />
                         <SettingsList vxobject={vxObject} />
+                        <ObjectInfoPanel vxobject={vxObject}/>
                     </>
                 )}
             </div>

@@ -40,7 +40,7 @@ const Content: React.FC<Props> = (props) => {
     const rawKeyframe = useMemo(() => {
         const rawObj = currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
         const rawTrack = rawObj?.tracks.find(rawTrack => rawTrack.propertyPath === propertyPath);
-        const rawKeyframe = rawTrack?.keyframes.find(rawKeyframe => rawKeyframe.id === keyframeKey)
+        const rawKeyframe = rawTrack?.keyframes.find(rawKeyframe => rawKeyframe.keyframeKey === keyframeKey)
         return rawKeyframe
     }, [])
 

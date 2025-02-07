@@ -15,7 +15,7 @@ import Search from "./Search";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useRefStore } from "@vxengine/utils";
 import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
-import { useVXEngine } from "@vxengine/engine";
+import { IS_PRODUCTION, useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 
 
@@ -120,10 +120,12 @@ const State_ObjectPropertyAPI = () => {
                         <p>Rendering this will cause lag!</p>
                     </div>
                 </div>
-                <div className="text-red-600 flex gap-2">
-                    <AlertTriangle className="" size={30} />
-                    <p className="text-xs my-auto font-sans-menlo">This store is not updated in Production Mode!</p>
-                </div>
+                {IS_PRODUCTION &&
+                    <div className="text-red-600 flex gap-2">
+                        <AlertTriangle className="" size={30} />
+                        <p className="text-xs my-auto font-sans-menlo">This store is not updated in Production Mode!</p>
+                    </div>
+                }
             </div>
 
             <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />

@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CatmullRomLine, Html } from '@react-three/drei';
 import SplineNode from './components/SplineNode';
 import { useTimelineManagerAPI } from '../TimelineManager/store';
@@ -10,6 +10,9 @@ import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { useVXObjectStore } from '../ObjectManager';
 import { vxSplineProps } from '../ObjectManager/types/objectStore';
 import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
+import { SplineCurve } from 'three';
+import { extend } from '@react-three/fiber';
+import { debounce } from 'lodash';
 
 interface SplineProps {
     splineKey: string;
@@ -27,20 +30,35 @@ interface SplineProps {
 const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
     const splineKey = `${vxkey}.spline`
     const edSpline = useTimelineManagerAPI(state => state.splines[splineKey]);
-    if(!edSpline)
+    if (!edSpline)
         return
     const nodes = edSpline.nodes;
 
     const segmentMultiplier = 10;
     const segments = Math.max(nodes?.length * segmentMultiplier, 10);
 
-    const spRef1 = useRef(null);
-    const spRef2 = useRef(null);
-    const spRef3 = useRef(null);
+    const tensionTrack = `${vxkey}.splineTension`
 
-    const ref = useRef(null);
+    const [tension, setTension] = useState(0.5);
+    const debouncedSetTension = useMemo(
+        () => debounce((newTension) => {
+            console.log("Setting new tensioin" , newTension)
+            setTension(newTension)
+        }, 200),
+        [] 
+    );
 
-    // This handles only the VXOBjectStore aspect of the spline identity
+    useEffect(() => {
+        const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
+            const newTension = state.properties[tensionTrack];
+            newTension && debouncedSetTension(newTension);
+        });
+        return () => {
+            unsubscribe();
+            debouncedSetTension.cancel();
+        };
+    }, [debouncedSetTension, tensionTrack]);
+
     useLayoutEffect(() => {
         const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
         const rawSpline = currentTimeline.splines?.[splineKey]
@@ -68,7 +86,7 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
 
     if (!nodes) return
 
-    if(!visible) return
+    if (!visible) return
 
     return (
         <group>
@@ -76,29 +94,29 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
                 <SplineNode splineKey={splineKey} position={nodePosition} index={index} key={index} />
             ))}
             <CatmullRomLine
-                ref={spRef1}
                 points={nodes}
                 curveType="catmullrom"
                 color="rgb(237, 53, 87)"
                 frustumCulled={true}
+                tension={tension}
                 // @ts-expect-error
                 segments={segments}
             />
             <CatmullRomLine
-                ref={spRef2}
                 points={nodes}
                 curveType="centripetal"
                 color="rgb(81,217, 121)"
                 frustumCulled={true}
+                tension={tension}
                 // @ts-expect-error
                 segments={segments}
             />
             <CatmullRomLine
-                ref={spRef3}
                 points={nodes}
                 curveType="chordal"
                 color="rgb(55, 108, 250)"
                 frustumCulled={true}
+                tension={tension}
                 // @ts-expect-error
                 segments={segments}
             />

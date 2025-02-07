@@ -2,7 +2,7 @@ import { IKeyframe, ISpline, IStaticProps, ITrack, PathGroup, RawObjectProps, Ra
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { updateProperty } from '../ObjectManager/stores/managerStore';
+import { updateProperty, useObjectManagerAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { EditorObjectProps, TimelineMangerAPIProps } from './types/store';
@@ -215,7 +215,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     createSpline: ({ vxkey }) => {
         const splineKey = `${vxkey}.spline`;
-        const trackKey = `${vxkey}.splineProgress`
+        const progress = 0
+        const tension = 0.5
 
         const vxObject = useVXObjectStore.getState().objects[vxkey];
         if (!vxObject) {
@@ -259,22 +260,28 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         animationEngineInstance.hydrateSpline({
             action: "create", 
             splineKey, 
+            initialTension: tension,
             reRender: true
         })
 
         // Handle Spline Track creation
-        get().createTrack(trackKey);
-        get().createKeyframe({
-            trackKey,
-            value: 0,
+        get().createStaticProp({
+            vxkey,
+            propertyPath: "splineProgress",
+            value: progress,
+            reRender: false
+        })
+        get().createStaticProp({
+            vxkey,
+            propertyPath: "splineTension",
+            value: tension,
             reRender: true
-        });
+        })
 
         get().addChange();
     },
 
     removeSpline: ({ vxkey }) => {
-        const trackKey = `${vxkey}.splineProgress`
         const splineKey = `${vxkey}.spline`;
 
         set(
@@ -283,10 +290,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             })
         )
         // Remove spline progress track
-        get().removeTrack({ trackKey, reRender: false });
+        get().removeProperty(vxkey, "splineProgress");
+        get().removeProperty(vxkey, "splineTension");
 
         // Remove spline object from timeline
-        
         animationEngineInstance.hydrateSpline({
             action: "remove", 
             splineKey, 

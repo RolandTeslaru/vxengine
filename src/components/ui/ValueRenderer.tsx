@@ -50,16 +50,6 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 invalidate();
             }
         }, [vxObject]);
- 
-        const handleSplineNodeChange = useCallback((newValue: number) => {
-            const axis = propertyPath.slice(-1); // propertyPath ends with 'x', 'y', or 'z'
-            const nodeIndex = (vxObject as vxSplineNodeProps).index;
-            const splineKey = (vxObject as vxSplineNodeProps).splineKey;
-
-            // useSplineManagerAPI
-            //     .getState()
-            //     .changeSplineNodeAxisValue(splineKey, nodeIndex, newValue, axis as "x" | "y" | "z");
-        }, [vxObject]);
 
         return (
             <Input

@@ -2,7 +2,7 @@ import React from 'react'
 import { ContextMenuContent, ContextMenuItem } from '@vxengine/components/shadcn/contextMenu'
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '@vxengine/components/ui/DialogAlerts/Alert'
 import { MenubarItem } from '@vxengine/components/shadcn/menubar'
-import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/store'
+import { pushDialogStatic } from '@vxengine/managers/UIManager/store'
 
 interface Props {
     vxkey: string,
