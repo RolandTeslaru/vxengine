@@ -29,10 +29,13 @@ import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
 import { DiskProjectProps } from '@vxengine/types/engine';
 import { defaultSideEffects } from './defaultSideEffects';
+import { HydrationService } from './services/HydrationService';
+import { logReportingService } from './services/LogReportingService';
 
-const DEBUG_HYDRATION = false;
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
+
+const LOG_MODULE = "AnimationEngine"
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   private _id: string
@@ -42,7 +45,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
 
-  private _splinesCache: Map<string,wasm_Spline> = new Map();
+  private _splinesCache: Map<string, wasm_Spline> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
@@ -57,6 +60,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _IS_DEVELOPMENT: boolean = false;
   private _IS_PRODUCTION: boolean = false;
 
+  private _hydrationService: HydrationService;
+
   static readonly ENGINE_PRECISION = 4
 
   static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
@@ -65,7 +70,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     super(new Events());
 
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
-    console.log("VXEngine AnimationEngine: Created instance with ID:", this._id);
+    logReportingService.logInfo(`Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
 
     this._interpolateNumberFunction = js_interpolateNumber;
     this._wasmReady = this._initializeWasm();
@@ -78,14 +83,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   private async _initializeWasm() {
     const wasmUrl = "/assets/wasm/rust_bg.wasm"
-    console.log('AnimationEngine: Initializing WASM Driver with URL:', wasmUrl);
+    const LOG_CONTEXT = { module: LOG_MODULE, functionName: "_initializeWasm" }
+    
+    logReportingService.logInfo(
+      `Initializing WASM Driver with URL: ${wasmUrl}`, LOG_CONTEXT)
+
     try {
       await init(wasmUrl); // Wait for the WebAssembly module to initialize
       this._isWasmInitialized = true;
       this._interpolateNumberFunction = wasm_interpolateNumber;
-      console.log('AnimationEngine: WASM Driver initialized successfully');
+
+      logReportingService.logInfo(
+        `WASM Driver initialized successfully`,LOG_CONTEXT)
     } catch (error) {
-      console.error('AnimationEngine: Failed to initialize WASM Driver:', error);
+      logReportingService.logError(error, LOG_CONTEXT)
     }
   }
 
@@ -112,12 +123,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param timelineId - The identifier of the timeline to set as current.
    */
   setCurrentTimeline(timelineId: string) {
+    const LOG_CONTEXT= {module:"AnimationEngine", functionName:"setCurrentTimeline", additionalData:{timelines:this.timelines}}
     // Update the current timeline ID in the state
     const selectedTimeline: ITimeline = this.timelines[timelineId];
 
-    if (!selectedTimeline) {
-      throw new Error(`AnimationEngine: Timeline with ID '${timelineId}' not found.`);
-    }
+    if (!selectedTimeline)
+      logReportingService.logFatal(
+        `Timeline with id ${timelineId} was not found`,LOG_CONTEXT)
 
     // Set the states in the store
     useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
@@ -133,10 +145,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       // Re-render after splines are cached
       this.reRender({ time: this._currentTime, force: true });
     }).catch(error => {
-      console.error('AnimationEngine: Error caching splines:', error);
+      logReportingService.logError(
+        `Error caching splines, ${error}`,LOG_CONTEXT)
     });
 
     if (this._IS_DEVELOPMENT) {
+      this._hydrationService = new HydrationService(this._currentTimeline, this._splinesCache);
       // Set the editor data
       useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines));
       useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
@@ -216,7 +230,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setCurrentTimeline(firstTimelineID);
 
-    console.log('AnimationEngine: Finished Loading Project:', diskData.projectName, " with ", Object.entries(diskData.timelines).length, " timelines");
+    logReportingService.logInfo(
+      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`,
+      {module: LOG_MODULE, functionName: "loadProject" })
 
     // Initialize the core UI
     useUIManagerAPI.getState().setMountCoreUI(true);
@@ -247,7 +263,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     if (DEBUG_RERENDER) {
-      console.log('AnimationEngine: Re-rendering. Cause:', cause);
+      logReportingService.logInfo(`Re-rendering because ${cause}`, { module: LOG_MODULE, functionName: "reRender" })
     }
 
     this._applyAllStaticProps();
@@ -301,7 +317,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Pauses the animation playback and triggers a 'paused' event.
    */
   pause() {
-    console.log("AnimationEngine: Pause triggered")
+    logReportingService.logInfo("Pause triggered", { module: LOG_MODULE, functionName: "pause" })
     if (this.isPlaying) {
       this.setIsPlaying(false);
       this.trigger('paused', { engine: this });
@@ -340,7 +356,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const object3DRef = this._cacheObject3DRef(vxObject);
 
     if (DEBUG_OBJECT_INIT)
-      console.log('AnimationEngine: Initializing object', vxObject);
+      logReportingService.logInfo(`Initializing vxobject ${vxObject}`, { module: LOG_MODULE, functionName: "initObjectOnMount" })
 
     const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
@@ -424,47 +440,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     object3DRef: THREE.Object3D | null
   ) {
     if (!object3DRef) {
-      console.warn(`AnimationEngine: Object3D reference not found for '${rawObject.vxkey}'.`);
+      logReportingService.logWarning(
+        `Could not initialize staticProps for ${rawObject.vxkey} because no object3d references was passed`,
+        { module: LOG_MODULE, functionName: "_applyInitialStaticProps" }
+      )
       return;
     }
     rawObject.staticProps.forEach(staticProp => {
       this._updateObjectProperty(
         rawObject.vxkey,
-        staticProp.propertyPath, 
-        object3DRef, 
+        staticProp.propertyPath,
+        object3DRef,
         staticProp.value
       );
     });
-  }
-
-
-
-
-
-
-  /**
-   * Initializes a new RawObjectProps and adds it to the current timeline's objects.
-   * Prevents duplicate entries by checking if an object with the same vxkey already exists.
-   * @param vxkey - The unique identifier for the object.
-   * @returns The newly created or existing RawObjectProps.
-   */
-  private _initRawObjectOnTimeline(vxkey: string): RawObjectProps {
-    // Check if an object with the same vxkey already exists
-    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
-    if (rawObject) {
-      console.warn(`AnimationEngine: Raw Object with vxkey '${vxkey}' already exists in the current timeline.`);
-      return rawObject;
-    }
-
-    rawObject = {
-      vxkey,
-      tracks: [],
-      staticProps: []
-    };
-
-    this.currentTimeline.objects.push(rawObject);
-
-    return rawObject;
   }
 
 
@@ -578,7 +567,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       camera.updateProjectionMatrix();
       this._cameraRequiresPerspectiveMatrixRecalculation = false;
     } else {
-      console.warn('AnimationEngine: PerspectiveCamera not found in object cache.');
+      logReportingService.logWarning("PerspectiveCamera was not found in object cache",
+        { module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
     }
   }
 
@@ -806,8 +796,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       obj.staticProps.forEach(staticProp => {
         this._updateObjectProperty(
           vxkey,
-          staticProp.propertyPath, 
-          object3DRef, 
+          staticProp.propertyPath,
+          object3DRef,
           staticProp.value
         );
       });
@@ -862,9 +852,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     setter(object3DRef, newValue);
 
     const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
-    if(sideEffect)
+    if (sideEffect)
       sideEffect(
-        this,  
+        this,
         vxkey,
         propertyPath,
         object3DRef,
@@ -891,6 +881,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     propertyPath: string
   ): (targetObject: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
+    const LOG_CONTEXT =  {module:"AnimationEngine", functionName:"_generatePropertySetter"}
 
     return (targetObject: any, newValue: any) => {
       let target = targetObject;
@@ -904,9 +895,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           // Try to parse the key as an integer index
           const index = parseInt(key, 10);
           if (Number.isNaN(index)) {
-            console.warn(
-              `AnimationEngine: Key '${key}' is not a valid array index in '${propertyPath}'.`
-            );
+            logReportingService.logWarning(
+              `Key ${key} is not a valid array index in ${propertyKeys}`,LOG_CONTEXT)
             return;
           }
           target = target[index];
@@ -916,9 +906,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         }
 
         if (target === undefined) {
-          console.warn(
-            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`
-          );
+          logReportingService.logWarning(
+            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`,LOG_CONTEXT)
           return;
         }
       }
@@ -929,9 +918,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       if (Array.isArray(target)) {
         const index = parseInt(finalPropertyKey, 10);
         if (Number.isNaN(index)) {
-          console.warn(
-            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`
-          );
+          logReportingService.logWarning(
+            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`,LOG_CONTEXT)
           return;
         }
         target[index] = newValue;
@@ -940,9 +928,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         if (mapValue) {
           mapValue.value = newValue;
         } else {
-          console.warn(
-            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`
-          );
+          logReportingService.logWarning(
+            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`,LOG_CONTEXT)
         }
       } else {
         target[finalPropertyKey] = newValue;
@@ -975,7 +962,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     await this._wasmReady; // Ensure WASM is initialized
 
     if (!splines) {
-      console.warn('AnimationEngine: No splines provided to cache.');
+      logReportingService.logWarning(`No splines provided to cache.`, { module: LOG_MODULE, functionName: "cacheSplines" })
       return;
     }
 
@@ -1013,72 +1000,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     reRender: boolean = true,
   ) {
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      logReportingService.logError("Timeline Hydration is NOT allowed in Production Mode", {
+        module: LOG_MODULE, functionName: "hydrateTrack"
+      })
       return;
     }
+    this._hydrationService.hydrateTrack(trackKey, action);
 
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-    let rawObject = this.currentTimeline.objects.find(rawObj => rawObj.vxkey === vxkey);
-
-    if (!rawObject)
-      rawObject = this._initRawObjectOnTimeline(vxkey);
-
-    if (DEBUG_HYDRATION)
-      console.log(`AnimationEngine: Refreshing track on object '${vxkey}'.`);
-
-
-    switch (action) {
-      case 'create': {
-        const keyframesForTrack = useTimelineManagerAPI.getState().tracks[trackKey].keyframes;
-        const sortedKeyframes = Object.values(keyframesForTrack).sort((a, b) => a.time - b.time)
-
-        const rawKeyframes: RawKeyframeProps[] = sortedKeyframes.map(edKeyframe => {
-          return {
-            keyframeKey: edKeyframe.id,
-            value: edKeyframe.value,
-            time: edKeyframe.time,
-            handles: [
-              edKeyframe.handles.in.x,
-              edKeyframe.handles.in.y,
-              edKeyframe.handles.out.x,
-              edKeyframe.handles.out.y,
-            ] as [number, number, number, number]
-          }
-        })
-        const rawTrack: RawTrackProps = {
-          propertyPath: propertyPath,
-          keyframes: rawKeyframes,
-        };
-        rawObject.tracks.push(rawTrack);
-
-        if (DEBUG_HYDRATION) {
-          console.log(`AnimationEngine: Track '${trackKey}' was added to '${vxkey}'.`);
-        }
-        break;
-      }
-
-      case 'remove': {
-        rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath);
-
-        if (DEBUG_HYDRATION) {
-          console.log(`AnimationEngine: Track '${trackKey}' was removed from '${vxkey}'.`);
-        }
-        break;
-      }
-
-      default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateTrack.`);
-        return;
-      }
-    }
-
-    if (reRender) {
+    if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
-    }
 
     invalidate();
-
-    // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
@@ -1097,142 +1029,24 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   hydrateKeyframe<A extends HydrateKeyframeAction>(params: HydrateKeyframeParams<A>) {
     const { trackKey, action, keyframeKey, reRender = true, newData } = params;
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Keyframe Hydration is NOT allowed in Production Mode!")
+      logReportingService.logError("Keyframe Hydration is NOT allowed in Production Mode", {
+        module: LOG_MODULE, functionName: "hydrateKeyframe"
+      })
       return;
     }
 
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    // @ts-expect-error
+    this._hydrationService.hydrateKeyframe({
+      trackKey,
+      action,
+      keyframeKey,
+      newData
+    })
 
-    if (DEBUG_HYDRATION)
-      console.log(`AnimationEngine: Refreshing keyframe on track '${trackKey}'.`);
-
-    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
-    if (!rawObject) {
-      rawObject = this._initRawObjectOnTimeline(vxkey);
-    }
-
-    const track = rawObject.tracks.find(t => t.propertyPath === propertyPath);
-    if (!track) {
-      console.warn(`AnimationEngine: Track with property path '${propertyPath}' not found on object '${vxkey}'.`);
-      return;
-    }
-
-    const keyframes = track.keyframes;
-
-    switch (action) {
-      case 'create': {
-        const track = useTimelineManagerAPI.getState().tracks[trackKey];
-        const edKeyframe = track.keyframes[keyframeKey]
-        const rawKeyframe: RawKeyframeProps = {
-          keyframeKey: edKeyframe.id,
-          value: edKeyframe.value,
-          time: edKeyframe.time,
-          handles: [
-            edKeyframe.handles.in.x,
-            edKeyframe.handles.in.y,
-            edKeyframe.handles.out.x,
-            edKeyframe.handles.out.y,
-          ]
-        }
-        keyframes.push(rawKeyframe);
-        keyframes.sort((a, b) => a.time - b.time);
-
-        if (DEBUG_HYDRATION) {
-          console.log(`AnimationEngine: Keyframe '${keyframeKey}' added to track '${trackKey}'.`);
-        }
-        break;
-      }
-
-      case 'update': {
-        const track = useTimelineManagerAPI.getState().tracks[trackKey];
-        const edKeyframe = track.keyframes[keyframeKey];
-        keyframes.forEach((kf, index) => {
-          if (kf.keyframeKey === keyframeKey) {
-            const keyframe = keyframes[index]
-            keyframe.value = edKeyframe.value;
-            keyframe.time = edKeyframe.time;
-            keyframe.handles = [
-              edKeyframe.handles.in.x,
-              edKeyframe.handles.in.y,
-              edKeyframe.handles.out.x,
-              edKeyframe.handles.out.y,
-            ]
-          }
-        });
-        keyframes.sort((a, b) => a.time - b.time);
-
-        if (DEBUG_HYDRATION) {
-          console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated in track '${trackKey}'.`);
-        }
-        break;
-      }
-
-      case 'updateTime': {
-        if (typeof newData === 'number') {
-          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
-          console.log("Tryng to find keyframe with keyframeKey", keyframeKey, "on ", keyframes)
-          console.log("Result ", targetedKeyframe)
-          targetedKeyframe.time = newData;
-          keyframes.sort((a, b) => a.time - b.time);
-
-          if (DEBUG_HYDRATION) {
-            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Time in track '${trackKey}' with value '${newData}'`);
-          }
-        } else {
-          console.error(`Invalid newData for 'updateTime'. Expected a number but received:`, newData);
-        }
-        break;
-      }
-
-      case 'updateValue': {
-        if (typeof newData === 'number') {
-          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
-          targetedKeyframe.value = newData;
-
-          if (DEBUG_HYDRATION) {
-            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Value in track '${trackKey}' with value '${newData}'`);
-          }
-        } else {
-          console.error(`Invalid newData for 'updateValue'. Expected a number but received:`, newData);
-        }
-        break;
-      }
-
-      case 'updateHandles': {
-        if (Array.isArray(newData) && newData.length === 4 && newData.every(v => typeof v === 'number')) {
-          const targetedKeyframe = keyframes.find(kf => kf.keyframeKey === keyframeKey)
-          targetedKeyframe.handles = newData as [number, number, number, number];
-
-          if (DEBUG_HYDRATION) {
-            console.log(`AnimationEngine: Keyframe '${keyframeKey}' updated Handles in track '${trackKey}' with value '${newData}'`);
-          }
-        } else {
-          console.error(`Invalid newData for 'updateHandles'. Expected [number, number, number, number] but received:`, newData);
-        }
-        break;
-      }
-
-
-      case "remove": {
-        track.keyframes = track.keyframes.filter(kf => kf.keyframeKey !== keyframeKey);
-
-        if (DEBUG_HYDRATION) console.log(`VXAnimationEngine KeyframeRefresher: Keyframe ${keyframeKey} removed from track ${trackKey}`);
-        break;
-      }
-
-      default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateKeyframe.`);
-        return;
-      }
-    }
-
-    if (reRender) {
+    if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
-    }
 
     invalidate();
-
-    // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
@@ -1250,70 +1064,23 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
     const { action, staticPropKey, reRender = true, newValue } = params;
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Static Prop Hydration is NOT allowed in Production Mode.")
+      logReportingService.logError(
+        "StaticProp Hydration is NOT allowed in Production Mode", 
+        {module: LOG_MODULE, functionName: "hydrateStaticProp"})
       return;
     }
 
-    const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
+    // @ts-expect-error
+    this._hydrationService.hydrateStaticProp({
+      staticPropKey,
+      action,
+      newValue
+    })
 
-    if (DEBUG_HYDRATION) {
-      console.log(`AnimationEngine: Hydrating static property '${staticPropKey}'.`);
-    }
-
-    let rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
-    if (!rawObject) {
-      rawObject = this._initRawObjectOnTimeline(vxkey);
-    }
-
-
-    switch (action) {
-      case 'create': {
-        const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
-
-        if (!propExists) {
-          const edStaticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
-          const staticProp: IStaticProps = {
-            value: edStaticProp.value,
-            vxkey: edStaticProp.vxkey,
-            propertyPath: edStaticProp.propertyPath
-          }
-          rawObject.staticProps.push(staticProp);
-        } else {
-          console.warn(`AnimationEngine: Static property '${propertyPath}' already exists on object '${vxkey}'.`);
-        }
-        break;
-      }
-
-      case 'update': {
-        const targetStaticProp = rawObject.staticProps.find(sp =>
-          `${vxkey}.${sp.propertyPath}` === staticPropKey)
-
-        if (targetStaticProp)
-          targetStaticProp.value = newValue;
-        else
-          console.warn(`AnimationEngine: Could not find staticProp with key ${staticPropKey}`)
-
-        break;
-      }
-
-      case 'remove': {
-        rawObject.staticProps = rawObject.staticProps.filter(prop => prop.propertyPath !== propertyPath);
-        break;
-      }
-
-      default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateStaticProp.`);
-        return;
-      }
-    }
-
-    if (reRender) {
-      this.reRender({ force: true, cause: `refresh action: ${action} static prop ${staticPropKey}` });
-    }
+    if (reRender)
+      this.reRender({ force: true, cause: `refresh action: ${action} staticPropKey ${staticPropKey}` });
 
     invalidate();
-
-    // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
@@ -1331,120 +1098,24 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
     const { action, splineKey, reRender, nodeIndex, newData, initialTension } = params
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      logReportingService.logError("Spline Hydration is NOT allowed in Production Mode",
+        {module: LOG_MODULE, functionName: "hydrateSpline"})
       return;
     }
 
-    const timelineManagerAPI = useTimelineManagerAPI.getState();
-
-    const hydrateWasmSpline = () => {
-      const rawSpline = this.currentTimeline.splines[splineKey]
-      const spline = this._splinesCache.get(splineKey)
-      if (spline)
-        spline.free();
-
-      const newWasmSpline = new wasm_Spline(
-        rawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])),
-        false,
-        0.5
-      );
-      this._splinesCache.set(splineKey, newWasmSpline);
-    }
-
-    switch (action) {
-      case "create": {
-        const edSpline = timelineManagerAPI.splines[splineKey];
-
-        const newRawSpline: RawSpline = {
-          splineKey: edSpline.splineKey,
-          vxkey: edSpline.vxkey,
-          nodes: [...edSpline.nodes]
-        }
-
-        // set the currentTimeline spline
-        if (!this.currentTimeline.splines)
-          this.currentTimeline.splines = {};
-
-        this.currentTimeline.splines[splineKey] = newRawSpline;
-
-        // Create the WebAssembly spline object in the cache if not already created
-        if (!this._splinesCache.get(splineKey)) {
-          const wasmSpline = new wasm_Spline(
-            newRawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])), 
-            false, 
-            initialTension
-          );
-          this._splinesCache.set(splineKey, wasmSpline);
-        }
-        break;
-      }
-      case "remove": {
-        delete this.currentTimeline.splines[splineKey];
-
-        const spline = this._splinesCache.get(splineKey)
-        // Free the WebAssembly object in the cache
-        if (spline) {
-          spline.free();
-          this._splinesCache.delete(splineKey)
-        }
-        break;
-      }
-      case "clone": {
-        const spline = timelineManagerAPI.splines[splineKey];
-        if (!spline) {
-          console.warn(`AnimationEngine: Spline '${splineKey}' not found in spline state.`);
-          return;
-        }
-
-        // Update currentTimeline splines
-        this.currentTimeline.splines = {
-          ...this.currentTimeline.splines,
-          [splineKey]: {
-            ...this.currentTimeline.splines[splineKey],
-            nodes: [...spline.nodes] // Clone the nodes array
-          }
-        };
-
-        hydrateWasmSpline();
-
-        break;
-      }
-      case "updateNode": {
-        // Clone the entire splines object to make it mutable
-        const rawSpline = this.currentTimeline.splines[splineKey];
-        const newNodes = [...rawSpline.nodes];
-        newNodes[nodeIndex] = newData
-
-        rawSpline.nodes = newNodes;
-
-        // Reassign the modified spline back to the splines object
-        this.currentTimeline.splines[splineKey] = rawSpline;
-
-        hydrateWasmSpline();
-        break;
-      }
-      case "removeNode": {
-        const rawSpline = this.currentTimeline.splines[splineKey];
-        const newNodes = [...rawSpline.nodes]; // Creates a shallow copy
-        newNodes.splice(nodeIndex, 1);
-        
-        rawSpline.nodes = newNodes
-
-        hydrateWasmSpline();
-        break;
-      }
-      default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateSpline.`);
-        return;
-      }
-    }
+    // @ts-expect-error
+    this._hydrationService.hydrateSpline({
+      splineKey,
+      action,
+      nodeIndex,
+      newData,
+      initialTension
+    })
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
 
     invalidate();
-
-    // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
@@ -1465,47 +1136,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     vxkey: string,
   ) {
     if (this._IS_PRODUCTION) {
-      console.error("AnimationEngine: Timeline Hydration is NOT allowed in Production Mode.")
+      logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",
+        {module: LOG_MODULE, functionName: "hydrateSetting"})
       return;
     }
 
-    if (!this.currentTimeline.settings) {
-      this.currentTimeline.settings = {};
-    }
-
-    if (!this.currentTimeline.settings[vxkey]) {
-      this.currentTimeline.settings[vxkey] = {};
-    }
-
-    switch (action) {
-      case 'set': {
-        const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey];
-        if (value === undefined) {
-          console.warn(`AnimationEngine: Setting '${settingKey}' not found for object '${vxkey}'.`);
-          return;
-        }
-        this.currentTimeline.settings[vxkey][settingKey] = value;
-        break;
-      }
-
-      case 'remove': {
-        delete this.currentTimeline.settings[vxkey][settingKey];
-        // Remove the object if no settings remain;
-        if (Object.keys(this.currentTimeline.settings[vxkey]).length === 0) {
-          delete this.currentTimeline.settings[vxkey];
-        }
-        break;
-      }
-
-      default: {
-        console.warn(`AnimationEngine: Unknown action '${action}' for hydrateSetting.`);
-        return;
-      }
-    }
+    this._hydrationService.hydrateSetting(action, settingKey, vxkey)
 
     invalidate();
-
-    // Save data to local storage
     useSourceManagerAPI.getState().saveDataToLocalStorage();
   }
 
@@ -1523,73 +1161,4 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const factor = Math.pow(10, decimals);
     return Math.trunc(num * factor) / factor;
   }
-
-
-
-
-
-
-  /**
-   * Validates and corrects the precision of values in the given timelines.
-   * @param timelines - A record of timelines to validate and fix.
-   * @returns An array of validation error messages if any values needed correction.
-   */
-  static validateAndFixTimelines(timelines: Record<string, ITimeline>): string[] {
-    console.log("AnimationEngine: Validating Timelines ", timelines)
-    const precision = AnimationEngine.ENGINE_PRECISION;
-    const errors: string[] = [];
-
-    const isValidPrecision = (value: number): boolean => {
-      const factor = Math.pow(10, precision);
-      return Math.round(value * factor) / factor === value;
-    };
-
-    Object.entries(timelines).forEach(([timelineId, timeline]) => {
-      // Validate and fix timeline length precision
-      if (!isValidPrecision(timeline.length)) {
-        errors.push(`Timeline "${timelineId}" has invalid length precision: ${timeline.length}`);
-        timeline.length = AnimationEngine.truncateToDecimals(timeline.length, precision);
-      }
-
-      // Validate and fix objects and their properties
-      timeline.objects?.forEach((object) => {
-        object.tracks.forEach(track => {
-          track.keyframes.forEach(keyframe => {
-            if (!isValidPrecision(keyframe.time)) {
-              errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
-              keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);
-            }
-            if (!isValidPrecision(keyframe.value)) {
-              errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
-              keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
-            }
-          });
-        });
-
-        object.staticProps.forEach(staticProp => {
-          if (!isValidPrecision(staticProp.value)) {
-            errors.push(`Static prop "${staticProp.propertyPath}" in "${object.vxkey}" has invalid precision: ${staticProp.value}`);
-            staticProp.value = AnimationEngine.truncateToDecimals(staticProp.value, precision);
-          }
-        });
-      });
-
-      // Validate and fix splines and nodes
-      if (timeline.splines)
-        Object.values(timeline.splines).forEach(spline => {
-          spline.nodes.forEach((node, index) => {
-            node.forEach((coord, coordIndex) => {
-              if (!isValidPrecision(coord)) {
-                errors.push(`Node ${index} in spline "${spline.splineKey}" has invalid precision for coordinate ${coordIndex}: ${coord}`);
-                node[coordIndex] = AnimationEngine.truncateToDecimals(coord, precision);
-              }
-            });
-          });
-        });
-
-    });
-
-    return errors;
-  }
-
 }
