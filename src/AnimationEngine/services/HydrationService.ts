@@ -2,7 +2,6 @@ import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/util
 import { IStaticProps, ITimeline, RawKeyframeProps, RawObjectProps, RawSpline, RawTrackProps } from "../types/track";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams } from "../types/HydrationService";
-import { IS_PRODUCTION, IS_DEVELOPMENT } from "@vxengine/engine";
 import { invalidate } from "@react-three/fiber";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
@@ -23,8 +22,10 @@ const DEBUG_SETTING_HYDRATION = false;
 
 export class HydrationService {
     constructor(
-        private timeline: ITimeline, 
-        private _splinesCache: Map<string,wasm_Spline>
+        private _IS_PRODUCTION: boolean,
+        private _IS_DEVELOPMENT: boolean,
+        private timeline: ITimeline,
+        private _splinesCache: Map<string, wasm_Spline>
     ) { }
 
     /**
@@ -39,9 +40,9 @@ export class HydrationService {
         if (rawObject) {
             logReportingService.logWarning(
                 `Raw Object with vxkey ${vxkey} already exists in the current timeline.`,
-                {module:LOG_MODULE, functionName:"_initRawObjectOnTimeline"}
+                { module: LOG_MODULE, functionName: "_initRawObjectOnTimeline" }
             )
-                
+
             return rawObject;
         }
 
@@ -66,17 +67,24 @@ export class HydrationService {
         trackKey: string,
         action: 'create' | 'remove',
     ) {
+        if (this._IS_PRODUCTION) {
+            logReportingService.logError("Timeline Hydration is NOT allowed in Production Mode", {
+                module: LOG_MODULE, functionName: "hydrateTrack"
+            })
+            return;
+        }
+
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         let rawObject = this.timeline.objects.find(rawObj => rawObj.vxkey === vxkey);
 
-        const LOG_CONTEXT = {module:LOG_MODULE, functionName:"hydrateTrack", additionalData:{action}}
+        const LOG_CONTEXT = { module: LOG_MODULE, functionName: "hydrateTrack", additionalData: { action } }
 
         if (!rawObject)
             rawObject = this._initRawObjectOnTimeline(vxkey);
 
 
         if (DEBUG_TRACK_HYDRATION)
-            logReportingService.logInfo(`Hydrating track ${trackKey}`,LOG_CONTEXT)
+            logReportingService.logInfo(`Hydrating track ${trackKey}`, LOG_CONTEXT)
 
 
         switch (action) {
@@ -104,8 +112,8 @@ export class HydrationService {
                 rawObject.tracks.push(rawTrack);
 
                 if (DEBUG_TRACK_HYDRATION)
-                    logReportingService.logInfo(`Track ${trackKey} has been created`,LOG_CONTEXT)
-                
+                    logReportingService.logInfo(`Track ${trackKey} has been created`, LOG_CONTEXT)
+
                 break;
             }
 
@@ -113,13 +121,13 @@ export class HydrationService {
                 rawObject.tracks = rawObject.tracks.filter(rawTrack => rawTrack.propertyPath !== propertyPath);
 
                 if (DEBUG_TRACK_HYDRATION)
-                    logReportingService.logInfo(`Track ${trackKey} has been removed`,LOG_CONTEXT)
-                
+                    logReportingService.logInfo(`Track ${trackKey} has been removed`, LOG_CONTEXT)
+
                 break;
             }
 
             default: {
-                logReportingService.logWarning(`Unknown action ${action}`,LOG_CONTEXT)
+                logReportingService.logWarning(`Unknown action ${action}`, LOG_CONTEXT)
                 return;
             }
         }
@@ -138,13 +146,20 @@ export class HydrationService {
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
     hydrateKeyframe<A extends HydrateKeyframeAction>(params: HydrateKeyframeParams<A>) {
+        if (this._IS_PRODUCTION) {
+            logReportingService.logError("Keyframe Hydration is NOT allowed in Production Mode", {
+                module: LOG_MODULE, functionName: "hydrateKeyframe"
+            })
+            return;
+        }
+
         const { trackKey, action, keyframeKey, newData } = params;
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-        const LOG_CONTEXT = {module:LOG_MODULE, functionName:"hydrateKeyframe", additionalData:{action}}
+        const LOG_CONTEXT = { module: LOG_MODULE, functionName: "hydrateKeyframe", additionalData: { action } }
 
         if (DEBUG_KEYFRAME_HYDRATION)
-            logReportingService.logInfo(`Hydrating keyframe ${keyframeKey}`,LOG_CONTEXT)
+            logReportingService.logInfo(`Hydrating keyframe ${keyframeKey}`, LOG_CONTEXT)
 
         let rawObject = this.timeline.objects.find(obj => obj.vxkey === vxkey);
         if (!rawObject) {
@@ -154,7 +169,7 @@ export class HydrationService {
         const track = rawObject.tracks.find(t => t.propertyPath === propertyPath);
         if (!track) {
             logReportingService.logWarning(
-                `Track with propertyPath ${propertyPath} was not found on object ${vxkey}`,LOG_CONTEXT)
+                `Track with propertyPath ${propertyPath} was not found on object ${vxkey}`, LOG_CONTEXT)
             return;
         }
 
@@ -180,8 +195,8 @@ export class HydrationService {
 
                 if (DEBUG_KEYFRAME_HYDRATION)
                     logReportingService.logInfo(
-                        `Keyframe ${keyframeKey} has been added to track${trackKey}`,LOG_CONTEXT)    
-                
+                        `Keyframe ${keyframeKey} has been added to track${trackKey}`, LOG_CONTEXT)
+
                 break;
             }
 
@@ -205,7 +220,7 @@ export class HydrationService {
 
                 if (DEBUG_KEYFRAME_HYDRATION) {
                     logReportingService.logInfo(
-                        `Keyframe ${keyframeKey} updated in track ${trackKey}`,LOG_CONTEXT)
+                        `Keyframe ${keyframeKey} updated in track ${trackKey}`, LOG_CONTEXT)
                 }
                 break;
             }
@@ -218,7 +233,7 @@ export class HydrationService {
 
                     if (DEBUG_KEYFRAME_HYDRATION)
                         logReportingService.logInfo(
-                            `Keyframe ${keyframeKey} in track ${trackKey} has had its time updated`,LOG_CONTEXT)
+                            `Keyframe ${keyframeKey} in track ${trackKey} has had its time updated`, LOG_CONTEXT)
                 } else {
                     logReportingService.logError(
                         `Invalid newData param for action: ${action}. Expected a number but received ${newData}`, LOG_CONTEXT)
@@ -233,7 +248,7 @@ export class HydrationService {
 
                     if (DEBUG_KEYFRAME_HYDRATION)
                         logReportingService.logInfo(
-                            `Keyframe ${keyframeKey} in track ${trackKey} has had its value updated`,LOG_CONTEXT)
+                            `Keyframe ${keyframeKey} in track ${trackKey} has had its value updated`, LOG_CONTEXT)
                 } else {
                     logReportingService.logError(
                         `Invalid newData param for action ${action}. Expected a number but received ${newData}`, LOG_CONTEXT)
@@ -249,7 +264,7 @@ export class HydrationService {
                     if (DEBUG_KEYFRAME_HYDRATION)
                         logReportingService.logInfo(
                             `Keyframe ${keyframeKey} in track ${track} has had its handles updated`, LOG_CONTEXT)
-                } else 
+                } else
                     logReportingService.logError(
                         `Invalid newData param for action ${action}. Expected [number, number, number, number] but received ${newData}`, LOG_CONTEXT)
                 break;
@@ -266,7 +281,7 @@ export class HydrationService {
 
             default: {
                 logReportingService.logWarning(
-                    `Unknown action ${action}`,LOG_CONTEXT)
+                    `Unknown action ${action}`, LOG_CONTEXT)
                 return;
             }
         }
@@ -284,14 +299,21 @@ export class HydrationService {
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
     hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
+        if (this._IS_PRODUCTION) {
+            logReportingService.logError(
+                "StaticProp Hydration is NOT allowed in Production Mode",
+                { module: LOG_MODULE, functionName: "hydrateStaticProp" })
+            return;
+        }
+
         const { action, staticPropKey, reRender = true, newValue } = params;
         const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
 
-        const LOG_CONTEXT = {module:LOG_MODULE, functionName:"hydrateStaticProp", additionalData:{action}}
+        const LOG_CONTEXT = { module: LOG_MODULE, functionName: "hydrateStaticProp", additionalData: { action } }
 
         if (DEBUG_STATICPROP_HYDRATION)
             logReportingService.logInfo(
-                `Hydrating StaticProp ${staticPropKey}`,LOG_CONTEXT)
+                `Hydrating StaticProp ${staticPropKey}`, LOG_CONTEXT)
 
         let rawObject = this.timeline.objects.find(obj => obj.vxkey === vxkey);
         if (!rawObject) {
@@ -313,7 +335,7 @@ export class HydrationService {
                     rawObject.staticProps.push(staticProp);
                 } else {
                     logReportingService.logWarning(
-                        `StaticProp ${staticPropKey} already exists`,LOG_CONTEXT)
+                        `StaticProp ${staticPropKey} already exists`, LOG_CONTEXT)
                 }
                 break;
             }
@@ -326,7 +348,7 @@ export class HydrationService {
                     targetStaticProp.value = newValue;
                 else
                     logReportingService.logWarning(
-                        `Could not find staticProp ${staticPropKey}`,LOG_CONTEXT)
+                        `Could not find staticProp ${staticPropKey}`, LOG_CONTEXT)
 
                 break;
             }
@@ -338,7 +360,7 @@ export class HydrationService {
 
             default: {
                 logReportingService.logWarning(
-                    `Unknown action ${action}`,LOG_CONTEXT)
+                    `Unknown action ${action}`, LOG_CONTEXT)
                 return;
             }
         }
@@ -357,7 +379,13 @@ export class HydrationService {
      */
     hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
         const { action, splineKey, nodeIndex, newData, initialTension } = params
-        const LOG_CONTEXT = {module:"HydrationService", functionName:"hydrateSpline", additionalData:{action}}
+        if (this._IS_PRODUCTION) {
+            logReportingService.logError("Spline Hydration is NOT allowed in Production Mode",
+                { module: LOG_MODULE, functionName: "hydrateSpline" })
+            return;
+        }
+
+        const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSpline", additionalData: { action } }
 
         const timelineManagerAPI = useTimelineManagerAPI.getState();
 
@@ -417,7 +445,7 @@ export class HydrationService {
                 const spline = timelineManagerAPI.splines[splineKey];
                 if (!spline) {
                     logReportingService.logWarning(
-                        `Spline ${splineKey} was not found timelineManagerAPI spline state`,LOG_CONTEXT)
+                        `Spline ${splineKey} was not found timelineManagerAPI spline state`, LOG_CONTEXT)
                     return;
                 }
 
@@ -460,7 +488,7 @@ export class HydrationService {
             }
             default: {
                 logReportingService.logWarning(
-                    `Unknown action ${action}`,LOG_CONTEXT)
+                    `Unknown action ${action}`, LOG_CONTEXT)
                 return;
             }
         }
@@ -482,6 +510,13 @@ export class HydrationService {
         settingKey: string,
         vxkey: string,
     ) {
+        if (this._IS_PRODUCTION) {
+            logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",
+                { module: LOG_MODULE, functionName: "hydrateSetting" })
+            return;
+        }
+
+
         if (!this.timeline.settings) {
             this.timeline.settings = {};
         }
@@ -490,18 +525,18 @@ export class HydrationService {
             this.timeline.settings[vxkey] = {};
         }
 
-        const LOG_CONTEXT = {module:"HydrationService", functionName:"hydrateSetting", additionalData:{action}}
+        const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSetting", additionalData: { action } }
 
         if (DEBUG_SETTING_HYDRATION)
             logReportingService.logInfo(
-                `Hydrating setting ${settingKey}`,LOG_CONTEXT)
+                `Hydrating setting ${settingKey}`, LOG_CONTEXT)
 
         switch (action) {
             case 'set': {
                 const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey];
                 if (value === undefined) {
                     logReportingService.logWarning(
-                        `Setting ${settingKey} was not found for object ${vxkey}`,LOG_CONTEXT)
+                        `Setting ${settingKey} was not found for object ${vxkey}`, LOG_CONTEXT)
                     return;
                 }
                 this.timeline.settings[vxkey][settingKey] = value;
@@ -519,7 +554,7 @@ export class HydrationService {
 
             default: {
                 logReportingService.logWarning(
-                    `Unknown action ${action}`,LOG_CONTEXT)
+                    `Unknown action ${action}`, LOG_CONTEXT)
                 return;
             }
         }

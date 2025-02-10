@@ -31,9 +31,10 @@ declare module '@react-three/fiber' {
 import { CanvasProps } from "@react-three/fiber";
 import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import { animationEngineInstance, IS_DEVELOPMENT, useVXEngine } from '@vxengine/engine'
+import { useVXEngine } from '@vxengine/engine'
 import VXRendererUtils from '@vxengine/utils/rendererUtils'
 import { VXObjectParams } from '@vxengine/vxobject/types'
+import animationEngineInstance from '@vxengine/singleton'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -53,6 +54,8 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
   className
 }) => {
   const { gl: glProps,  ...restCanvasProps } = canvasProps
+
+  const { IS_DEVELOPMENT } = useVXEngine();
 
   return (
     <div className={"w-screen h-screen fixed top-0 z-[-1]" + " " + className}>
@@ -113,6 +116,7 @@ const sceneParams: VXObjectParams = {
 
 const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);
+  const { IS_DEVELOPMENT } = useVXEngine();
   
   useLayoutEffect(() => {
     const addObject = useVXObjectStore.getState().addObject;
@@ -137,7 +141,7 @@ const SceneDriver = React.memo(() => {
       disabledParams,
       parentKey: "global"
     }
-    addObject(newSceneEntity);
+    addObject(newSceneEntity, IS_DEVELOPMENT);
     animationEngineInstance.initObjectOnMount(newSceneEntity);
 
   }, [])

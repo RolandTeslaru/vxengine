@@ -7,10 +7,10 @@ import SkipBack from "@geist-ui/icons/skipBack"
 import SkipForward from "@geist-ui/icons/skipForward"
 
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
-import { animationEngineInstance } from "@vxengine/engine";
 import TimeRender from "./TimeRender";
 import { useTimelineManagerAPI } from "../..";
 import { useTimelineEditorAPI } from "../store";
+import animationEngineInstance from "@vxengine/singleton";
 
 const ProgressionControls = React.memo(() => {
     const isPlaying = useAnimationEngineAPI(state => state.isPlaying)

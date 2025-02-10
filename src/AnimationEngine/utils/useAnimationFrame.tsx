@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { animationEngineInstance } from '@vxengine/engine';
 import { EventTypes } from '../events';
+import animationEngineInstance from '@vxengine/singleton';
 
 export function useAnimationFrame(
   callback,

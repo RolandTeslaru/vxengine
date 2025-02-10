@@ -14,8 +14,7 @@ import PopoverShowTrackData from "@vxengine/components/ui/Popovers/PopoverShowTr
 import Box from '@geist-ui/icons/box'
 import Maximize2 from "@geist-ui/icons/maximize2";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
-import s from "./entityList.module.scss"
-import { IS_PRODUCTION, useVXEngine } from "@vxengine/engine";
+import { useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "../../store";
 
 const TRACK_HEIGHT = 34;
@@ -52,6 +51,8 @@ const TrackVerticalList = memo(() => {
             return filtredNode;
         }, {})
     }, [trackTree, searchQuery])
+
+    const { IS_PRODUCTION } = useVXEngine()
 
     return (
         <div className={`w-full h-full flex flex-col rounded-2xl relative overflow-hidden border border-neutral-800 bg-neutral-900 bg-opacity-90`}>

@@ -13,6 +13,7 @@ import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
 import { SplineCurve } from 'three';
 import { extend } from '@react-three/fiber';
 import { debounce } from 'lodash';
+import { useVXEngine } from '@vxengine/engine';
 
 interface SplineProps {
     splineKey: string;
@@ -28,6 +29,7 @@ interface SplineProps {
 // This handles only the vxObject part
 
 const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
+    const { IS_DEVELOPMENT } = useVXEngine();
     const splineKey = `${vxkey}.spline`
     const edSpline = useTimelineManagerAPI(state => state.splines[splineKey]);
     if (!edSpline)
@@ -42,7 +44,6 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
     const [tension, setTension] = useState(0.5);
     const debouncedSetTension = useMemo(
         () => debounce((newTension) => {
-            console.log("Setting new tensioin" , newTension)
             setTension(newTension)
         }, 200),
         [] 
@@ -80,8 +81,8 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
             parentKey: "splines"
         }
 
-        addObject(vxSpline);
-        return () => removeObject(splineKey);
+        addObject(vxSpline, IS_DEVELOPMENT);
+        return () => removeObject(splineKey, IS_DEVELOPMENT);
     }, [])
 
     if (!nodes) return
@@ -92,7 +93,7 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
         <group>
             {nodes.map((nodePosition, index) => (
                 <SplineNode splineKey={splineKey} position={nodePosition} index={index} key={index} />
-            ))}
+            ))}            
             <CatmullRomLine
                 points={nodes}
                 curveType="catmullrom"

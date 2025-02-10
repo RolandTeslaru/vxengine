@@ -6,46 +6,46 @@
 
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EffectComposer } from 'three-stdlib'
-import { VXEngineProviderProps, VXEngineStoreProps } from './types/engine'
-import { createStore, useStore, StoreApi } from 'zustand'
+import { VXEngineProviderProps } from './types/engine'
 import { useSourceManagerAPI } from './managers/SourceManager/store'
-import { AnimationEngine } from './AnimationEngine/engine'
-import { ITimeline } from './AnimationEngine/types/track'
 
 import "./globals.css"
 
-import { closeDialogStatic, pushDialogStatic } from './managers/UIManager/store'
-import { AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from './components/shadcn/alertDialog'
+import { pushDialogStatic } from './managers/UIManager/store'
 import { DANGER_ProjectNameUnSync } from './components/ui/DialogAlerts/Danger'
+import animationEngineInstance from './singleton'
 
 interface VXEngineContextProps {
   composer: React.MutableRefObject<EffectComposer | null>
+  IS_PRODUCTION: boolean
+  IS_DEVELOPMENT: boolean
 }
 
 const VXEngineContext = createContext<VXEngineContextProps>({
-  composer: { current: null }
+  composer: { current: null },
+  IS_PRODUCTION: false,
+  IS_DEVELOPMENT: false
 })
-
-// This flag ensures that the timelines are loaded only once.
-// It prevents re-running the timeline loading logic during React Fast Refresh or re-renders.
-let areTimelinesLoaded = false;
-export const animationEngineInstance = new AnimationEngine();
-
-let propsValidated = false;
-export let IS_PRODUCTION = false;
-export let IS_DEVELOPMENT = false;
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
   const { children, nodeEnv, projectName, animations_json } = props;
 
   const composer = useRef<EffectComposer | null>(null)
+  const isProjectLoaded = useRef(false);
+  const isProjectValidated = useRef(false);
 
-  IS_DEVELOPMENT = nodeEnv === "development"
-  IS_PRODUCTION = !IS_DEVELOPMENT
+  const IS_DEVELOPMENT = nodeEnv === "development"
+  const IS_PRODUCTION = !IS_DEVELOPMENT
 
+  useLayoutEffect(() => {
+    animationEngineInstance?.loadProject(animations_json, nodeEnv as "production" | "development");
+  }, [animations_json, nodeEnv])
+
+
+  
   // Validate Props
   useLayoutEffect(() => {
-    if(propsValidated) return;
+    if(isProjectValidated.current) return;
 
     let id_alertProjectNameUnSync;
 
@@ -57,9 +57,11 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
         id: id_alertProjectNameUnSync,
       })
     }
-    propsValidated = true;
+    isProjectValidated.current = true;
   }, [props])
 
+
+  
   useEffect(() => {
     const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
 
@@ -72,14 +74,11 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
     }
   }, [])
 
-  if (!areTimelinesLoaded) {
-    animationEngineInstance?.loadProject(animations_json, nodeEnv as "production" | "development");
-    areTimelinesLoaded = true;
-  }
-
   return (
     <VXEngineContext.Provider value={{
-      composer
+      composer,
+      IS_PRODUCTION,
+      IS_DEVELOPMENT
     }}>
       {children}
     </VXEngineContext.Provider>
@@ -87,26 +86,3 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 })
 
 export const useVXEngine = () => useContext(VXEngineContext)
-
-
-
-
-let hasBeenValidated = false;
-
-const validateProps = (props: VXEngineProviderProps): boolean => {
-  let isReady = true;
-  if (hasBeenValidated) return isReady;
-
-  const { projectName, animations_json } = props
-
-  if (projectName !== animations_json.projectName) {
-    pushDialogStatic({
-      content: <DANGER_ProjectNameUnSync diskJsonProjectName={animations_json.projectName} providerProjectName={projectName} />, 
-      type: "danger"
-    })
-    isReady = false
-  }
-
-  hasBeenValidated = true;
-  return isReady
-}

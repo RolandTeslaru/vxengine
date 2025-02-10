@@ -3,6 +3,7 @@ import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/Object
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Html } from '@react-three/drei';
 import { vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import { useVXEngine } from '@vxengine/engine';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -13,12 +14,13 @@ export interface SplineNodeProps {
 
 const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, color = "white" }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef();
 
     const nodeKey = useMemo(() => `${splineKey}.node${index}`, []);
+
 
     useLayoutEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
@@ -34,9 +36,9 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
             name: `node ${index}`
         }
 
-        addObject(splineNodeObject, { icon: "SplineNode"});
+        addObject(splineNodeObject, IS_DEVELOPMENT, { icon: "SplineNode"});
 
-        return () => removeObject(nodeKey)
+        return () => removeObject(nodeKey, IS_DEVELOPMENT)
     }, [])
 
 

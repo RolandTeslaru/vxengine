@@ -6,13 +6,14 @@ import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
-import { animationEngineInstance, IS_DEVELOPMENT, useVXEngine } from "@vxengine/engine";
+import { useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, ThreeEvent, useFrame } from '@react-three/fiber';
 import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/types/objectStore";
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { VXObjectParams } from "./types";
+import animationEngineInstance from "@vxengine/singleton";
 
 export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
@@ -57,6 +58,8 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
 
         const vxObject = useVXObjectStore(state => state.objects[vxkey])
+        const { IS_DEVELOPMENT } = useVXEngine();
+
 
         const selectObjects = useObjectManagerAPI(state => state.selectObjects)
         const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
@@ -101,10 +104,13 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
                 parentKey,
             };            
             
-            addObject(newVXEntity, {icon});
+            addObject(newVXEntity, IS_DEVELOPMENT, {icon});
             animationEngineInstance.initObjectOnMount(newVXEntity);
 
-            return () => removeObject(vxkey)
+            return () => {
+                animationEngineInstance.handleObjectUnMount(vxkey);
+                removeObject(vxkey, IS_DEVELOPMENT)
+            }
         }, []);
 
         // const handlePointerOver = () => setHoveredObject(vxObject);

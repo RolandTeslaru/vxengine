@@ -2,9 +2,9 @@ import { DragEvent, Interactable } from "@interactjs/types";
 import { cursorRef } from "@vxengine/utils/useRefStore";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { parserPixelToTime, parserTimeToPixel, updatePixelByScale } from "@vxengine/managers/TimelineManager/utils/deal_data";
-import { animationEngineInstance } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import { selectKeyframeSTATIC as selectKeyframe } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
+import animationEngineInstance from "@vxengine/singleton";
 
 export const cursorStartLeft = 20;
 

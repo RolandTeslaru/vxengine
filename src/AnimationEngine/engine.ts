@@ -13,15 +13,11 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store'
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { useAnimationEngineAPI } from './store';
-import { useObjectSettingsAPI } from '@vxengine/managers/ObjectManager';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 import { cloneDeep } from 'lodash';
-// import wasmUrl from "../wasm/pkg/rust_bg.wasm"
 
-import init, {
+import {
   Spline as wasm_Spline,
-  Vector3 as wasm_Vector3,
-  interpolate_number as wasm_interpolateNumber,
 } from '../wasm/pkg';
 
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
@@ -31,6 +27,8 @@ import { DiskProjectProps } from '@vxengine/types/engine';
 import { defaultSideEffects } from './defaultSideEffects';
 import { HydrationService } from './services/HydrationService';
 import { logReportingService } from './services/LogReportingService';
+import { WasmService } from './services/WasmService';
+import { SplineService } from './services/SplineService';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
@@ -41,13 +39,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _id: string
   private _timerId: number;
   private _prev: number;
-  private _wasmReady: Promise<void>
-  private _isWasmInitialized: boolean = false
   private _isReady: boolean = false
 
   private _splinesCache: Map<string, wasm_Spline> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
+  private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
 
   private _currentTimeline: ITimeline;
@@ -61,8 +58,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _IS_PRODUCTION: boolean = false;
 
   private _hydrationService: HydrationService;
+  private _wasmService: WasmService;
+  private _splineService: SplineService
 
   static readonly ENGINE_PRECISION = 4
+  static readonly VALUE_CHANGE_THRESHOLD = 0.001;
 
   static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
 
@@ -70,46 +70,33 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     super(new Events());
 
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
-    logReportingService.logInfo(`Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
+    logReportingService.logInfo(
+      `Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
 
     this._interpolateNumberFunction = js_interpolateNumber;
-    this._wasmReady = this._initializeWasm();
+    this._wasmService = new WasmService(
+       "/assets/wasm/rust_bg.wasm",
+       (wasm_interpolator) => {
+        this._interpolateNumberFunction = wasm_interpolator;
+       }
+    );
+    this._splineService = new SplineService(this._wasmService);
     this._currentTimeline = null
   }
 
 
-  /**
-   * Initializes the WebAssembly module and sets the interpolation function.
-   */
-  private async _initializeWasm() {
-    const wasmUrl = "/assets/wasm/rust_bg.wasm"
-    const LOG_CONTEXT = { module: LOG_MODULE, functionName: "_initializeWasm" }
-    
-    logReportingService.logInfo(
-      `Initializing WASM Driver with URL: ${wasmUrl}`, LOG_CONTEXT)
-
-    try {
-      await init(wasmUrl); // Wait for the WebAssembly module to initialize
-      this._isWasmInitialized = true;
-      this._interpolateNumberFunction = wasm_interpolateNumber;
-
-      logReportingService.logInfo(
-        `WASM Driver initialized successfully`,LOG_CONTEXT)
-    } catch (error) {
-      logReportingService.logError(error, LOG_CONTEXT)
-    }
-  }
 
 
 
 
 
+  public get timelines() { return useAnimationEngineAPI.getState().timelines; }
+  public get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
+  public get isPaused() { return !this.isPlaying; }
+  public get playRate() { return useAnimationEngineAPI.getState().playRate }
+  public get currentTimeline() { return this._currentTimeline }
 
-  get timelines() { return useAnimationEngineAPI.getState().timelines; }
-  get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
-  get isPaused() { return !this.isPlaying; }
-  get playRate() { return useAnimationEngineAPI.getState().playRate }
-  get currentTimeline() { return this._currentTimeline }
+  public get splineService(): SplineService {return this._splineService;}
 
   setIsPlaying(value: boolean) { useAnimationEngineAPI.setState({ isPlaying: value }) }
 
@@ -123,13 +110,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param timelineId - The identifier of the timeline to set as current.
    */
   setCurrentTimeline(timelineId: string) {
-    const LOG_CONTEXT= {module:"AnimationEngine", functionName:"setCurrentTimeline", additionalData:{timelines:this.timelines}}
+    const LOG_CONTEXT = { 
+      module: "AnimationEngine", 
+      functionName: "setCurrentTimeline", 
+      additionalData: { timelines: this.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION } 
+    }
     // Update the current timeline ID in the state
+
+    logReportingService.logInfo(`Setting current timeline to ${timelineId}`, LOG_CONTEXT)
+
     const selectedTimeline: ITimeline = this.timelines[timelineId];
 
     if (!selectedTimeline)
       logReportingService.logFatal(
-        `Timeline with id ${timelineId} was not found`,LOG_CONTEXT)
+        `Timeline with id ${timelineId} was not found`, LOG_CONTEXT)
 
     // Set the states in the store
     useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
@@ -141,18 +135,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
     // Cache the splines asynchronously
-    this.cacheSplines(rawSplines).then(() => {
+    this._splineService.cacheSplines(rawSplines).then(() => {
       // Re-render after splines are cached
       this.reRender({ time: this._currentTime, force: true });
     }).catch(error => {
       logReportingService.logError(
-        `Error caching splines, ${error}`,LOG_CONTEXT)
+        `Error caching splines, ${error}`, LOG_CONTEXT)
     });
 
     if (this._IS_DEVELOPMENT) {
-      this._hydrationService = new HydrationService(this._currentTimeline, this._splinesCache);
+      this._hydrationService = new HydrationService(this._IS_PRODUCTION, this._IS_DEVELOPMENT, this._currentTimeline, this._splinesCache);
       // Set the editor data
-      useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines));
+      useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT);
       useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
     }
   }
@@ -173,7 +167,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (isTick) {
       this.trigger('timeUpdatedByEngine', { time, engine: this });
     } else {
-      this._applyAllKeyframes(time, true);
+      this._applyTracksOnTimeline(time)
       this.trigger('timeUpdatedByEditor', { time, engine: this });
 
       invalidate();
@@ -192,10 +186,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     return this._currentTime;
   }
 
-  getSpline(splineKey: string) {
-    return this._splinesCache.get(splineKey)
-  }
-
 
 
 
@@ -210,19 +200,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     else if (nodeEnv === "development")
       this._IS_DEVELOPMENT = true;
 
+    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: {IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT:this._IS_DEVELOPMENT}}
+    
+    logReportingService.logInfo(
+      `Loading Project ${diskData.projectName} in ${(nodeEnv === "production") && "production mode"} ${(nodeEnv === "development") && "dev mode"}`, LOG_CONTEXT)
+
     const timelines = diskData.timelines
     useAnimationEngineAPI.setState({ projectName: diskData.projectName })
-
-    if (this._IS_DEVELOPMENT) {
+    
+    if (this._IS_DEVELOPMENT && typeof window !== 'undefined') {
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
-
-      if (syncResult?.status === 'out_of_sync') {
+      if (syncResult?.status === 'out_of_sync')
         this.setIsPlaying(false);
-      }
     }
-    else if (this._IS_PRODUCTION) {
+    else
       useAnimationEngineAPI.setState({ timelines: timelines })
-    }
 
     // Load the first timeline
     const firstTimeline = Object.values(timelines)[0];
@@ -231,8 +223,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.setCurrentTimeline(firstTimelineID);
 
     logReportingService.logInfo(
-      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`,
-      {module: LOG_MODULE, functionName: "loadProject" })
+      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`,LOG_CONTEXT)
 
     // Initialize the core UI
     useUIManagerAPI.getState().setMountCoreUI(true);
@@ -251,25 +242,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   *   - force: Whether to force re-rendering even if the animation is playing.
   *   - cause: A string describing the cause of the re-render.
   */
-  reRender(params: {
-    time?: number;
-    force?: boolean;
-    cause?: string;
-  } = {}) {
+  reRender(params: { time?: number; force?: boolean; cause?: string; } = {}) {
     const { time, force = false, cause } = params;
 
-    if (this.isPlaying && !force) {
+    if (this.isPlaying && !force)
       return;
-    }
 
-    if (DEBUG_RERENDER) {
-      logReportingService.logInfo(`Re-rendering because ${cause}`, { module: LOG_MODULE, functionName: "reRender" })
-    }
+    if (DEBUG_RERENDER)
+      logReportingService.logInfo(
+        `Re-rendering because ${cause}`, { module: LOG_MODULE, functionName: "reRender" })
 
     this._applyAllStaticProps();
 
     const targetTime = time !== undefined ? time : this._currentTime;
-    this._applyAllKeyframes(targetTime);
+    this._applyTracksOnTimeline(targetTime)
   }
 
 
@@ -284,10 +270,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    *   - autoEnd: Whether to automatically end the animation when `toTime` is reached.
    * @returns True if the animation starts playing, false otherwise.
    */
-  play(param: {
-    toTime?: number;
-    autoEnd?: boolean;
-  } = {}) {
+  play(param: { toTime?: number; autoEnd?: boolean; } = {}) {
     let { toTime, autoEnd = true } = param;
     if (toTime === undefined) {
       toTime = this._currentTimeline.length;
@@ -354,7 +337,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Cache the THREE.Object3D reference
     const object3DRef = this._cacheObject3DRef(vxObject);
-
     if (DEBUG_OBJECT_INIT)
       logReportingService.logInfo(`Initializing vxobject ${vxObject}`, { module: LOG_MODULE, functionName: "initObjectOnMount" })
 
@@ -363,11 +345,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (!rawObject)
       return
 
-    this._applyInitialTracks(rawObject, vxkey);
-    this._applyInitialStaticProps(rawObject, object3DRef);
+    this._applyTracksOnObject(this._currentTime, rawObject)
+    this._applyStaticPropsOnObject(rawObject, object3DRef);
   }
 
 
+  handleObjectUnMount(vxkey: string) {
+    if (!this._isReady)
+      return;
+
+    this._object3DCache.delete(vxkey);
+  }
 
 
 
@@ -413,54 +401,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-
-  /**
-   * Applies initial track properties to the object.
-   * @param rawObject - The raw object containing tracks.
-   * @param vxkey - The unique key of the object.
-   */
-  private _applyInitialTracks(rawObject: RawObjectProps, vxkey: string) {
-    rawObject.tracks.forEach(track => {
-      this._applyKeyframes(vxkey, track.propertyPath, track.keyframes, this._currentTime);
-    });
-  }
-
-
-
-
-
-
-  /**
-   * Applies initial static properties to the object.
-   * @param rawObject - The raw object containing static properties.
-   * @param object3DRef - Reference to the THREE.Object3D instance.
-   */
-  private _applyInitialStaticProps(
-    rawObject: RawObjectProps,
-    object3DRef: THREE.Object3D | null
-  ) {
-    if (!object3DRef) {
-      logReportingService.logWarning(
-        `Could not initialize staticProps for ${rawObject.vxkey} because no object3d references was passed`,
-        { module: LOG_MODULE, functionName: "_applyInitialStaticProps" }
-      )
-      return;
-    }
-    rawObject.staticProps.forEach(staticProp => {
-      this._updateObjectProperty(
-        rawObject.vxkey,
-        staticProp.propertyPath,
-        object3DRef,
-        staticProp.value
-      );
-    });
-  }
-
-
-
-
-
-
   /**
    * Main ticker function that updates the animation state and schedules the next frame.
    * @param data - An object containing:
@@ -486,7 +426,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
 
     this.setCurrentTime(newCurrentTime, true);
-    this._applyAllKeyframes(newCurrentTime);
+    this._applyTracksOnTimeline(newCurrentTime);
+    this._updateCameraIfNeeded();
 
     // Determine whether to stop or continue the animation
     if (to !== undefined && to <= newCurrentTime) {
@@ -508,47 +449,50 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   /**
-   * Applies all keyframes for each object at the given time.
-   * @param currentTime - The current time to apply keyframes for.
-   * @param recalculateAll - Whether to recalculate all keyframes regardless of time bounds.
+   * Applies initial static properties to the object.
+   * @param rawObject - The raw object containing static properties.
+   * @param object3DRef - Reference to the THREE.Object3D instance.
    */
-  private _applyAllKeyframes(
-    currentTime: number,
-    recalculateAll: boolean = false
-  ) {
-    this.currentTimeline.objects.forEach(rawObject =>
-      this._applyAllKeyframesForObject(rawObject, currentTime, recalculateAll)
-    );
-    this._updateCameraIfNeeded();
-  }
-
-
-
-
-
-
-  /**
-   * Applies all keyframes for a specific object.
-   * @param rawObject - The object to apply keyframes to.
-   * @param currentTime - The current time to apply keyframes for.
-   * @param recalculateAll - Whether to recalculate all keyframes regardless of time bounds.
-   */
-  private _applyAllKeyframesForObject(
-    rawObject: RawObjectProps,
-    currentTime: number,
-    recalculateAll: boolean
-  ) {
-    rawObject.tracks.forEach(track => {
-      this._applyKeyframes(
+  private _applyStaticPropsOnObject(rawObject: RawObjectProps,object3DRef: THREE.Object3D | null) {
+    if (!object3DRef) {
+      logReportingService.logWarning(
+        `Could not initialize staticProps for ${rawObject.vxkey} because no object3d references was passed`,{ module: LOG_MODULE, functionName: "_applyStaticPropsOnObject" })
+      return;
+    }
+    rawObject.staticProps.forEach(staticProp => {
+      this._updateObjectProperty(
         rawObject.vxkey,
-        track.propertyPath,
-        track.keyframes,
-        currentTime,
-        recalculateAll
+        staticProp.propertyPath,
+        object3DRef,
+        staticProp.value
       );
     });
   }
 
+
+
+
+
+
+
+  private _applyTracksOnTimeline( currentTime: number) {
+    this.currentTimeline.objects.forEach(rawObject =>
+      this._applyTracksOnObject(currentTime, rawObject)
+    )
+  }
+
+
+  private _applyTracksOnObject( currentTime: number,rawObject: RawObjectProps
+  ) {
+    rawObject.tracks.forEach(rawTrack =>
+      this._applyKeyframesOnTrack(
+        rawObject.vxkey,
+        rawTrack.propertyPath,
+        rawTrack.keyframes,
+        currentTime
+      )
+    )
+  }
 
 
 
@@ -567,8 +511,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       camera.updateProjectionMatrix();
       this._cameraRequiresPerspectiveMatrixRecalculation = false;
     } else {
-      logReportingService.logWarning("PerspectiveCamera was not found in object cache",
-        { module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
+      logReportingService.logWarning(
+        "PerspectiveCamera was not found in object cache",{ module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
     }
   }
 
@@ -585,7 +529,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param currentTime - The current time in the animation timeline.
    * @param recalculateAll - Whether to recalculate outside keyframe bounds.
    */
-  private _applyKeyframes(
+  private _applyKeyframesOnTrack(
     vxkey: string,
     propertyPath: string,
     keyframes: RawKeyframeProps[],
@@ -595,10 +539,20 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const object3DRef = this._object3DCache.get(vxkey);
     if (!object3DRef || keyframes.length === 0) return;
 
-    const interpolatedValue = this._calculateInterpolatedValue(keyframes, currentTime, recalculateAll);
+    const newValue = this._calculateInterpolatedValue(keyframes, currentTime, recalculateAll);
 
-    if (interpolatedValue !== undefined) {
-      this._updateObjectProperty(vxkey, propertyPath, object3DRef, interpolatedValue);
+    const cacheKey = `${vxkey}.${propertyPath}`;
+    const lastValue = this._lastInterpolatedValues.get(cacheKey);
+
+    if (lastValue === undefined) {
+      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+      this._lastInterpolatedValues.set(cacheKey, newValue);
+      return
+    }
+
+    if (Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
+      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+      this._lastInterpolatedValues.set(cacheKey, newValue);
     }
   }
 
@@ -788,10 +742,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       const vxkey = obj.vxkey;
       const object3DRef = this._object3DCache.get(vxkey);
 
-      if (!object3DRef) {
-        // console.warn(`AnimationEngine: Object with vxkey '${vxkey}' not found in cache.`);
+      if (!object3DRef)
         return;
-      }
 
       obj.staticProps.forEach(staticProp => {
         this._updateObjectProperty(
@@ -877,11 +829,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param propertyPath - Dot-separated path to the property.
    * @returns A setter function that updates the specified property on a target object.
    */
-  private _generatePropertySetter(
-    propertyPath: string
-  ): (targetObject: any, newValue: any) => void {
+  private _generatePropertySetter( propertyPath: string): (targetObject: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
-    const LOG_CONTEXT =  {module:"AnimationEngine", functionName:"_generatePropertySetter"}
+    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "_generatePropertySetter" }
 
     return (targetObject: any, newValue: any) => {
       let target = targetObject;
@@ -896,7 +846,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           const index = parseInt(key, 10);
           if (Number.isNaN(index)) {
             logReportingService.logWarning(
-              `Key ${key} is not a valid array index in ${propertyKeys}`,LOG_CONTEXT)
+              `Key ${key} is not a valid array index in ${propertyKeys}`, LOG_CONTEXT)
             return;
           }
           target = target[index];
@@ -907,7 +857,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
         if (target === undefined) {
           logReportingService.logWarning(
-            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`,LOG_CONTEXT)
+            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`, LOG_CONTEXT)
           return;
         }
       }
@@ -919,7 +869,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         const index = parseInt(finalPropertyKey, 10);
         if (Number.isNaN(index)) {
           logReportingService.logWarning(
-            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`,LOG_CONTEXT)
+            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`, LOG_CONTEXT)
           return;
         }
         target[index] = newValue;
@@ -929,7 +879,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           mapValue.value = newValue;
         } else {
           logReportingService.logWarning(
-            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`,LOG_CONTEXT)
+            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`, LOG_CONTEXT)
         }
       } else {
         target[finalPropertyKey] = newValue;
@@ -954,35 +904,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /**
-   * Caches splines by initializing WebAssembly spline objects.
-   * @param splines - A record of splines to cache.
-   */
-  async cacheSplines(splines: Record<string, RawSpline>) {
-    await this._wasmReady; // Ensure WASM is initialized
-
-    if (!splines) {
-      logReportingService.logWarning(`No splines provided to cache.`, { module: LOG_MODULE, functionName: "cacheSplines" })
-      return;
-    }
-
-    for (const [key, spline] of Object.entries(splines)) {
-      const nodes = spline.nodes;
-      const wasmNodes = nodes.map(node => wasm_Vector3.new(node[0], node[1], node[2]));
-
-      // Example arguments, adjust as needed
-      const wasmSpline = new wasm_Spline(wasmNodes, false, 0.5);
-
-      // Cache the WebAssembly spline object
-      this._splinesCache.set(key, wasmSpline);
-    }
-  }
-
-
-
-
-
-
   //
   //  H Y D R A T E    F U N C T I O N S
   //
@@ -994,17 +915,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param action - The action to perform: 'create' or 'remove'.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-  hydrateTrack(
-    trackKey: string,
-    action: 'create' | 'remove',
-    reRender: boolean = true,
-  ) {
-    if (this._IS_PRODUCTION) {
-      logReportingService.logError("Timeline Hydration is NOT allowed in Production Mode", {
-        module: LOG_MODULE, functionName: "hydrateTrack"
-      })
-      return;
-    }
+  hydrateTrack( trackKey: string, action: 'create' | 'remove', reRender: boolean = true ) {
     this._hydrationService.hydrateTrack(trackKey, action);
 
     if (reRender)
@@ -1028,20 +939,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   hydrateKeyframe<A extends HydrateKeyframeAction>(params: HydrateKeyframeParams<A>) {
     const { trackKey, action, keyframeKey, reRender = true, newData } = params;
-    if (this._IS_PRODUCTION) {
-      logReportingService.logError("Keyframe Hydration is NOT allowed in Production Mode", {
-        module: LOG_MODULE, functionName: "hydrateKeyframe"
-      })
-      return;
-    }
-
     // @ts-expect-error
-    this._hydrationService.hydrateKeyframe({
-      trackKey,
-      action,
-      keyframeKey,
-      newData
-    })
+    this._hydrationService.hydrateKeyframe({ trackKey, action, keyframeKey, newData })
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
@@ -1063,19 +962,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
     const { action, staticPropKey, reRender = true, newValue } = params;
-    if (this._IS_PRODUCTION) {
-      logReportingService.logError(
-        "StaticProp Hydration is NOT allowed in Production Mode", 
-        {module: LOG_MODULE, functionName: "hydrateStaticProp"})
-      return;
-    }
 
     // @ts-expect-error
-    this._hydrationService.hydrateStaticProp({
-      staticPropKey,
-      action,
-      newValue
-    })
+    this._hydrationService.hydrateStaticProp({ staticPropKey, action, newValue })
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} staticPropKey ${staticPropKey}` });
@@ -1097,20 +986,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
     const { action, splineKey, reRender, nodeIndex, newData, initialTension } = params
-    if (this._IS_PRODUCTION) {
-      logReportingService.logError("Spline Hydration is NOT allowed in Production Mode",
-        {module: LOG_MODULE, functionName: "hydrateSpline"})
-      return;
-    }
-
     // @ts-expect-error
-    this._hydrationService.hydrateSpline({
-      splineKey,
-      action,
-      nodeIndex,
-      newData,
-      initialTension
-    })
+    this._hydrationService.hydrateSpline({ splineKey, action, nodeIndex, newData, initialTension })
 
     if (reRender)
       this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
@@ -1130,17 +1007,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param settingKey - The key identifying the setting.
    * @param vxkey - The unique identifier for the object.
    */
-  hydrateSetting(
-    action: 'set' | 'remove',
-    settingKey: string,
-    vxkey: string,
-  ) {
-    if (this._IS_PRODUCTION) {
-      logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",
-        {module: LOG_MODULE, functionName: "hydrateSetting"})
-      return;
-    }
-
+  hydrateSetting( action: 'set' | 'remove', settingKey: string, vxkey: string ) {
     this._hydrationService.hydrateSetting(action, settingKey, vxkey)
 
     invalidate();

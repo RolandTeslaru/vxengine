@@ -22,7 +22,7 @@ export interface TimelineMangerAPIProps {
     changes: number,
     addChange: () => void
 
-    setEditorData: (rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>) => void;
+    setEditorData: (rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>, IS_DEVELOPMENT: boolean) => void;
 
     // Getter functions
     getAllKeyframes: () => IKeyframe[]

@@ -55,6 +55,10 @@ export type vxObjectProps = vxEffectProps
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>
-    addObject: (object: vxObjectProps, props?: { icon?: string, addToTree?: boolean}) => void;
-    removeObject: (vxkey: string) => void;
+    addObject: (
+        object: vxObjectProps,
+        IS_DEVELOPMENT: boolean,
+         props?: { icon?: string, addToTree?: boolean},
+    ) => void;
+    removeObject: (vxkey: string, IS_DEVELOPMENT: boolean) => void;
 }

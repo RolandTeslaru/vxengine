@@ -15,8 +15,8 @@ import Search from "./Search";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useRefStore } from "@vxengine/utils";
 import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
-import { IS_PRODUCTION, useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
+import { useVXEngine } from "@vxengine/engine";
 
 
 const filterOutFunctions = (state: any) => {
@@ -80,6 +80,7 @@ const State_TimelineManagerAPI = () => {
 // Component for ObjectPropertyAPI
 const State_ObjectPropertyAPI = () => {
     const state = useObjectPropertyAPI();
+    const { IS_PRODUCTION } = useVXEngine();
     const [searchQuery, setSearchQuery] = useState("");
 
     // Function to filter the state based on the search query

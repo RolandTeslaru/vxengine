@@ -11,6 +11,7 @@ import { DiskProjectProps } from '@vxengine/types/engine'
 import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { DANGER_SyncConflict } from './dialogs/syncConflict'
 import React from 'react'
+import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
 
 const DEBUG = true;
 
@@ -30,20 +31,24 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
       return project
     else
       return null
+
   },
 
   saveDataToDisk: async ({ force = false, reloadOnSuccess = false } = {}) => {
-    if (force === false) {
+    const CONTEXT = { module: "SourceManagerAPI", functionName: "saveDataToDisk" }
+    if (force === false)
       if (PAUSE_DISK_SAVING) return;
-    }
 
-    if (DEBUG) console.log(`VXEngine SourceManager: Saving data to disk ${force && "with force"}`);
+    if(DEBUG)
+      logReportingService.logInfo(`Saving data to disk ${force && "with fore"}`, CONTEXT)
 
     const projectName = useAnimationEngineAPI.getState().projectName;
 
     const project = get().getLocalStorageProject(projectName);
     if (!project)
       return
+
+
 
     const timelines = project.timelines
 
@@ -56,22 +61,24 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         body: JSON.stringify({ project: { projectName, timelines } })
       })
       if (response.ok) {
-        console.log(`VXEngine SourceManager: Project "${projectName}" saved successfully to disk.`);
+        logReportingService.logInfo(`Project "${projectName}" saved successfully to disk.`, CONTEXT);
         if (reloadOnSuccess)
           window.location.reload();
       }
       else
-        console.error('VXEngine SourceManager ERROR: Failed to save timelines to disk.');
+        logReportingService.logError(`Failed to write to disk`, CONTEXT)
 
     } catch (error) {
-      console.error('VXEngine SourceManager ERROR: Unable to write timelines to disk:', error);
+      logReportingService.logError(
+        `Unable to write project to disk`, {module:"SourceManagerAPI", functionName: "saveDataToDisk", additionalData: error})
     }
   },
 
   saveDataToLocalStorage: debounce(({ force = false } = {}) => {
     if (PAUSE_DISK_SAVING && force === false) return;
 
-    if (DEBUG) console.log("VXEngine SourceManager: Saving Data To LocalStorage")
+    if (DEBUG)
+      logReportingService.logInfo("Saving data to disk");
 
     const state = useAnimationEngineAPI.getState()
     const timelines = state.timelines
@@ -92,7 +99,9 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
 
   initializeLocalStorage: (diskData) => {
-    console.log("VXEngine SourceManager: Initializing Local Storage")
+    const CONTEXT = { module: "SourceManagerAPI", functionName: "initializeLocalStorage"}
+    logReportingService.logInfo(`Initializing LocalStorage`, CONTEXT)
+
     const localStorageTemplate: Record<string, DiskProjectProps> = {}
     localStorageTemplate[diskData.projectName] = diskData;
 
@@ -105,10 +114,13 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
   },
 
   initializeProjectInLocalStorage: (localStorageData, diskData) => {
-    if(PAUSE_DISK_SAVING)
+    if (PAUSE_DISK_SAVING)
       return
+    
+    const CONTEXT = { module: "SourceManagerAPI", functionName: "initializeProjectInLocalStorage"}
+    logReportingService.logInfo(`
+      Initializing project:${diskData.projectName} in Local Storage`, CONTEXT)
 
-    console.log(`VXEngine SourceManager: Initializing project:${diskData.projectName} in Local Storage`)
     localStorageData[diskData.projectName] = diskData;
 
     useAnimationEngineAPI.setState({
@@ -136,10 +148,23 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
    *  - `in_sync`: If the timelines are synchronized.
    */
   syncLocalStorage: (diskData: DiskProjectProps) => {
-    if (DEBUG) console.log("VXEngine SourceManager: Validating LocalStorage")
+    const CONTEXT = { module: "SourceManagerAPI", functionName: "syncLocalStorage"}
+    if (DEBUG)
+      logReportingService.logInfo(
+        "Synchronizing localStorage with disk data", CONTEXT);
+
     // Check if Local Storage exists
-    const localStorageString = localStorage.getItem("VXEngineProjects");
+    let localStorageString = null;
+    try {
+      localStorageString = localStorage.getItem("VXEngineProjects");
+    } catch (error) {
+      logReportingService.logError(
+        "Synchronizing localStorage with disk data", CONTEXT);
+    }    
+
     if (!localStorageString) {
+      logReportingService.logInfo(
+        "LocalStorage is not initialized. Initializing with diskData", CONTEXT);
       get().initializeLocalStorage(diskData)
       return { status: 'init' };
     }
@@ -147,11 +172,15 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     // Check if the project exists in local storage
     const localStorageData = JSON.parse(localStorageString) as LocalStorageDataType;
     if (!localStorageData[diskData.projectName]) {
+      logReportingService.logInfo(
+        `Project "${diskData.projectName}" doesn't exist in localStorage. Initializing project with diskData`, CONTEXT);
       get().initializeProjectInLocalStorage(localStorageData, diskData)
       return { status: 'init' };
     }
     else {
-      if (DEBUG) console.log(`VXEngine SourceManager: Restoring project "${diskData.projectName}" from local storage`);
+      if (DEBUG)
+        logReportingService.logInfo(
+          `Project ${diskData.projectName} was found in localStorage. Restoring...`, CONTEXT);
 
       const localStorageProject = localStorageData[diskData.projectName]
       const diskTimelines = diskData.timelines;
@@ -166,7 +195,9 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         return { status: 'in_sync' };
       }
       else {
-        if (DEBUG) console.log(`VXEngine SourceManager: Timelines from project "${diskData.projectName}" are out of sync. Awaiting resolve...`)
+        if (DEBUG)
+          logReportingService.logInfo(
+            `Project ${diskData.projectName} has conflicting timelines. Awaiting resolve`, CONTEXT);
 
         const dialogId = "syncConflict"
 
@@ -178,7 +209,6 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
           id: dialogId
         })
 
-
         // Provisionary load the timelines from disk. 
         useAnimationEngineAPI.setState({
           timelines: diskData.timelines,
@@ -187,6 +217,8 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
         return { status: 'out_of_sync', localStorageTimelines, diskTimelines };
       }
     }
+
+
   },
 
 
@@ -204,65 +236,5 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
   },
 
 }))
-
-
-const validateAndFixTimelines = (timelines: Record<string, ITimeline>) => {
-  const precision = AnimationEngine.ENGINE_PRECISION;
-  console.log("Validating timelines ", timelines, " with precision ", precision)
-  const errors: string[] = [];
-
-  const isValidPrecision = (value: number): boolean => {
-    const factor = Math.pow(10, precision);
-    return Math.round(value * factor) / factor === value;
-  };
-
-  Object.entries(timelines).forEach(([timelineId, timeline]) => {
-    // Validate and fix timeline length precision
-    if (!isValidPrecision(timeline.length)) {
-      errors.push(`Timeline "${timelineId}" has invalid length precision: ${timeline.length}`);
-      timeline.length = AnimationEngine.truncateToDecimals(timeline.length, precision);
-    }
-
-    // Validate and fix objects and their properties
-    timeline.objects?.forEach((object) => {
-      object.tracks.forEach(track => {
-        track.keyframes.forEach((keyframe) => {
-          if (!isValidPrecision(keyframe.time)) {
-            errors.push(`Keyframe time in "${object.vxkey}" has invalid precision: ${keyframe.time}`);
-            keyframe.time = AnimationEngine.truncateToDecimals(keyframe.time, precision);
-          }
-          if (!isValidPrecision(keyframe.value)) {
-            errors.push(`Keyframe value in "${object.vxkey}" has invalid precision: ${keyframe.value}`);
-            keyframe.value = AnimationEngine.truncateToDecimals(keyframe.value, precision);
-          }
-        });
-      });
-
-      object.staticProps.forEach(staticProp => {
-        if (!isValidPrecision(staticProp.value)) {
-          errors.push(`Static prop "${staticProp.propertyPath}" in "${object.vxkey}" has invalid precision: ${staticProp.value}`);
-          staticProp.value = AnimationEngine.truncateToDecimals(staticProp.value, precision);
-        }
-      });
-    });
-
-    // Validate and fix splines and nodes
-    if (timeline.splines)
-      Object.values(timeline.splines).forEach(spline => {
-        spline.nodes.forEach((node, index) => {
-          node.forEach((coord, coordIndex) => {
-            if (!isValidPrecision(coord)) {
-              errors.push(`Node ${index} in spline "${spline.splineKey}" has invalid precision for coordinate ${coordIndex}: ${coord}`);
-              node[coordIndex] = AnimationEngine.truncateToDecimals(coord, precision);
-            }
-          });
-        });
-      });
-
-  });
-
-  return errors;
-}
-
 
 export type LocalStorageDataType = Record<string, DiskProjectProps>

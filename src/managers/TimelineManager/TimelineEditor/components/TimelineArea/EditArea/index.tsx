@@ -13,7 +13,7 @@ import { keyframeStartLeft } from './Keyframe';
 import { segmentStartLeft } from './Track/TrackSegment';
 import { handleCursorMutation, handleCursorMutationByScale } from '../EditorCursor/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
-import { IS_PRODUCTION } from '@vxengine/engine';
+import { useVXEngine } from '@vxengine/engine';
 
 const startLeft = 22
 
@@ -22,6 +22,9 @@ export const EditArea = () => {
   const scale = useTimelineEditorAPI(state => state.scale)
   const searchQuery = useTimelineEditorAPI(state => state.searchQuery);
   const trackTree = useTimelineEditorAPI(state => state.trackTree);
+  const collapsedTrackNodes = useTimelineEditorAPI(state => state.collapsedTrackNodes)
+
+  const { IS_PRODUCTION } = useVXEngine()
 
   const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
     if (!searchQuery)
@@ -70,8 +73,6 @@ export const EditArea = () => {
 
     return () => unsubscribe()
   }, [])
-
-  const collapsedTrackNodes = useTimelineEditorAPI(state => state.collapsedTrackNodes)
 
   return (
     <>

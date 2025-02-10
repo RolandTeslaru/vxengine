@@ -5,13 +5,13 @@ import ChevronRight from "@geist-ui/icons/chevronRight"
 import { moveToNextKeyframeSTATIC, moveToPreviousKeyframeSTATIC } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
-import { animationEngineInstance } from '@vxengine/engine';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu';
 import PopoverShowTrackData from './Popovers/PopoverShowTrackData';
 import PopoverShowStaticPropData from './Popovers/PopoverShowStaticPropData';
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from './DialogAlerts/Alert';
 import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
+import animationEngineInstance from '@vxengine/singleton';
 
 interface TimelineKeyframeControlProps {
     trackKey: string,

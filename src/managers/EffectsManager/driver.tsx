@@ -63,6 +63,8 @@ export const EffectsManagerDriver = React.memo(
     const { gl, scene, camera, size } = useThree()
     const { composer } = useVXEngine()
 
+    const { IS_DEVELOPMENT } = useVXEngine();
+
     const [normalPass, downSamplingPass] = useMemo(() => {
       const webGL2Available = isWebGL2Available()
       // Initialize composer
@@ -129,7 +131,7 @@ export const EffectsManagerDriver = React.memo(
         parentKey: "global",
       };
 
-      addObject(newVXEntity, { icon: "Effects"});
+      addObject(newVXEntity, IS_DEVELOPMENT, { icon: "Effects"});
     }, [])
 
     useLayoutEffect(() => {

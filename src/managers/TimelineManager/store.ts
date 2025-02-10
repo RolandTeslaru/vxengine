@@ -14,8 +14,7 @@ import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
 import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea/EditArea/Keyframe/utils';
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { v4 as uuidv4 } from 'uuid';
-import { invalidate } from '@react-three/fiber';
-import { animationEngineInstance } from '@vxengine/engine';
+import animationEngineInstance from '@vxengine/singleton';
 
 export type GroupedPaths = Record<string, PathGroup>;
 
@@ -33,8 +32,13 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         set({ currentTimelineLength: length })
     },
 
-    setEditorData: (rawObjects, rawSplines) => {
+    setEditorData: (rawObjects, rawSplines, IS_DEVELOPMENT) => {
         const { editorObjects, tracks, staticProps, splines } = processRawData(rawObjects, rawSplines);
+        console.log("Setting editor data")
+        
+        if(IS_DEVELOPMENT)
+            useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
+
         set({
             editorObjects,
             tracks,

@@ -1,7 +1,8 @@
 import { useThree } from '@react-three/fiber'
-import { animationEngineInstance, useVXEngine } from '@vxengine/engine'
+import { useVXEngine } from '@vxengine/engine'
 import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import animationEngineInstance from '@vxengine/singleton'
 import { LUT3DEffect, BlendFunction } from 'postprocessing'
 import React, { forwardRef, Ref, useLayoutEffect, useMemo } from 'react'
 import type { Texture } from 'three'
@@ -26,6 +27,8 @@ export const EditableLUT = forwardRef(function LUT(
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
 
+    const { IS_DEVELOPMENT } = useVXEngine();
+
     useLayoutEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -40,10 +43,10 @@ export const EditableLUT = forwardRef(function LUT(
             parentKey: "effects"
         }
 
-        addObject(newVxObject)
+        addObject(newVxObject, IS_DEVELOPMENT)
         animationEngineInstance.initObjectOnMount(newVxObject);
 
-        return () => removeObject(vxkey);
+        return () => removeObject(vxkey, IS_DEVELOPMENT);
     }, [])
 
     useLayoutEffect(() => {

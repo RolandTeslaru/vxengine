@@ -22,12 +22,13 @@ import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
 import AlertTriangle from '@geist-ui/icons/alertTriangle'
-import { IS_PRODUCTION } from "@vxengine/engine"
 import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/components/ObjectInfoPanel"
+import { useVXEngine } from "@vxengine/engine"
 
 export const VXStudio = () => {
+    const { IS_PRODUCTION } = useVXEngine();
     return (
         <div id="VXEngineStudio" className='fixed top-0 left-0 z-50'>
             {IS_PRODUCTION && (

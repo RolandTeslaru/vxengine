@@ -7,6 +7,7 @@ import * as THREE from "three"
 import { Html } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { vxKeyframeNodeProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { useVXEngine } from "@vxengine/engine";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];
@@ -21,6 +22,7 @@ export interface KeyframeNodeProps {
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, index, axis, position, color = "yellow", size = 0.3 }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
     const selectObjects = useObjectManagerAPI(state => state.selectObjects)
+    const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef<THREE.Mesh>(null);
 
@@ -40,9 +42,9 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
             },
             parentKey: parentVxKey
         }
-        addObject(keyframeNode, { icon: "Keyframe"});
+        addObject(keyframeNode, IS_DEVELOPMENT, { icon: "Keyframe"});
 
-        return () => removeObject(nodeKey)
+        return () => removeObject(nodeKey, IS_DEVELOPMENT)
     }, [keyframeKeys])
 
 

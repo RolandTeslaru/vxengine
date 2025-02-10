@@ -10,7 +10,7 @@ import { handleTrackSegmentMutation } from '../Track/utils';
 import { invalidate } from '@react-three/fiber';
 import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
 import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
-import { animationEngineInstance } from '@vxengine/engine';
+import animationEngineInstance from '@vxengine/singleton';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();

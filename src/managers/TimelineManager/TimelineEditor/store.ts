@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { useTimelineManagerAPI } from "..";
-import { animationEngineInstance } from "@vxengine/engine";
 import { truncateToDecimals } from "../store";
 import { parserPixelToTime, parserTimeToPixel } from "../utils/deal_data";
 import { cursorStartLeft, handleCursorMutation } from "./components/TimelineArea/EditorCursor/utils";
 import { produce } from "immer";
 import { ITrack, ITrackTreeNode } from "@vxengine/AnimationEngine/types/track";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
+import animationEngineInstance from "@vxengine/singleton";
 
 export type SelectedKeyframe = {
     trackKey: string;

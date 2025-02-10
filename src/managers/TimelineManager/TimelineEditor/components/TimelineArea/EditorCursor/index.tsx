@@ -6,11 +6,11 @@ import { Interactable } from "@interactjs/types";
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { cursorRef, useRefStore } from '@vxengine/utils/useRefStore';
 import { cursorStartLeft, handleCursorMutation, handleOnMove, selectAllKeyframes, selectAllKeyframesAfterCursor, selectAllKeyframesBeforeCursor, selectKeyframesOnCursor } from './utils';
-import { animationEngineInstance } from '@vxengine/engine';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { ArrowRight, Maximize2, ArrowLeft } from 'lucide-react';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
+import animationEngineInstance from '@vxengine/singleton';
 
 const EditorCursor = () => {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -53,7 +53,6 @@ const EditorCursor = () => {
     }
 
   }, [externalContainer])
-
 
   useEffect(() => {
     const updateHeight = () => {

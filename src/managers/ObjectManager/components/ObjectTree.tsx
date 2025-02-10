@@ -15,9 +15,9 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
-import { IS_PRODUCTION } from '@vxengine/engine';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
+import { useVXEngine } from '@vxengine/engine';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -37,6 +37,8 @@ const defaultExpandedKeys = {
 const ObjectTree = () => {
     const objectsLength = useVXObjectStore(state => Object.entries(state.objects).length)
     const tree = useObjectManagerAPI(state => state.tree);
+
+    const { IS_PRODUCTION } = useVXEngine();
 
     const [searchQuery, setSearchQuery] = useState("");
 

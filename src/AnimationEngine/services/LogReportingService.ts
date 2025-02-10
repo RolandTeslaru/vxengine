@@ -21,17 +21,17 @@ class LogReportingService {
 
 
     log(level: LogLevel, message: string, context?: LogContext): void {
+        const logMessage = `VXEngine ${context?.module && context.module}: ${message}`
         const logEntry = {
-            level,
-            message,
-            context,
-            timestamp: new Date().toISOString(),
+            context
         };
 
         // For development, you might want to log to the console:
         if (!this._IS_PRODUCTION) {
-            console[level](logEntry);
+            console[level](`${logMessage}`, context && logEntry);
         }
+
+        
 
         // In production, you might send this log entry to a remote logging service
         // For example, using fetch or a library like Sentry:

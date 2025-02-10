@@ -3,8 +3,9 @@ import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
-import { animationEngineInstance, useVXEngine } from '@vxengine/engine'
+import { useVXEngine } from '@vxengine/engine'
 import { VXObjectParams } from '../types'
+import animationEngineInstance from '@vxengine/singleton'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -44,6 +45,8 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
+    const { IS_DEVELOPMENT } = useVXEngine();
+
     useEffect(() => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
@@ -59,10 +62,10 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
             parentKey: "effects"
         }
 
-        addObject(newVXObject);
+        addObject(newVXObject, IS_DEVELOPMENT);
         animationEngineInstance.initObjectOnMount(newVXObject);
 
-        return () => removeObject(vxkey);
+        return () => removeObject(vxkey, IS_DEVELOPMENT);
     }, [])
 
     return <primitive ref={internalRef} object={effect} dispose={null} />

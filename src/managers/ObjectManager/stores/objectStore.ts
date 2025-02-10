@@ -5,11 +5,14 @@
 import { create } from 'zustand';
 import { vxObjectProps, ObjectStoreStateProps } from '../types/objectStore';
 import { useObjectManagerAPI } from './managerStore';
-import { IS_DEVELOPMENT } from '@vxengine/engine';
 
 export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
     objects: {},
-    addObject: (vxobject, props = {}) => set((state) => {
+    addObject: (
+        vxobject, 
+        IS_DEVELOPMENT,
+        props = {}, 
+    ) => set((state) => {
         const { addToTree, icon} = props
         
         // Generate Object Tree 
@@ -28,7 +31,7 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
             },
         })
     }),
-    removeObject: (vxkey) => set((state) => {
+    removeObject: (vxkey, IS_DEVELOPMENT) => set((state) => {
         if (!state.objects[vxkey]) {
             console.warn("ObjectStore: trying to remove a non-existent object",vxkey);
             return state;

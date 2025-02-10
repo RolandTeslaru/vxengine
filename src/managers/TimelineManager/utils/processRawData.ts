@@ -4,7 +4,6 @@ import { buildTrackTree } from "./trackDataProcessing";
 
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { v4 as uuidv4 } from 'uuid';
-import { IS_DEVELOPMENT } from "@vxengine/engine";
 
 export default function processRawData(
     rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>
@@ -79,10 +78,6 @@ export default function processRawData(
             staticPropKeys: staticPropKeys,
         };
     });
-
-    if(IS_DEVELOPMENT){
-        useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
-    }
 
     // Just to be sure recreate the edSpline object
     Object.values(rawSplines).forEach(rawSpline => {

@@ -1,5 +1,5 @@
 import { useAnimationEngineEvent } from "@vxengine/AnimationEngine";
-import { animationEngineInstance } from "@vxengine/engine";
+import animationEngineInstance from "@vxengine/singleton";
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 
 const parseTimeToTimeRenderString = (time: number): string => {

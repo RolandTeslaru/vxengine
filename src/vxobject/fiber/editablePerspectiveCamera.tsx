@@ -9,7 +9,7 @@ import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
-import { IS_DEVELOPMENT } from "@vxengine/engine";
+import { useVXEngine } from "@vxengine/engine";
 
 declare module 'three' {
     interface PerspectiveCamera {
@@ -45,6 +45,8 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const cameraRef = useRef(null)
 
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
+
+    const { IS_DEVELOPMENT } = useVXEngine();
 
     // useEffect(() => {
     //     cameraRef.current.localRotationZ = 0;
