@@ -23,7 +23,7 @@ const EditorCursor = () => {
   useLayoutEffect(() => {
     const initialScale = useTimelineEditorAPI.getState().scale;
 
-    const initialCursorTime = animationEngineInstance.getCurrentTime();
+    const initialCursorTime = animationEngineInstance.currentTime
 
     cursorRef.current = elementRef.current;
 

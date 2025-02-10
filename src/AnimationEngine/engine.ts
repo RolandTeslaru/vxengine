@@ -95,6 +95,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   public get isPaused() { return !this.isPlaying; }
   public get playRate() { return useAnimationEngineAPI.getState().playRate }
   public get currentTimeline() { return this._currentTimeline }
+  public get currentTime() { return this._currentTime }
 
   public get splineService(): SplineService {return this._splineService;}
 
@@ -175,15 +176,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Always trigger a general time updated event
     this.trigger('timeUpdated', { time });
-  }
-
-
-
-
-
-
-  getCurrentTime() {
-    return this._currentTime;
   }
 
 
@@ -754,23 +746,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         );
       });
     });
-  }
-
-
-
-
-
-
-
-  /**
-   * Retrieves a point on the spline at the specified progress.
-   * @param splineKey - The key identifying the spline.
-   * @param progress - The progress along the spline (0 to 1).
-   * @returns The point on the spline at the given progress.
-   */
-  getSplinePointAt(splineKey: string, progress: number): { x: number; y: number; z: number } | null {
-    const spline = this._splinesCache.get(splineKey);
-    return spline.get_point(progress);
   }
 
 

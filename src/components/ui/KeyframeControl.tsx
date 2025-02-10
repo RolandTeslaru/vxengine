@@ -31,7 +31,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
 
     // Initialize
     useLayoutEffect(() => {
-        const time = animationEngineInstance.getCurrentTime();
+        const time = animationEngineInstance.currentTime
         checkIfOnKeyframe({ time })
     }, [trackKey, orderedKeyframeKeys])
 

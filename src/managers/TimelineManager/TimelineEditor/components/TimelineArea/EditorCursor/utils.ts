@@ -59,7 +59,7 @@ export const handleCursorMutationByScale = (newScale: number, prevScale: number)
 export const selectAllKeyframesAfterCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const timelineManagerAPI = useTimelineManagerAPI.getState();
 
-  const currentTime = animationEngineInstance.getCurrentTime();
+  const currentTime = animationEngineInstance.currentTime
 
   Object.entries(timelineManagerAPI.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {
@@ -74,7 +74,7 @@ export const selectAllKeyframesAfterCursor = (event: React.MouseEvent<HTMLDivEle
 export const selectAllKeyframesBeforeCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const state = useTimelineManagerAPI.getState();
   
-  const currentTime = animationEngineInstance.getCurrentTime();
+  const currentTime = animationEngineInstance.currentTime
 
   Object.entries(state.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {
@@ -100,7 +100,7 @@ export const selectAllKeyframes = (event: React.MouseEvent<HTMLDivElement, Mouse
 export const selectKeyframesOnCursor = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
   const state = useTimelineManagerAPI.getState();
 
-  const currentTime = animationEngineInstance.getCurrentTime();
+  const currentTime = animationEngineInstance.currentTime
 
   Object.entries(state.tracks).forEach(([trackKey, track]) => {
     Object.entries(track.keyframes).forEach(([keyframeKey, keyframe]) => {

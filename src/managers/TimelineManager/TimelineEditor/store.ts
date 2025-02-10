@@ -113,7 +113,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         const track = timelineManagerState.tracks[trackKey]
         if (!track) return
 
-        const time = animationEngineInstance.getCurrentTime();
+        const time = animationEngineInstance.currentTime
 
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -127,7 +127,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         const track = timelineManagerState.tracks[trackKey]
         if (!track) return
 
-        const time = animationEngineInstance.getCurrentTime();
+        const time = animationEngineInstance.currentTime
 
         const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -240,7 +240,7 @@ export const moveToNextKeyframeSTATIC = (trackKey: string) => {
     const track = timelineManagerAPIState.tracks[trackKey]
     if (!track) return
 
-    const time = animationEngineInstance.getCurrentTime();
+    const time = animationEngineInstance.currentTime
 
     const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 
@@ -256,7 +256,7 @@ export const moveToPreviousKeyframeSTATIC = (trackKey: string) => {
     const track = timelineManagerAPIState.tracks[trackKey]
     if (!track) return
 
-    const time = animationEngineInstance.getCurrentTime();
+    const time = animationEngineInstance.currentTime
 
     const sortedKeyframes = Object.values(track.keyframes).sort((a, b) => a.time - b.time);
 

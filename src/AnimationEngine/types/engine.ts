@@ -24,14 +24,11 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   loadProject(diskData: DiskProjectProps, nodeEnv: "production" | "development"
   ): void;
   setCurrentTime(time: number, isTick?: boolean);
-  getCurrentTime(): number
 
   hydrateTrack(
     trackKey: string,
     action: 'create' | 'remove'
   ): void;
-
-  getSplinePointAt: (splineKey: string, progress: number) => any
 }
 
 export type HydrateKeyframeAction = 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles';

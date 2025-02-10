@@ -15,7 +15,7 @@ const TimeRender = () => {
 
   useEffect(() => {
     if(displayRef.current){
-      const initialTime = animationEngineInstance.getCurrentTime();
+      const initialTime = animationEngineInstance.currentTime
 
       displayRef.current.textContent = parseTimeToTimeRenderString(initialTime)
     }

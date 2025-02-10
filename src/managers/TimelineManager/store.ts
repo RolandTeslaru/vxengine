@@ -637,7 +637,7 @@ function createKeyframeLogic(
     if (!track) return;
 
     
-    const time = animationEngineInstance.getCurrentTime();
+    const time = animationEngineInstance.currentTime
 
     // Check if the cursor is on an exsting keyframe
     // if so, return because we cannot create overlapped keyframes
@@ -760,7 +760,7 @@ export const modifyPropertyValue = (
     const isPropertyTracked = !!track;
 
     
-    const time = animationEngineInstance.getCurrentTime();
+    const time = animationEngineInstance.currentTime
 
     if (isPropertyTracked) {
         const trackKey = generalKey;
@@ -827,7 +827,7 @@ export const modifyBatchPropertyValues = (
     properties: { vxkey: string, propertyPath: string, newValue: number }[]
 ) => {
     
-    const time = animationEngineInstance.getCurrentTime();
+    const time = animationEngineInstance.currentTime
     const state = useTimelineManagerAPI.getState();
     const tracks = state.tracks;
 
