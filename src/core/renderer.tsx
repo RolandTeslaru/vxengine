@@ -2,8 +2,6 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-"use client"
-
 import React, { Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Canvas, extend, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'

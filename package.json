@@ -1,6 +1,6 @@
 {
   "name": "@vexr-labs/vxengine",
-  "version": "1.0.113",
+  "version": "1.0.115",
   "private": false,
   "scripts": {
     "build": "webpack --mode production",
@@ -123,7 +123,6 @@
     "less-loader": "^12.2.0",
     "mini-css-extract-plugin": "^2.9.1",
     "parcel": "^2.12.0",
-    "postcss": "^8.4.41",
     "postcss-cli": "^11.0.0",
     "postcss-loader": "^8.1.1",
     "postcss-modules-extract-imports": "^3.1.0",

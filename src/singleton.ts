@@ -1,15 +1,17 @@
 import { AnimationEngine } from "./AnimationEngine/engine";
 
 declare global {
-    var __animationEngineInstance: AnimationEngine | undefined;
+  var __animationEngineInstance: AnimationEngine | undefined;
 }
 
-// If the global instance doesn't exist, create it.
-if (!globalThis.__animationEngineInstance) {
+let animationEngineInstance: AnimationEngine | undefined;
+
+// Only create the instance if we're in a browser environment.
+if (typeof window !== "undefined") {
+  if (!globalThis.__animationEngineInstance) {
     globalThis.__animationEngineInstance = new AnimationEngine();
+  }
+  animationEngineInstance = globalThis.__animationEngineInstance;
 }
-
-// Export the singleton instance.
-const animationEngineInstance = globalThis.__animationEngineInstance;
 
 export default animationEngineInstance;

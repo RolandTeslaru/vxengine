@@ -23,6 +23,7 @@ export default defineConfig({
     extensions: ['.tsx', '.ts', '.jsx', '.js'],  
   },
   build: {
+    assetsInlineLimit: 99999999999,
     lib: {
       entry: path.resolve(__dirname, './src/index.ts'), // Your entry point
       name: 'vxengine',
@@ -73,13 +74,12 @@ export default defineConfig({
       }
     }, 
     sourcemap: false, // Enable sourcemaps for better debugging
-    target: 'esnext', // Ensure modern browser support for Next.js
+    target: 'esnext', // Ensure modern browser support for Next.js,
   },
   plugins: [
     wasm(),
     topLevelAwait(),
     libInjectCss(),
-   
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'), // Define NODE_ENV for frontend compatibility

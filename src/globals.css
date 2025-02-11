@@ -28,7 +28,7 @@
 
 @font-face {
   font-family: 'Sans Menlo';
-  src: url('../assets/fonts/Menlo-Regular.woff2') format("woff2");
+  src: local("Menlo-Regular"),url('../assets/fonts/Menlo-Regular.woff2?url') format("woff2");
   font-weight: normal;
   font-style: normal;
 }
@@ -36,17 +36,12 @@
 
 @font-face {
   font-family: 'Work Sans';
-  src: url('../assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
+  src: url('../assets/fonts/WorkSans-VariableFont_wght.ttf?url') format('truetype-variations');
 }
 
 @font-face {
   font-family: 'Inter';
-  src: url('../assets/fonts/Inter-VariableFont_slnt_wght.ttf') format('truetype-variations');
-}
-
-@font-face {
-  font-family: "Robot Mono";
-  src: url("../assets/fonts/WorkSans-VariableFont_wght.ttf")
+  src: url('../assets/fonts/Inter-VariableFont_slnt_wght.ttf?url') format('truetype-variations');
 }
 
 /* Reset defaults on Chrome’s spinner */
