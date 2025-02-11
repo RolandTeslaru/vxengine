@@ -10,7 +10,7 @@ export type EditableColorProps = EditableObjectProps<ColorProps> & {
 const colorParams: VXObjectParams = {
     color: {
         type: "color",  
-        propertyPath: "_"
+        overwritePropertyPath: "_"
     }
 }
 const colorDisabledParams = [

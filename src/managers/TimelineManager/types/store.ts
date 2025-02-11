@@ -1,7 +1,7 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
-import { edObjectProps, IKeyframe, ISettings, RawSpline, IStaticProps, ITimeline, ITrack, RawObjectProps, VXVector2, ISpline, ITrackTreeNode } from "@vxengine/AnimationEngine/types/track";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { GroupedPaths } from "../store";
+import { EditorObject, EditorTrack, EditorStaticProp, EditorSpline, EditorKeyframe, EditorVector2 } from "@vxengine/types/data/editorData";
+import { RawObject, RawSpline } from "@vxengine/types/data/rawData";
 
 export type SelectedKeyframe = {
     trackKey: string;
@@ -11,10 +11,10 @@ export type SelectedKeyframe = {
 
 export interface TimelineMangerAPIProps {
     // Records of data used in the editor
-    editorObjects: Record<string, edObjectProps>;
-    tracks: Record<string, ITrack>,
-    staticProps: Record<string, IStaticProps>
-    splines: Record<string, ISpline>
+    editorObjects: Record<string, EditorObject>;
+    tracks: Record<string, EditorTrack>,
+    staticProps: Record<string, EditorStaticProp>
+    splines: Record<string, EditorSpline>
     
     currentTimelineLength: number;
     setCurrentTimelineLength: (length: number) => void;
@@ -22,12 +22,12 @@ export interface TimelineMangerAPIProps {
     changes: number,
     addChange: () => void
 
-    setEditorData: (rawObjects: RawObjectProps[], rawSplines: Record<string, RawSpline>, IS_DEVELOPMENT: boolean) => void;
+    setEditorData: (rawObjects: RawObject[], rawSplines: Record<string, RawSpline>, IS_DEVELOPMENT: boolean) => void;
 
     // Getter functions
-    getAllKeyframes: () => IKeyframe[]
-    getTracksForObject: (vxkey: string) => ITrack[] | [],
-    getStaticPropsForObject: (vxkey: string) => IStaticProps[] | [],
+    getAllKeyframes: () => EditorKeyframe[]
+    getTracksForObject: (vxkey: string) => EditorTrack[] | [],
+    getStaticPropsForObject: (vxkey: string) => EditorStaticProp[] | [],
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => void
     
@@ -49,18 +49,12 @@ export interface TimelineMangerAPIProps {
     removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
     setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;
-    setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: VXVector2, outHandle: VXVector2, reRender?: boolean) => void;
+    setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: EditorVector2, outHandle: EditorVector2, reRender?: boolean) => void;
     // StaticProp function
     createStaticProp: (props: {vxkey: string, propertyPath: string, value: number, reRender: boolean, state?: TimelineMangerAPIProps}) => void;
     removeStaticProp: (props: {staticPropKey: string, reRender?: boolean, state?: TimelineMangerAPIProps,}) => void
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
     removeProperty: (vxkey: string, propertyPath: string) => void;
-}
-
-export interface EditorObjectProps {
-    vxkey: string; 
-    trackKeys: string[]; 
-    staticPropKeys: string[]
 }
 

@@ -2,13 +2,13 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
+import { RawTimeline } from '@vxengine/types/data/rawData';
 import { createWithEqualityFn } from 'zustand/traditional';
-import { ITimeline } from './types/track';
 
 export interface TimelineStoreStateProps {
-    timelines: Record<string, ITimeline>;
+    timelines: Record<string, RawTimeline>;
     currentTimelineID: string;
-    currentTimeline: ITimeline;
+    currentTimeline: RawTimeline;
     projectName: string
     isPlaying: boolean;
     playRate: number;

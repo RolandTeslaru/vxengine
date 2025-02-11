@@ -1,9 +1,9 @@
+import { RawSpline } from "@vxengine/types/data/rawData";
 import init, {
     Spline as wasm_Spline,
     Vector3 as wasm_Vector3,
     interpolate_number as wasm_interpolateNumber,
 } from "../../wasm/pkg";
-import { RawSpline } from "../types/track";
 import { logReportingService } from "./LogReportingService";
 import { WasmService } from "./WasmService";
 

@@ -3,7 +3,6 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import React, { memo, useEffect, useLayoutEffect, useMemo } from 'react';
-import { ITrackTreeNode, PathGroup } from '@vxengine/AnimationEngine/types/track';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import Track from './Track';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
@@ -14,6 +13,7 @@ import { segmentStartLeft } from './Track/TrackSegment';
 import { handleCursorMutation, handleCursorMutationByScale } from '../EditorCursor/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useVXEngine } from '@vxengine/engine';
+import { EditorTrackTreeNode } from '@vxengine/types/data/editorData';
 
 const startLeft = 22
 
@@ -26,7 +26,7 @@ export const EditArea = () => {
 
   const { IS_PRODUCTION } = useVXEngine()
 
-  const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
+  const filteredTree: Record<string, EditorTrackTreeNode> = useMemo(() => {
     if (!searchQuery)
       return trackTree;
 
@@ -115,7 +115,7 @@ const TrackNode: React.FC<TrackNodeProps> = memo(({ node, timelineClientWidth, c
 })
 
 interface TrackNodeProps {
-  node: ITrackTreeNode
+  node: EditorTrackTreeNode
   timelineClientWidth: number
   collapsedTrackNodes: Record<string, boolean>
 }

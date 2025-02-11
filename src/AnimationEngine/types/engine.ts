@@ -1,13 +1,13 @@
-import { DiskProjectProps } from "@vxengine/types/engine";
 import { Emitter } from "../emitter";
 import { EventTypes } from "../events";
-import { edObjectProps, IKeyframe, IStaticProps, ITimeline, ITrack } from "./track";
+import { RawProject, RawTimeline } from "../../types/data/rawData";
+import { AnimationEngine } from "../engine";
 
 export interface IAnimationEngine extends Emitter<EventTypes> {
   readonly isPlaying: boolean;
   readonly isPaused: boolean;
   readonly playRate: number;
-  readonly timelines: Record<string, ITimeline>;
+  readonly timelines: Record<string, RawTimeline>;
 
   reRender(param?: {
     time?: number;
@@ -19,51 +19,27 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   });
   pause(): void;
 
-  setIsPlaying(value: boolean): void;
   setCurrentTimeline(timelineId: string): void;
-  loadProject(diskData: DiskProjectProps, nodeEnv: "production" | "development"
+  loadProject(diskData: RawProject, nodeEnv: "production" | "development"
   ): void;
   setCurrentTime(time: number, isTick?: boolean);
-
-  hydrateTrack(
-    trackKey: string,
-    action: 'create' | 'remove'
-  ): void;
 }
 
-export type HydrateKeyframeAction = 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles';
 
-export type HydrateKeyframeParams<A extends HydrateKeyframeAction> = {
-  trackKey: string;
-  action: A;
-  keyframeKey: string;
-  reRender?: boolean;
-} & (A extends 'updateTime' | 'updateValue'
-  ? { newData: number }
-  : A extends 'updateHandles'
-  ? { newData: [number, number, number, number] }
-  : { newData?: undefined });
+export type TrackSideEffectCallback = (
+  animationEngine: AnimationEngine, 
+  vxkey: string,
+  propertyPath: string,
+  object3DRef: any, 
+  interpolatedValue: number
+) => void
 
-export type HydrateStaticPropAction = 'create' | 'remove' | 'update';
+export interface ISettings{
+  useSplinePath?: boolean;
+  positionSplineKey?: string
+}
 
-export type HydrateStaticPropParams<A extends HydrateKeyframeAction> = {
-  action: A;
-  staticPropKey: string;
-  reRender?: boolean;
-} & (A extends 'update' ? { newValue: number } : { newValue?: undefined });
-
-export type HydrateSplineActions = "create" | "remove" | "clone" | "updateNode" | "removeNode"
-
-export type HydrateSplineParams<A extends HydrateSplineActions> = {
-  action: A,
-  splineKey: string,
-  reRender?: boolean
-} & (
-  A extends "updateNode" 
-  ? { nodeIndex: number, newData: [number, number, number], initialTension?: undefined }
-  : A extends "removeNode" 
-  ? { nodeIndex: number, newData?: undefined, initialTension?: undefined }
-  : A extends "create"
-  ? { initialTension: number, nodeIndex?: undefined, newData?: undefined }
-  : { nodeIndex?: undefined, newData?: undefined, initialTension?: undefined}
-)
+export interface IAdditionalSettingsProps{
+  showPositionPath?: boolean
+  showHelper?: boolean
+}

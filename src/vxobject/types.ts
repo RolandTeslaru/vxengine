@@ -1,4 +1,4 @@
-import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/track";
+import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
 
 export interface VXEntityWrapperProps {
     type: string;
@@ -19,8 +19,8 @@ export type EditableObjectProps<T> = Omit<T, 'ref'> & {
 
 export type VXBaseInputType = {
     type: string,
-    propertyPath?: string
     sideEffect?: TrackSideEffectCallback
+    overwritePropertyPath?: string
 }
 export type VXNumberInputType = VXBaseInputType & {
     type: "number"

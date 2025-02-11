@@ -2,7 +2,7 @@ import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
 import React, { useState } from "react"
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
+import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
 
 export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey: string, isUsingSplinePath: boolean}) => {
     const { tracks, staticProps, removeTrack, removeStaticProp, createSpline, removeSpline }
@@ -60,7 +60,7 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
                                 <br></br> Track <span className="text-red-600">{`${objVxKey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
                             </p>
                         )}
-                        {Object.values(staticProps).map((staticProp: IStaticProps, index) =>
+                        {Object.values(staticProps).map((staticProp: EditorStaticProp, index) =>
                             <p className="h-auto" key={index}>
                                 <br></br> StaticProp <span className="text-red-600">{`${objVxKey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
                             </p>
@@ -71,7 +71,7 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
                         <p>Deleting the spline will also remove the spline progress track, allowing position tracks and keyframes to be created.</p>
                         <br />
                         <p>Spline <span className="text-red-600">{`${objVxKey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
-                        {tracks.map((track: ITrack, index) =>
+                        {tracks.map((track: EditorTrack, index) =>
                             <p className="h-auto" key={index}>
                                 <br></br> Track <span className="text-red-600">{`${objVxKey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
                             </p>

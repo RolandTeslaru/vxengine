@@ -1,16 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useObjectManagerAPI, useObjectPropertyAPI } from "../stores/managerStore";
+import React from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@vxengine/components/shadcn/alertDialog";
-import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
-import { IStaticProps, ITrack } from "@vxengine/AnimationEngine/types/track";
-import { Slider } from "@vxengine/components/shadcn/slider";
-import { getNestedProperty } from "@vxengine/utils";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSettingsAPI } from "../stores/settingsStore";
-import { invalidate } from "@react-three/fiber";
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
 import { DANGER_UseSplinePath } from "@vxengine/components/ui/DialogAlerts/Danger";
 

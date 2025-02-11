@@ -38,7 +38,7 @@ const MenubarTrigger = React.forwardRef<
   <MenubarPrimitive.Trigger
     ref={ref}
     className={cn(
-      `flex cursor-default select-none items-center rounded-lg px-3 py-1 text-xs font-medium outline-none border-transparent border
+      `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-none border-transparent border text-xs font-medium 
         focus:bg-neutral-700 focus:bg-opacity-50 focus:text-neutral-50
         hover:bg-neutral-700 hover:bg-opacity-50 
         hover:border-neutral-400 hover:border-opacity-20
@@ -62,8 +62,8 @@ const MenubarSubTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-none border border-transparent
-        focus:text-neutral-50 focus:border-opacity-35
-         hover:bg-blue-600 hover:border-neutral-700 hover:border-opacity-35
+        focus:text-neutral-50
+         hover:bg-blue-600 hover:border-blue-500
       data-[state=open]:bg-blue-600 data-[state=open]:text-neutral-50 data-[state=open]:border-blue-500`,
       inset && "pl-8",
       className
@@ -109,7 +109,7 @@ const MenubarContent = React.forwardRef<
         alignOffset={alignOffset}
         sideOffset={sideOffset}
         className={cn(
-          `z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 shadow-md 
+          `z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 shadow-md
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
           border-neutral-400 border-opacity-20 bg-neutral-900 bg-opacity-80 text-neutral-50`,
@@ -132,8 +132,8 @@ const MenubarItem = React.forwardRef<
     ref={ref}
     className={cn(
       `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-none border border-transparent
-       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-blue-600 focus:text-neutral-50
-       focus:border-blue-500
+       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 
+       focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
        `,
       inset && "pl-8",
       className

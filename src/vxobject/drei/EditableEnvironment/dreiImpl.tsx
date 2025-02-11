@@ -167,9 +167,10 @@ export function VXEnvironmentPortal({
   }, [resolution])
 
   useLayoutEffect(() => {
-    camera.current.update(gl as any, virtualScene)
-  }, [])
-
+    requestAnimationFrame(() => {
+      camera.current.update(gl as any, virtualScene);
+    });
+  }, []);
   useLayoutEffect(() => {
     if (frames === 1) {
       camera.current.update(gl as any, virtualScene)

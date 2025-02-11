@@ -40,7 +40,7 @@ export class WasmService {
             logReportingService.logInfo(
                 `WASM Driver initialized successfully`, LOG_CONTEXT)
         } catch (error) {
-            logReportingService.logError(error, LOG_CONTEXT)
+            logReportingService.logError(error as Error, LOG_CONTEXT)
         }
     }
 

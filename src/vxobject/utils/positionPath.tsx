@@ -1,10 +1,10 @@
 import React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"
-import { IKeyframe } from "@vxengine/AnimationEngine/types/track";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { shallow } from "zustand/shallow";
 import KeyframeNode from "./keyframeNode";
+import { EditorKeyframe } from "@vxengine/types/data/editorData";
 
 const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
@@ -17,7 +17,7 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const staticProps = useTimelineManagerAPI(state => state.staticProps);
 
     const getAxisValueAtTime = (
-        keyframesForAxis: Record<string, IKeyframe>, 
+        keyframesForAxis: Record<string, EditorKeyframe>, 
         staticPropKey: string, 
         time: number
     ) => {
@@ -56,13 +56,13 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
             positions[index * 3 + 1] = y;
             positions[index * 3 + 2] = z;
 
-            Object.values(keyframesX).forEach((kf: IKeyframe) => {
+            Object.values(keyframesX).forEach((kf: EditorKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "X" });
             });
-            Object.values(keyframesY).forEach((kf: IKeyframe) => {
+            Object.values(keyframesY).forEach((kf: EditorKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Y" });
             });
-            Object.values(keyframesZ).forEach((kf: IKeyframe) => {
+            Object.values(keyframesZ).forEach((kf: EditorKeyframe) => {
                 if (kf.time === time) keyframeDataForNodes[index].push({ id: kf.id, axis: "Z" });
             });
         });
@@ -112,7 +112,7 @@ const PositionPath = ({ vxkey }: { vxkey: string }) => {
 
 export default PositionPath
 
-const interpolateKeyframes = (keyframes: IKeyframe[], currentTime: number): number => {
+const interpolateKeyframes = (keyframes: EditorKeyframe[], currentTime: number): number => {
     if (keyframes.length === 0) return 0;
 
     // Sort keyframes by time
@@ -127,8 +127,8 @@ const interpolateKeyframes = (keyframes: IKeyframe[], currentTime: number): numb
     }
 
     // Find the two keyframes between which the current time falls
-    let startKeyframe: IKeyframe | undefined;
-    let endKeyframe: IKeyframe | undefined;
+    let startKeyframe: EditorKeyframe | undefined;
+    let endKeyframe: EditorKeyframe | undefined;
 
     for (let i = 0; i < sortedKeyframes.length - 1; i++) {
         if (currentTime >= sortedKeyframes[i].time && currentTime <= sortedKeyframes[i + 1].time) {

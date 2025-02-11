@@ -3,7 +3,6 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
-import { edObjectProps, IKeyframe, ITrack, ITrackTreeNode, PathGroup } from "@vxengine/AnimationEngine/types/track";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { cursorRef, useRefStore } from "@vxengine/utils/useRefStore";
 import { useTimelineManagerAPI } from "../../..";
@@ -16,6 +15,7 @@ import Maximize2 from "@geist-ui/icons/maximize2";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
 import { useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "../../store";
+import { EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 
 const TRACK_HEIGHT = 34;
 
@@ -41,7 +41,7 @@ const TrackVerticalList = memo(() => {
         })
     }, [])
 
-    const filteredTree: Record<string, ITrackTreeNode> = useMemo(() => {
+    const filteredTree: Record<string, EditorTrackTreeNode> = useMemo(() => {
         if (!searchQuery) return trackTree;
 
         return Object.entries(trackTree).reduce((filtredNode, [key, node]) => {
@@ -87,7 +87,7 @@ const TrackVerticalList = memo(() => {
 
 const NODE_PADDING_INDENT = 30;
 
-const TreeNode = React.memo(({ node, level }: { node: ITrackTreeNode, level: number }) => {
+const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level: number }) => {
     const paths = React.useMemo(() => node.key.split("."), [node.key]);
     const hasChildren = !!node.children && Object.values(node.children).length > 0
     const isCollapsed = useTimelineEditorAPI(state => state.collapsedTrackNodes[node.key])

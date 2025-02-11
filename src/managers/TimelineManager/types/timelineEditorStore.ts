@@ -1,8 +1,8 @@
-import { ITrack, ITrackTreeNode } from "@vxengine/AnimationEngine/types/track";
+import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { SelectedKeyframe } from "./store";
 
 export interface TimelineEditorAPIProps {
-    trackTree: Record<string, ITrackTreeNode>,
+    trackTree: Record<string, EditorTrackTreeNode>,
 
     scale: number;
     setScale: (value: number) => void;
@@ -50,5 +50,5 @@ export interface TimelineEditorAPIProps {
     collapsedTrackNodes: Record<string, boolean>
     setCollapsedTrackNodes: (groupKey: string) => void;
 
-    rebuildTrackTree: (tracks: Record<string, ITrack>) => void
+    rebuildTrackTree: (tracks: Record<string, EditorTrack>) => void
 }

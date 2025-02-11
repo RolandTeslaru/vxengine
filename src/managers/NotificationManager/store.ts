@@ -1,6 +1,5 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { create } from 'zustand'
-import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 
 import debounce from "lodash/debounce"
 import { useTimelineManagerAPI } from '../TimelineManager'

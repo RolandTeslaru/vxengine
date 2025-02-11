@@ -11,6 +11,9 @@ import { EffectsManagerSubMenu } from '@vxengine/managers/EffectsManager/ui'
 import VXEngineLogo from '@vxengine/components/ui/VXEngineLogo'
 import { INFO_About, INFO_Settings } from '@vxengine/components/ui/DialogInfos'
 import TimelineManagerSubMenu from '@vxengine/managers/TimelineManager/subMenu'
+import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
+
+const LOG_MODULE = "VXMenubar"
 
 const VXMenubar = () => {
     return (
@@ -211,7 +214,27 @@ const SceneButton = () => {
             <MenubarTrigger><p className='font-sans-menlo'>Scene</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem onClick={() => invalidate()}>Invalidate</MenubarItem>
+                <MenubarSub>
+                    <MenubarSubTrigger>Camera</MenubarSubTrigger>
+                    <MenubarSubContent>
+                        <MenubarItem onClick={updateProjectionMatrix}>Update Projection Matrix</MenubarItem>
+                    </MenubarSubContent>
+                </MenubarSub>
             </MenubarContent>
         </MenubarMenu>
+    )
+}
+
+const updateProjectionMatrix = () => {
+    const vxobject = useVXObjectStore.getState().objects['perspectiveCamera'];
+    if(!vxobject)
+        return;
+
+    const cameraRef = vxobject.ref.current
+    if(cameraRef)
+        cameraRef.updateProjectionMatrix();
+
+    logReportingService.logInfo(
+        `Updated Projection Matrix`, {module: LOG_MODULE, functionName: "updateProjectionMatrix"}
     )
 }

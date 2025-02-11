@@ -10,6 +10,7 @@ import { CameraHelper } from "three";
 
 import * as THREE from "three"
 import { useVXEngine } from "@vxengine/engine";
+import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
 
 declare module 'three' {
     interface PerspectiveCamera {
@@ -28,12 +29,16 @@ export const defaultSettings_perspectiveCamera = {
     setingPerspectiveCamera: true,
 }
 
+const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine ) => {
+    animationEngine.cameraRequiresProjectionMatrixRecalculation = true;
+}
+
 const perspectiveCameraParams: VXObjectParams = {
     "localRotationZ": {type: "number"},
-    "far": {type: "number"},
-    "near": {type: "number"},
-    "fov": {type: "number"},
-    "zoom": {type: "number"},
+    "far": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    "near": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    "fov": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    "zoom": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
     "focus": {type: "number"},
     "filmGauge": {type: "number"}, 
     "filmOffset": {type: "number"}

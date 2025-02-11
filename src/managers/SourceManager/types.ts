@@ -1,20 +1,19 @@
-import { ITimeline } from "@vxengine/AnimationEngine/types/track"
-import { DiskProjectProps } from "@vxengine/types/engine"
+import { RawProject } from "@vxengine/types/data/rawData"
 import { LocalStorageDataType } from "./store"
 
 export interface SourceManagerAPIProps {
     autoSaveInterval: number,
     setAutoSaveInterval: (interval: number) => void,
 
-    getLocalStorageProject: (projectName: string) => DiskProjectProps | null
+    getLocalStorageProject: (projectName: string) => RawProject | null
 
     saveDataToDisk: (props?: { force?: boolean, reloadOnSuccess?: boolean}) => void,
     saveDataToLocalStorage: (props?: {force?: boolean}) => void,
 
-    initializeLocalStorage: (diskData: DiskProjectProps) => void
-    initializeProjectInLocalStorage: (localStorageData: LocalStorageDataType, diskData: DiskProjectProps) => void
+    initializeLocalStorage: (diskData: RawProject) => void
+    initializeProjectInLocalStorage: (localStorageData: LocalStorageDataType, diskData: RawProject) => void
 
-    syncLocalStorage: (diskData: DiskProjectProps) => void
+    syncLocalStorage: (diskData: RawProject) => void
 
     handleBeforeUnload: (event: BeforeUnloadEvent) => void
 }

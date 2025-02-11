@@ -101,7 +101,7 @@ export const handleKeyframeDrag = (
             _newTime = truncateToDecimals(_newTime)
 
             // Handle Raw Timeline Update
-            animationEngineInstance.hydrateKeyframe({
+            animationEngineInstance.hydrationService.hydrateKeyframe({
                 trackKey: _trackKey, 
                 action: "updateTime", 
                 keyframeKey: _kfKey, 

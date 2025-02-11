@@ -3,10 +3,14 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import { Events } from './events';
+import { logReportingService } from './services/LogReportingService';
 
 /**
  * event dispatcher
  */
+
+const LOG_MODULE = "EventEmitter"
+
 export class Emitter<EventTypes> {
   events: { [key: string]: CallableFunction[] } = {};
 
@@ -18,9 +22,10 @@ export class Emitter<EventTypes> {
     const events = names instanceof Array ? names : (names as string).split(' ');
 
     (events as string[]).forEach((name) => {
-      if (!this.events[name]) {
-        throw new Error(`VXEngine AnimationEngine: The event ${name} does not exist`);
-      }
+      if (!this.events[name])
+        logReportingService.logFatal(
+          `The event ${name} does not exist.`, {module: LOG_MODULE, functionName: "on"})
+
       this.events[name].push(handler);
     });
 
@@ -28,17 +33,17 @@ export class Emitter<EventTypes> {
   }
 
   trigger<K extends keyof EventTypes>(name: K, params: EventTypes[K]) {
-    if (!(name in this.events)) {
-      throw new Error(`VXEngine AnimationEngine: The event ${String(name)} cannot be triggered`);
-    }
+    if (!(name in this.events))
+      logReportingService.logFatal(
+        `The event ${String(name)} cannot be triggered.`, {module: LOG_MODULE, functionName:"trigger"})
 
     return this.events[name as string].reduce((r: boolean, e: CallableFunction) => e(params) !== false && r, true); // return false if at least one event is false
   }
 
   bind(name: string) {
-    if (this.events[name]) {
-      throw new Error(`VXEngine AnimationEngine: The event ${name} is already bound`);
-    }
+    if (this.events[name])
+      logReportingService.logFatal(
+        `The event ${name} is already bound.`, {module: LOG_MODULE, functionName: "bind"})
 
     this.events[name] = [];
   }

@@ -7,8 +7,7 @@ import { Events, EventTypes } from './events';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 
 import * as THREE from "three"
-import { RawSpline, ITimeline, RawKeyframeProps, RawObjectProps, RawTrackProps, RawStaticPropProps, IStaticProps, TrackSideEffectCallback } from './types/track';
-import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams, IAnimationEngine } from './types/engine';
+import { IAnimationEngine, TrackSideEffectCallback } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { updateProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
@@ -23,12 +22,12 @@ import {
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
-import { DiskProjectProps } from '@vxengine/types/engine';
 import { defaultSideEffects } from './defaultSideEffects';
 import { HydrationService } from './services/HydrationService';
 import { logReportingService } from './services/LogReportingService';
 import { WasmService } from './services/WasmService';
 import { SplineService } from './services/SplineService';
+import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
@@ -36,35 +35,68 @@ const DEBUG_OBJECT_INIT = false;
 const LOG_MODULE = "AnimationEngine"
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
+  // ====================================================
+  // Public Static Members
+  // ====================================================
+  public static readonly ENGINE_PRECISION = 4
+  public static readonly VALUE_CHANGE_THRESHOLD = 0.001;
+  public static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
+
+  public cameraRequiresProjectionMatrixRecalculation: boolean = false;
+
+  // ====================================================
+  // Public Instance Getters (API)
+  // ====================================================
+  public get timelines() { return useAnimationEngineAPI.getState().timelines; }
+  public get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
+  public get isPaused() { return !this.isPlaying; }
+  public get playRate() { return useAnimationEngineAPI.getState().playRate }
+  public get currentTimeline() { return this._currentTimeline }
+  public get currentTime() { return this._currentTime }
+
+  public get splineService(): SplineService { return this._splineService }
+  public get hydrationService(): HydrationService { return this._hydrationService }
+
+  // ====================================================
+  // Private Instance Properties
+  // ====================================================
   private _id: string
   private _timerId: number;
-  private _prev: number;
   private _isReady: boolean = false
-
+  
   private _splinesCache: Map<string, wasm_Spline> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
-
-  private _currentTimeline: ITimeline;
+  
+  private _currentTimeline: RawTimeline;
   private _currentTime: number = 0;
-  private _interpolateNumberFunction: Function;
+  private _prevTime: number;
+  /**
+   * Interpolation function used for keyframe interpolation.
+   * Defaults to a JS implementation, then replaced by the WASM version.
+   */
+  private _interpolateNumberFunction: (
+    startValue: number,
+    endValue: number,
+    startHandleX: number,
+    startHandleY: number,
+    endHandleX: number,
+    endHandleY: number,
+    progress: number
+  ) => number = js_interpolateNumber;;
 
-  private _cameraRequiresPerspectiveMatrixRecalculation;
-  private readonly _propertiesRequiredToRecalculateCamera = ['fov', 'near', 'far', 'zoom'];
-
-  private _IS_DEVELOPMENT: boolean = false;
-  private _IS_PRODUCTION: boolean = false;
-
+  // ====================================================
+  // Services
+  // ====================================================
   private _hydrationService: HydrationService;
   private _wasmService: WasmService;
   private _splineService: SplineService
 
-  static readonly ENGINE_PRECISION = 4
-  static readonly VALUE_CHANGE_THRESHOLD = 0.001;
 
-  static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
+  private _IS_DEVELOPMENT: boolean = false;
+  private _IS_PRODUCTION: boolean = false;
 
   constructor() {
     super(new Events());
@@ -73,12 +105,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     logReportingService.logInfo(
       `Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
 
-    this._interpolateNumberFunction = js_interpolateNumber;
     this._wasmService = new WasmService(
-       "/assets/wasm/rust_bg.wasm",
-       (wasm_interpolator) => {
+      "/assets/wasm/rust_bg.wasm",
+      (wasm_interpolator) => {
         this._interpolateNumberFunction = wasm_interpolator;
-       }
+      }
     );
     this._splineService = new SplineService(this._wasmService);
     this._currentTimeline = null
@@ -86,21 +117,50 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
+  // ====================================================
+  // Public API Methods
+  // ====================================================
 
 
+  /**
+  * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
+  * @param timelines - A record of timelines to load.
+  */
+  public loadProject(diskData: RawProject, nodeEnv: "production" | "development") {
+    if (nodeEnv === "production")
+      this._IS_PRODUCTION = true;
+    else if (nodeEnv === "development")
+      this._IS_DEVELOPMENT = true;
 
+    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
 
-  public get timelines() { return useAnimationEngineAPI.getState().timelines; }
-  public get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
-  public get isPaused() { return !this.isPlaying; }
-  public get playRate() { return useAnimationEngineAPI.getState().playRate }
-  public get currentTimeline() { return this._currentTimeline }
-  public get currentTime() { return this._currentTime }
+    logReportingService.logInfo(
+      `Loading Project ${diskData.projectName} in ${(nodeEnv === "production") && "production mode"} ${(nodeEnv === "development") && "dev mode"}`, LOG_CONTEXT)
 
-  public get splineService(): SplineService {return this._splineService;}
+    const timelines = diskData.timelines
+    useAnimationEngineAPI.setState({ projectName: diskData.projectName })
 
-  setIsPlaying(value: boolean) { useAnimationEngineAPI.setState({ isPlaying: value }) }
+    if (this._IS_DEVELOPMENT && typeof window !== 'undefined') {
+      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
+      if (syncResult?.status === 'out_of_sync')
+        useAnimationEngineAPI.setState({ isPlaying: false })
+    }
+    else
+      useAnimationEngineAPI.setState({ timelines: timelines })
 
+    // Load the first timeline
+    const firstTimeline = Object.values(timelines)[0];
+    const firstTimelineID = firstTimeline.id;
+
+    this.setCurrentTimeline(firstTimelineID);
+
+    logReportingService.logInfo(
+      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`, LOG_CONTEXT)
+
+    // Initialize the core UI
+    useUIManagerAPI.getState().setMountCoreUI(true);
+    this._isReady = true;
+  }
 
 
 
@@ -110,17 +170,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Sets the current timeline by updating the state, caching splines, and re-rendering.
    * @param timelineId - The identifier of the timeline to set as current.
    */
-  setCurrentTimeline(timelineId: string) {
-    const LOG_CONTEXT = { 
-      module: "AnimationEngine", 
-      functionName: "setCurrentTimeline", 
-      additionalData: { timelines: this.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION } 
+  public setCurrentTimeline(timelineId: string) {
+    const LOG_CONTEXT = {
+      module: "AnimationEngine",
+      functionName: "setCurrentTimeline",
+      additionalData: { timelines: this.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION }
     }
     // Update the current timeline ID in the state
 
     logReportingService.logInfo(`Setting current timeline to ${timelineId}`, LOG_CONTEXT)
 
-    const selectedTimeline: ITimeline = this.timelines[timelineId];
+    const selectedTimeline: RawTimeline = this.timelines[timelineId];
 
     if (!selectedTimeline)
       logReportingService.logFatal(
@@ -131,10 +191,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
 
     this._currentTimeline = selectedTimeline;
+    this._precomputePropertySetterCache(selectedTimeline);
 
     const { objects: rawObjects, splines: rawSplines } = selectedTimeline;
-
-
     // Cache the splines asynchronously
     this._splineService.cacheSplines(rawSplines).then(() => {
       // Re-render after splines are cached
@@ -145,7 +204,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     });
 
     if (this._IS_DEVELOPMENT) {
-      this._hydrationService = new HydrationService(this._IS_PRODUCTION, this._IS_DEVELOPMENT, this._currentTimeline, this._splinesCache);
+      this._hydrationService = new HydrationService(this, this._IS_PRODUCTION, this._IS_DEVELOPMENT, this._currentTimeline, this._splinesCache);
       // Set the editor data
       useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT);
       useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
@@ -156,19 +215,19 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-
   /**
    * Sets the current time of the animation engine and triggers relevant events.
    * @param time - The new current time.
    * @param isTick - Indicates if the time update is part of the engine's tick.
    */
-  setCurrentTime(time: number, isTick: boolean = false) {
+  public setCurrentTime(time: number, isTick: boolean = false) {
     this._currentTime = time;
 
     if (isTick) {
       this.trigger('timeUpdatedByEngine', { time, engine: this });
     } else {
       this._applyTracksOnTimeline(time)
+      this._updateCameraIfNeeded();
       this.trigger('timeUpdatedByEditor', { time, engine: this });
 
       invalidate();
@@ -183,58 +242,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   /**
-  * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
-  * @param timelines - A record of timelines to load.
-  */
-  loadProject(diskData: DiskProjectProps, nodeEnv: "production" | "development") {
-    if (nodeEnv === "production")
-      this._IS_PRODUCTION = true;
-    else if (nodeEnv === "development")
-      this._IS_DEVELOPMENT = true;
-
-    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: {IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT:this._IS_DEVELOPMENT}}
-    
-    logReportingService.logInfo(
-      `Loading Project ${diskData.projectName} in ${(nodeEnv === "production") && "production mode"} ${(nodeEnv === "development") && "dev mode"}`, LOG_CONTEXT)
-
-    const timelines = diskData.timelines
-    useAnimationEngineAPI.setState({ projectName: diskData.projectName })
-    
-    if (this._IS_DEVELOPMENT && typeof window !== 'undefined') {
-      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
-      if (syncResult?.status === 'out_of_sync')
-        this.setIsPlaying(false);
-    }
-    else
-      useAnimationEngineAPI.setState({ timelines: timelines })
-
-    // Load the first timeline
-    const firstTimeline = Object.values(timelines)[0];
-    const firstTimelineID = firstTimeline.id;
-
-    this.setCurrentTimeline(firstTimelineID);
-
-    logReportingService.logInfo(
-      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`,LOG_CONTEXT)
-
-    // Initialize the core UI
-    useUIManagerAPI.getState().setMountCoreUI(true);
-    this._isReady = true;
-  }
-
-
-
-
-
-
-  /**
   * Re-renders the animation by applying static properties and keyframes.
   * @param params - An object containing optional parameters:
   *   - time: The specific time to apply keyframes.
   *   - force: Whether to force re-rendering even if the animation is playing.
   *   - cause: A string describing the cause of the re-render.
   */
-  reRender(params: { time?: number; force?: boolean; cause?: string; } = {}) {
+  public reRender(params: { time?: number; force?: boolean; cause?: string; } = {}) {
     const { time, force = false, cause } = params;
 
     if (this.isPlaying && !force)
@@ -244,12 +258,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       logReportingService.logInfo(
         `Re-rendering because ${cause}`, { module: LOG_MODULE, functionName: "reRender" })
 
-    this._applyAllStaticProps();
-
     const targetTime = time !== undefined ? time : this._currentTime;
-    this._applyTracksOnTimeline(targetTime)
-  }
 
+    this._applyAllStaticProps();
+    this._applyTracksOnTimeline(targetTime)
+    this._updateCameraIfNeeded();
+  }
 
 
 
@@ -262,7 +276,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    *   - autoEnd: Whether to automatically end the animation when `toTime` is reached.
    * @returns True if the animation starts playing, false otherwise.
    */
-  play(param: { toTime?: number; autoEnd?: boolean; } = {}) {
+  public play(param: { toTime?: number; autoEnd?: boolean; } = {}) {
     let { toTime, autoEnd = true } = param;
     if (toTime === undefined) {
       toTime = this._currentTimeline.length;
@@ -274,11 +288,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     )
       return;
 
-    this.setIsPlaying(true);
+    useAnimationEngineAPI.setState({ isPlaying: true })
+
+    logReportingService.logInfo(
+      `Started Playing`, { module: "AnimationEngine", functionName: "play"})
 
     this._timerId = requestAnimationFrame((time: number) => {
-      this._prev = time;
-      this._tick({ now: time, autoEnd, to: toTime });
+      this._prevTime = time;
+      this._tick(time, toTime, autoEnd);
     });
 
   }
@@ -287,14 +304,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-
   /**
    * Pauses the animation playback and triggers a 'paused' event.
    */
-  pause() {
+  public pause() {
     logReportingService.logInfo("Pause triggered", { module: LOG_MODULE, functionName: "pause" })
     if (this.isPlaying) {
-      this.setIsPlaying(false);
+      useAnimationEngineAPI.setState({ isPlaying: false })
       this.trigger('paused', { engine: this });
     }
     cancelAnimationFrame(this._timerId);
@@ -304,33 +320,37 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
+  // ====================================================
+  // Public Object Lifecycle
+  // ====================================================
 
   /**
    * Initializes object properties when the object is mounted.
    * Applies initial tracks and static properties to the object.
    * @param vxObject - The object to initialize.
    */
-  initObjectOnMount(vxObject: vxObjectProps) {
+  public initObjectOnMount(vxObject: vxObjectProps) {
     const vxkey = vxObject.vxkey;
 
     if (!this._isReady)
       return;
 
     // Add object to editor data
-    this._addToEditorData(vxObject);
+    useTimelineManagerAPI.getState().addObjectToEditorData(vxObject);
 
     // Initialize all Side Effects
-    Object.values(vxObject.params).forEach(param => {
+    Object.entries(vxObject.params).forEach(([propertyPath, param]) => {
       const sideEffect = param.sideEffect;
-      const trackKey = `${vxkey}.${param.propertyPath}`
-      if (sideEffect)
+      const trackKey = `${vxkey}.${propertyPath}`
+      if (sideEffect){
         this.registerSideEffect(trackKey, sideEffect)
+      }
     })
 
     // Cache the THREE.Object3D reference
     const object3DRef = this._cacheObject3DRef(vxObject);
     if (DEBUG_OBJECT_INIT)
-      logReportingService.logInfo(`Initializing vxobject ${vxObject}`, { module: LOG_MODULE, functionName: "initObjectOnMount" })
+      logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: {vxObject} })
 
     const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
@@ -342,7 +362,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-  handleObjectUnMount(vxkey: string) {
+
+
+  /**
+   * Handles cleanup when an object is unmounted.
+   * Removes the object reference from internal caches.
+   * @param vxkey - The unique key of the object to clean up.
+   */
+  public handleObjectUnMount(vxkey: string) {
     if (!this._isReady)
       return;
 
@@ -352,19 +379,69 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /**
-   * Adds the vxObject to the editor's data.
-   * @param vxObject - The object to add.
-   */
-  private _addToEditorData(vxObject: vxObjectProps) {
-    useTimelineManagerAPI.getState().addObjectToEditorData(vxObject);
+
+  // ==================================================== 
+  // Public SideEffect Management Methods
+  // ====================================================
+
+  public registerSideEffect(trackKey: string, callback: TrackSideEffectCallback): void {
+    this._sideEffectCallbacks.set(trackKey, callback);
+  }
+
+  public getSideEffect(trackKey: string): TrackSideEffectCallback {
+    return this._sideEffectCallbacks.get(trackKey);
   }
 
 
 
 
 
+  // ====================================================
+  // Private Helper Methods
+  // ====================================================
 
+  /**
+   * Main ticker function that updates the animation state and schedules the next frame.
+   * @param data - An object containing:
+   *   - now: The current time from `requestAnimationFrame`.
+   *   - autoEnd: Whether to automatically end the animation at a certain time.
+   *   - to: The time to play up to.
+   */
+  private _tick(now: number, to: number, autoEnd: boolean = false) {
+    if (this.isPaused) {
+      return;
+    }
+
+    invalidate();
+
+    const deltaTime = Math.min(1000, now - this._prevTime) / 1000;
+    let newCurrentTime = this._currentTime + deltaTime * this.playRate;
+    this._prevTime = now;
+
+    if (to !== undefined && to <= newCurrentTime) {
+      newCurrentTime = to;
+    }
+
+    this.setCurrentTime(newCurrentTime, true);
+    this._applyTracksOnTimeline(newCurrentTime);
+    this._updateCameraIfNeeded();
+
+    invalidate();
+
+    // Determine whether to stop or continue the animation
+    if (to !== undefined && to <= newCurrentTime) {
+      this._end();
+    }
+
+    this._timerId = requestAnimationFrame((time) => {
+      this._tick(time, to, autoEnd);
+    });
+  }
+
+
+
+
+  
   /**
    * Caches the THREE.Object3D reference of the vxObject.
    * @param vxObject - The object whose reference is to be cached.
@@ -381,63 +458,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  public registerSideEffect(trackKey: string, callback: TrackSideEffectCallback): void {
-    this._sideEffectCallbacks.set(trackKey, callback);
-  }
-
-  public getSideEffect(trackKey: string): TrackSideEffectCallback {
-    return this._sideEffectCallbacks.get(trackKey);
-  }
-
-
-
-
-
-  /**
-   * Main ticker function that updates the animation state and schedules the next frame.
-   * @param data - An object containing:
-   *   - now: The current time from `requestAnimationFrame`.
-   *   - autoEnd: Whether to automatically end the animation at a certain time.
-   *   - to: The time to play up to.
-   */
-  private _tick(data: { now: number; autoEnd?: boolean; to?: number }) {
-    if (this.isPaused) {
-      return;
-    }
-
-    invalidate();
-
-    const { now, autoEnd = false, to } = data;
-
-    const deltaTime = Math.min(1000, now - this._prev) / 1000;
-    let newCurrentTime = this._currentTime + deltaTime * this.playRate;
-    this._prev = now;
-
-    if (to !== undefined && to <= newCurrentTime) {
-      newCurrentTime = to;
-    }
-
-    this.setCurrentTime(newCurrentTime, true);
-    this._applyTracksOnTimeline(newCurrentTime);
-    this._updateCameraIfNeeded();
-
-    // Determine whether to stop or continue the animation
-    if (to !== undefined && to <= newCurrentTime) {
-      this._end();
-    }
-
-    if (this.isPaused) {
-      return;
-    }
-
-    this._timerId = requestAnimationFrame((time) => {
-      this._tick({ now: time, autoEnd, to });
-    });
-  }
-
-
-
-
 
 
   /**
@@ -445,10 +465,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param rawObject - The raw object containing static properties.
    * @param object3DRef - Reference to the THREE.Object3D instance.
    */
-  private _applyStaticPropsOnObject(rawObject: RawObjectProps,object3DRef: THREE.Object3D | null) {
+  private _applyStaticPropsOnObject(rawObject: RawObject, object3DRef: THREE.Object3D | null) {
     if (!object3DRef) {
       logReportingService.logWarning(
-        `Could not initialize staticProps for ${rawObject.vxkey} because no object3d references was passed`,{ module: LOG_MODULE, functionName: "_applyStaticPropsOnObject" })
+        `Could not initialize staticProps for ${rawObject.vxkey} because no object3d references was passed`, { module: LOG_MODULE, functionName: "_applyStaticPropsOnObject" })
       return;
     }
     rawObject.staticProps.forEach(staticProp => {
@@ -465,16 +485,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-
-
-  private _applyTracksOnTimeline( currentTime: number) {
+  private _applyTracksOnTimeline(currentTime: number) {
     this.currentTimeline.objects.forEach(rawObject =>
       this._applyTracksOnObject(currentTime, rawObject)
     )
   }
 
 
-  private _applyTracksOnObject( currentTime: number,rawObject: RawObjectProps
+  private _applyTracksOnObject(currentTime: number, rawObject: RawObject
   ) {
     rawObject.tracks.forEach(rawTrack =>
       this._applyKeyframesOnTrack(
@@ -494,18 +512,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Updates the camera's projection matrix if required.
    */
   private _updateCameraIfNeeded() {
-    if (!this._cameraRequiresPerspectiveMatrixRecalculation) {
+    if (!this.cameraRequiresProjectionMatrixRecalculation)
       return;
-    }
 
     const camera = this._object3DCache.get('perspectiveCamera') as THREE.PerspectiveCamera;
     if (camera) {
       camera.updateProjectionMatrix();
-      this._cameraRequiresPerspectiveMatrixRecalculation = false;
-    } else {
+      this.cameraRequiresProjectionMatrixRecalculation = false;
+    } else
       logReportingService.logWarning(
-        "PerspectiveCamera was not found in object cache",{ module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
-    }
+        "PerspectiveCamera was not found in object cache", { module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
   }
 
 
@@ -524,7 +540,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _applyKeyframesOnTrack(
     vxkey: string,
     propertyPath: string,
-    keyframes: RawKeyframeProps[],
+    keyframes: RawKeyframe[],
     currentTime: number,
     recalculateAll: boolean = false
   ) {
@@ -536,16 +552,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const cacheKey = `${vxkey}.${propertyPath}`;
     const lastValue = this._lastInterpolatedValues.get(cacheKey);
 
-    if (lastValue === undefined) {
-      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
-      this._lastInterpolatedValues.set(cacheKey, newValue);
-      return
-    }
+    this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+    // if (lastValue === undefined) {
+    //   this._lastInterpolatedValues.set(cacheKey, newValue);
+    //   return
+    // }
 
-    if (Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
-      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
-      this._lastInterpolatedValues.set(cacheKey, newValue);
-    }
+    // if (Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
+    //   this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+    //   this._lastInterpolatedValues.set(cacheKey, newValue);
+    // }
   }
 
 
@@ -561,7 +577,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns The interpolated value 
    */
   private _calculateInterpolatedValue(
-    keyframes: RawKeyframeProps[],
+    keyframes: RawKeyframe[],
     currentTime: number,
     recalculateAll: boolean
   ): number {
@@ -581,31 +597,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   /**
-   * Checks if the camera's projection matrix needs to be recalculated based on property updates.
-   * @param vxkey - The unique identifier for the object.
-   * @param propertyPath - The property that was updated.
-   */
-  private _checkCameraUpdateRequirement(vxkey: string, propertyPath: string) {
-    if (
-      vxkey === 'perspectiveCamera' &&
-      this._propertiesRequiredToRecalculateCamera.includes(propertyPath)
-    ) {
-      this._cameraRequiresPerspectiveMatrixRecalculation = true;
-    }
-  }
-
-
-
-
-
-
-  /**
    * Interpolates the value between keyframes based on the current time.
    * @param keyframes - Array of keyframes sorted by time.
    * @param currentTime - The current time in the animation timeline.
    * @returns The interpolated value at the current time.
    */
-  private _interpolateKeyframes(keyframes: RawKeyframeProps[], currentTime: number): number {
+  private _interpolateKeyframes(keyframes: RawKeyframe[], currentTime: number): number {
     // Handle edge cases where currentTime is outside the keyframe time range
     if (currentTime <= keyframes[0].time) {
       return keyframes[0].value;
@@ -654,7 +651,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param currentTime - The current time in the animation timeline.
    * @returns The index of the next keyframe.
    */
-  private _findNextKeyframeIndex(keyframes: RawKeyframeProps[], currentTime: number): number {
+  private _findNextKeyframeIndex(keyframes: RawKeyframe[], currentTime: number): number {
     let left = 0;
     let right = keyframes.length - 1;
 
@@ -689,8 +686,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @returns The interpolated numeric value.
    */
   private _interpolateNumber(
-    startKeyframe: RawKeyframeProps,
-    endKeyframe: RawKeyframeProps,
+    startKeyframe: RawKeyframe,
+    endKeyframe: RawKeyframe,
     progress: number
   ): number {
     const startValue = startKeyframe.value as number;
@@ -767,16 +764,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     newValue: number
   ) {
     const generalKey = `${vxkey}.${propertyPath}`
-    let setter = this._propertySetterCache.get(propertyPath);
-
-    if (!setter) {
-      // Generate and cache the setter function if its not in the cache
-      setter = this._generatePropertySetter(propertyPath);
-      this._propertySetterCache.set(propertyPath, setter);
-    }
 
     // Use the cached setter function to update the property
-    setter(object3DRef, newValue);
+    let setter = this._propertySetterCache.get(propertyPath);
+    if(setter)
+      setter(object3DRef, newValue);
+
 
     const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
     if (sideEffect)
@@ -788,9 +781,31 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         newValue
       );
 
-    this._checkCameraUpdateRequirement(vxkey, propertyPath);
     if (this._IS_DEVELOPMENT)
       updateProperty(vxkey, propertyPath, newValue);
+  }
+
+
+
+
+  private _precomputePropertySetterCache(timeline): void {
+    timeline.objects.forEach(rawObject => {
+      rawObject.staticProps.forEach(rawStaticProp => {
+        const propPath = rawStaticProp.propertyPath;
+        if(!this._propertySetterCache.has(propPath)){
+          const setter = this._generatePropertySetter(propPath);
+          this._propertySetterCache.set(propPath, setter);
+        }
+      })
+
+      rawObject.tracks.forEach(rawTrack => {
+        const propPath = rawTrack.propertyPath;
+        if (!this._propertySetterCache.has(propPath)) {
+          const setter = this._generatePropertySetter(propPath);
+          this._propertySetterCache.set(propPath, setter);
+        }
+      })
+    })
   }
 
 
@@ -804,7 +819,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param propertyPath - Dot-separated path to the property.
    * @returns A setter function that updates the specified property on a target object.
    */
-  private _generatePropertySetter( propertyPath: string): (targetObject: any, newValue: any) => void {
+  private _generatePropertySetter(propertyPath: string): (targetObject: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
     const LOG_CONTEXT = { module: "AnimationEngine", functionName: "_generatePropertySetter" }
 
@@ -873,128 +888,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.pause();
     this.trigger('ended', { engine: this });
   }
-
-
-
-
-
-
-  //
-  //  H Y D R A T E    F U N C T I O N S
-  //
-  // Used to synchronize the data structure from the Timeline editor with animation engine data structure
-
-  /**
-   * Refreshes a track in the animation engine's data structure and optionally re-renders.
-   * @param trackKey - The key identifying the track.
-   * @param action - The action to perform: 'create' or 'remove'.
-   * @param reRender - Whether to re-render after the refresh (default is true).
-   */
-  hydrateTrack( trackKey: string, action: 'create' | 'remove', reRender: boolean = true ) {
-    this._hydrationService.hydrateTrack(trackKey, action);
-
-    if (reRender)
-      this.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
-
-    invalidate();
-    useSourceManagerAPI.getState().saveDataToLocalStorage();
-  }
-
-
-
-
-
-
-  /**
-   * Refreshes a keyframe in the animation engine's data structure and optionally re-renders.
-   * @param trackKey - The key identifying the track.
-   * @param action - The action to perform: 'create', 'update', or 'remove'.
-   * @param keyframeKey - The key identifying the keyframe.
-   * @param reRender - Whether to re-render after the refresh (default is true).
-   */
-  hydrateKeyframe<A extends HydrateKeyframeAction>(params: HydrateKeyframeParams<A>) {
-    const { trackKey, action, keyframeKey, reRender = true, newData } = params;
-    // @ts-expect-error
-    this._hydrationService.hydrateKeyframe({ trackKey, action, keyframeKey, newData })
-
-    if (reRender)
-      this.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
-
-    invalidate();
-    useSourceManagerAPI.getState().saveDataToLocalStorage();
-  }
-
-
-
-
-
-
-  /**
-   * Refreshes a static property in the animation engine's data structure and optionally re-renders.
-   * @param action - The action to perform: 'create', 'update', or 'remove'.
-   * @param staticPropKey - The key identifying the static property.
-   * @param reRender - Whether to re-render after the refresh (default is true).
-   */
-  hydrateStaticProp<A extends HydrateStaticPropAction>(params: HydrateStaticPropParams<A>) {
-    const { action, staticPropKey, reRender = true, newValue } = params;
-
-    // @ts-expect-error
-    this._hydrationService.hydrateStaticProp({ staticPropKey, action, newValue })
-
-    if (reRender)
-      this.reRender({ force: true, cause: `refresh action: ${action} staticPropKey ${staticPropKey}` });
-
-    invalidate();
-    useSourceManagerAPI.getState().saveDataToLocalStorage();
-  }
-
-
-
-
-
-
-  /**
-   * Refreshes a spline in the animation engine's data structure and optionally re-renders.
-   * @param action - The action to perform: 'create', 'update', or 'remove'.
-   * @param splineKey - The key identifying the spline.
-   * @param reRender - Whether to re-render after the refresh (default is true).
-   */
-  hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
-    const { action, splineKey, reRender, nodeIndex, newData, initialTension } = params
-    // @ts-expect-error
-    this._hydrationService.hydrateSpline({ splineKey, action, nodeIndex, newData, initialTension })
-
-    if (reRender)
-      this.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
-
-    invalidate();
-    useSourceManagerAPI.getState().saveDataToLocalStorage();
-  }
-
-
-
-
-
-
-  /**
-   * Refreshes settings for an object in the animation engine's data structure.
-   * @param action - The action to perform: 'set' or 'remove'.
-   * @param settingKey - The key identifying the setting.
-   * @param vxkey - The unique identifier for the object.
-   */
-  hydrateSetting( action: 'set' | 'remove', settingKey: string, vxkey: string ) {
-    this._hydrationService.hydrateSetting(action, settingKey, vxkey)
-
-    invalidate();
-    useSourceManagerAPI.getState().saveDataToLocalStorage();
-  }
-
-
-
-
-
-
-
 
   static truncateToDecimals(num: number, decimals?: number): number {
     if (!decimals)

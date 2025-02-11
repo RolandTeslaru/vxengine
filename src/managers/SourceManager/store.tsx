@@ -1,17 +1,16 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { create } from 'zustand'
 import { SourceManagerAPIProps } from './types'
-import { ITimeline } from '@vxengine/AnimationEngine/types/track'
 import { deepEqual } from './utils'
 
 import debounce from "lodash/debounce"
 import { useTimelineManagerAPI } from '../TimelineManager'
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine'
-import { DiskProjectProps } from '@vxengine/types/engine'
 import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { DANGER_SyncConflict } from './dialogs/syncConflict'
 import React from 'react'
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
+import { RawProject } from '@vxengine/types/data/rawData'
 
 const DEBUG = true;
 
@@ -102,7 +101,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     const CONTEXT = { module: "SourceManagerAPI", functionName: "initializeLocalStorage"}
     logReportingService.logInfo(`Initializing LocalStorage`, CONTEXT)
 
-    const localStorageTemplate: Record<string, DiskProjectProps> = {}
+    const localStorageTemplate: Record<string, RawProject> = {}
     localStorageTemplate[diskData.projectName] = diskData;
 
     localStorage.setItem("VXEngineProjects", JSON.stringify(localStorageTemplate));
@@ -141,13 +140,13 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
    * 
    * This function is debounced to avoid frequent execution (e.g., during drag events), ensuring that it is called only after a specified delay (500ms) of inactivity.
    * 
-   * @param {ITimeline[]} timelines - The current timelines from the application state to be synced with localStorage.
+   * @param {RawTimeline[]} timelines - The current timelines from the application state to be synced with localStorage.
    * @returns {object} An object indicating the status of the sync operation:
    *  - `init`: If localStorage was initialized with new timeline data.
    *  - `out_of_sync`: If the timelines in localStorage and the current state are not synchronized.
    *  - `in_sync`: If the timelines are synchronized.
    */
-  syncLocalStorage: (diskData: DiskProjectProps) => {
+  syncLocalStorage: (diskData: RawProject) => {
     const CONTEXT = { module: "SourceManagerAPI", functionName: "syncLocalStorage"}
     if (DEBUG)
       logReportingService.logInfo(
@@ -237,4 +236,4 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
 }))
 
-export type LocalStorageDataType = Record<string, DiskProjectProps>
+export type LocalStorageDataType = Record<string, RawProject>

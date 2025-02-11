@@ -1,5 +1,4 @@
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
-import { IStaticProps, ITimeline, RawKeyframeProps, RawObjectProps, RawSpline, RawTrackProps } from "../types/track";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams } from "../types/HydrationService";
 import { invalidate } from "@react-three/fiber";
@@ -10,6 +9,9 @@ import {
     Vector3 as wasm_Vector3,
 } from "../../wasm/pkg";
 import { logReportingService } from "./LogReportingService";
+import { AnimationEngine } from "../engine";
+import { RawKeyframe, RawObject, RawSpline, RawTimeline, RawTrack } from "@vxengine/types/data/rawData";
+import { EditorStaticProp } from "@vxengine/types/data/editorData";
 
 
 const LOG_MODULE = "HydrationService"
@@ -22,19 +24,20 @@ const DEBUG_SETTING_HYDRATION = false;
 
 export class HydrationService {
     constructor(
+        private animationEngine: AnimationEngine,
         private _IS_PRODUCTION: boolean,
         private _IS_DEVELOPMENT: boolean,
-        private timeline: ITimeline,
+        private timeline: RawTimeline,
         private _splinesCache: Map<string, wasm_Spline>
     ) { }
 
     /**
-       * Initializes a new RawObjectProps and adds it to the current timeline's objects.
+       * Initializes a new RawObject and adds it to the current timeline's objects.
        * Prevents duplicate entries by checking if an object with the same vxkey already exists.
        * @param vxkey - The unique identifier for the object.
-       * @returns The newly created or existing RawObjectProps.
+       * @returns The newly created or existing RawObject.
        */
-    private _initRawObjectOnTimeline(vxkey: string): RawObjectProps {
+    private _initRawObjectOnTimeline(vxkey: string): RawObject {
         // Check if an object with the same vxkey already exists
         let rawObject = this.timeline.objects.find(obj => obj.vxkey === vxkey);
         if (rawObject) {
@@ -66,6 +69,7 @@ export class HydrationService {
     hydrateTrack(
         trackKey: string,
         action: 'create' | 'remove',
+        reRender: boolean = true
     ) {
         if (this._IS_PRODUCTION) {
             logReportingService.logError("Timeline Hydration is NOT allowed in Production Mode", {
@@ -92,7 +96,7 @@ export class HydrationService {
                 const keyframesForTrack = useTimelineManagerAPI.getState().tracks[trackKey].keyframes;
                 const sortedKeyframes = Object.values(keyframesForTrack).sort((a, b) => a.time - b.time)
 
-                const rawKeyframes: RawKeyframeProps[] = sortedKeyframes.map(edKeyframe => {
+                const rawKeyframes: RawKeyframe[] = sortedKeyframes.map(edKeyframe => {
                     return {
                         keyframeKey: edKeyframe.id,
                         value: edKeyframe.value,
@@ -105,7 +109,7 @@ export class HydrationService {
                         ] as [number, number, number, number]
                     }
                 })
-                const rawTrack: RawTrackProps = {
+                const rawTrack: RawTrack = {
                     propertyPath: propertyPath,
                     keyframes: rawKeyframes,
                 };
@@ -131,6 +135,12 @@ export class HydrationService {
                 return;
             }
         }
+
+        if (reRender)
+            this.animationEngine.reRender({ force: true, cause: `refresh action: ${action} track ${trackKey}` });
+
+        invalidate();
+        useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
 
 
@@ -153,7 +163,7 @@ export class HydrationService {
             return;
         }
 
-        const { trackKey, action, keyframeKey, newData } = params;
+        const { trackKey, action, keyframeKey, newData, reRender } = params;
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
         const LOG_CONTEXT = { module: LOG_MODULE, functionName: "hydrateKeyframe", additionalData: { action } }
@@ -179,7 +189,7 @@ export class HydrationService {
             case 'create': {
                 const track = useTimelineManagerAPI.getState().tracks[trackKey];
                 const edKeyframe = track.keyframes[keyframeKey]
-                const rawKeyframe: RawKeyframeProps = {
+                const rawKeyframe: RawKeyframe = {
                     keyframeKey: edKeyframe.id,
                     value: edKeyframe.value,
                     time: edKeyframe.time,
@@ -285,6 +295,12 @@ export class HydrationService {
                 return;
             }
         }
+
+        if (reRender)
+            this.animationEngine.reRender({ force: true, cause: `refresh action: ${action} keyframe ${keyframeKey}` });
+
+        invalidate();
+        useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
 
 
@@ -327,7 +343,7 @@ export class HydrationService {
 
                 if (!propExists) {
                     const edStaticProp = useTimelineManagerAPI.getState().staticProps[staticPropKey];
-                    const staticProp: IStaticProps = {
+                    const staticProp: EditorStaticProp = {
                         value: edStaticProp.value,
                         vxkey: edStaticProp.vxkey,
                         propertyPath: edStaticProp.propertyPath
@@ -364,6 +380,12 @@ export class HydrationService {
                 return;
             }
         }
+
+        if (reRender)
+            this.animationEngine.reRender({ force: true, cause: `refresh action: ${action} staticPropKey ${staticPropKey}` });
+
+        invalidate();
+        useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
 
 
@@ -378,7 +400,7 @@ export class HydrationService {
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
     hydrateSpline<A extends HydrateSplineActions>(params: HydrateSplineParams<A>) {
-        const { action, splineKey, nodeIndex, newData, initialTension } = params
+        const { action, splineKey, nodeIndex, newData, initialTension, reRender } = params
         if (this._IS_PRODUCTION) {
             logReportingService.logError("Spline Hydration is NOT allowed in Production Mode",
                 { module: LOG_MODULE, functionName: "hydrateSpline" })
@@ -492,6 +514,12 @@ export class HydrationService {
                 return;
             }
         }
+
+        if (reRender)
+            this.animationEngine.reRender({ force: true, cause: `refresh action: ${action} spline ${splineKey}` });
+
+        invalidate();
+        useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
 
 
@@ -558,5 +586,8 @@ export class HydrationService {
                 return;
             }
         }
+        invalidate();
+        useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
+
 }

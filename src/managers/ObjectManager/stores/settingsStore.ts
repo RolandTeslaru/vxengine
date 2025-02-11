@@ -4,9 +4,9 @@
 
 import { create } from 'zustand';
 import { produce } from "immer"
-import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/track';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import animationEngineInstance from '@vxengine/singleton';
+import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/engine';
 
 interface ObjectSettingsStoreProps {
     settings: Record<string, ISettings>
@@ -57,9 +57,9 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
 
             // Refresh the animation engine settings outside of the produce block
             if (isDefaultValue) {
-                animationEngineInstance.hydrateSetting("remove", settingKey, vxkey);
+                animationEngineInstance.hydrationService.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngineInstance.hydrateSetting("set", settingKey, vxkey);
+                animationEngineInstance.hydrationService.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
@@ -77,9 +77,9 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) 
             const isDefaultValue = defaultSettings[vxkey]?.[settingKey] === newValue;
 
             if (isDefaultValue) {
-                animationEngineInstance.hydrateSetting("remove", settingKey, vxkey);
+                animationEngineInstance.hydrationService.hydrateSetting("remove", settingKey, vxkey);
             } else {
-                animationEngineInstance.hydrateSetting("set", settingKey, vxkey);
+                animationEngineInstance.hydrationService.hydrateSetting("set", settingKey, vxkey);
             }
 
             // Add change to the timelineEditorAPI so that it triggers the disk write

@@ -1,5 +1,5 @@
-import { TrackSideEffectCallback } from "./types/track";
 import * as THREE from "three";
+import { TrackSideEffectCallback } from "./types/engine";
 
 export const defaultSideEffects: Record<string, TrackSideEffectCallback> = {
   "splineProgress": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {

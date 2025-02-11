@@ -32,7 +32,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
                     param={param}
                     vxObject={vxobject}
                     className="ml-auto w-fit"
-                    propertyPath={param.propertyPath ?? paramKey}
+                    propertyPath={param?.overwritePropertyPath ?? paramKey}
                 />
             </div>
         )

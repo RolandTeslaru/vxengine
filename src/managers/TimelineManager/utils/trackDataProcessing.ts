@@ -1,4 +1,4 @@
-import { edObjectProps, ITrack, ITrackTreeNode, PathGroup, RawObjectProps, RawTrackProps } from "@vxengine/AnimationEngine/types/track";
+import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { useTimelineManagerAPI } from "../store";
 
 
@@ -25,8 +25,8 @@ export const extractDataFromTrackKey = (trackKey: string) => {
 
 
 
-export const buildTrackTree = (tracks: Record<string, ITrack>) => {
-    const root: Record<string, ITrackTreeNode> = {};
+export const buildTrackTree = (tracks: Record<string, EditorTrack>) => {
+    const root: Record<string, EditorTrackTreeNode> = {};
 
     for (const key in tracks) {
         const path = key.split(".");
@@ -57,7 +57,7 @@ export const buildTrackTree = (tracks: Record<string, ITrack>) => {
     return root;
 }
 
-function mergeSingleChildNodes(node: ITrackTreeNode): ITrackTreeNode {
+function mergeSingleChildNodes(node: EditorTrackTreeNode): EditorTrackTreeNode {
     while (node.children && Object.keys(node.children).length === 1) {
         const childKey = Object.keys(node.children)[0];
         const child = node.children[childKey];

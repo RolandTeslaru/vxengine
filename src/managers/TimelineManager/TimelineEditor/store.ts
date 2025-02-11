@@ -4,9 +4,9 @@ import { truncateToDecimals } from "../store";
 import { parserPixelToTime, parserTimeToPixel } from "../utils/deal_data";
 import { cursorStartLeft, handleCursorMutation } from "./components/TimelineArea/EditorCursor/utils";
 import { produce } from "immer";
-import { ITrack, ITrackTreeNode } from "@vxengine/AnimationEngine/types/track";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
+import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 
 export type SelectedKeyframe = {
     trackKey: string;
@@ -172,8 +172,8 @@ function selectKeyframeLogic(state: TimelineEditorAPIProps, trackKey: string, ke
 }
 
 
-export const buildTrackTree = (tracks: Record<string, ITrack>) => {
-    const root: Record<string, ITrackTreeNode> = {};
+export const buildTrackTree = (tracks: Record<string, EditorTrack>) => {
+    const root: Record<string, EditorTrackTreeNode> = {};
 
     for (const key in tracks) {
         const path = key.split(".");
@@ -204,7 +204,7 @@ export const buildTrackTree = (tracks: Record<string, ITrack>) => {
 }
 
 
-function mergeSingleChildNodes(node: ITrackTreeNode): ITrackTreeNode {
+function mergeSingleChildNodes(node: EditorTrackTreeNode): EditorTrackTreeNode {
     while (node.children && Object.keys(node.children).length === 1) {
         const childKey = Object.keys(node.children)[0];
         const child = node.children[childKey];

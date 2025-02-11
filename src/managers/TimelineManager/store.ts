@@ -1,11 +1,9 @@
-import { IKeyframe, ISpline, IStaticProps, ITrack, PathGroup, RawObjectProps, RawSpline, TrackSideEffectCallback } from '@vxengine/AnimationEngine/types/track';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { updateProperty, useObjectManagerAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { EditorObjectProps, TimelineMangerAPIProps } from './types/store';
 import { useVXObjectStore } from '../ObjectManager';
 import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
@@ -15,8 +13,8 @@ import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { v4 as uuidv4 } from 'uuid';
 import animationEngineInstance from '@vxengine/singleton';
-
-export type GroupedPaths = Record<string, PathGroup>;
+import { EditorKeyframe, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
+import { TimelineMangerAPIProps } from './types/store';
 
 export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps>((set, get) => ({
     editorObjects: {},
@@ -84,7 +82,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         if (newVxObject.vxkey in get().editorObjects) {
             return
         }
-        const newEdObject: EditorObjectProps = {
+        const newEdObject: EditorObject = {
             vxkey: newVxObject.vxkey,
             trackKeys: [],
             staticPropKeys: []
@@ -108,7 +106,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Default Keyframe that will be added when creating a new track
         const keyframeKey = `keyframe-${uuidv4()}`
-        animationEngineInstance.hydrateStaticProp({
+        animationEngineInstance.hydrationService.hydrateStaticProp({
             action: "remove",
             staticPropKey,
             reRender: false
@@ -120,7 +118,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
 
             if (staticPropsForObject) {
-                const staticProp = staticPropsForObject.find((prop: IStaticProps) => prop.propertyPath === propertyPath)
+                const staticProp = staticPropsForObject.find((prop: EditorStaticProp) => prop.propertyPath === propertyPath)
                 if (staticProp) {
                     value = staticProp.value;
                     removeStaticPropLogic(state, staticPropKey)
@@ -140,13 +138,13 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
         // Refresh Raw Data and ReRender
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: "create",
             keyframeKey,
             reRender: false
         })
-        animationEngineInstance.hydrateTrack(trackKey, "create", true)
+        animationEngineInstance.hydrationService.hydrateTrack(trackKey, "create", true)
         get().addChange()
     },
 
@@ -172,9 +170,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         }))
 
         if (doesTrackExist)
-            animationEngineInstance.hydrateTrack(trackKey, "remove")
+            animationEngineInstance.hydrationService.hydrateTrack(trackKey, "remove")
 
-        animationEngineInstance.hydrateStaticProp({
+        animationEngineInstance.hydrationService.hydrateStaticProp({
             action: "create",
             staticPropKey,
             reRender: true
@@ -189,14 +187,14 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     //
 
 
-    createTrack: (trackKey, sideEffect?: TrackSideEffectCallback) => {
+    createTrack: (trackKey) => {
         set(produce((state: TimelineMangerAPIProps) => {
             createTrackLogic(state, trackKey)
             useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
 
         // Refresh only the track 
-        animationEngineInstance.hydrateTrack(trackKey, "create")
+        animationEngineInstance.hydrationService.hydrateTrack(trackKey, "create")
         get().addChange()
     },
 
@@ -207,7 +205,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         }))
 
         // Refresh only the track 
-        animationEngineInstance.hydrateTrack(trackKey, "remove", reRender)
+        animationEngineInstance.hydrationService.hydrateTrack(trackKey, "remove", reRender)
         get().addChange()
     },
 
@@ -251,7 +249,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         set(
             produce((state: TimelineMangerAPIProps) => {
-                const edSpline: ISpline = {
+                const edSpline: EditorSpline = {
                     splineKey,
                     vxkey,
                     nodes: nodes as [number, number, number][]
@@ -261,7 +259,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         )
 
         // Handle engine spline creation (wasm)
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "create", 
             splineKey, 
             initialTension: tension,
@@ -298,7 +296,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         get().removeProperty(vxkey, "splineTension");
 
         // Remove spline object from timeline
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "remove", 
             splineKey, 
             reRender: true
@@ -339,7 +337,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         )
 
         ;
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "clone", 
             splineKey, 
             reRender: true
@@ -369,7 +367,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         )
 
         ;
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "removeNode", 
             splineKey, 
             nodeIndex: index,
@@ -392,7 +390,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         )
 
         
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "updateNode", 
             splineKey,
             nodeIndex: nodeIndex,
@@ -420,7 +418,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         }))
 
         ;
-        animationEngineInstance.hydrateSpline({
+        animationEngineInstance.hydrationService.hydrateSpline({
             action: "clone", 
             splineKey,
             reRender
@@ -440,7 +438,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         ))
         
         // Refresh Raw Data and ReRender (optionally)
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: 'create',
             keyframeKey,
@@ -454,7 +452,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         // Only refresh the currentTimeline if removeKeyframe is not used inside a nested immer produce
         // Because refresh requires the state from timelineEditorStore which is not done by the time it gets called
         
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: "remove",
             keyframeKey,
@@ -485,7 +483,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Handle Raw Timeline Update
         
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: "updateTime",
             keyframeKey,
@@ -514,7 +512,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Refresh Keyframe
         
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: "updateValue",
             keyframeKey,
@@ -537,7 +535,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Refresh Keyframe
         
-        animationEngineInstance.hydrateKeyframe({
+        animationEngineInstance.hydrationService.hydrateKeyframe({
             trackKey,
             action: "updateHandles",
             keyframeKey,
@@ -562,7 +560,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             set(produce((state: TimelineMangerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
 
             
-            animationEngineInstance.hydrateStaticProp({
+            animationEngineInstance.hydrationService.hydrateStaticProp({
                 action: "create",
                 staticPropKey,
                 reRender
@@ -578,7 +576,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             set(produce((state: TimelineMangerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
             // Refresh Keyframe
             
-            animationEngineInstance.hydrateStaticProp({
+            animationEngineInstance.hydrationService.hydrateStaticProp({
                 action: "remove",
                 staticPropKey,
                 reRender
@@ -595,7 +593,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Refresh Keyframe
         
-        animationEngineInstance.hydrateStaticProp({
+        animationEngineInstance.hydrationService.hydrateStaticProp({
             action: "update",
             staticPropKey,
             newValue,
@@ -651,7 +649,7 @@ function createKeyframeLogic(
         value = getNestedProperty(vxobject.ref.current, propertyPath)
     }
 
-    const newKeyframe: IKeyframe = {
+    const newKeyframe: EditorKeyframe = {
         id: keyframeKey,
         time: truncateToDecimals(time),
         value: value,
@@ -702,7 +700,7 @@ function removeTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
 
 function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, value: number) {
     const staticPropKey = `${vxkey}.${propertyPath}`
-    const newStaticProp: IStaticProps = {
+    const newStaticProp: EditorStaticProp = {
         vxkey: vxkey,
         propertyPath: propertyPath,
         value: value
@@ -717,7 +715,7 @@ function createTrackLogic(state: TimelineMangerAPIProps, trackKey: string) {
 
     state.editorObjects[vxkey].trackKeys.push(trackKey);
 
-    const newTrack: ITrack = {
+    const newTrack: EditorTrack = {
         vxkey,
         propertyPath,
         keyframes: {},
@@ -767,8 +765,8 @@ export const modifyPropertyValue = (
         const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
 
         // Check if the cursor is under any keyframe
-        let targetKeyframe: IKeyframe | undefined;
-        keyframesOnTrack.some((kf: IKeyframe) => {
+        let targetKeyframe: EditorKeyframe | undefined;
+        keyframesOnTrack.some((kf: EditorKeyframe) => {
             if (kf.time === time) {
                 targetKeyframe = kf;
                 return true;  // Exit early once we find the keyframe
@@ -782,7 +780,7 @@ export const modifyPropertyValue = (
         }
         else {
             if (mode === "start" || mode === "changing") {
-                animationEngineInstance.hydrateKeyframe({
+                animationEngineInstance.hydrationService.hydrateKeyframe({
                     trackKey,
                     action: "updateValue",
                     keyframeKey: targetKeyframeKey,
@@ -804,7 +802,7 @@ export const modifyPropertyValue = (
         }
         else {
             if (mode === "start" || mode === "changing") {
-                animationEngineInstance.hydrateStaticProp({
+                animationEngineInstance.hydrationService.hydrateStaticProp({
                     staticPropKey,
                     action: "update",
                     newValue,
@@ -841,8 +839,8 @@ export const modifyBatchPropertyValues = (
             const keyframesOnTrack = Object.values(tracks[trackKey].keyframes)
 
             // Check if the cursor is under any keyframe
-            let targetKeyframe: IKeyframe | undefined;
-            keyframesOnTrack.some((kf: IKeyframe) => {
+            let targetKeyframe: EditorKeyframe | undefined;
+            keyframesOnTrack.some((kf: EditorKeyframe) => {
                 if (kf.time === time) {
                     targetKeyframe = kf;
                     return true;  // Exit early once we find the keyframe

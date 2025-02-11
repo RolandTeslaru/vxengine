@@ -5,7 +5,6 @@ import React, { memo, useRef, useLayoutEffect } from 'react'
 import KeyframeContextMenu from './KeyframeContextMenu';
 import { DEFAULT_ROW_HEIGHT } from '@vxengine/AnimationEngine/interface/const';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
-import { truncateToDecimals, updatedOrderedKeyframeIdsLogic } from '@vxengine/managers/TimelineManager/store';
 import interact from "interactjs";
 import { DragEvent, Interactable } from "@interactjs/types";
 import { useRefStore } from '@vxengine/utils';
