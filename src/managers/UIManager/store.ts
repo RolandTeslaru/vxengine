@@ -11,9 +11,10 @@ interface DialogEntry {
     type: DialogType;
     className?: string
     showTriangle?: boolean
+    open: boolean
 }
 
-type PushDialogProps = Omit<DialogEntry, "id"> & Partial<Pick<DialogEntry, "id">>;
+type PushDialogProps = Omit<DialogEntry, "id" | "open"> & Partial<Pick<DialogEntry, "id" | "open">>;
 
 interface PartialVXEngineWindowProps {
     title: string;
@@ -39,9 +40,8 @@ interface UIManagerProps {
     selectedWindow: string;
     setSelectedWindow: (window: string) => void;
 
-    dialogContent: DialogEntry[];
+    dialogContent: Map<string, DialogEntry>;
     pushDialog: (props: PushDialogProps) => void;
-    openedDialogs: string[];
     closeDialog: (id: string) => void;
 
     hydrated: boolean;
@@ -88,25 +88,44 @@ export const useUIManagerAPI = create<UIManagerProps>()(
             selectedWindow: '',
             setSelectedWindow: (window: string) => set({ selectedWindow: window }),
 
-            dialogContent: [],
+            dialogContent: new Map(),
             pushDialog: (props) => {
-                const {id, type, showTriangle = true } = props;
+                const { id, type, showTriangle = true } = props;
                 const _id = id ?? `${type}-${Date.now()}`;
-                set({
-                    openedDialogs: [...get().openedDialogs, _id],
-                    dialogContent: [...get().dialogContent, { id: _id, showTriangle, ...props }],
+                set((state) => {
+
+                    if (state.dialogContent.has(_id)) return {};
+
+                    const newDialogContent = new Map(state.dialogContent);
+                    const newDialog: DialogEntry = {
+                        id: _id,
+                        open: true,
+                        showTriangle,
+                        ...props
+                    }
+                    newDialogContent.set(_id, newDialog)
+
+                    return { dialogContent: newDialogContent }
                 });
             },
             openedDialogs: [],
             closeDialog: (id) => {
                 console.log('Closing Dialog with id ', id);
-                set({
-                    openedDialogs: get().openedDialogs.filter((dialogId) => dialogId !== id),
+                set((state) => {
+                    const newDialogContent = new Map(state.dialogContent);
+                    const dialog = newDialogContent.get(id);
+                    if (dialog) {
+                        newDialogContent.set(id, { ...dialog, open: false });
+                    }
+                    return { dialogContent: newDialogContent };
                 });
 
+                // After the close animation, remove the dialog.
                 setTimeout(() => {
-                    set({
-                        dialogContent: get().dialogContent.filter((dialog) => dialog.id !== id),
+                    set((state) => {
+                        const newDialogContent = new Map(state.dialogContent);
+                        newDialogContent.delete(id);
+                        return { dialogContent: newDialogContent };
                     });
                 }, 300);
             },
@@ -129,34 +148,44 @@ export const useUIManagerAPI = create<UIManagerProps>()(
 
 
 
-export const pushDialogStatic = ({content, type, className, id, showTriangle = true}: PushDialogProps) => {
+export const pushDialogStatic = ({ content, type, className, id, showTriangle = true }: PushDialogProps) => {
     const _id = id ?? `${type}-${Date.now()}`;
     const state = useUIManagerAPI.getState();
 
-    // Ensure only one dialog with the same id is opened
-    if(id && state.openedDialogs.find((openedDialogId) => {
-        openedDialogId === id
-    }))
-        return
-    
+    const newDialogContent = new Map(state.dialogContent);
+    const newDialog: DialogEntry = {
+        id: _id,
+        open: true,
+        showTriangle,
+        content,
+        className,
+        type
+    };
+    newDialogContent.set(_id, newDialog)
+
     useUIManagerAPI.setState({
-        openedDialogs: [...state.openedDialogs, _id],
-        dialogContent: [...state.dialogContent, { id: _id, content, type, className, showTriangle }],
+        dialogContent: newDialogContent
     })
 }
 
 export const closeDialogStatic = (id: string, delay = true) => {
     console.log('Closing Dialog with id ', id);
     const state = useUIManagerAPI.getState();
-    useUIManagerAPI.setState({
-        openedDialogs: state.openedDialogs.filter((dialogId) => dialogId !== id),
-        dialogContent: delay === false ? state.dialogContent.filter((dialog) => dialog.id !== id) : state.dialogContent,
-    });
 
-    if(delay)
-        setTimeout(() => {
-            useUIManagerAPI.setState({
-                dialogContent: state.dialogContent.filter((dialog) => dialog.id !== id),
-            });
-        }, 300);
+    const newDialogContent = new Map(state.dialogContent);
+    const dialog = newDialogContent.get(id);
+    if (dialog) {
+        newDialogContent.set(id, { ...dialog, open: false });
+    }
+    useUIManagerAPI.setState({
+        dialogContent: newDialogContent
+    })
+
+    setTimeout(() => {
+        const newDialogContent = new Map(state.dialogContent);
+        newDialogContent.delete(id);
+        useUIManagerAPI.setState({
+            dialogContent: newDialogContent
+        })
+    }, 300);
 }

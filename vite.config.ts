@@ -79,21 +79,7 @@ export default defineConfig({
     wasm(),
     topLevelAwait(),
     libInjectCss(),
-    obfuscatorPlugin({
-      options: {
-        compact: true, // Minify the obfuscated code
-        controlFlowFlattening: false, // Avoid high performance cost
-        controlFlowFlatteningThreshold: 1,
-        numbersToExpressions: true,
-        simplify: true,
-        stringArray: true, // Replace strings with array indices
-        stringArrayEncoding: ['rc4'],
-        stringArrayThreshold: 1,
-        transformObjectKeys: true, // Obfuscate object keys for added security
-        deadCodeInjection: false, // Avoid unnecessary bundle size increase
-        disableConsoleOutput: false, // Remove console.log statements
-      }
-    })
+   
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'), // Define NODE_ENV for frontend compatibility

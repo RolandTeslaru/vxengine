@@ -4,20 +4,21 @@ import { Dialog, DialogContent, DialogOverlay } from '@vxengine/components/shadc
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@vxengine/components/shadcn/alertDialog';
 
 export const UIManagerDialogLayer = () => {
-  const dialogContent = useUIManagerAPI(state => state.dialogContent);
+  const dialogContentMap = useUIManagerAPI(state => state.dialogContent);
+  // Convert the Map values to an array while preserving order.
+  const dialogContent = Array.from(dialogContentMap.values());
   const dialogTotal = dialogContent.length;
   const closeDialog = useUIManagerAPI(state => state.closeDialog);
-  const openedDialogs = useUIManagerAPI((state) => state.openedDialogs);
 
   return (
     <>
-      {dialogContent.map(({ id, content, type, className, showTriangle }, index) => {
+      {dialogContent.map(({ id, content, type, className, showTriangle, open }, index) => {
         const scale_offset = (index - (dialogTotal - 1)) * 8;
         const y_offset = (index - (dialogTotal - 1)) * 40;
 
         if (type === "normal") {
           return (
-            <Dialog key={id} open={openedDialogs.includes(id)} onOpenChange={() => closeDialog(id)}>
+            <Dialog key={id} open={open} onOpenChange={() => closeDialog(id)}>
               <DialogContent
                 style={{
                   transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${1 + scale_offset / 100})`,
@@ -34,7 +35,7 @@ export const UIManagerDialogLayer = () => {
         }
         else if (type === "alert") {
           return (
-            <AlertDialog key={id} open={openedDialogs.includes(id)} onOpenChange={() => closeDialog(id)}>
+            <AlertDialog key={id} open={open} onOpenChange={() => closeDialog(id)}>
               <AlertDialogContent
                 className={"flex flex-row" + " " + className}
                 style={{
@@ -59,7 +60,7 @@ export const UIManagerDialogLayer = () => {
         }
         else if (type === "danger") {
           return (
-            <AlertDialog key={id} open={openedDialogs.includes(id)} onOpenChange={() => closeDialog(id)}>
+            <AlertDialog key={id} open={open} onOpenChange={() => closeDialog(id)}>
               <AlertDialogContent
                 className={"flex flex-row" + " " + className}
                 style={{
