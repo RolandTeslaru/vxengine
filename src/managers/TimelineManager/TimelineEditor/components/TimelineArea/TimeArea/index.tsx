@@ -5,17 +5,20 @@ import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_pref
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import { useRefStore } from '@vxengine/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
+import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 
 const maxScaleCount = 100;
+
+const timeAreaStartLeft = 20;
 
 export const TimeArea = () => {
   const scale = useTimelineEditorAPI((state) => state.scale);
   const setTimeByPixel = useTimelineEditorAPI(state => state.setTimeByPixel)
 
   const currentTimelineLength = useTimelineManagerAPI((state) => state.currentTimelineLength);
-
-  const startLeft = 20;
-  const timelineClientWidth = startLeft + currentTimelineLength * ONE_SECOND_UNIT_WIDTH / scale
+  const { externalContainer } = useWindowContext();
+  
+  const timelineClientWidth = timeAreaStartLeft + currentTimelineLength * ONE_SECOND_UNIT_WIDTH / scale
 
   const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
   const totalUnits = OneSecondUnitSplitCount * currentTimelineLength;
@@ -25,8 +28,8 @@ export const TimeArea = () => {
     const position = e.clientX - rect.x;
 
     const scrollLeft = useRefStore.getState().scrollLeftRef.current
-    const left = Math.max(position, startLeft);
-    if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + startLeft - scrollLeft) return;
+    const left = Math.max(position, timeAreaStartLeft);
+    if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + timeAreaStartLeft - scrollLeft) return;
 
     setTimeByPixel(left)
   };
@@ -37,19 +40,20 @@ export const TimeArea = () => {
     const div = e.currentTarget;
     const divRect = div.getBoundingClientRect(); // Get div position
 
+    const targetDocument = externalContainer?.ownerDocument || document;
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const relativeX = moveEvent.clientX - divRect.left;
       setTimeByPixel(relativeX);
     };
 
     const handleMouseUp = () => {
-      console.log("Drag end");
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      targetDocument.removeEventListener("mousemove", handleMouseMove);
+      targetDocument.removeEventListener("mouseup", handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    targetDocument.addEventListener("mousemove", handleMouseMove);
+    targetDocument.addEventListener("mouseup", handleMouseUp);
   };
 
   return (
@@ -77,7 +81,7 @@ export const TimeArea = () => {
             key={index}
             style={{
               position: "absolute",
-              left: `${startLeft + unitWidth * index}px`,
+              left: `${timeAreaStartLeft + unitWidth * index}px`,
             }}
             className={prefix(...classNames)}
           >
