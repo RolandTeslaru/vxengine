@@ -26,6 +26,7 @@ import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/components/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
+import { ScrollArea } from "@vxengine/components/shadcn/scrollArea"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
@@ -69,16 +70,19 @@ const VXRightPanel = () => {
             windowClasses='width=256,height=702,right=200,top=200,resizable=0'
             className="w-60 h-[686px] top-32 right-6 pt-3"
             detachedClassName="!top-2 !right-2 !left-2 w-auto"
+            noPadding={true}
         >
-            <div className="w-full h-full flex flex-col gap-2 rounded-2xl  overflow-y-scroll">
-                {vxObject && (
-                    <>
-                        <ObjectPropertiesPanel vxobject={vxObject} />
-                        <ParamList vxobject={vxObject} />
-                        <SettingsList vxobject={vxObject} />
-                        <ObjectInfoPanel vxobject={vxObject}/>
-                    </>
-                )}
+            <div className="w-full h-full  rounded-2xl overflow-y-scroll">
+                <div className="h-fit flex flex-col gap-2">
+                    {vxObject && (
+                        <>
+                            <ObjectPropertiesPanel vxobject={vxObject} />
+                            <ParamList vxobject={vxObject} />
+                            <SettingsList vxobject={vxObject} />
+                            <ObjectInfoPanel vxobject={vxObject}/>
+                        </>
+                    )}
+                </div>
             </div>
         </VXEngineWindow>
     )
@@ -94,9 +98,11 @@ const VXLeftPanel = () => {
             className="w-60 h-[686px] top-32 left-6 pt-3"
             detachedClassName="!top-2 !left-2 !right-2 w-[calc(100%-8px-8px-44px-8px)]"
         >
-            <div className="w-full h-full flex flex-col gap-2 rounded-2xl overflow-y-scroll">
-                <ObjectList />
-                <TrackSegmentProperties />
+            <div className="h-full overflow-y-scroll rounded-2xl ">
+                <div className="flex flex-col gap-2 h-fit">
+                    <ObjectList />
+                    <TrackSegmentProperties />
+                </div>
             </div>
 
             <ObjectTransformControls />

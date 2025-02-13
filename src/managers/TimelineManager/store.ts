@@ -32,7 +32,6 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     setEditorData: (rawObjects, rawSplines, IS_DEVELOPMENT) => {
         const { editorObjects, tracks, staticProps, splines } = processRawData(rawObjects, rawSplines);
-        console.log("Setting editor data")
         
         if(IS_DEVELOPMENT)
             useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
@@ -46,7 +45,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     changes: 0,
-    addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
+    addChange: () => set(produce((state: TimelineMangerAPIProps) => {
+        state.changes += 1;
+    })),
 
 
     //
@@ -236,19 +237,17 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             ]
         ] as [number, number, number][];
 
-        set(
-            produce((state: TimelineMangerAPIProps) => {
-                const editorSpline: EditorSpline = {
-                    splineKey,
-                    vxkey,
-                    nodes
-                }
-                state.splines[splineKey] = editorSpline;
+        set(produce((state: TimelineMangerAPIProps) => {
+            const editorSpline: EditorSpline = {
+                splineKey,
+                vxkey,
+                nodes
+            }
+            state.splines[splineKey] = editorSpline;
 
-                createStaticPropLogic(state, vxkey, "splineProgress", progress)
-                createStaticPropLogic(state, vxkey, "splineTension", tension)
-            })
-        )
+            createStaticPropLogic(state, vxkey, "splineProgress", progress)
+            createStaticPropLogic(state, vxkey, "splineTension", tension)
+        }))
 
         // Handle engine spline creation (wasm)
         animationEngineInstance.hydrationService.hydrateSpline({
@@ -288,35 +287,33 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     insertNode: ({ splineKey, index }) => {
-        set(
-            produce((state: TimelineMangerAPIProps) => {
-                const spline = state.splines[splineKey]
-                if (!spline) {
-                    console.error(`useTimelineManagerAPI insertNode(): Spline with vxkey ${splineKey} does not exist`)
-                    return;
-                }
+        set(produce((state: TimelineMangerAPIProps) => {
+            const spline = state.splines[splineKey]
+            if (!spline) {
+                console.error(`useTimelineManagerAPI insertNode(): Spline with vxkey ${splineKey} does not exist`)
+                return;
+            }
 
-                const nodes = spline.nodes;
-                const prevNode = nodes[index];
-                let nextNode = nodes[index + 1];
+            const nodes = spline.nodes;
+            const prevNode = nodes[index];
+            let nextNode = nodes[index + 1];
 
-                if (!nextNode) {
-                    nextNode = [
-                        (Math.random() * 10 - 5),
-                        (Math.random() * 6 - 3),
-                        (Math.random() * 8 - 4)
-                    ];
-                    nodes.splice(index + 1, 0, nextNode);
-                } else {
-                    const interPoint: [number, number, number] = [
-                        (prevNode[0] + nextNode[0]) / 2,
-                        (prevNode[1] + nextNode[1]) / 2,
-                        (prevNode[2] + nextNode[2]) / 2,
-                    ];
-                    nodes.splice(index + 1, 0, interPoint);
-                }
-            })
-        )
+            if (!nextNode) {
+                nextNode = [
+                    (Math.random() * 10 - 5),
+                    (Math.random() * 6 - 3),
+                    (Math.random() * 8 - 4)
+                ];
+                nodes.splice(index + 1, 0, nextNode);
+            } else {
+                const interPoint: [number, number, number] = [
+                    (prevNode[0] + nextNode[0]) / 2,
+                    (prevNode[1] + nextNode[1]) / 2,
+                    (prevNode[2] + nextNode[2]) / 2,
+                ];
+                nodes.splice(index + 1, 0, interPoint);
+            }
+        }))
 
         animationEngineInstance.hydrationService.hydrateSpline({
             action: "clone", 
@@ -329,24 +326,22 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     removeNode: ({ splineKey, index }) => {
-        set(
-            produce((state: TimelineMangerAPIProps) => {
-                const spline = state.splines[splineKey]
-                if (!spline) {
-                    console.error(`removeNode(): Spline with vxkey "${splineKey}" does not exist`);
-                    return;
-                }
+        set(produce((state: TimelineMangerAPIProps) => {
+            const spline = state.splines[splineKey]
+            if (!spline) {
+                console.error(`removeNode(): Spline with vxkey "${splineKey}" does not exist`);
+                return;
+            }
 
-                const nodes = spline.nodes
+            const nodes = spline.nodes
 
-                // Ensure at least two nodes remain on the spline
-                if (nodes.length <= 2) {
-                    console.warn(`removeNode(): Cannot remove node. Spline must have at least two nodes.`);
-                    return;
-                }
-                nodes.splice(index, 1);
-            })
-        )
+            // Ensure at least two nodes remain on the spline
+            if (nodes.length <= 2) {
+                console.warn(`removeNode(): Cannot remove node. Spline must have at least two nodes.`);
+                return;
+            }
+            nodes.splice(index, 1);
+        }))
 
         ;
         animationEngineInstance.hydrationService.hydrateSpline({
@@ -361,16 +356,14 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     setSplineNodePosition: (splineKey, nodeIndex, newPosition) => {
-        set(
-            produce((state: TimelineMangerAPIProps) => {
-                const spline = state.splines[splineKey];
-                spline.nodes[nodeIndex] = [
-                    newPosition.x,
-                    newPosition.y,
-                    newPosition.z,
-                ]
-            })
-        )
+        set(produce((state: TimelineMangerAPIProps) => {
+            const spline = state.splines[splineKey];
+            spline.nodes[nodeIndex] = [
+                newPosition.x,
+                newPosition.y,
+                newPosition.z,
+            ]
+        }))
 
         
         animationEngineInstance.hydrationService.hydrateSpline({

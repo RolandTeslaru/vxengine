@@ -76,7 +76,7 @@ export const handleKeyframeDrag = (
     mutateUI = true,
     hydrateKeyframeOrder = true
 ) => {
-    const { selectedKeyframesFlatMap, scale, addChange } = useTimelineEditorAPI.getState();
+    const { selectedKeyframesFlatMap, scale } = useTimelineEditorAPI.getState();
     const setKeyframeTime = useTimelineManagerAPI.getState().setKeyframeTime
 
     if (selectedKeyframesFlatMap.length === 0)
@@ -91,8 +91,6 @@ export const handleKeyframeDrag = (
         const lastTime = parserPixelToTime(prevLeft, keyframeStartLeft)
         const newTime = parserPixelToTime(newLeft, keyframeStartLeft)
         const deltaTime = newTime - lastTime;
-
-        
 
         selectedKeyframesFlatMap.forEach((selectedKeyframeFlat, index) => {
             const isFinal = selectedKeyframesFlatMap.length - 1 === index;
@@ -125,7 +123,7 @@ export const handleKeyframeDrag = (
             hydrateKeyframeKeysOrder()
     }
 
-    addChange();
+    useTimelineManagerAPI.getState().addChange()
 }
 
 export const hydrateKeyframeKeysOrder = () => {

@@ -8,6 +8,7 @@ import JsonView from 'react18-json-view';
 import Tree from '@vxengine/components/ui/Tree';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData';
+import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
 
 interface PropertyTreeNode {
     key: string; // The name of the property
@@ -141,15 +142,15 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
             title={(material as any).type}
             defaultOpen={true}
             noPadding={true}
-            contentClassName='!pb-0 gap-2'
+            contentClassName='!pb-0 gap-2 min-h-0'
         >
             <div className='text-xs px-2 flex flex-row text-neutral-400'>
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <div className='flex flex-col max-h-96 overflow-scroll'>
+            <ScrollArea className='h-96' scrollbarPosition='left' scrollBarThumbClassName='bg-blue-500'>
                 <Tree tree={filteredPropertiesTree as Record<string, PropertyTreeNode>} renderNodeContent={renderNodeContent}/>
-            </div>
+            </ScrollArea>
         </CollapsiblePanel>
     )
 }

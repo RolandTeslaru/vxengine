@@ -31,7 +31,6 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
       return project
     else
       return null
-
   },
 
   saveDataToDisk: async ({ force = false, reloadOnSuccess = false } = {}) => {
@@ -40,7 +39,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
       if (PAUSE_DISK_SAVING) return;
 
     if(DEBUG)
-      logReportingService.logInfo(`Saving data to disk ${force && "with fore"}`, CONTEXT)
+      logReportingService.logInfo(`Saving data to disk ${force && "with force"}`, CONTEXT)
 
     const projectName = useAnimationEngineAPI.getState().projectName;
 
@@ -78,7 +77,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     if (PAUSE_DISK_SAVING && force === false) return;
 
     if (DEBUG)
-      logReportingService.logInfo("Saving data to disk", {module: LOG_MODULE});
+      logReportingService.logInfo("Saving data to localStorage", {module: LOG_MODULE});
 
     const state = useAnimationEngineAPI.getState()
     const timelines = state.timelines
@@ -226,8 +225,10 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     const changes = useTimelineManagerAPI.getState().changes
     const saveDataToDisk = get().saveDataToDisk;
 
-    if (changes > 0) {
-      if (DEBUG) console.log("VXEngine SourceManager: handle before unload triggered with ", changes, "changes")
+    if(changes > 0){
+      if(DEBUG)
+        logReportingService.logInfo(
+              `Handling unload with ${changes} changes`, {module: LOG_MODULE, functionName: "handleBeforeUnload"})
 
       saveDataToDisk();
       event.preventDefault();

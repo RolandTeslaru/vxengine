@@ -18,9 +18,9 @@ const  CollapsiblePanel: React.FC<Props> = memo(
 
     return (
         <div className={
-            classNames(classNames, {"!h-[40px]": open === false}, {"px-1": noPadding === false}, 
-                        `z-20 w-full h-fit relative !transform-gpu rounded-2xl bg-neutral-900 bg-opacity-80
-                        shadow-md shadow-neutral-900 border border-neutral-300 border-opacity-10 
+            classNames(className, {"!h-[40px]": open === false}, {"px-1": noPadding === false}, 
+                        `z-50 h-fit relative !transform-gpu rounded-2xl bg-neutral-900 bg-opacity-80 overflow-hidden
+                         shadow-md shadow-neutral-900 border border-neutral-300 border-opacity-15
                       `)}
         >
             {/* Title */}
@@ -37,7 +37,7 @@ const  CollapsiblePanel: React.FC<Props> = memo(
             {open && 
                 <div className={
                     classNames(contentClassName, {"px-1": noPadding === false},
-                               'text-xs max-h-full border-t flex flex-col py-2 bg-none transition-all text-neutral-400')}
+                               'text-xs h-auto border-t  flex flex-col py-2 bg-none transition-all text-neutral-400')}
                     style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                 >
                     {children}

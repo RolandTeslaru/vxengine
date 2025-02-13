@@ -2,10 +2,12 @@ import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import React, { useEffect, useMemo, useRef, createContext, useContext, useState, FC, memo, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { WindowControlDots } from '../../components/ui/WindowControlDots';
+import classNames from 'classnames';
 
 export interface VXEngineWindowProps {
     children: React.ReactNode;
     title?: string;
+    noPadding?: boolean
     vxWindowId: string;
     windowClasses: string;
     className?: string;
@@ -29,7 +31,7 @@ export const useWindowContext = () => useContext(WindowContext);
 
 export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     const { children, title = "VXEngine Window", windowClasses, vxWindowId, className,
-           detachedClassName, noStyling = false } = props;
+           detachedClassName, noStyling = false, noPadding = false } = props;
 
     const registerWindow = useUIManagerAPI((state) => state.registerWindow);
     const isVisible = useUIManagerAPI((state) => state.windowVisibility[vxWindowId])
@@ -94,9 +96,8 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
     const { children, className, isDetached, detachedClassName, onClick } = props
     return (
         <div
-            className={`fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
-                        rounded-3xl flex flex-col p-2 pb-1 gap-2 
-                    ${isDetached && detachedClassName} ${className} `}
+            className={classNames(`p-2 fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
+                        rounded-3xl flex flex-col pb-1 gap-2 ${isDetached && detachedClassName}`, className)}
             onClick={onClick}
             style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6"}}
         >

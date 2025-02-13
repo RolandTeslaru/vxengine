@@ -37,9 +37,6 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     searchQuery: "",
     setSearchQuery: (query) => set({ searchQuery: query }),
 
-    changes: 0,
-    addChange: () => set((state) => ({ ...state, changes: state.changes + 1 })),
-
     clipboard: {},
     setClipboard: (content) => set({ clipboard: content }),
 

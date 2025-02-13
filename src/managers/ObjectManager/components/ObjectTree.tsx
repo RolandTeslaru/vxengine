@@ -54,7 +54,7 @@ const ObjectTree = () => {
         <CollapsiblePanel
             title="Object Tree"
             noPadding={true}
-            contentClassName='pb-0 !px-0'
+            contentClassName='pb-0 !px-0 gap-2'
         >
             {/* Head */}
             <div className='text-xs flex flex-row px-2 text-neutral-400 w-full'>
@@ -64,7 +64,7 @@ const ObjectTree = () => {
                 <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             {/* Content */}
-            <div className='mt-2 max-h-[550px] rounded-b-xl overflow-y-scroll text-sm'>
+            <div className='max-h-[550px] rounded-b-xl overflow-y-scroll text-sm'>
                 <Tree 
                     defaultExpandedKeys={defaultExpandedKeys} 
                     tree={filteredTree as any} 

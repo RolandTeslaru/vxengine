@@ -13,9 +13,6 @@ export interface TimelineEditorAPIProps {
     snap: boolean;
     setSnap: (value: boolean) => void;
 
-    changes: number
-    addChange: () => void
-
     searchQuery: string
     setSearchQuery: (query: string) => void
 
