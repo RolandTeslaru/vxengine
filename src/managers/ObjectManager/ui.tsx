@@ -42,7 +42,7 @@ export const ObjectPropertiesPanel = ({ vxobject }: {vxobject: vxObjectProps}) =
     if (Component === MaterialProperties && (!refObject || !refObject.material)) {
       return false;
     }
-    if(Component === GeometryProperties && (!refObject || !refObject.geometry))
+    if(Component === GeometryProperties && (!refObject || !refObject?.geometry?.parameters))
       return false;
     return true;
   });

@@ -43,7 +43,7 @@ export const PropInput: FC<Props> = (props) => {
                     key={index}
                     vxkey={vxkey}
                     vxObject={vxObject}
-                    propertyPath={propertyPath}
+                    propertyPath={param.overwritePropertyPath ?? propertyPath}
                     trackKey={trackKey}
                     param={param}
                     disabled={disabled || disableTracking}
