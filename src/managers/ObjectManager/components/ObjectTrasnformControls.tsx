@@ -10,7 +10,7 @@ export const ObjectTransformControls = () => {
     const transformMode = useObjectManagerAPI(state => state.transformMode)
     const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
     const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0])
-    const selectedObjectType = useVXObjectStore(state => state.objects[0]?.type)
+    const selectedObjectType = useVXObjectStore(state => state.objects[vxkey]?.type)
     const transformSpace = useObjectManagerAPI(state => state.transformSpace);
     const setTransformSpace = useObjectManagerAPI(state => state.setTransformSpace);
 

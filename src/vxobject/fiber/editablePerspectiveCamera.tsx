@@ -24,10 +24,6 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
     settings?: {}
 };
 
-export const defaultSettings_perspectiveCamera = {
-    useSplinePath: false,
-}
-
 const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine ) => {
     animationEngine.cameraRequiresProjectionMatrixRecalculation = true;
 }
@@ -43,6 +39,10 @@ const perspectiveCameraParams: VXObjectParams = {
     "filmOffset": {type: "number"}
 }
 
+export const defaultSettings_perspectiveCamera = {
+    useSplinePath: false,
+}
+
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
     const { settings = {}, ...rest } = props;
     const vxkey = rest.vxkey;
@@ -52,36 +52,7 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
 
     const { IS_DEVELOPMENT } = useVXEngine();
 
-    // useEffect(() => {
-    //     cameraRef.current.localRotationZ = 0;
-    // }, []);
 
-    const mousePosition = useRef({ x: 0, y: 0 });
-
-
-    const cameraOrientationState = useRef(
-        {
-            pitchAngle: 0,
-            yawAngle: 0,
-            startingPitchAngleForCurrentCoordinates: 0,
-            startingYawAngleForCurrentCoordinates: 0,
-            previousPitchAngle: 0,
-            previousYawAngle: 0,
-            lastMouseMoveTime: 0,
-            movementDuration: 100,
-        }
-    )
-
-    // const handleMouseMove = useCallback((e) => {
-    //     console.log("CAmera Ref curret ", cameraRef.current)
-    //     mousePosition.current.y = (e.clientX / window.innerWidth) * 2 - 1;  // Horizontal (yaw)
-    //     mousePosition.current.x = (e.clientY / window.innerHeight) * -2 + 1;  // Vertical (pitch)
-    // }, []);
-
-    // useEffect(() => {
-    //     window.addEventListener("mousemove", handleMouseMove);
-    //     return () => window.removeEventListener("mousemove", handleMouseMove);
-    // })
 
     const cameraUpdate = () => {
         if (!cameraRef.current || !cameraTargetRef) return
@@ -116,7 +87,6 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
         ...settings
     }
 
-    
 
     const disabledParams = [
         "rotation",
