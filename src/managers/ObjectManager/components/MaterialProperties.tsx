@@ -95,12 +95,7 @@ const filterTree = (tree: Record<string, PropertyTreeNode>, query: string): Reco
 
 const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const refObject = (vxobject.ref.current as THREE.Mesh)
-    if (!refObject)
-        return null;
-
     const material = refObject.material;
-    if (!material)
-        return null;
 
     const propertiesTree = useMemo(() => {
         return createPropertyTree(material)
@@ -124,7 +119,7 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
                             {node.propertyPath && (
                                 <PropInput
                                     vxObject={vxobject}
-                                    param={{ type: node.type}}
+                                    param={{ type: node.type }}
                                     className="ml-auto w-fit"
                                     propertyPath={node.propertyPath}
                                 />
@@ -146,13 +141,13 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
             title={(material as any).type}
             defaultOpen={true}
             noPadding={true}
-            contentClassName='!pb-0'
+            contentClassName='!pb-0 gap-2'
         >
             <div className='text-xs px-2 flex flex-row text-neutral-400'>
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <div className='flex flex-col mt-2 max-h-96 overflow-scroll'>
+            <div className='flex flex-col max-h-96 overflow-scroll'>
                 <Tree tree={filteredPropertiesTree as Record<string, PropertyTreeNode>} renderNodeContent={renderNodeContent}/>
             </div>
         </CollapsiblePanel>

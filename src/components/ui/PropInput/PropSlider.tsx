@@ -29,7 +29,7 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
         })
 
         return () => unsubscribe();
-    }, [])
+    }, [vxkey, propertyPath])
 
     const handleChange = useCallback((newValue: number) => {
         modifyPropertyValue("changing", vxkey, propertyPath, newValue);
@@ -41,7 +41,7 @@ const PropSlider: React.FC<Props> = ({ param, vxkey, propertyPath, className }) 
             max={param.max}
             min={param.min}
             step={param.step ?? 0.1}
-            className={"w-28 " + className}
+            className={"w-24 " + className}
             value={[value]}
             onValueChange={(newValue) => handleChange(newValue[0])}
             onDragStart={() => {

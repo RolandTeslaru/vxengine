@@ -34,7 +34,19 @@ const ObjectPropertiesConfig = {
 export const ObjectPropertiesPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
   if (!vxobject) return null;
 
-  const components = ObjectPropertiesConfig[vxobject.type] || [];
+  const refObject = vxobject.ref?.current;
+  if(!refObject)
+    return null
+
+  const components = (ObjectPropertiesConfig[vxobject.type] || []).filter((Component) => {
+    if (Component === MaterialProperties && (!refObject || !refObject.material)) {
+      return false;
+    }
+    if(Component === GeometryProperties && (!refObject || !refObject.geometry))
+      return false;
+    return true;
+  });
+
   return (
     <>
       {components.map((Component, index) => 

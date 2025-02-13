@@ -43,6 +43,24 @@ export class SplineService {
         }
     }
 
+    createSpline(rawSpline: RawSpline, initialTension: number) {
+        const new_wasm_spline = new wasm_Spline(
+            rawSpline.nodes.map(n => wasm_Vector3.new(n[0], n[1], n[2])),
+            false,
+            initialTension
+        )
+
+        this._splinesCache.set(rawSpline.splineKey, new_wasm_spline);
+    }
+
+    removeSpline(splineKey: string){
+        if(this._splinesCache.has(splineKey)){
+            const spline = this._splinesCache.get(splineKey)
+            spline.free();
+            this._splinesCache.delete(splineKey);
+        }
+    }
+
     /**
    * Retrieves a cached WASM spline object.
    * @param splineKey - The key identifying the spline.
@@ -50,6 +68,10 @@ export class SplineService {
    */
     getSpline(splineKey: string): any | undefined {
         return this._splinesCache.get(splineKey);
+    }
+
+    hasSpline(splineKey: string): boolean {
+        return this._splinesCache.has(splineKey)
     }
 
     /**

@@ -79,9 +79,9 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                     </div>
                 </div>
                 {additionalSettings && <>
-                    {"showPositionPath" in additionalSettings && !isUsingSplinePath && (
+                    {"showPositionPath" in additionalSettings && (
                         <div className="flex flex-row mb-1">
-                            <p className="text-xs font-light text-neutral-400">show position path</p>
+                            <p className="text-xs font-light text-neutral-400">{isUsingSplinePath ? "show spline path" : "show position path"}</p>
                             <Switch
                                 onClick={() => toggleAdditionalSetting(vxkey, "showPositionPath")}
                                 checked={additionalSettings["showPositionPath"]}

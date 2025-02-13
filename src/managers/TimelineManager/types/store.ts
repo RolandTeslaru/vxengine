@@ -51,10 +51,10 @@ export interface TimelineMangerAPIProps {
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: EditorVector2, outHandle: EditorVector2, reRender?: boolean) => void;
     // StaticProp function
-    createStaticProp: (props: {vxkey: string, propertyPath: string, value: number, reRender: boolean, state?: TimelineMangerAPIProps}) => void;
-    removeStaticProp: (props: {staticPropKey: string, reRender?: boolean, state?: TimelineMangerAPIProps,}) => void
+    createStaticProp: (props: {vxkey: string, propertyPath: string, value: number,reRender: boolean }) => void;
+    removeStaticProp: (props: {staticPropKey: string, reRender?: boolean,}) => void
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
-    removeProperty: (vxkey: string, propertyPath: string) => void;
+    removeProperty: (vxkey: string, propertyPath: string, reRender?: boolean) => void;
 }
 

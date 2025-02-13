@@ -1,9 +1,13 @@
-import React, { useState, FC } from "react";
+import React, { useState, FC, useMemo } from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 
 import * as THREE from "three"
 import { vxEntityProps, vxObjectProps } from "../types/objectStore";
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
+import PopoverShowObjectData from "@vxengine/components/ui/Popovers/PopoverShowObjectData";
+import Tree from "@vxengine/components/ui/Tree";
+import Search from "@vxengine/components/ui/Search";
 
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
@@ -12,43 +16,145 @@ interface VXGeometryProps {
     vxobject: vxEntityProps
 }
 
-export const GeometryProperties:FC<VXGeometryProps> = ({ vxobject }) => {
+export const GeometryProperties: FC<VXGeometryProps> = ({ vxobject }) => {
+    const [searchQuery, setSearchQuery] = useState("");
     const refObject = (vxobject.ref.current as THREE.Mesh);
-    if(!refObject)
-        return null;
+    const geometry = refObject.geometry as ValidGeometries
 
-    const geometry = refObject.geometry as ValidGeometries;
-    if(!geometry) 
-        return null;
+    const propertiesTree = useMemo(() => {
+        return createPropertyTree(geometry.parameters)
+    }, [vxobject])
 
-    const params = geometry.parameters
-    if (!params) 
-        return null;
+    const filteredPropertiesTree = useMemo(() =>
+            filterTree(propertiesTree, searchQuery), [geometry, searchQuery])
 
-    const GeomPropRender = ({ _key, value}) => {
+
+    const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate }) => {
         return (
-            <div className='flex flex-row py-1'>
-                <p className='text-xs font-light text-neutral-400'>{_key}</p>
-                <PropInput
-                    vxObject={vxobject}
-                    param={{ type: "number" }}
-                    type="number"
-                    className="ml-auto w-fit"
-                    propertyPath={`geometry.parameters.${_key}`}
-                />
-            </div>
+            <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+                <ContextMenu>
+                    <ContextMenuTrigger className='w-full'>
+                        <div className='flex flex-row w-full h-[22px]'>
+                            <p className={`text-xs my-auto font-light text-neutral-400`}>
+                                {node.key}
+                            </p>
+                            {node.propertyPath && (
+                                <PropInput
+                                    vxObject={vxobject}
+                                    param={{ type: node.type }}
+                                    className="ml-auto w-fit"
+                                    propertyPath={node.propertyPath}
+                                />
+                            )}
+                        </div>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                        <PopoverShowObjectData object={node} title='TreeNode Data' >
+                            Show data
+                        </PopoverShowObjectData>
+                    </ContextMenuContent>
+                </ContextMenu>
+            </NodeTemplate>
         )
     }
 
     return (
         <CollapsiblePanel
             title={geometry.type + " Params"}
+            noPadding={true}
+            contentClassName="gap-2"
         >
+            <div className='text-xs px-2 flex flex-row text-neutral-400'>
+                {/* Search input */}
+                <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            </div>
             <div className='flex flex-col'>
-                {Object.entries(params).map(
-                    ([key, value]) => <GeomPropRender key={key} _key={key} value={value} />
-                )}
+                <Tree  tree={filteredPropertiesTree} renderNodeContent={renderNodeContent} />
             </div>
         </CollapsiblePanel>
     )
+}
+
+interface PropertyTreeNode {
+    key: string; // The name of the property
+    propertyPath?: string; // The full property path (e.g., "parent.child.key")
+    type?: "number" | "color";
+    children: Record<string, PropertyTreeNode>; // Nested children
+}
+type PropertyTree = Record<string, PropertyTreeNode>
+
+const isValidValue = (value: any) =>
+    typeof value === "number" || (value instanceof THREE.Color && value.isColor);
+
+const getValueType = (value: any) => {
+    if (typeof value === "number")
+        return "number"
+    else if (value instanceof THREE.Color || value.isColor)
+        return "color"
+}
+
+const filterTree = (tree: Record<string, PropertyTreeNode>, query: string): Record<string, PropertyTreeNode> => {
+    const result: Record<string, PropertyTreeNode> = {};
+
+    Object.entries(tree).forEach(([key, node]) => {
+        if (!node.key) return
+        const isMatch = node.key.toLowerCase().includes(query.toLowerCase());
+        const filteredChildren = filterTree(node.children, query);
+
+        if (isMatch || Object.keys(filteredChildren).length > 0) {
+            result[key] = {
+                ...node,
+                children: filteredChildren,
+            };
+        }
+    });
+
+    return result;
+};
+
+function createPropertyTree(
+    obj: Record<string, any>,
+    parentKey = "",
+    visited = new WeakSet(), // Keep track of visited objects
+    depth = 0,
+    maxDepth = 10 // Limit the depth to prevent infinite recursion
+): PropertyTree {
+    // Base case: Prevent too deep recursion
+    if (depth > maxDepth) return {};
+
+    // Check for circular references
+    if (visited.has(obj)) {
+        // @ts-expect-error
+        return { circularReference: true };
+    }
+
+    // Mark this object as visited
+    visited.add(obj);
+
+    const tree: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+        if (isValidValue(value)) {
+            // Add valid values as leaf nodes
+            tree[key] = {
+                key,
+                propertyPath: `geometry.${fullKey}`,
+                children: {},
+                type: getValueType(value)
+            };
+        } else if (typeof value === "object" && value !== null) {
+            // Recursively traverse child objects
+            const children = createPropertyTree(value, fullKey, visited, depth + 1, maxDepth);
+            if (Object.keys(children).length > 0) {
+                tree[key] = { key, children };
+            }
+        }
+    }
+
+    // Remove the object from visited before returning to allow other branches to visit it
+    visited.delete(obj);
+
+    return tree;
 }

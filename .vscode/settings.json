@@ -6,6 +6,7 @@
         "partialize",
         "precompute",
         "reinitializations",
+        "STATICPROP",
         "Toolset",
         "uuidv",
         "vxengine",

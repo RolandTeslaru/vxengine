@@ -12,7 +12,6 @@ export type EditableMeshProps = EditableObjectProps<MeshProps> & {
 
 const defaultSettings_mesh = {
     useSplinePath: false,
-    setingMeshProp1: true,
 }
 
 export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref) => {

@@ -1,14 +1,25 @@
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import PropInput from '@vxengine/components/ui/PropInput'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { VXObjectParam } from '@vxengine/vxobject/types'
+import Tree from '@vxengine/components/ui/Tree'
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
+import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData'
 
 interface Props {
     vxobject: vxObjectProps
+}
+
+interface PropertyTreeNode {
+    key: string; // The name of the property
+    propertyPath?: string; // The full property path (e.g., "parent.child.key")
+    type?: "number" | "color" | "slider";
+    children: Record<string, PropertyTreeNode>; // Nested children
+    param: VXObjectParam
 }
 
 const ParamList: React.FC<Props> = ({ vxobject }) => {
@@ -21,29 +32,56 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     const params = vxobject.params ?? {}
 
+    const tree = useMemo(() => {
+        const tree: Record<string, any> = {}
+        Object.entries(vxobject.params ?? {}).forEach(([propertyPath, param]) => {
+            tree[propertyPath] = {
+                key: propertyPath,
+                propertyPath,
+                children: {},
+                type: param.type,
+                param
+            }
+        })
+        return tree;
+    }, [vxobject])
+
     if (Object.entries(params).length === 0) return
 
-    const ParamRenderer = (props: { param: VXObjectParam, index: number, paramKey: string}) => {
-        const { paramKey, param } = props;
-        return (
-            <div className={`flex ${param.type === "slider" ? "flex-col": "flex-row"} py-1`}>
-                <p className='text-xs font-light text-neutral-400'>{paramKey}</p>
-                <PropInput 
-                    param={param}
-                    vxObject={vxobject}
-                    className="ml-auto w-fit"
-                    propertyPath={param?.overwritePropertyPath ?? paramKey}
-                />
-            </div>
-        )
+    const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate }) => {
+        return (<NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+            <ContextMenu>
+                <ContextMenuTrigger className='w-full'>
+                    <div className={`flex ${node.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
+                        <p className={`text-xs my-auto font-light text-neutral-400`}>
+                            {node.key}
+                        </p>
+                        {node.propertyPath && (
+                            <PropInput
+                                vxObject={vxobject}
+                                param={node.param}
+                                className="ml-auto w-fit"
+                                propertyPath={node.propertyPath}
+                            />
+                        )}
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <PopoverShowObjectData object={node} title='TreeNode Data' >
+                        Show data
+                    </PopoverShowObjectData>
+                </ContextMenuContent>
+            </ContextMenu>
+        </NodeTemplate>)
     }
 
     return (
         <CollapsiblePanel
             title={threeObjectType ? threeObjectType : "Object Params"}
+            noPadding={true}
         >
             <div className='flex flex-col'>
-                {Object.entries(params).map(([paramKey, param], index) => <ParamRenderer param={param} index={index} key={paramKey} paramKey={paramKey} />)}
+                <Tree tree={tree} renderNodeContent={renderNodeContent}/>
             </div>
 
         </CollapsiblePanel>

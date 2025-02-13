@@ -11,6 +11,7 @@ import { invalidate } from '@react-three/fiber';
 import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
 import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 import animationEngineInstance from '@vxengine/singleton';
+import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();
@@ -100,14 +101,19 @@ export const handleKeyframeDrag = (
             let _newTime = parseFloat(kfDataset.time) + deltaTime;
             _newTime = truncateToDecimals(_newTime)
 
+            const { vxkey: _vxkey, propertyPath: _propertyPath } = extractDataFromTrackKey(_trackKey)
+
             // Handle Raw Timeline Update
             animationEngineInstance.hydrationService.hydrateKeyframe({
-                trackKey: _trackKey, 
+                vxkey: _vxkey, 
+                propertyPath: _propertyPath, 
                 action: "updateTime", 
                 keyframeKey: _kfKey, 
-                reRender: isFinal, 
-                newData: _newTime
+                newTime: _newTime
             });
+
+            if(isFinal)
+                animationEngineInstance.reRender({force: true})
 
             // Handle UI Mutation
             if (mutateUI)

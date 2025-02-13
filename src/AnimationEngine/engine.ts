@@ -64,13 +64,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _timerId: number;
   private _isReady: boolean = false
   
-  private _splinesCache: Map<string, wasm_Spline> = new Map();
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
   
-  private _currentTimeline: RawTimeline;
+  private _currentTimeline: RawTimeline = null;
   private _currentTime: number = 0;
   private _prevTime: number;
   /**
@@ -91,9 +90,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // Services
   // ====================================================
   private _hydrationService: HydrationService;
-  private _wasmService: WasmService;
   private _splineService: SplineService
-
+  private _wasmService: WasmService;
 
   private _IS_DEVELOPMENT: boolean = false;
   private _IS_PRODUCTION: boolean = false;
@@ -105,6 +103,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     logReportingService.logInfo(
       `Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
 
+    // Initialize Services
     this._wasmService = new WasmService(
       "/assets/wasm/rust_bg.wasm",
       (wasm_interpolator) => {
@@ -112,7 +111,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     );
     this._splineService = new SplineService(this._wasmService);
-    this._currentTimeline = null
+    this._hydrationService = new HydrationService(this.splineService);
   }
 
 
@@ -131,6 +130,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._IS_PRODUCTION = true;
     else if (nodeEnv === "development")
       this._IS_DEVELOPMENT = true;
+
+    this._hydrationService.setMode(nodeEnv);
 
     const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
 
@@ -203,8 +204,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         `Error caching splines, ${error}`, LOG_CONTEXT)
     });
 
+    this._applyTracksOnTimeline(this.currentTime, true)
+
     if (this._IS_DEVELOPMENT) {
-      this._hydrationService = new HydrationService(this, this._IS_PRODUCTION, this._IS_DEVELOPMENT, this._currentTimeline, this._splinesCache);
+      this.hydrationService.setCurrentTimeline(selectedTimeline);
       // Set the editor data
       useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT);
       useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
@@ -389,7 +392,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
   public getSideEffect(trackKey: string): TrackSideEffectCallback {
-    return this._sideEffectCallbacks.get(trackKey);
+    const { vxkey, propertyPath } =extractDataFromTrackKey(trackKey)
+    return this._sideEffectCallbacks.get(trackKey) || AnimationEngine.defaultSideEffects[propertyPath];
+  }
+
+  public hasSideEffect(trackKey: string): boolean {
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+
+    return this._sideEffectCallbacks.has(trackKey) || !!AnimationEngine.defaultSideEffects[propertyPath];
   }
 
 
@@ -485,21 +495,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  private _applyTracksOnTimeline(currentTime: number) {
+  private _applyTracksOnTimeline(currentTime: number, force?: boolean) {
     this.currentTimeline.objects.forEach(rawObject =>
-      this._applyTracksOnObject(currentTime, rawObject)
+      this._applyTracksOnObject(currentTime, rawObject, force)
     )
   }
 
 
-  private _applyTracksOnObject(currentTime: number, rawObject: RawObject
+  private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean
   ) {
     rawObject.tracks.forEach(rawTrack =>
       this._applyKeyframesOnTrack(
         rawObject.vxkey,
         rawTrack.propertyPath,
         rawTrack.keyframes,
-        currentTime
+        currentTime,
+        force
       )
     )
   }
@@ -542,26 +553,23 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     propertyPath: string,
     keyframes: RawKeyframe[],
     currentTime: number,
-    recalculateAll: boolean = false
+    force: boolean = false
   ) {
     const object3DRef = this._object3DCache.get(vxkey);
     if (!object3DRef || keyframes.length === 0) return;
 
-    const newValue = this._calculateInterpolatedValue(keyframes, currentTime, recalculateAll);
+    const newValue = this._calculateInterpolatedValue(keyframes, currentTime);
 
     const cacheKey = `${vxkey}.${propertyPath}`;
     const lastValue = this._lastInterpolatedValues.get(cacheKey);
+    
 
-    this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
-    // if (lastValue === undefined) {
-    //   this._lastInterpolatedValues.set(cacheKey, newValue);
-    //   return
-    // }
-
-    // if (Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
-    //   this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
-    //   this._lastInterpolatedValues.set(cacheKey, newValue);
-    // }
+    // Only update the property if its under the threshold
+    // or its undefined ( in the initial state )
+    if (lastValue === undefined || Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
+      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+      this._lastInterpolatedValues.set(cacheKey, newValue);
+    }
   }
 
 
@@ -573,18 +581,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Calculates the interpolated value for the given keyframes at the specified time.
    * @param keyframes - An array of keyframes.
    * @param currentTime - The current time in the animation timeline.
-   * @param recalculateAll - Whether to recalculate outside keyframe bounds.
    * @returns The interpolated value 
    */
   private _calculateInterpolatedValue(
     keyframes: RawKeyframe[],
     currentTime: number,
-    recalculateAll: boolean
   ): number {
-    if (currentTime < keyframes[0].time && !recalculateAll) {
+    if (currentTime < keyframes[0].time) {
       return keyframes[0].value;
     }
-    if (currentTime > keyframes[keyframes.length - 1].time && !recalculateAll) {
+    if (currentTime > keyframes[keyframes.length - 1].time) {
       return keyframes[keyframes.length - 1].value;
     }
 
@@ -846,8 +852,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         }
 
         if (target === undefined) {
-          logReportingService.logWarning(
-            `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`, LOG_CONTEXT)
+          // logReportingService.logWarning(
+          //   `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`, LOG_CONTEXT)
           return;
         }
       }

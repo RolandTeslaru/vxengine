@@ -26,7 +26,6 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
 
 export const defaultSettings_perspectiveCamera = {
     useSplinePath: false,
-    setingPerspectiveCamera: true,
 }
 
 const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine ) => {

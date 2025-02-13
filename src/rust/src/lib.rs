@@ -48,7 +48,7 @@ impl Spline {
     pub fn change_tension(&mut self, new_tension: f32) {
         self.tension = new_tension;
     }
-
+    
     pub fn get_point(&self, t: f32) -> Vector3 {
         let l = self.points.len();
         let p = t * (l - if self.closed { 0 } else { 1 }) as f32;

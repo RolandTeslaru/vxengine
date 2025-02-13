@@ -105,7 +105,7 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                     <AlertDialogTitle>
                         Data Sync Conflict Detected!
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="my-0 py-0 text-xs">
+                    <AlertDialogDescription className="my-0 py-0 text-xs font-sans-menlo">
                             A conflict between local storage data and disk data has been found. <br/>
                             project name: <span className="text-red-500">{projectName}</span>
                     </AlertDialogDescription>

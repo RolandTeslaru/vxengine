@@ -1,23 +1,33 @@
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
 
 export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey: string, isUsingSplinePath: boolean}) => {
-    const { tracks, staticProps, removeTrack, removeStaticProp, createSpline, removeSpline }
+    const {tracks, staticProps } = useMemo(() => {
+        const state = useTimelineManagerAPI.getState();
+        const tracks = [
+            state.tracks[`${objVxKey}.position.x`],
+            state.tracks[`${objVxKey}.position.y`],
+            state.tracks[`${objVxKey}.position.z`],
+            state.tracks[`${objVxKey}.splineProgress`],
+            state.tracks[`${objVxKey}.splineTension`]
+        ].filter(Boolean)
+
+        const staticProps = [
+            state.staticProps[`${objVxKey}.position.x`],
+            state.staticProps[`${objVxKey}.position.y`],
+            state.staticProps[`${objVxKey}.position.z`],
+            state.staticProps[`${objVxKey}.splineProgress`],
+            state.staticProps[`${objVxKey}.splineTension`]
+        ].filter(Boolean);
+
+        return { tracks, staticProps };
+    }, [])
+    
+    const { removeTrack, removeStaticProp, createSpline, removeSpline }
         = useTimelineManagerAPI(state => ({
-            tracks: [
-                state.tracks[`${objVxKey}.position.x`],
-                state.tracks[`${objVxKey}.position.y`],
-                state.tracks[`${objVxKey}.position.z`],
-                state.tracks[`${objVxKey}.splineProgress`]
-            ].filter(Boolean),
-            staticProps: [
-                state.staticProps[`${objVxKey}.position.x`],
-                state.staticProps[`${objVxKey}.position.y`],
-                state.staticProps[`${objVxKey}.position.z`],
-            ].filter(Boolean),
             removeTrack: state.removeTrack,
             removeStaticProp: state.removeStaticProp,
             createSpline: state.createSpline,
@@ -30,7 +40,6 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
         // Add Spline Action
         if (!isUsingSplinePath) {
             tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
-
             staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
 
             createSpline({ vxkey:objVxKey })
@@ -76,6 +85,10 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
                                 <br></br> Track <span className="text-red-600">{`${objVxKey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
                             </p>
                         )}
+                        {staticProps.map((staticProp: EditorStaticProp, index) => 
+                            <p className="h-auto" key={index}>
+                                <br></br> StaticProp <span className="text-red-600">{`${objVxKey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                            </p>)}
                     </>}
                 </AlertDialogDescription>
             </AlertDialogHeader>

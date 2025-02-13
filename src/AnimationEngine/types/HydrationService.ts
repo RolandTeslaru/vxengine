@@ -1,37 +1,139 @@
 
+
+//  T R A C K
+//////////////////////////
+
+export type HydrateTrackAction = 'create' | 'remove'
+
+type CreateTrack = {
+  action: "create",
+  vxkey: string,
+  propertyPath: string
+}
+
+type RemoveTrack = {
+  action: "remove",
+  vxkey: string,
+  propertyPath: string
+}
+
+export type HydrateTrackParams = 
+| CreateTrack
+| RemoveTrack
+
+
+//  K E Y F R A M E
+//////////////////////////
+
 export type HydrateKeyframeAction = 'create' | 'remove' | 'update' | 'updateTime' | 'updateValue' | 'updateHandles';
 
-export type HydrateKeyframeParams<A extends HydrateKeyframeAction> = {
-  trackKey: string;
-  action: A;
+type BaseKeyframeAction = {
+  vxkey: string;
+  propertyPath: string;
   keyframeKey: string;
-  reRender?: boolean;
-} & (A extends 'updateTime' | 'updateValue'
-  ? { newData: number }
-  : A extends 'updateHandles'
-  ? { newData: [number, number, number, number] }
-  : { newData?: undefined });
+};
+
+type KeyframeCreate = BaseKeyframeAction & {
+  action: "create"
+  value: number,
+  time: number,
+  handles: [number, number, number, number]
+}
+type KeyframeRemove = BaseKeyframeAction & {
+  action: "remove"
+}
+type KeyframeUpdateTime = BaseKeyframeAction & {
+  action: "updateTime"
+  newTime: number
+}
+type KeyframeUpdateValue = BaseKeyframeAction & {
+  action: "updateValue"
+  newValue: number
+}
+type KeyframeUpdateHandles = BaseKeyframeAction & {
+  action: "updateHandles"
+  newHandles: [number, number, number, number]
+}
+
+export type HydrateKeyframeParams = 
+| KeyframeCreate
+| KeyframeRemove
+| KeyframeUpdateTime
+| KeyframeUpdateValue
+| KeyframeUpdateHandles
+
+  
+//  S T A T I C   P R O P 
+//////////////////////////
+
 
 export type HydrateStaticPropAction = 'create' | 'remove' | 'update';
 
-export type HydrateStaticPropParams<A extends HydrateKeyframeAction> = {
-  action: A;
-  staticPropKey: string;
-  reRender?: boolean;
-} & (A extends 'update' ? { newValue: number } : { newValue?: undefined });
+type BaseStaticPropAction = {
+  vxkey: string
+  propertyPath: string,
+}
+
+type StaticPropCreate = BaseStaticPropAction & {
+  action: "create",
+  value: number
+}
+
+type StaticPropRemove = BaseStaticPropAction & {
+  action: "remove",
+}
+
+type StaticPropUpdate = BaseStaticPropAction & {
+  action: "update",
+  newValue: number
+}
+
+export type HydrateStaticPropParams = 
+| StaticPropCreate
+| StaticPropRemove
+| StaticPropUpdate
+
+
+
+//  S P L I N E
+//////////////////////////
+
 
 export type HydrateSplineActions = "create" | "remove" | "clone" | "updateNode" | "removeNode"
 
-export type HydrateSplineParams<A extends HydrateSplineActions> = {
-  action: A,
-  splineKey: string,
-  reRender?: boolean
-} & (
-  A extends "updateNode" 
-  ? { nodeIndex: number, newData: [number, number, number], initialTension?: undefined }
-  : A extends "removeNode" 
-  ? { nodeIndex: number, newData?: undefined, initialTension?: undefined }
-  : A extends "create"
-  ? { initialTension: number, nodeIndex?: undefined, newData?: undefined }
-  : { nodeIndex?: undefined, newData?: undefined, initialTension?: undefined}
-)
+type BaseSplineAction = {
+  splineKey: string
+}
+
+type SplineCloneParams = BaseSplineAction & {
+  action: "clone"
+}
+
+type SplineRemoveParams = BaseSplineAction & {
+  action: "remove"
+}
+
+type SplineUpdateNodeParams = BaseSplineAction & {
+  action: "updateNode";
+  nodeIndex: number;
+  newData: [number, number, number];
+};
+
+type SplineRemoveNodeParams = BaseSplineAction & {
+  action: "removeNode";
+  nodeIndex: number;
+};
+
+type SplineCreateParams = BaseSplineAction & {
+  action: "create";
+  nodes: [number, number, number][];
+  objVxKey: string;
+  initialTension: number;
+};
+
+export type HydrateSplineParams = 
+| SplineCloneParams
+| SplineRemoveParams
+| SplineUpdateNodeParams
+| SplineRemoveNodeParams
+| SplineCreateParams;

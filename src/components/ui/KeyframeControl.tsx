@@ -12,6 +12,8 @@ import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from './DialogAlerts/Al
 import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import animationEngineInstance from '@vxengine/singleton';
+import PopoverShowSideEffectData from './Popovers/PopoverShowSideEffectData';
+import Lambda from '@geist-ui/icons/lambda';
 
 interface TimelineKeyframeControlProps {
     trackKey: string,
@@ -29,6 +31,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
     const orderedKeyframeKeys = track?.orderedKeyframeKeys
     const isPropertyTracked = !!track;
 
+    const hasSideEffect = useMemo(() => {
+        return animationEngineInstance.hasSideEffect(trackKey)
+    }, [trackKey])
     // Initialize
     useLayoutEffect(() => {
         const time = animationEngineInstance.currentTime
@@ -75,7 +80,8 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger>
+            <ContextMenuTrigger className=' flex gap-2'>
+                {hasSideEffect &&<Lambda size={10} className='my-auto !text-neutral-500'/>}
                 <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
                     {isPropertyTracked &&
                         <button
@@ -108,13 +114,18 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
             <ContextMenuContent className='flex flex-col'>
                 {isPropertyTracked ?
                     <PopoverShowTrackData trackKey={trackKey}>
-                        <p>Show Data</p>
+                        <p>Show Track Data</p>
                     </PopoverShowTrackData>
                     :
                     <PopoverShowStaticPropData staticPropKey={trackKey}>
-                        <p>Show Data</p>
+                        <p>Show StaticProp Data</p>
                     </PopoverShowStaticPropData>
                 }
+                {hasSideEffect && (
+                    <PopoverShowSideEffectData trackKey={trackKey}>
+                        <p>Show SideEffect</p>
+                    </PopoverShowSideEffectData>
+                )}
                 {isPropertyTracked &&
                     <ContextMenuItem
                         onClick={(e) => {

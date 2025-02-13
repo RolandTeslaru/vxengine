@@ -15,6 +15,7 @@ import { RawProject } from '@vxengine/types/data/rawData'
 const DEBUG = true;
 
 let PAUSE_DISK_SAVING = false;
+const LOG_MODULE = "SourceManagerAPI"
 
 export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => ({
   autoSaveInterval: 10,
@@ -34,7 +35,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
   },
 
   saveDataToDisk: async ({ force = false, reloadOnSuccess = false } = {}) => {
-    const CONTEXT = { module: "SourceManagerAPI", functionName: "saveDataToDisk" }
+    const CONTEXT = { module: LOG_MODULE, functionName: "saveDataToDisk" }
     if (force === false)
       if (PAUSE_DISK_SAVING) return;
 
@@ -77,7 +78,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
     if (PAUSE_DISK_SAVING && force === false) return;
 
     if (DEBUG)
-      logReportingService.logInfo("Saving data to disk");
+      logReportingService.logInfo("Saving data to disk", {module: LOG_MODULE});
 
     const state = useAnimationEngineAPI.getState()
     const timelines = state.timelines
@@ -98,7 +99,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
 
 
   initializeLocalStorage: (diskData) => {
-    const CONTEXT = { module: "SourceManagerAPI", functionName: "initializeLocalStorage"}
+    const CONTEXT = { module: LOG_MODULE, functionName: "initializeLocalStorage"}
     logReportingService.logInfo(`Initializing LocalStorage`, CONTEXT)
 
     const localStorageTemplate: Record<string, RawProject> = {}
@@ -204,7 +205,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
           content: <DANGER_SyncConflict dialogId={dialogId}/>,
           type: "danger",
           showTriangle: false,
-          className: "p-0 max-w-4xl",
+          className: "p-0 !max-w-4xl",
           id: dialogId
         })
 
