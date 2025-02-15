@@ -6,112 +6,122 @@ import { create } from 'zustand';
 import { produce } from "immer"
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import animationEngineInstance from '@vxengine/singleton';
-import { IAdditionalSettingsProps, ISettings } from '@vxengine/AnimationEngine/types/engine';
+import { ISetting } from '@vxengine/AnimationEngine/types/engine';
+import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService';
+import { splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks';
+
+export type IObjectSettings = Record<string, ISetting>
 
 interface ObjectSettingsStoreProps {
-    settings: Record<string, ISettings>
-    defaultSettings: Record<string, ISettings>
+    settings: Record<string, IObjectSettings>
+    initialValues: Record<string, Record<string, boolean>>
 
-    setSetting: (vxkey: string, settingKey: string, settingValue: string | boolean) => void
+    setSetting: (vxkey: string, settingKey: string, newValue: boolean) => void
     toggleSetting: (vxkey: string, settingKey: string) => void
 
-    initSettingsForObject: (vxkey: string, newSettings: {}, defaultSettingsForObject: {}) => void;
-    initAdditionalSettingsForObject: (vxkey: string, newSettings: {}) => void;
-
-    additionalSettings: Record<string, IAdditionalSettingsProps>
-    setAdditionalSetting: (vxkey: string, settingKey: string, settingValue: boolean | string) => void
-    toggleAdditionalSetting: (vxkey: string, settingKey: string) => void;
+    initSettingsForObject: (vxkey: string, settings: Record<string, ISetting>, initialSettings: Record<string, ISetting>) => void;
 }
 
-function setSettingLogic(state: ObjectSettingsStoreProps, vxkey: string, settingKey: string, settingValue: any) {
-    const defaultSettings = state.defaultSettings || {};
-    const isDefaultValue = defaultSettings[settingKey] === settingValue
+const MODULE = "ObjectSettingsAPI"
 
-    if (isDefaultValue) {
-        // Remove the setting from the currentTimeline sop it doesnt take up space 
-        if (state.settings[vxkey]) {
-            delete state.settings[vxkey][settingKey];
-            // Remove The object if its empty
-            if (Object.keys(state.settings[vxkey]).length === 0) {
-                delete state.settings[vxkey];
-            }
-        }
-    } else {
-        // Set the difrent value from the default;
-        if (!state.settings[vxkey])
-            state.settings[vxkey] = {}
+const SETTINGS_TOGGLE_CALLBACK = {
+    "useSplinePath": splinePathToggleCallback
+}
 
-        state.settings[vxkey][settingKey] = settingValue;
-    }
+function setSettingLogic(state: ObjectSettingsStoreProps, vxkey: string, settingKey: string, settingValue: any) {   
+    state.settings[vxkey][settingKey].value = settingValue;
 }
 
 export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>((set, get) => {
     return ({
-        defaultSettings: {},
+        initialValues: {},
         settings: {},
-        setSetting: (vxkey, settingKey, settingValue) => {
-            const defaultSettings = get().defaultSettings || {};
-            const isDefaultValue = defaultSettings[vxkey]?.[settingKey] === settingValue
+        setSetting: (vxkey, settingKey, newValue) => {
+            const setting = get().settings[vxkey][settingKey];
+            if(!setting){
+                logReportingService.logError(
+                    "Setting does not exist",{ module: MODULE, additionalData:{vxkey, settingKey}});
+                return;
+            }
+            const initialValue = get().initialValues[vxkey][settingKey];
+            const isDefaultValue = initialValue === newValue
 
-            set(produce((state: ObjectSettingsStoreProps) => setSettingLogic(state, vxkey, settingKey, settingValue)));
+            const isUsingDisk = setting.storage === "disk";
+
+            set(produce((state: ObjectSettingsStoreProps) => setSettingLogic(state, vxkey, settingKey, newValue)));
 
             // Refresh the animation engine settings outside of the produce block
-            if (isDefaultValue) {
-                animationEngineInstance.hydrationService.hydrateSetting("remove", settingKey, vxkey);
-            } else {
-                animationEngineInstance.hydrationService.hydrateSetting("set", settingKey, vxkey);
-            }
+            if (isUsingDisk && isDefaultValue)
+                animationEngineInstance.hydrationService.hydrateSetting({action: "remove", settingKey, vxkey});
+            else
+                animationEngineInstance.hydrationService.hydrateSetting({
+                    action: "set", 
+                    value: newValue,
+                    settingKey, 
+                    vxkey
+                });
 
+            // 7.36
             // Add change to the timelineEditorAPI so that it triggers the disk write
             useTimelineManagerAPI.getState().addChange();
         },
 
-        toggleSetting: (vxkey, settingKey) => {
-            const currentValue = get().settings[vxkey]?.[settingKey];
+        toggleSetting: async (vxkey, settingKey) => {
+            const setting = get().settings[vxkey]?.[settingKey];
+            if(!setting){
+                logReportingService.logError(
+                    "Setting does not exist",{ module: MODULE, additionalData:{vxkey, settingKey}});
+                return;
+            }
+
+            const onBeforeToggle = setting.onBeforeToggle || SETTINGS_TOGGLE_CALLBACK[settingKey];
+            if(onBeforeToggle){
+                const canToggle = await onBeforeToggle(vxkey, settingKey, setting);
+                if(!canToggle)
+                    return;
+            }
+
+            const initialValue = get().initialValues[vxkey][settingKey];
+            const currentValue = setting.value
             const newValue = !currentValue;
 
             set(produce((state: ObjectSettingsStoreProps) => setSettingLogic(state, vxkey, settingKey, newValue)));
 
             // Notify the animation engine
-            const defaultSettings = get().defaultSettings || {};
-            const isDefaultValue = defaultSettings[vxkey]?.[settingKey] === newValue;
+            const isDefaultValue = initialValue === newValue;
+            const isUsingDisk = setting.storage === "disk";
 
-            if (isDefaultValue) {
-                animationEngineInstance.hydrationService.hydrateSetting("remove", settingKey, vxkey);
-            } else {
-                animationEngineInstance.hydrationService.hydrateSetting("set", settingKey, vxkey);
-            }
+            if(isUsingDisk)
+                if (isDefaultValue)
+                    animationEngineInstance.hydrationService.hydrateSetting({action: "remove", settingKey, vxkey});
+                else
+                    animationEngineInstance.hydrationService.hydrateSetting({
+                        action: "set", 
+                        value: newValue,
+                        settingKey, 
+                        vxkey
+                    });
 
             // Add change to the timelineEditorAPI so that it triggers the disk write
             useTimelineManagerAPI.getState().addChange();
         },
         
-        initSettingsForObject: (vxkey, newSettings, defaultSettingsForObject) => {
+        initSettingsForObject: (vxkey, settings, initialSettings) => {
             set(produce((state: ObjectSettingsStoreProps) => {
-                state.defaultSettings[vxkey] = defaultSettingsForObject;
+                // Initialize the initialValues states;
+                Object.entries(initialSettings).forEach(([settingKey, initialSetting]) => {
+                    if(!state.initialValues[vxkey])
+                        state.initialValues[vxkey] = {};
 
-                state.settings[vxkey] = newSettings;
-            }))
-        },
-        initAdditionalSettingsForObject: (vxkey, newSettings) => {
-            set(produce((state: ObjectSettingsStoreProps) => {
-                state.additionalSettings[vxkey] = newSettings;
-            }))
-        }, 
+                    state.initialValues[vxkey][settingKey] = initialSetting.value;
+                })
 
-        additionalSettings: {},
-        setAdditionalSetting: (vxkey, settingKey, settingValue) => {
-            set(produce((state: ObjectSettingsStoreProps) => {
-                if (state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
-                state.additionalSettings[vxkey][settingKey] = settingValue
+                state.settings[vxkey] = settings
             }))
-        },
-
-        toggleAdditionalSetting: (vxkey, settingKey) => {
-            set(produce((state: ObjectSettingsStoreProps) => {
-                if (state.additionalSettings[vxkey] === undefined) state.additionalSettings[vxkey] = {}; // init the object 
-                state.additionalSettings[vxkey][settingKey] = !state.additionalSettings[vxkey][settingKey]
-            }))
-        },
+        }
     })
 })
+
+export const useObjectSetting = (vxkey: string, settingKey: string) => {
+    return useObjectSettingsAPI(state => state.settings[vxkey]?.[settingKey]?.value);
+};

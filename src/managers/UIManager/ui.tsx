@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useUIManagerAPI } from './store'
 import { Dialog, DialogContent, DialogOverlay } from '@vxengine/components/shadcn/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@vxengine/components/shadcn/alertDialog';
@@ -9,6 +9,10 @@ export const UIManagerDialogLayer = () => {
   const dialogContent = Array.from(dialogContentMap.values());
   const dialogTotal = dialogContent.length;
   const closeDialog = useUIManagerAPI(state => state.closeDialog);
+
+  useEffect(() => {
+    console.log("DIALOG Content Map ", dialogContent);
+  }, [dialogContent]) 
 
   return (
     <>

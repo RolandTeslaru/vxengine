@@ -16,7 +16,7 @@ export interface VXVirtualEntityWrapperProps<T extends THREE.Object3D> {
     disabledParams?: string[]
     disableClickSelect?: boolean
 
-    defaultSettings?: {},
+    settings?: {},
     defaultAdditionalSettings?: {}
 }
 
@@ -26,10 +26,6 @@ const VXVirtualEntityWrapper = forwardRef<THREE.Object3D, VXVirtualEntityWrapper
 
         const internalRef = useRef<THREE.Object3D | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
-
-        // useEffect(() => {
-        //     console.log("SCENE vx virtual entity ", originalScene)
-        // }, [])
 
         return (
             <>

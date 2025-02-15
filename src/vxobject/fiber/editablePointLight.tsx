@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps, VXObjectParams } from "../types"
+import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 
 import { PointLightHelper } from "three";
 
@@ -9,21 +9,23 @@ import VXEntityWrapper from "../entityWrapper";
 import { PointLight } from "three";
 import { PointLightProps } from "@react-three/fiber";
 import { useHelper } from "@react-three/drei";
+import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 
 export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
     ref?: React.Ref<PointLight>;
     settings?: {}
 };
 
-export const defaultSettings_pointLight = {
-    useSplinePath: false,
-}
-
 const pointLightParams: VXObjectParams= {
     "color": { type: "color" },
     'distance': { type: "number" },
     'intensity': { type: "number" },
     'decay': { type: "number" },
+} 
+
+export const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
 export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps>((props, ref) => {
@@ -34,18 +36,12 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
     useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
-    const defaultSettings = {
-        ...defaultSettings_pointLight,
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
     }
-    
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-        showHelper: false,
-    }
 
-    const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
+    const isHelperEnabled = useObjectSetting(vxkey, "showHelper");
     useHelper(internalRef, isHelperEnabled && PointLightHelper)
 
     
@@ -54,8 +50,7 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
         <VXEntityWrapper 
             ref={internalRef} 
             params={pointLightParams}
-            defaultSettings={defaultSettings}
-            defaultAdditionalSettings={defaultAdditionalSettings}
+            settings={mergedSettings}
             {...props}
         >
             <pointLight ref={internalRef} {...props} />

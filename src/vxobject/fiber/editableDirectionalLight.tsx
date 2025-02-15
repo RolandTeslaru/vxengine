@@ -1,54 +1,44 @@
-import React, { memo, forwardRef, useEffect } from "react";
+import React, { memo, forwardRef, useEffect, useRef, useImperativeHandle } from "react";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 import { DirectionalLight } from "three";
 import { DirectionalLightProps } from "@react-three/fiber";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import VXEntityWrapper from "../entityWrapper";
 
 export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLightProps> & {
     ref?: React.Ref<DirectionalLight>;
     settings?: {}
 };
 
-const defaultSettings_DirectionalLight = {
-    showPositionPath: false,
+const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
+
+const directionalLightParams: VXObjectParams = {}
+
 
 export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
     const { settings = {}, ...rest } = props;
-    const vxkey = rest.vxkey;
-    const setAdditionalSetting = useObjectSettingsAPI(state => state.setAdditionalSetting);
-    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-    const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
+    const internalRef = useRef<any>(null);
+    useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
-    const mergeddefaultSettings = {
-        useSplinePath: false,
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
     }
-    useEffect(() => {
-        if (currentTimelineID === undefined) return
-        const mergedSettingsForObject = {
-            ...mergeddefaultSettings,
-            ...currentSettingsForObject
-        }
-        Object.entries(mergedSettingsForObject).forEach(([settingKey, value]: [string, any]) => {
-            useObjectSettingsAPI.getState().setSetting(vxkey, settingKey, value)
-        })
-    }, [currentTimelineID])
-
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
-    useEffect(() => {
-        Object.entries(defaultAdditionalSettings).forEach(([settingKey, value]) => {
-            setAdditionalSetting(vxkey, settingKey, value)
-        })
-    }, [])
 
     return (
-        <directionalLight ref={ref} {...props} />
+        <VXEntityWrapper
+            ref={internalRef}
+            params={directionalLightParams}
+            settings={mergedSettings}
+            {...rest}
+        >
+
+            <directionalLight ref={ref} {...props} />
+        </VXEntityWrapper>
     )
 })
 )

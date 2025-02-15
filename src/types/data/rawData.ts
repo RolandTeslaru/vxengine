@@ -1,5 +1,3 @@
-import { ISettings } from "../../AnimationEngine/types/engine";
-
 export interface RawProject {
     projectName: string
     timelines: Record<string, RawTimeline>
@@ -10,7 +8,6 @@ export interface RawTimeline {
     id: string;          
     objects: RawObject[]
     splines: Record<string, RawSpline>
-    settings: Record<string, ISettings>
     length: number
 }
 
@@ -18,7 +15,7 @@ export interface RawObject {
     vxkey: string,
     tracks: RawTrack[]
     staticProps: RawStaticProp[]
-    positionSplineKey?: string
+    settings: Record<string, boolean>
 }
 
 export interface RawTrack {

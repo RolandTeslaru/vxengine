@@ -3,29 +3,41 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import React, { useMemo, useState } from "react"
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
+import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
+import { ISetting } from "@vxengine/AnimationEngine/types/engine";
 
-export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey: string, isUsingSplinePath: boolean}) => {
-    const {tracks, staticProps } = useMemo(() => {
+interface Props {
+    vxkey: string
+    settingKey: string
+    setting: ISetting,
+    onConfirm?: () => void
+    onCancel?: () => void
+}
+
+export const DIALOG_UseSplinePath: React.FC<Props> = ({ vxkey, settingKey, setting, onConfirm, onCancel }) => {
+    const isUsingSplinePath = useMemo(() => setting.value, [])
+
+    const { tracks, staticProps } = useMemo(() => {
         const state = useTimelineManagerAPI.getState();
         const tracks = [
-            state.tracks[`${objVxKey}.position.x`],
-            state.tracks[`${objVxKey}.position.y`],
-            state.tracks[`${objVxKey}.position.z`],
-            state.tracks[`${objVxKey}.splineProgress`],
-            state.tracks[`${objVxKey}.splineTension`]
+            state.tracks[`${vxkey}.position.x`],
+            state.tracks[`${vxkey}.position.y`],
+            state.tracks[`${vxkey}.position.z`],
+            state.tracks[`${vxkey}.splineProgress`],
+            state.tracks[`${vxkey}.splineTension`]
         ].filter(Boolean)
 
         const staticProps = [
-            state.staticProps[`${objVxKey}.position.x`],
-            state.staticProps[`${objVxKey}.position.y`],
-            state.staticProps[`${objVxKey}.position.z`],
-            state.staticProps[`${objVxKey}.splineProgress`],
-            state.staticProps[`${objVxKey}.splineTension`]
+            state.staticProps[`${vxkey}.position.x`],
+            state.staticProps[`${vxkey}.position.y`],
+            state.staticProps[`${vxkey}.position.z`],
+            state.staticProps[`${vxkey}.splineProgress`],
+            state.staticProps[`${vxkey}.splineTension`]
         ].filter(Boolean);
 
         return { tracks, staticProps };
     }, [])
-    
+
     const { removeTrack, removeStaticProp, createSpline, removeSpline }
         = useTimelineManagerAPI(state => ({
             removeTrack: state.removeTrack,
@@ -34,70 +46,79 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
             removeSpline: state.removeSpline
         }));
 
-    const setSetting = useObjectSettingsAPI(state => state.setSetting)
+    const handleOnCancel = () => {
+        onCancel();
+    }
 
-    const handleOnClick = () => {
+    const handleOnConfirm = () => {
         // Add Spline Action
         if (!isUsingSplinePath) {
             tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
             staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
 
-            createSpline({ vxkey:objVxKey })
-            setSetting(objVxKey, "useSplinePath", true)
+            createSpline({ vxkey })
 
         }
         // Remove Spline Action
-        else{
-            removeSpline({ vxkey:objVxKey });
-            setSetting(objVxKey, "useSplinePath", false)
+        else {
+            removeSpline({ vxkey });
         }
+
+        onConfirm();
     }
 
     return (
         <div className='flex flex-col gap-4'>
-            <AlertDialogHeader className='flex flex-col'>
+            <AlertDialogHeader className='flex flex-col gap-1'>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    {/* Add Spline Action */}
-                    {!isUsingSplinePath ? <>
-                        <p>
+                {isUsingSplinePath ? (
+                    <>
+                        <AlertDialogDescription>
+                            Deleting the spline will also remove the spline progress track, allowing position tracks and keyframes to be created.
+                        </AlertDialogDescription>
+                        <AlertDialogDescription className='flex flex-col'>
+                            <span>
+                                Spline <span className="text-red-600">{`${vxkey}.spline`}</span> will be <span className="text-red-600">deleted</span>!
+                            </span>
+                            {tracks.map((track: EditorTrack, index) =>
+                                <span className="h-auto" key={index}>
+                                    <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                </span>
+                            )}
+                            {staticProps.map((staticProp: EditorStaticProp, index) =>
+                                <span className="h-auto" key={index}>
+                                    <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                                </span>)}
+                        </AlertDialogDescription>
+                    </>
+                ) : (
+                    <>
+                        <AlertDialogDescription>
                             Switching to a spline path for position will permanently delete the existing position tracks and keyframes. This action cannot be undone.
-                        </p>
+                        </AlertDialogDescription>
+                        <AlertDialogDescription className="flex flex-col">
+                            {tracks.map((track, index) =>
+                                <span className="h-auto" key={index}>
+                                    <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                </span>
+                            )}
+                            {Object.values(staticProps).map((staticProp: EditorStaticProp, index) =>
+                                <span className="h-auto" key={index}>
+                                    <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                                </span>
+                            )}
+                        </AlertDialogDescription>
+                    </>
+                )
+                }
 
-                        {tracks.map((track, index) =>
-                            <p className="h-auto" key={index}>
-                                <br></br> Track <span className="text-red-600">{`${objVxKey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
-                            </p>
-                        )}
-                        {Object.values(staticProps).map((staticProp: EditorStaticProp, index) =>
-                            <p className="h-auto" key={index}>
-                                <br></br> StaticProp <span className="text-red-600">{`${objVxKey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
-                            </p>
-
-                        )}
-                    </> : <>
-                    {/* Remove Spline Actin */}
-                        <p>Deleting the spline will also remove the spline progress track, allowing position tracks and keyframes to be created.</p>
-                        <br />
-                        <p>Spline <span className="text-red-600">{`${objVxKey}.spline`}</span> will be <span className="text-red-600">deleted</span>! </p>
-                        {tracks.map((track: EditorTrack, index) =>
-                            <p className="h-auto" key={index}>
-                                <br></br> Track <span className="text-red-600">{`${objVxKey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
-                            </p>
-                        )}
-                        {staticProps.map((staticProp: EditorStaticProp, index) => 
-                            <p className="h-auto" key={index}>
-                                <br></br> StaticProp <span className="text-red-600">{`${objVxKey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
-                            </p>)}
-                    </>}
-                </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={handleOnCancel}>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                     // @ts-expect-error
                     type="error"
-                    onClick={handleOnClick}
+                    onClick={handleOnConfirm}
                 >Continue</AlertDialogAction>
             </AlertDialogFooter>
         </div>
@@ -109,22 +130,22 @@ export const DANGER_UseSplinePath = ({ objVxKey, isUsingSplinePath }: {objVxKey:
 
 
 export const DANGER_ProjectNameUnSync = ({ diskJsonProjectName, providerProjectName }: any) => {
-  return (
-    <div className='flex flex-col gap-4'>
-      <AlertDialogHeader className='flex flex-col'>
-        <AlertDialogTitle>Project Name Sync Conflict</AlertDialogTitle>
-        <AlertDialogDescription>
-          <div className='gap-2 flex flex-col'>
-            <p>
-              Project Name from Disk Json is not the same as the one from config provider!
-            </p>
-            <div className='flex flex-col gap-2'>
-              <p>Disk Json projectName = <span className='text-red-600'>{`${diskJsonProjectName}`}</span></p>
-              <p>Provider projectName = <span className='text-red-600'>{`${providerProjectName}`}</span></p>
-            </div>
-          </div>
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-    </div>
-  )
+    return (
+        <div className='flex flex-col gap-4'>
+            <AlertDialogHeader className='flex flex-col'>
+                <AlertDialogTitle>Project Name Sync Conflict</AlertDialogTitle>
+                <AlertDialogDescription>
+                    <div className='gap-2 flex flex-col'>
+                        <p>
+                            Project Name from Disk Json is not the same as the one from config provider!
+                        </p>
+                        <div className='flex flex-col gap-2'>
+                            <p>Disk Json projectName = <span className='text-red-600'>{`${diskJsonProjectName}`}</span></p>
+                            <p>Provider projectName = <span className='text-red-600'>{`${providerProjectName}`}</span></p>
+                        </div>
+                    </div>
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+        </div>
+    )
 }

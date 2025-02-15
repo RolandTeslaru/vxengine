@@ -80,13 +80,13 @@ export const ObjectManagerDriver = () => {
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
 
-  const intialProps = useRef({
+  const oldProps = useRef({
     position: new THREE.Vector3,
     rotation: new THREE.Quaternion,
     scale: new THREE.Vector3
   })
 
-  const currentProps = useRef({
+  const newProps = useRef({
     position: new THREE.Vector3,
     rotation: new THREE.Quaternion,
     scale: new THREE.Vector3
@@ -159,6 +159,17 @@ export const ObjectManagerDriver = () => {
   // 
   //  Handle ENTITIES
   // 
+
+  const accumulatedRotation = useRef({ x: 0, y: 0, z: 0 });
+
+  useEffect(() => {
+    const initialEuler = new THREE.Euler().setFromQuaternion(oldProps.current.rotation, 'XYZ');
+
+    accumulatedRotation.current.x = initialEuler.x;
+    accumulatedRotation.current.y = initialEuler.y;
+    accumulatedRotation.current.z = initialEuler.z;
+  }, [vxobject])
+
   const handleEntityChange = (e) => {
     if (!vxObjectRef)
       return
@@ -174,11 +185,11 @@ export const ObjectManagerDriver = () => {
     else if (transformSpace === "local") {
       switch (transformMode) {
         case 'translate': {
-          currentProps.current.position = vxObjectRef.position.clone()
+          newProps.current.position = vxObjectRef.position.clone()
           Array('x', 'y', 'z').forEach(axisLetter => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const newValue = currentProps.current.position[axisLetter]
-            const oldValue = intialProps.current.position[axisLetter];
+            const oldValue = oldProps.current.position[axisLetter];
+            const newValue = newProps.current.position[axisLetter]
 
             if (oldValue !== newValue) {
               debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
@@ -186,7 +197,7 @@ export const ObjectManagerDriver = () => {
                 propertyPath,
                 newValue
               );
-              intialProps.current.position[axisLetter] = newValue
+              oldProps.current.position[axisLetter] = newValue
             }
           })
 
@@ -194,42 +205,61 @@ export const ObjectManagerDriver = () => {
         }
         case 'rotate': {
           // Get the current world quaternion
-          vxObjectRef.getWorldQuaternion(currentProps.current.rotation);
+          vxObjectRef.getWorldQuaternion(newProps.current.rotation);
 
           // Convert both initial and current quaternions to Euler angles for comparison
-          const initialEuler = new THREE.Euler().setFromQuaternion(intialProps.current.rotation, 'XYZ');
-          const currentEuler = new THREE.Euler().setFromQuaternion(currentProps.current.rotation, 'XYZ');
+          // Old
+          // const oldEuler = new THREE.Euler().setFromQuaternion(oldProps.current.rotation, 'XYZ');
+          // New
+          const newEuler = new THREE.Euler().setFromQuaternion(newProps.current.rotation, 'XYZ');
 
           ['x', 'y', 'z'].forEach(axisLetter => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const newValue = currentEuler[axisLetter];
-            const oldValue = initialEuler[axisLetter];
-
-            if (oldValue !== newValue) {
-              // Call debounced function with new rotation value
-              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
+            const oldVal = accumulatedRotation.current[axisLetter];
+            const newVal = newEuler[axisLetter];
+          
+            // 1. Compute difference in the principal range
+            let diff = newVal - oldVal;
+          
+            // 2. If crossing ±π boundary, fix it
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+          
+            // 3. Accumulate
+            const unwrappedVal = oldVal + diff;
+          
+            // 4. Save back into `accumulatedRotation`
+            accumulatedRotation.current[axisLetter] = unwrappedVal;
+            
+            // 4. This unwrappedVal is the actual continuous angle
+            if (oldVal !== unwrappedVal) {
+              console.log("Unwrapped val ", unwrappedVal)
+              // dispatch it or store it
+              debouncedPropertyValueChangeFunctions[axis.toUpperCase()]?.(
                 vxkey,
                 propertyPath,
-                newValue
+                unwrappedVal
               );
-              // Update the initial Euler to the new value so future comparisons are accurate
-              initialEuler[axisLetter] = newValue;
+
+              updateProperty(vxkey, propertyPath, unwrappedVal);
+              // update the initial for next pass
+              // oldEuler[axis] = unwrappedVal;
             }
           });
 
           // After updating, convert `initialEuler` back into a quaternion and store it as the new baseline
-          intialProps.current.rotation.setFromEuler(initialEuler);
+          // oldProps.current.rotation.setFromEuler(newEuler);
           break;
         }
 
         case 'scale': {
           // Get the current world scale
-          vxObjectRef.getWorldScale(currentProps.current.scale);
+          vxObjectRef.getWorldScale(newProps.current.scale);
 
           ['x', 'y', 'z'].forEach(axisLetter => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const newValue = currentProps.current.scale[axisLetter];
-            const oldValue = intialProps.current.scale[axisLetter];
+            const oldValue = oldProps.current.scale[axisLetter];
+            const newValue = newProps.current.scale[axisLetter];
 
             if (oldValue !== newValue) {
               // Call debounced function with new scale value
@@ -239,7 +269,7 @@ export const ObjectManagerDriver = () => {
                 newValue
               );
               // Update the initial scale to the new value so future comparisons are accurate
-              intialProps.current.scale[axisLetter] = newValue;
+              oldProps.current.scale[axisLetter] = newValue;
             }
           });
           break;
@@ -278,9 +308,9 @@ export const ObjectManagerDriver = () => {
     // We need to store initial values when dealing with local space, 
     // because we need to compare them when the entity is changed
     if (transformSpace === "local") {
-      vxObjectRef.getWorldPosition(intialProps.current.position);
-      vxObjectRef.getWorldQuaternion(intialProps.current.rotation);
-      vxObjectRef.getWorldScale(intialProps.current.scale);
+      vxObjectRef.getWorldPosition(oldProps.current.position);
+      vxObjectRef.getWorldQuaternion(oldProps.current.rotation);
+      vxObjectRef.getWorldScale(oldProps.current.scale);
     }
 
     if (vxobject.type === "splineNode") {

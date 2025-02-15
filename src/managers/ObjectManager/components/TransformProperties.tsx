@@ -3,9 +3,7 @@ import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import PropInput from "@vxengine/components/ui/PropInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useObjectSettingsAPI } from "../stores/settingsStore";
-import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
-import { DANGER_UseSplinePath } from "@vxengine/components/ui/DialogAlerts/Danger";
+import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
 
 interface Props {
     vxobject: vxObjectProps
@@ -16,10 +14,8 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
     const disabledParams = vxobject.disabledParams;
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
-    const toggleAdditionalSetting = useObjectSettingsAPI(state => state.toggleAdditionalSetting)
-
-    const isUsingSplinePath = settings?.useSplinePath
+    const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting);
+    const isUsingSplinePath = useObjectSetting(vxkey, "useSplinePath")
 
     const isPositionDisabled = disabledParams?.includes("position") || isUsingSplinePath;
     const isRotationDisabled = disabledParams?.includes("rotation");
@@ -78,55 +74,17 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                         {renderInputs('rotation', isRotationDisabled)}
                     </div>
                 </div>
-                {additionalSettings && <>
-                    {"showPositionPath" in additionalSettings && (
-                        <div className="flex flex-row mb-1">
-                            <p className="text-xs font-light text-neutral-400">{isUsingSplinePath ? "show spline path" : "show position path"}</p>
-                            <Switch
-                                onClick={() => toggleAdditionalSetting(vxkey, "showPositionPath")}
-                                checked={additionalSettings["showPositionPath"]}
-                                className='ml-auto my-auto scale-[80%]'
-                            />
-                        </div>
-                    )}
-
-                    {/* Other additional settings */}
-
-                </>
-                }
-                {settings && <>
-                    {"useSplinePath" in settings && <>
-                        <BTN_useSplinePath vxkey={vxkey} />
-
-                    </>}
-                </>}
+                {"showPositionPath" in settings && (
+                    <div className="flex flex-row mb-1">
+                        <p className="text-xs font-light text-neutral-400">{isUsingSplinePath ? "show spline path" : "show position path"}</p>
+                        <Switch
+                            onClick={() => toggleSetting(vxkey, "showPositionPath")}
+                            checked={settings["showPositionPath"].value}
+                            className='ml-auto my-auto scale-[80%]'
+                        />
+                    </div>
+                )}
             </div>
         </CollapsiblePanel>
     );
 }
-
-
-const BTN_useSplinePath = React.memo(({ vxkey }: any) => {
-    const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const pushDialog = useUIManagerAPI(state => state.pushDialog);
-
-    const handleSwitchToggle = () => {
-        pushDialog({
-            content: <DANGER_UseSplinePath objVxKey={vxkey} isUsingSplinePath={settings["useSplinePath"]} />, 
-            type: "danger"
-        })
-    }
-
-    return (
-        <div className="flex flex-row mb-1">
-            <p className="text-xs font-light text-neutral-400">use spline path</p>
-            <Switch
-                onClick={handleSwitchToggle}
-                checked={settings["useSplinePath"]}
-                className='ml-auto my-auto scale-[80%]'
-            />
-        </div>
-    )
-})
-
-

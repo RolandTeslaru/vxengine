@@ -1,5 +1,5 @@
 import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { EditableObjectProps, VXObjectParams } from "../types"
+import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { PerspectiveCamera, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
@@ -24,7 +24,7 @@ export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCame
     settings?: {}
 };
 
-const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine ) => {
+const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine) => {
     animationEngine.cameraRequiresProjectionMatrixRecalculation = true;
 }
 
@@ -39,8 +39,9 @@ const perspectiveCameraParams: VXObjectParams = {
     "filmOffset": {type: "number"}
 }
 
-export const defaultSettings_perspectiveCamera = {
-    useSplinePath: false,
+export const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
@@ -51,8 +52,6 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
 
     const { IS_DEVELOPMENT } = useVXEngine();
-
-
 
     const cameraUpdate = () => {
         if (!cameraRef.current || !cameraTargetRef) return
@@ -76,17 +75,10 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
     const showHelper = mode === "free" && IS_DEVELOPMENT
     useHelper(cameraRef, showHelper && CameraHelper)
 
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    };
-
-
-    const defaultSettings = {
-        ...defaultSettings_perspectiveCamera,
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
     }
-
 
     const disabledParams = [
         "rotation",
@@ -99,8 +91,7 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
             ref={cameraRef}
             params={perspectiveCameraParams}
             disabledParams={disabledParams}
-            defaultSettings={defaultSettings}
-            defaultAdditionalSettings={defaultAdditionalSettings}
+            settings={mergedSettings}
             {...props}
         >
             <PerspectiveCamera name="VXPerspectiveCamera" />

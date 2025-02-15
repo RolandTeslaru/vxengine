@@ -34,12 +34,11 @@ export type TrackSideEffectCallback = (
   interpolatedValue: number
 ) => void
 
-export interface ISettings{
-  useSplinePath?: boolean;
-  positionSplineKey?: string
-}
+export type OnBeforeToggleType = (vxkey: string, settingKey: string, setting: ISetting) => Promise<boolean>;
 
-export interface IAdditionalSettingsProps{
-  showPositionPath?: boolean
-  showHelper?: boolean
+export interface ISetting{
+  value: boolean
+  storage: "disk" | "localStorage"
+  title: string
+  onBeforeToggle?: OnBeforeToggleType
 }

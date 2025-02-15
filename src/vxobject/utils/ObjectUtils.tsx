@@ -4,6 +4,8 @@ import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import Spline from '@vxengine/managers/SplineManager/Spline'
 import PositionPath from './positionPath'
 import * as THREE from "three"
+import { useObjectSetting } from '@vxengine/managers/ObjectManager/stores/settingsStore';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 
 interface ObjectUtils {
     vxkey: string
@@ -27,14 +29,16 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
     }, [object3DInnerChildren]);
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxkey])
 
-    const showPositionPath = additionalSettings?.["showPositionPath"]
+    const showPositionPath = useObjectSetting(vxkey, "showPositionPath");
+    const splineKey = `${vxkey}.spline`
+
+    const edSpline = useTimelineManagerAPI(state => state.splines[splineKey]);
 
     return (
         <>
-            {settings?.useSplinePath && (
-                <Spline splineKey={"spline1"} vxkey={vxkey} visible={showPositionPath} />
+            {settings?.useSplinePath && edSpline && (
+                <Spline splineKey={"spline1"} vxkey={vxkey} edSpline={edSpline} visible={showPositionPath} />
             )}
             {/* <Edges lineWidth={1.5} scale={1.1} visible={hoveredObject?.vxkey === vxkey && !selectedObjectKeys.includes(vxkey)} renderOrder={1000}>
                 <meshBasicMaterial transparent color="#2563eb" depthTest={false} />
@@ -43,7 +47,7 @@ const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
             </Edges> */}
 
             {showPositionPath && <>
-                    <PositionPath vxkey={vxkey} />
+                <PositionPath vxkey={vxkey} />
             </>
             }
         </>

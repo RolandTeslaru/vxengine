@@ -12,8 +12,9 @@ import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/t
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { VXObjectParams } from "./types";
+import { VXObjectParams, VXObjectSettings } from "./types";
 import animationEngineInstance from "@vxengine/singleton";
+import { cloneDeep } from "lodash";
 
 export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
@@ -27,8 +28,7 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
     overrideNodeTreeParentKey?: string;
     overrideNodeType?: string
 
-    defaultSettings?: {},
-    defaultAdditionalSettings?: {}
+    settings?: VXObjectSettings,
 
     icon?: string
 }
@@ -36,7 +36,12 @@ export interface VXEntityWrapperProps<T extends THREE.Object3D> {
 declare module 'three' {
     interface Object3D {
         vxkey: string;
+        rotationDegrees: THREE.Vector3
     }
+}
+
+const initializeDegreeRotations = (obj: THREE.Object3D) => {
+    obj.rotationDegrees = new THREE.Vector3(0,0,0);
 }
 
 const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
@@ -48,8 +53,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         disableClickSelect = false,
         isVirtual = false,
         addToNodeTree = true,
-        defaultSettings = {},
-        defaultAdditionalSettings = {},
+        settings: initialSettings = {},
         overrideNodeTreeParentKey,
         icon,
         ...props
@@ -60,26 +64,27 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         const vxObject = useVXObjectStore(state => state.objects[vxkey])
         const { IS_DEVELOPMENT } = useVXEngine();
 
-
-        const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-        const setHoveredObject = useObjectManagerAPI(state => state.setHoveredObject)
-
         // Initialize settings
         const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-        const currentSettingsForObject = useAnimationEngineAPI(state => state.timelines[currentTimelineID]?.settings[vxkey])
-
-        useLayoutEffect(() => {
-            useObjectSettingsAPI.getState().initAdditionalSettingsForObject(vxkey, defaultAdditionalSettings)
-        }, [])
 
         // Refresh settings when the current timeline changes
         useLayoutEffect(() => {
             if (currentTimelineID === undefined) return
-            const mergedSettingsForObject = {
-                ...defaultSettings,
-                ...currentSettingsForObject
+            
+            const mergedSettingsForObject = cloneDeep(initialSettings);
+            const rawObject = useAnimationEngineAPI.getState().currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+            
+            if(rawObject){
+                const rawSettings = rawObject.settings;
+                if(rawSettings){
+                    Object.entries(rawSettings).forEach(([settingKey, rawSetting]) => {
+                        mergedSettingsForObject[settingKey].value = rawSetting;
+                    })
+                }
             }
-            useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, defaultSettings)
+
+
+            useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
         }, [currentTimelineID])
 
 
@@ -93,6 +98,9 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
 
             const name = props.name || vxkey
             const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
+
+            if(internalRef.current)
+                initializeDegreeRotations(internalRef.current)
 
             const newVXEntity: vxObjectProps = {
                 type: isVirtual ? "virtualEntity" : "entity",
@@ -112,18 +120,6 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
                 removeObject(vxkey, IS_DEVELOPMENT)
             }
         }, []);
-
-        // const handlePointerOver = () => setHoveredObject(vxObject);
-        // const handlePointerOut = () => setHoveredObject(null);
-
-        // const onClick = useCallback(() => {
-        //     if (disableClickSelect === false && IS_DEVELOPMENT)
-        //         memoizedSelectObjects([vxkey], "entity", true)
-        // }, [])
-
-        // const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
-        //     e.stopPropagation()
-        // }, [])
 
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type

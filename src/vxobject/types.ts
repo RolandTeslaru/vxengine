@@ -1,4 +1,4 @@
-import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
+import { ISetting, TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
 
 export interface VXEntityWrapperProps {
     type: string;
@@ -41,3 +41,5 @@ export type VXColorInputType = VXBaseInputType & {
 export type VXObjectParam = VXNumberInputType | VXSliderInputType | VXColorInputType;
 
 export type VXObjectParams = Record<string, VXObjectParam>
+
+export type VXObjectSettings = Record<string, ISetting>

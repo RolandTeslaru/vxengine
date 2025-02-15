@@ -1,19 +1,16 @@
 import React, { memo, forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { LightProps, useHelper } from "@react-three/drei";
-import { createPortal as createR3FPortal, invalidate, useFrame } from "@react-three/fiber";
-import { EditableObjectProps } from "../types";
+import { LightProps } from "@react-three/drei";
+import { invalidate, useFrame } from "@react-three/fiber";
+import { EditableObjectProps, VXObjectSettings } from "../types";
 import VXEntityWrapper from "../entityWrapper";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { BoxHelper } from "three";
 import * as THREE from "three"
-import VXVirtualEntityWrapper from "../virtualEntityWrapper";
-import { useThree } from "@react-three/fiber";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { Lightformer } from "./lightFormerImpl";
+import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 
 export type EditableLightformerProps = EditableObjectProps<LightProps> & {
     ref?: React.Ref<LightProps>;
-    settings?: {};
+    settings?: VXObjectSettings;
     defaultScene?: THREE.Scene
 };
 
@@ -23,6 +20,13 @@ const outlineMaterial = new THREE.MeshStandardMaterial({
     fog: false,
 })
 
+const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false,},
+    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
+    showInScene: { title:"show in scene",  storage: "localStorage", value: false}
+}
+
 export const EditableLightFormer = memo(
     forwardRef<typeof Lightformer, EditableLightformerProps>(
         (props, ref) => {
@@ -31,21 +35,9 @@ export const EditableLightFormer = memo(
             const internalRef = useRef<any>(null);
             useImperativeHandle(ref, () => internalRef.current);
 
-            // INITIALIZE Settings
-            const defaultSettings = {
-                useSplinePath: false,
-                ...settings
-            }
-
-            // INITIALIZE Additional Settings
-            const defaultAdditionalSettings = {
-                showPositionPath: false,
-                "Show In Scene": false,
-            }
-
             const vxSceneEntity = useVXObjectStore(state => state.objects["scene"]);
-            const isShowingAll = useObjectSettingsAPI(state => state.additionalSettings["environment"]?.["Show All"])
-            const viz = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.["Show In Scene"]) 
+            const isShowingAll = useObjectSetting("environment", "showAll");
+            const viz = useObjectSetting(vxkey, "showInScene");
             const isVisibleInScene = viz || isShowingAll
 
             const realMeshRef = useRef<THREE.Mesh>(null);
@@ -53,6 +45,11 @@ export const EditableLightFormer = memo(
             const tempPos = useRef(new THREE.Vector3());
             const tempQuat = useRef(new THREE.Quaternion());
             const tempScale = useRef(new THREE.Vector3());
+
+            const mergedSettings = {
+                ...defaultSettings,
+                ...settings
+            }
 
 
             useEffect(() => {
@@ -104,9 +101,8 @@ export const EditableLightFormer = memo(
                 <>
                     <VXEntityWrapper
                         ref={internalRef}
-                        defaultSettings={defaultSettings}
+                        settings={mergedSettings}
                         isVirtual={true}
-                        defaultAdditionalSettings={defaultAdditionalSettings}
                         {...props}
                     >
                         <Lightformer/>

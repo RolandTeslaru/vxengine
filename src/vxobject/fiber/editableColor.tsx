@@ -24,15 +24,13 @@ export const EditableColor = memo(forwardRef<ColorProps, EditableColorProps>((pr
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
-    const colorDefaultSettings = {}
-    const colorDefaultAdditionalSettings = {}
+    const colorSettings = {}
 
     return (
         <VXEntityWrapper
             ref={internalRef}
             params={colorParams}
-            defaultSettings={colorDefaultSettings}
-            defaultAdditionalSettings={colorDefaultAdditionalSettings}
+            settings={colorSettings}
             disabledParams={colorDisabledParams}
             icon="Color"
             {...props}

@@ -1,5 +1,5 @@
 import React, { memo, forwardRef, useEffect, useLayoutEffect } from "react";
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { Mesh } from "three";
@@ -10,27 +10,25 @@ export type EditableMeshProps = EditableObjectProps<MeshProps> & {
     settings?: {}
 };
 
-const defaultSettings_mesh = {
-    useSplinePath: false,
+export const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
+
 
 export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref) => {
     const { children: meshChildren, settings = {}, ...rest } = props;
 
-    // INITIALIZE settigngs on object mount
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
-    const defaultSettings = {
-        ...defaultSettings_mesh,
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
     }
 
     return (
         <VXEntityWrapper 
             ref={ref} 
-            defaultSettings={defaultSettings}
-            defaultAdditionalSettings={defaultAdditionalSettings}
+            settings={mergedSettings}
             {...rest}
         >
             <mesh>

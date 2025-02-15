@@ -137,3 +137,26 @@ export type HydrateSplineParams =
 | SplineUpdateNodeParams
 | SplineRemoveNodeParams
 | SplineCreateParams;
+
+
+
+
+// S E T T I N G S
+//////////////////////////
+
+export type HydrateSettingAction = "set" | "remove";
+
+type BaseSettingAction = { vxkey: string, settingKey: string }
+
+type SettingSetParams = BaseSettingAction & {
+  action: "set",
+  value: boolean
+}
+
+type SettingRemoveParams = BaseSettingAction & {
+  action: "remove",
+}
+
+export type HydrateSettingParams = 
+| SettingSetParams 
+| SettingRemoveParams

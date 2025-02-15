@@ -1,9 +1,9 @@
 import React, { memo, forwardRef, useEffect } from "react";
-import { EditableObjectProps } from "../types"
+import { EditableObjectProps, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
-
 import { Group } from "three";
 import { GroupProps } from "@react-three/fiber";
+import { splinePathToggleCallback } from "@vxengine/managers/ObjectManager/utils/deufaltSettingsCallbacks";
 
 export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     ref?: React.Ref<Group>;
@@ -12,31 +12,26 @@ export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     overrideNodeTreeParentKey?: string
 };
 
-export const defaultSettings_group = {
-    useSplinePath: false,
+export const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
 export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, ref) => {
     const { settings = {}, temporarySettings = {}, children: groupChildren, ...rest } = props;
 
     // INITIALIZE Settings
-    const defaultSettings = {
-        ...defaultSettings_group,
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
-    }
-
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-        ...temporarySettings
     }
 
     return (
         <VXEntityWrapper
             ref={ref}
             {...rest}
-            defaultSettings={defaultSettings}
-            defaultAdditionalSettings={defaultAdditionalSettings}
+            settings={mergedSettings}
         >
             <group ref={ref} {...rest} >
                 {groupChildren}

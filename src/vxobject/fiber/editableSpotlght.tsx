@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps, VXObjectParams } from "../types"
+import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 
 import { SpotLightHelper } from "three";
 
@@ -14,16 +14,18 @@ export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
     ref?: React.Ref<SpotLight>;
 };
 
-export const defaultSettings_spotlight = {
-    useSplinePath: false,
-}
-
 const spotLightParams: VXObjectParams = {
     "color": { type: "color"},
     'intensity': { type: "number" },
     'distance': { type: "number" },
     'penumbra': { type: "number" },
     'decay': { type: "number" },
+}
+
+export const defaultSettings: VXObjectSettings = {
+    showPositionPath: { title:"show position path", storage: "localStorage", value: false},
+    useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
 export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {
@@ -33,28 +35,19 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
     const internalRef = useRef<any>(null); 
     useImperativeHandle(ref, () => internalRef.current);
 
-    //
-    // Settings
-    //
-    const defaultSettings = {
-        ...defaultSettings_spotlight,
+    const isHelperEnabled = useObjectSettingsAPI(state => state.settings[vxkey]?.showHelper.value)
+    useHelper(internalRef, isHelperEnabled && SpotLightHelper)
+
+    const mergedSettings = {
+        ...defaultSettings,
         ...settings
     }
-
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
-
-    const isHelperEnabled = useObjectSettingsAPI(state => state.additionalSettings[vxkey]?.showHelper)
-    useHelper(internalRef, isHelperEnabled && SpotLightHelper)
 
     return (
         <VXEntityWrapper 
             ref={internalRef} 
             params={spotLightParams}
-            defaultSettings={defaultSettings}
-            defaultAdditionalSettings={defaultAdditionalSettings}
+            settings={mergedSettings}
             {...props}
         >
             <spotLight/>

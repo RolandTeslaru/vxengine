@@ -10,15 +10,9 @@ export type EditablePointsProps = EditableObjectProps<PointsProps> & {
 };
 
 export const EditablePoints = forwardRef<Points, EditablePointsProps>((props, ref) => {
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
-
     return (
         <VXEntityWrapper 
             ref={ref} 
-            defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <points ref={ref} />

@@ -12,6 +12,8 @@ interface DialogEntry {
     className?: string
     showTriangle?: boolean
     open: boolean
+    onConfirm?: () => void;
+    onCancel?: () => void;
 }
 
 type PushDialogProps = Omit<DialogEntry, "id" | "open"> & Partial<Pick<DialogEntry, "id" | "open">>;

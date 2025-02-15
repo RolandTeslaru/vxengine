@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import { useObjectManagerAPI } from '../stores/managerStore';
 import { vxEntityProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
+import { useObjectSettingsAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import Search from '@vxengine/components/ui/Search';
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
 import Video from '@geist-ui/icons/video'
@@ -13,7 +13,7 @@ import ArrowDown from "@geist-ui/icons/arrowDown"
 import X from '@geist-ui/icons/x'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import { DANGER_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
+import { DIALOG_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
@@ -189,13 +189,10 @@ const iconMapping = {
 
 const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
     const splineKey = vxkey;
-    const pushDialog = useUIManagerAPI(state => state.pushDialog);
     const handleDeleteSpline = () => {
         const objVxKey = useTimelineManagerAPI.getState().splines[splineKey]?.vxkey
-        pushDialog({
-            content: <DANGER_UseSplinePath objVxKey={objVxKey} isUsingSplinePath={true} />, 
-            type:"danger"
-        })
+        const toggleSetting = useObjectSettingsAPI.getState().toggleSetting;
+        toggleSetting(objVxKey, "useSplinePath");
     }
     return (
         <ContextMenuContent className='font-sans-menlo'>

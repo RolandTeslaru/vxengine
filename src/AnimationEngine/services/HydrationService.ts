@@ -1,6 +1,6 @@
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
-import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams, HydrateTrackParams } from "../types/HydrationService";
+import { HydrateKeyframeAction, HydrateKeyframeParams, HydrateSettingParams, HydrateSplineActions, HydrateSplineParams, HydrateStaticPropAction, HydrateStaticPropParams, HydrateTrackParams } from "../types/HydrationService";
 import { invalidate } from "@react-three/fiber";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
@@ -57,7 +57,8 @@ export class HydrationService {
         rawObject = {
             vxkey,
             tracks: [],
-            staticProps: []
+            staticProps: [],
+            settings: {}
         };
 
         this._currentTimeline.objects.push(rawObject);
@@ -458,50 +459,44 @@ export class HydrationService {
      * @param settingKey - The key identifying the setting.
      * @param vxkey - The unique identifier for the object.
      */
-    hydrateSetting(
-        action: 'set' | 'remove',
-        settingKey: string,
-        vxkey: string,
-    ) {
+    hydrateSetting(params: HydrateSettingParams) {
+        const { vxkey, action, settingKey  } = params
+        const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSetting", additionalData: { action, settingKey, vxkey } }
         if (this._IS_PRODUCTION) {
-            logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",
-                { module: LOG_MODULE, functionName: "hydrateSetting" })
+            logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",LOG_CONTEXT);
             return;
         }
 
-
-        if (!this._currentTimeline.settings) {
-            this._currentTimeline.settings = {};
+        const rawObject = this._currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+        if(!rawObject){
+            logReportingService.logWarning(`Could not hydrate setting because the rawObject doesn't exist.`, LOG_CONTEXT)
+            return;
         }
 
-        if (!this._currentTimeline.settings[vxkey]) {
-            this._currentTimeline.settings[vxkey] = {};
-        }
+        const rawSettings = rawObject.settings;
+        if(!rawSettings)
+            rawObject.settings = {};
 
-        const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSetting", additionalData: { action } }
-
+        
         if (DEBUG_SETTING_HYDRATION)
             logReportingService.logInfo(
                 `Hydrating setting ${settingKey}`, LOG_CONTEXT)
 
         switch (action) {
             case 'set': {
-                const value = useObjectSettingsAPI.getState().settings[vxkey]?.[settingKey];
+                const { value } = params;
                 if (value === undefined) {
                     logReportingService.logWarning(
                         `Setting ${settingKey} was not found for object ${vxkey}`, LOG_CONTEXT)
                     return;
                 }
-                this._currentTimeline.settings[vxkey][settingKey] = value;
+                rawSettings[settingKey] = value;
+
                 break;
             }
 
             case 'remove': {
-                delete this._currentTimeline.settings[vxkey][settingKey];
-                // Remove the object if no settings remain;
-                if (Object.keys(this._currentTimeline.settings[vxkey]).length === 0) {
-                    delete this._currentTimeline.settings[vxkey];
-                }
+                delete rawSettings[settingKey];
                 break;
             }
 

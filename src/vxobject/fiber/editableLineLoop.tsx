@@ -10,15 +10,10 @@ export type EditableLineLoopProps = EditableObjectProps<LineLoopProps> & {
 };
 
 export const EditableLineLoop = memo(forwardRef<LineLoop, EditableLineLoopProps>((props, ref) => {
-    // INITIALIZE Additional Settings
-    const defaultAdditionalSettings = {
-        showPositionPath: false,
-    }
 
     return (
         <VXEntityWrapper 
             ref={ref} 
-            defaultAdditionalSettings={defaultAdditionalSettings}
             {...props}
         >
             <lineLoop ref={ref} />

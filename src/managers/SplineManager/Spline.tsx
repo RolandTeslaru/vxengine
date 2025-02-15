@@ -14,8 +14,10 @@ import { SplineCurve } from 'three';
 import { extend } from '@react-three/fiber';
 import { debounce } from 'lodash';
 import { useVXEngine } from '@vxengine/engine';
+import { EditorSpline } from '@vxengine/types/data/editorData';
 
 interface SplineProps {
+    edSpline: EditorSpline
     splineKey: string;
     vxkey: string
     visible: boolean
@@ -28,12 +30,10 @@ interface SplineProps {
 
 // This handles only the vxObject part
 
-const Spline: React.FC<SplineProps> = React.memo(({ vxkey, visible }) => {
+const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) => {
     const { IS_DEVELOPMENT } = useVXEngine();
     const splineKey = `${vxkey}.spline`
-    const edSpline = useTimelineManagerAPI(state => state.splines[splineKey]);
-    if (!edSpline)
-        return
+
     const nodes = edSpline.nodes;
 
     const segmentMultiplier = 10;

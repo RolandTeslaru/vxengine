@@ -10,12 +10,12 @@ interface Props {
 }
 
 const handleShowSpline = (objectVxKey: string ) => {
-    const toggleAdditionalSetting = useObjectSettingsAPI.getState().toggleAdditionalSetting;
-    toggleAdditionalSetting(objectVxKey, "showPositionPath")
+    const toggleSetting = useObjectSettingsAPI.getState().toggleSetting;
+    toggleSetting(objectVxKey, "showPositionPath")
 }
 
 const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
-    const additionalSettings = useObjectSettingsAPI(state => state.additionalSettings[vxSpline?.objectVxKey])
+    const settings = useObjectSettingsAPI(state => state.settings[vxSpline?.objectVxKey])
     
     return (
         <CollapsiblePanel
@@ -26,7 +26,7 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
                 <p className="text-xs font-light my-auto text-neutral-400">show spline</p>
                 <Switch
                     onClick={() => handleShowSpline(vxSpline.objectVxKey)}
-                    checked={additionalSettings?.["showPositionPath"]}
+                    checked={settings?.["showPositionPath"].value}
                 />
             </div>
             <div className="flex flex-col w-full gap-1 ">
