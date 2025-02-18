@@ -3,7 +3,6 @@ import { EditableObjectProps, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { Group } from "three";
 import { GroupProps } from "@react-three/fiber";
-import { splinePathToggleCallback } from "@vxengine/managers/ObjectManager/utils/deufaltSettingsCallbacks";
 
 export type EditableGroupProps = EditableObjectProps<GroupProps> & {
     ref?: React.Ref<Group>;

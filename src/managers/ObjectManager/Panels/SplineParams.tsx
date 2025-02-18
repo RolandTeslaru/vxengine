@@ -27,7 +27,7 @@ const tensionParam: VXObjectParam = {
     type: "slider", min: 0, max: 1, step: 0.01
 }
 
-const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
+const SplineParams: React.FC<Props> = ({ vxobject: vxSpline }) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxSpline?.objectVxKey])
     
     return (
@@ -56,5 +56,5 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
     )
 }
 
-export default SplineProperties
+export default SplineParams
 

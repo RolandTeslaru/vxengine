@@ -3,12 +3,11 @@ import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { modifyPropertyValue, truncateToDecimals, useTimelineManagerAPI } from "../TimelineManager/store";
-import { vxEntityProps, vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import {  vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
-import { TransformControls as TransfromControlsIMPL } from "three-stdlib";
 import { useVXObjectStore } from "./stores/objectStore";
 
 const axisMap = {

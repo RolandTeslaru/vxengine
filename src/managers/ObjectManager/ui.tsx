@@ -2,33 +2,32 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useEffect, useRef, useState } from 'react'
-import { TransformProperties } from './components/TransformProperties'
-import { GeometryProperties } from './components/GeometryProperties'
-import MaterialProperties from './components/MaterialProperties'
-import NodeTransformProperties from './components/NodeTransformProperties'
+import React from 'react'
+import { TransformParams } from './Panels/TransformParams'
+import { GeometryParams } from './Panels/GeometryParams'
+import MaterialParams from './Panels/MaterialParams'
+import NodeTransformParams from './Panels/NodeTransformParams'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
 import { useUIManagerAPI } from '../UIManager/store'
 import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
-import SplineProperties from './components/SplineProperties'
-import SplineNodePanel from './components/SplineNodePanel'
-import ObjectInfoPanel from './components/ObjectInfoPanel'
+import SplineParams from './Panels/SplineParams'
+import SplineNodeParams from './Panels/SplineNodeParams'
 
-const ObjectPropertiesConfig = {
+const ObjectParamsConfig = {
   entity: [
-      TransformProperties, 
-      GeometryProperties, 
-      MaterialProperties,
+      TransformParams, 
+      GeometryParams, 
+      MaterialParams,
   ],
   virtualEntity: [
-    TransformProperties, 
-    GeometryProperties, 
-    MaterialProperties
+    TransformParams, 
+    GeometryParams, 
+    MaterialParams
   ],
-  spline: [SplineProperties],
-  splineNode: [SplineNodePanel],
-  keyframeNode: [NodeTransformProperties],
+  spline: [SplineParams],
+  splineNode: [SplineNodeParams],
+  keyframeNode: [NodeTransformParams],
 };
 
 export const ObjectPropertiesPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
@@ -38,11 +37,11 @@ export const ObjectPropertiesPanel = ({ vxobject }: {vxobject: vxObjectProps}) =
   if(!refObject)
     return null
 
-  const components = (ObjectPropertiesConfig[vxobject.type] || []).filter((Component) => {
-    if (Component === MaterialProperties && (!refObject || !refObject.material)) {
+  const components = (ObjectParamsConfig[vxobject.type] || []).filter((Component) => {
+    if (Component === MaterialParams && (!refObject || !refObject.material)) {
       return false;
     }
-    if(Component === GeometryProperties && (!refObject || !refObject?.geometry?.parameters))
+    if(Component === GeometryParams && (!refObject || !refObject?.geometry?.parameters))
       return false;
     return true;
   });

@@ -19,7 +19,7 @@ interface VXGeometryProps {
     vxobject: vxEntityProps
 }
 
-export const GeometryProperties: FC<VXGeometryProps> = ({ vxobject }) => {
+export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const refObject = (vxobject.ref.current as THREE.Mesh);
     const geometry = refObject.geometry as ValidGeometries

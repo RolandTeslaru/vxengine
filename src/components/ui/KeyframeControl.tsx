@@ -20,9 +20,10 @@ interface TimelineKeyframeControlProps {
     vxkey: string,
     param: { propertyPath: string }
     disabled?: boolean
+    horizontal?: boolean
 }
 
-const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled }) => {
+const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled, horizontal = false }) => {
     const trackKey = `${vxkey}.${propertyPath}`;
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
@@ -79,8 +80,8 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger className=' flex gap-2'>
-                {hasSideEffect &&<Lambda size={10} className='my-auto !text-neutral-500'/>}
+            <ContextMenuTrigger className={`flex ${horizontal && "flex-col-reverse"} gap-2`}>
+                {hasSideEffect &&<Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} !text-neutral-500`}/>}
                 <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
                     {isPropertyTracked &&
                         <button

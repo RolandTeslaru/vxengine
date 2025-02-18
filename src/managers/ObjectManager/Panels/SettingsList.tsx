@@ -21,7 +21,7 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
     const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
 
     const filteredSettings = useMemo(() => {
-        if(!settings) return null;
+        if(!settings) return {};
 
         return Object.entries(settings)
             .filter(([key]) => !excludeSettingsKeys.includes(key))
@@ -30,9 +30,6 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
                 return acc;
             }, {} as VXObjectSettings);
     }, [settings]);
-
-    if (!filteredSettings) return null
-
 
     const renderSettings = (settingsObj, toggleFunction) =>
         Object.entries(settingsObj).map(([settingKey, setting]: [settingKey: string, value: ISetting]) => (

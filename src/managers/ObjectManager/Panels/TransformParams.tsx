@@ -9,13 +9,14 @@ interface Props {
     vxobject: vxObjectProps
 }
 
-export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
+export const TransformParams: React.FC<Props> = ({ vxobject }) => {
     const vxkey = vxobject.vxkey
     const disabledParams = vxobject.disabledParams;
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
     const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting);
     const isUsingSplinePath = useObjectSetting(vxkey, "useSplinePath")
+    const isUsingRotationDegrees = useObjectSetting(vxkey, "useRotationDegrees");
 
     const isPositionDisabled = disabledParams?.includes("position") || isUsingSplinePath;
     const isRotationDisabled = disabledParams?.includes("rotation");
@@ -67,12 +68,21 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
                     </div>
                 </div>
 
-                <div className='flex flex-row gap-2'>
-                    <p className="text-xs font-light text-neutral-400">rotation</p>
-                    <div className='flex flex-row gap-1 max-w-36 ml-auto'>
-                        {renderInputs('rotation', isRotationDisabled)}
+                {isUsingRotationDegrees ? 
+                    <div className='flex flex-row gap-2'>
+                        <p className="text-xs font-light text-neutral-400">rotation deg.</p>
+                        <div className='flex flex-row gap-1 max-w-36 ml-auto'>
+                            {renderInputs('rotationDegrees', isRotationDisabled)}
+                        </div>
                     </div>
-                </div>
+                    :
+                    <div className='flex flex-row gap-2'>
+                        <p className="text-xs font-light text-neutral-400">rotation</p>
+                        <div className='flex flex-row gap-1 max-w-36 ml-auto'>
+                            {renderInputs('rotation', isRotationDisabled)}
+                        </div>
+                    </div>
+                }
                 {"showPositionPath" in settings && (
                     <div className="flex flex-row mb-1">
                         <p className="text-xs font-light text-neutral-400">{isUsingSplinePath ? "show spline path" : "show position path"}</p>

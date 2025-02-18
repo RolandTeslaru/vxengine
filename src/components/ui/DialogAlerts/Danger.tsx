@@ -5,8 +5,10 @@ import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { ISetting } from "@vxengine/AnimationEngine/types/engine";
+import { Accordion, AccordionItem, AccordionTrigger } from "@vxengine/components/shadcn/accordion";
+import { AccordionContent } from "@radix-ui/react-accordion";
 
-interface Props {
+interface DialogProps {
     vxkey: string
     settingKey: string
     setting: ISetting,
@@ -14,7 +16,8 @@ interface Props {
     onCancel?: () => void
 }
 
-export const DIALOG_UseSplinePath: React.FC<Props> = ({ vxkey, settingKey, setting, onConfirm, onCancel }) => {
+export const DIALOG_UseSplinePath: React.FC<DialogProps> = (props) => {
+    const { vxkey, settingKey, setting, onConfirm, onCancel } = props;
     const isUsingSplinePath = useMemo(() => setting.value, [])
 
     const { tracks, staticProps } = useMemo(() => {
@@ -51,13 +54,11 @@ export const DIALOG_UseSplinePath: React.FC<Props> = ({ vxkey, settingKey, setti
     }
 
     const handleOnConfirm = () => {
+        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
+        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
         // Add Spline Action
         if (!isUsingSplinePath) {
-            tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
-            staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
-
             createSpline({ vxkey })
-
         }
         // Remove Spline Action
         else {
@@ -99,12 +100,12 @@ export const DIALOG_UseSplinePath: React.FC<Props> = ({ vxkey, settingKey, setti
                         <AlertDialogDescription className="flex flex-col">
                             {tracks.map((track, index) =>
                                 <span className="h-auto" key={index}>
-                                    <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                                    Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
                                 </span>
                             )}
                             {Object.values(staticProps).map((staticProp: EditorStaticProp, index) =>
                                 <span className="h-auto" key={index}>
-                                    <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                                    StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
                                 </span>
                             )}
                         </AlertDialogDescription>
@@ -127,6 +128,87 @@ export const DIALOG_UseSplinePath: React.FC<Props> = ({ vxkey, settingKey, setti
 
 
 
+export const DIALOG_rotationDegrees: React.FC<DialogProps> = (props) => {
+    const { vxkey, settingKey, setting, onConfirm, onCancel } = props;
+
+    const isUsingRotationDegrees = useMemo(() => setting.value, [])
+    const { tracks, staticProps } = useMemo(() => {
+        const state = useTimelineManagerAPI.getState();
+        const tracks = [
+            state.tracks[`${vxkey}.rotation.x`],
+            state.tracks[`${vxkey}.rotation.y`],
+            state.tracks[`${vxkey}.rotation.z`],
+            state.tracks[`${vxkey}.rotationDegrees.x`],
+            state.tracks[`${vxkey}.rotationDegrees.y`],
+            state.tracks[`${vxkey}.rotationDegrees.z`]
+        ].filter(Boolean)
+
+        const staticProps = [
+            state.staticProps[`${vxkey}.rotation.x`],
+            state.staticProps[`${vxkey}.rotation.y`],
+            state.staticProps[`${vxkey}.rotation.z`],
+            state.staticProps[`${vxkey}.rotationDegrees.x`],
+            state.staticProps[`${vxkey}.rotationDegrees.y`],
+            state.staticProps[`${vxkey}.rotationDegrees.z`]
+        ].filter(Boolean);
+
+        return { tracks, staticProps };
+    }, [])
+
+    const { removeTrack, removeStaticProp, }
+        = useTimelineManagerAPI(state => ({
+            removeTrack: state.removeTrack,
+            removeStaticProp: state.removeStaticProp,
+            createSpline: state.createSpline,
+            removeSpline: state.removeSpline
+        }));
+
+
+    const handleOnCancel = () => {
+        onCancel();
+    }
+
+    const handleOnConfirm = () => {
+        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
+        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
+
+        onConfirm();
+    }
+
+    return (
+        <div className='flex flex-col gap-4'>
+            <AlertDialogHeader className='flex flex-col gap-1'>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                {isUsingRotationDegrees ? <>
+                    <AlertDialogDescription>Switching to radian degrees will delete the current rotation tracks</AlertDialogDescription>
+                </> : <>
+                    <AlertDialogDescription>{`By default, Three.js uses Euler angles in radians for rotations. This means that when you animate an object's rotation (using properties like object.rotation.x), the values are in radians and are automatically re-wrapped to the range of [-π, π]. This can make it hard to work with multiple full revolutions.`}</AlertDialogDescription>
+                    <AlertDialogDescription>Switching to rotationDegrees will delete the current rotation tracks and staticProps.</AlertDialogDescription>
+                </>}
+                <AlertDialogDescription className="flex flex-col">
+                    {tracks.map((track, index) =>
+                        <span className="h-auto" key={index}>
+                             Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                        </span>
+                    )}
+                    {Object.values(staticProps).map((staticProp: EditorStaticProp, index) =>
+                        <span className="h-auto" key={index}>
+                            StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                        </span>
+                    )}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleOnCancel}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                    // @ts-expect-error
+                    type="error"
+                    onClick={handleOnConfirm}
+                >Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </div>
+    )
+}
 
 
 export const DANGER_ProjectNameUnSync = ({ diskJsonProjectName, providerProjectName }: any) => {
@@ -147,5 +229,24 @@ export const DANGER_ProjectNameUnSync = ({ diskJsonProjectName, providerProjectN
                 </AlertDialogDescription>
             </AlertDialogHeader>
         </div>
+    )
+}
+
+
+const DeletionDescription = (
+    { vxkey, tracks, staticProps }: { vxkey: string, tracks: EditorTrack[], staticProps: EditorStaticProp[] }
+) => {
+    return (
+        <AlertDialogDescription className='flex flex-col'>
+            {tracks.map((track: EditorTrack, index) =>
+                <span className="h-auto" key={index}>
+                    <br></br> Track <span className="text-red-600">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-red-600">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-red-600">deleted</span>!
+                </span>
+            )}
+            {staticProps.map((staticProp: EditorStaticProp, index) =>
+                <span className="h-auto" key={index}>
+                    <br></br> StaticProp <span className="text-red-600">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-red-600">deleted</span>!
+                </span>)}
+        </AlertDialogDescription>
     )
 }

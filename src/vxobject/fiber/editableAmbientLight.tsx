@@ -6,7 +6,6 @@ import VXEntityWrapper from "../entityWrapper";
 
 import { AmbientLight } from "three";
 import { AmbientLightProps } from "@react-three/fiber";
-import { splinePathToggleCallback } from "@vxengine/managers/ObjectManager/utils/deufaltSettingsCallbacks";
 
 export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> & {
     ref?: React.Ref<AmbientLight>;

@@ -13,7 +13,7 @@ import { VXObjectParam } from '@vxengine/vxobject/types';
 import { createParamTree, ParamTreeNode } from '../utils/createPropertyTree';
 import { filterParamTree } from '../utils/filterParamTree';
 
-const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
+const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const refObject = (vxobject.ref.current as THREE.Mesh)
     const material = refObject.material;
 
@@ -79,4 +79,4 @@ const MaterialProperties = ({ vxobject }: { vxobject: vxObjectProps }) => {
 //     )
 // }
 
-export default MaterialProperties
+export default MaterialParams

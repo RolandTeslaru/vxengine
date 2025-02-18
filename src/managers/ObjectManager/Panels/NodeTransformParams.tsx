@@ -9,7 +9,7 @@ interface Props {
     vxobject: vxObjectProps
 }
 
-const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
+const NodeTransformParams: React.FC<Props> = ({ vxobject }) => {
     const vxkey = vxobject.vxkey
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
@@ -51,4 +51,4 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
     )
 }
 
-export default NodeTransformProperties
+export default NodeTransformParams

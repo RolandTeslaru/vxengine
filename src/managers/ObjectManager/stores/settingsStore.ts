@@ -8,7 +8,7 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import animationEngineInstance from '@vxengine/singleton';
 import { ISetting } from '@vxengine/AnimationEngine/types/engine';
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService';
-import { splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks';
+import { rotationDegreeToggleCallback, splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks';
 
 export type IObjectSettings = Record<string, ISetting>
 
@@ -25,7 +25,8 @@ interface ObjectSettingsStoreProps {
 const MODULE = "ObjectSettingsAPI"
 
 const SETTINGS_TOGGLE_CALLBACK = {
-    "useSplinePath": splinePathToggleCallback
+    "useSplinePath": splinePathToggleCallback,
+    "useRotationDegrees": rotationDegreeToggleCallback
 }
 
 function setSettingLogic(state: ObjectSettingsStoreProps, vxkey: string, settingKey: string, settingValue: any) {   

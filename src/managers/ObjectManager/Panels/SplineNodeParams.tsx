@@ -10,7 +10,7 @@ import ValueRenderer from '@vxengine/components/ui/ValueRenderer'
 import { Button } from '@vxengine/components/shadcn/button'
 import { useObjectManagerAPI } from '../stores/managerStore'
 import { useVXObjectStore } from '../stores/objectStore'
-import SplineProperties from './SplineProperties'
+import SplineParams from './SplineParams'
 
 interface Props {
     vxobject: vxSplineNodeProps
@@ -30,7 +30,7 @@ const handleInsertAfter = (splineKey: string, nodeIndex) => {
 }
 
 
-const SplineNodePanel: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
+const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
     const nodeKey = vxSplineNode.vxkey
     const nodeIndex = vxSplineNode.index
     const splineKey = nodeKey.includes('.node') ? nodeKey.split('.node')[0] : nodeKey;
@@ -108,10 +108,10 @@ const SplineNodePanel: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                 </div>
             </CollapsiblePanel>
 
-            {/* {vxSpline &&<SplineProperties vxobject={vxSpline}/>} */}
+            {/* {vxSpline &&<SplineParams vxobject={vxSpline}/>} */}
         </>
     )
 }
 
-export default SplineNodePanel
+export default SplineNodeParams
 

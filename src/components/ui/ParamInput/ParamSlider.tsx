@@ -24,6 +24,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
     const trackKey = `${vxkey}.${propertyPath}`
 
     const [value, setValue] = useState(getDefaultValue(vxkey, propertyPath))
+    const [isDragging, setIsDragging] = useState(false);
 
     useLayoutEffect(() => {
         setValue(getDefaultValue(vxkey, propertyPath))
@@ -48,25 +49,37 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
     }, [vxkey, propertyPath]);
 
     return (
-        <div className='w-full h-[19px] rounded-full overflow-hidden'>
+        <div className='w-full h-[17px] my-auto rounded-full overflow-hidden'>
             <SliderPrimitive.Root
                 className={cn(
                     "relative flex w-full touch-none select-none items-center ",
                     className
                 )}
                 value={[value]}
-                onValueChange={(newValue) => handleChange(newValue[0])}
-                onDragStart={() => modifyPropertyValue("start", vxkey, propertyPath, value)}
-                onDragEnd={() => modifyPropertyValue("end", vxkey, propertyPath, value)}
+                onValueChange={(newValue) => {
+                    handleChange(newValue[0])
+                }}
+                // onMouseDown={() => {
+                //     setIsDragging(true);
+                //     console.log("Starting Drag");
+                //     modifyPropertyValue("start", vxkey, propertyPath, value)}}
+                onValueCommit={() => {
+                    modifyPropertyValue("end", vxkey, propertyPath, value)}}
+                
                 max={param.max}
                 min={param.min}
                 step={param.step ?? 0.1}
             >
                 <div className='absolute left-0 z-10 flex w-full ml-1'>
-                    <p className=' text-neutral-400'>{param.title ?? param.propertyPath}</p>
+                    <p className=' text-neutral-300'>{param.title ?? param.propertyPath}</p>
                 </div>
-                <SliderPrimitive.Track className="relative bg-neutral-800 bg-opacity-80 h-[19px] w-full grow overflow-hidden rounded-full ">
-                    <SliderPrimitive.Range className="absolute h-full bg-blue-800" />
+                <SliderPrimitive.Track className="relative bg-neutral-800 bg-opacity-80 cursor-ew-resize h-[17px] w-full grow overflow-hidden rounded-full "
+                >
+                    <SliderPrimitive.Range className={`
+                        absolute h-full bg-blue-700 
+                        border-l border-t border-b rounded-l-full border-blue-600
+                         `}
+                    />
                 </SliderPrimitive.Track>
                 <SliderPrimitive.Thumb
                     className="block h-[19px] w-[2px] bg-neutral-400  ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"

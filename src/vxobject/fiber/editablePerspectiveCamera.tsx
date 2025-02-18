@@ -42,7 +42,6 @@ const perspectiveCameraParams: VXObjectParams = [
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
-    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {

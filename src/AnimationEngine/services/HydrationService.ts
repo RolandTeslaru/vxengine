@@ -472,11 +472,6 @@ export class HydrationService {
             logReportingService.logWarning(`Could not hydrate setting because the rawObject doesn't exist.`, LOG_CONTEXT)
             return;
         }
-
-        const rawSettings = rawObject.settings;
-        if(!rawSettings)
-            rawObject.settings = {};
-
         
         if (DEBUG_SETTING_HYDRATION)
             logReportingService.logInfo(
@@ -490,13 +485,24 @@ export class HydrationService {
                         `Setting ${settingKey} was not found for object ${vxkey}`, LOG_CONTEXT)
                     return;
                 }
-                rawSettings[settingKey] = value;
+                const rawSettings = rawObject.settings;
+                if(!rawSettings)
+                    rawObject.settings = {};
+                
+                rawObject.settings[settingKey] = value;
 
                 break;
             }
 
             case 'remove': {
+                const rawSettings = rawObject.settings;
+                if(!rawSettings) 
+                    return
+
                 delete rawSettings[settingKey];
+                if(Object.entries(rawSettings).length === 0)
+                    delete rawObject.settings;
+
                 break;
             }
 

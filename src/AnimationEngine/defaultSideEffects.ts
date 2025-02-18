@@ -22,5 +22,14 @@ export const defaultSideEffects: Record<string, TrackSideEffectCallback> = {
     const wasm_spline = animationEngine.splineService.getSpline(splineKey);
 
     wasm_spline.change_tension(newValue);
-  }
+  },
+  "rotationDegrees.x": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+    object3DRef.rotation.x = THREE.MathUtils.degToRad(newValue);
+  },
+  "rotationDegrees.y": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+    object3DRef.rotation.y = THREE.MathUtils.degToRad(newValue);
+  },
+  "rotationDegrees.z": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+    object3DRef.rotation.z = THREE.MathUtils.degToRad(newValue);
+  },
 }

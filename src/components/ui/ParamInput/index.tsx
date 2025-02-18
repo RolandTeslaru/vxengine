@@ -42,6 +42,7 @@ export const ParamInput: FC<Props> = (props) => {
                     vxObject={vxObject}
                     param={param}
                     disabled={disabled || disableTracking}
+                    horizontal={horizontal}
                     inputProps={{ ...inputProps, disabled }}
                 />
             )}
