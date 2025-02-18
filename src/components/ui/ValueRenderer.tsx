@@ -5,11 +5,12 @@ import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { invalidate } from '@react-three/fiber'
+import { VXObjectParam } from '@vxengine/vxobject/types'
 
 interface ValueRendererProps {
     vxObject: vxObjectProps
     vxkey: string
-    propertyPath: string
+    param: { propertyPath: string }
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
     onChange?: (newValue: number) => void;
 }
@@ -17,7 +18,8 @@ interface ValueRendererProps {
 const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey,propertyPath) || getNestedProperty(ref, propertyPath) || 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxObject, vxkey, propertyPath, inputProps, onChange}) => {
+    ({ vxObject, vxkey, param, inputProps, onChange}) => {
+        const { propertyPath } = param;
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
         const ref = vxObject.ref.current;

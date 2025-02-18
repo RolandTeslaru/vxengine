@@ -28,20 +28,21 @@ const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animatio
     animationEngine.cameraRequiresProjectionMatrixRecalculation = true;
 }
 
-const perspectiveCameraParams: VXObjectParams = {
-    "localRotationZ": {type: "number"},
-    "far": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
-    "near": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
-    "fov": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
-    "zoom": {type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
-    "focus": {type: "number"},
-    "filmGauge": {type: "number"}, 
-    "filmOffset": {type: "number"}
-}
+const perspectiveCameraParams: VXObjectParams = [
+    {propertyPath: "localRotationZ", type: "number"},
+    {propertyPath: "far", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    {propertyPath: "near", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    {propertyPath: "fov", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    {propertyPath: "zoom", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
+    {propertyPath: "focus", type: "number"},
+    {propertyPath: "filmGauge", type: "number"}, 
+    {propertyPath: "filmOffset", type: "number"}
+]
 
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
 export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {

@@ -18,10 +18,10 @@ export const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-const ambientLightParams: VXObjectParams = {
-    'intensity': {type: "number"},
-    "color": {type: "color"}
-}
+const ambientLightParams: VXObjectParams = [
+    {propertyPath: 'intensity', type: "number"},
+    {propertyPath: "color", type: "color"}
+]
 
 export const EditableAmbientLight = forwardRef<AmbientLight, EditableAmbientLightProps>((props, ref) => {
     const {settings = {}, ...rest} = props;

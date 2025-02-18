@@ -1,6 +1,6 @@
 import React, { useState, FC, useMemo } from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import PropInput from "@vxengine/components/ui/PropInput";
+import ParamInput from "@vxengine/components/ui/ParamInput";
 
 import * as THREE from "three"
 import { vxEntityProps, vxObjectProps } from "../types/objectStore";
@@ -8,6 +8,9 @@ import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/c
 import PopoverShowObjectData from "@vxengine/components/ui/Popovers/PopoverShowObjectData";
 import Tree from "@vxengine/components/ui/Tree";
 import Search from "@vxengine/components/ui/Search";
+import { VXObjectParam } from "@vxengine/vxobject/types";
+import { createParamTree, ParamTreeNode } from "../utils/createPropertyTree";
+import { filterParamTree } from "../utils/filterParamTree";
 
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
@@ -22,14 +25,15 @@ export const GeometryProperties: FC<VXGeometryProps> = ({ vxobject }) => {
     const geometry = refObject.geometry as ValidGeometries
 
     const propertiesTree = useMemo(() => {
-        return createPropertyTree(geometry.parameters)
+        return createParamTree(geometry.parameters, "geometry")
     }, [vxobject])
 
     const filteredPropertiesTree = useMemo(() =>
-            filterTree(propertiesTree, searchQuery), [geometry, searchQuery])
+        filterParamTree(propertiesTree, searchQuery), 
+    [geometry, searchQuery])
 
 
-    const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate }) => {
+    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
                 <ContextMenu>
@@ -38,14 +42,11 @@ export const GeometryProperties: FC<VXGeometryProps> = ({ vxobject }) => {
                             <p className={`text-xs my-auto font-light text-neutral-400`}>
                                 {node.key}
                             </p>
-                            {node.propertyPath && (
-                                <PropInput
-                                    vxObject={vxobject}
-                                    param={{ type: node.type }}
-                                    className="ml-auto w-fit"
-                                    propertyPath={node.propertyPath}
-                                />
-                            )}
+                            <ParamInput
+                                vxObject={vxobject}
+                                param={node.param}
+                                className="ml-auto w-fit"
+                            />
                         </div>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
@@ -73,88 +74,4 @@ export const GeometryProperties: FC<VXGeometryProps> = ({ vxobject }) => {
             </div>
         </CollapsiblePanel>
     )
-}
-
-interface PropertyTreeNode {
-    key: string; // The name of the property
-    propertyPath?: string; // The full property path (e.g., "parent.child.key")
-    type?: "number" | "color";
-    children: Record<string, PropertyTreeNode>; // Nested children
-}
-type PropertyTree = Record<string, PropertyTreeNode>
-
-const isValidValue = (value: any) =>
-    typeof value === "number" || (value instanceof THREE.Color && value.isColor);
-
-const getValueType = (value: any) => {
-    if (typeof value === "number")
-        return "number"
-    else if (value instanceof THREE.Color || value.isColor)
-        return "color"
-}
-
-const filterTree = (tree: Record<string, PropertyTreeNode>, query: string): Record<string, PropertyTreeNode> => {
-    const result: Record<string, PropertyTreeNode> = {};
-
-    Object.entries(tree).forEach(([key, node]) => {
-        if (!node.key) return
-        const isMatch = node.key.toLowerCase().includes(query.toLowerCase());
-        const filteredChildren = filterTree(node.children, query);
-
-        if (isMatch || Object.keys(filteredChildren).length > 0) {
-            result[key] = {
-                ...node,
-                children: filteredChildren,
-            };
-        }
-    });
-
-    return result;
-};
-
-function createPropertyTree(
-    obj: Record<string, any>,
-    parentKey = "",
-    visited = new WeakSet(), // Keep track of visited objects
-    depth = 0,
-    maxDepth = 10 // Limit the depth to prevent infinite recursion
-): PropertyTree {
-    // Base case: Prevent too deep recursion
-    if (depth > maxDepth) return {};
-
-    // Check for circular references
-    if (visited.has(obj)) {
-        // @ts-expect-error
-        return { circularReference: true };
-    }
-
-    // Mark this object as visited
-    visited.add(obj);
-
-    const tree: Record<string, any> = {};
-
-    for (const [key, value] of Object.entries(obj)) {
-        const fullKey = parentKey ? `${parentKey}.${key}` : key;
-
-        if (isValidValue(value)) {
-            // Add valid values as leaf nodes
-            tree[key] = {
-                key,
-                propertyPath: `geometry.${fullKey}`,
-                children: {},
-                type: getValueType(value)
-            };
-        } else if (typeof value === "object" && value !== null) {
-            // Recursively traverse child objects
-            const children = createPropertyTree(value, fullKey, visited, depth + 1, maxDepth);
-            if (Object.keys(children).length > 0) {
-                tree[key] = { key, children };
-            }
-        }
-    }
-
-    // Remove the object from visited before returning to allow other branches to visit it
-    visited.delete(obj);
-
-    return tree;
 }

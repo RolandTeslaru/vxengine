@@ -107,7 +107,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
                 ref: internalRef,
                 vxkey,
                 name,
-                params: params || {},
+                params: params || [],
                 disabledParams: disabledParams || [],
                 parentKey,
             };            

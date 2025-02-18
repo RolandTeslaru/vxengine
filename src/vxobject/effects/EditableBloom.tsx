@@ -12,11 +12,11 @@ import { useVXEngine } from "@vxengine/engine";
 
 export type EditableBloomProps = EditableObjectProps<BloomEffectOptions>;
 
-const bloomParams: VXObjectParams = {
-  "intensity": {type: "number"},
-  "luminanceThreshold": {type: "number"},
-  "luminanceSmoothing": {type: "number"},
-};
+const bloomParams: VXObjectParams = [
+  {type: "number", propertyPath: "intensity"},
+  {type: "number", propertyPath: "luminanceThreshold"},
+  {type: "number", propertyPath: "luminanceSmoothing"},
+];
 
 export const EditableBloom = memo(
   forwardRef<EditableBloomProps, BloomEffectOptions>(

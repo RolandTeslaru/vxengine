@@ -16,12 +16,12 @@ export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
     settings?: {}
 };
 
-const pointLightParams: VXObjectParams= {
-    "color": { type: "color" },
-    'distance': { type: "number" },
-    'intensity': { type: "number" },
-    'decay': { type: "number" },
-} 
+const pointLightParams: VXObjectParams = [
+    { propertyPath: "color", type: "color" },
+    { propertyPath: "distance", type: "number" },
+    { propertyPath: "intensity", type: "number" },
+    { propertyPath: "decay", type: "number" },
+]
 
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},

@@ -14,17 +14,16 @@ import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/util
 import animationEngineInstance from '@vxengine/singleton';
 import PopoverShowSideEffectData from './Popovers/PopoverShowSideEffectData';
 import Lambda from '@geist-ui/icons/lambda';
+import { VXObjectParam } from '@vxengine/vxobject/types';
 
 interface TimelineKeyframeControlProps {
-    trackKey: string,
+    vxkey: string,
+    param: { propertyPath: string }
     disabled?: boolean
 }
 
-const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disabled }) => {
-    const {vxkey, propertyPath} = useMemo(() => {
-        return extractDataFromTrackKey(trackKey)
-    }, [trackKey])
-
+const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled }) => {
+    const trackKey = `${vxkey}.${propertyPath}`;
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);
 
     const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
@@ -33,12 +32,12 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
 
     const hasSideEffect = useMemo(() => {
         return animationEngineInstance.hasSideEffect(trackKey)
-    }, [trackKey])
+    }, [vxkey, propertyPath])
     // Initialize
     useLayoutEffect(() => {
         const time = animationEngineInstance.currentTime
         checkIfOnKeyframe({ time })
-    }, [trackKey, orderedKeyframeKeys])
+    }, [vxkey, propertyPath, orderedKeyframeKeys])
 
     const checkIfOnKeyframe = useCallback(({ time }) => {
         if (!isPropertyTracked) return;
@@ -117,7 +116,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ trackKey, disa
                         <p>Show Track Data</p>
                     </PopoverShowTrackData>
                     :
-                    <PopoverShowStaticPropData staticPropKey={trackKey}>
+                    <PopoverShowStaticPropData staticPropKey={trackKey} side='left'>
                         <p>Show StaticProp Data</p>
                     </PopoverShowStaticPropData>
                 }

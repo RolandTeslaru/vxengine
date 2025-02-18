@@ -12,8 +12,6 @@ import ArrowUp from '@geist-ui/icons/arrowUp'
 import ArrowDown from "@geist-ui/icons/arrowDown"
 import X from '@geist-ui/icons/x'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
-import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import { DIALOG_UseSplinePath } from '@vxengine/components/ui/DialogAlerts/Danger';
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
@@ -44,11 +42,7 @@ const ObjectTree = () => {
 
     const filteredTree = useMemo(() => filterTree(tree, searchQuery), [tree, searchQuery]);
 
-    const renderNodeContent: RenderNodeContentProps = (node, { NodeTemplate }) => {
-        return (
-            <ObjectTreeNode node={node} NodeTemplate={NodeTemplate} />
-        )
-    }
+    const renderNodeContent: RenderNodeContentProps = (node, { NodeTemplate }) => <ObjectTreeNode node={node} NodeTemplate={NodeTemplate} />
 
     return (
         <CollapsiblePanel

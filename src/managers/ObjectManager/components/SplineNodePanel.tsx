@@ -5,7 +5,7 @@ import ArrowUp from '@geist-ui/icons/arrowUp'
 import ArrowDown from '@geist-ui/icons/arrowDown'
 import X from '@geist-ui/icons/x'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
-import PropInput from '@vxengine/components/ui/PropInput'
+import ParamInput from '@vxengine/components/ui/ParamInput'
 import ValueRenderer from '@vxengine/components/ui/ValueRenderer'
 import { Button } from '@vxengine/components/shadcn/button'
 import { useObjectManagerAPI } from '../stores/managerStore'
@@ -68,7 +68,7 @@ const SplineNodePanel: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                                     key={axis}
                                     vxObject={vxSplineNode}
                                     vxkey={vxSplineNode.vxkey}
-                                    propertyPath={`position.${axis}`}
+                                    param={{ propertyPath: `position.${axis}`}}
                                     onChange={(newValue) => {
                                         onPositionPropChange(axis, newValue);
                                     }}

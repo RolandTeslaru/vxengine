@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import PropInput from "@vxengine/components/ui/PropInput";
+import ParamInput from "@vxengine/components/ui/ParamInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSettingsAPI } from "../stores/settingsStore";
 import ValueRenderer from "@vxengine/components/ui/ValueRenderer";
@@ -39,7 +39,7 @@ const NodeTransformProperties: React.FC<Props> = ({ vxobject }) => {
                                 <ValueRenderer
                                     vxObject={vxobject}
                                     vxkey={vxobject.vxkey}
-                                    propertyPath={`position.${axis}`}
+                                    param={{ propertyPath: `position.${axis}`}}
                                 />
                             </>
                         ))}

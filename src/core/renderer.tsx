@@ -106,11 +106,11 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
 }
 
 
-const sceneParams: VXObjectParams = {
-  "environmentIntensity": {type: "number"},
-  "backgroundBlurriness": {type: "number"},
-  "backgroundIntensity": {type: "number"},
-}
+const sceneParams: VXObjectParams = [
+  {type: "number", propertyPath: "environmentIntensity"},
+  {type: "number", propertyPath: "backgroundBlurriness"},
+  {type: "number", propertyPath: "backgroundIntensity"},
+]
 
 const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);

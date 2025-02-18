@@ -7,12 +7,13 @@ export type EditableColorProps = EditableObjectProps<ColorProps> & {
     ref?: React.Ref<ColorProps>;
 }
 
-const colorParams: VXObjectParams = {
-    color: {
+const colorParams: VXObjectParams = [
+    {
         type: "color",  
-        overwritePropertyPath: "_"
+        propertyPath: "",
+        title: "color"
     }
-}
+]
 const colorDisabledParams = [
     "position",
     "rotation",

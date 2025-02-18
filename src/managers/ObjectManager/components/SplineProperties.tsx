@@ -1,9 +1,10 @@
 import React from 'react'
 import { vxSplineProps } from '../types/objectStore'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
-import PropInput from '@vxengine/components/ui/PropInput'
+import ParamInput from '@vxengine/components/ui/ParamInput'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '../stores/settingsStore'
+import { VXObjectParam } from '@vxengine/vxobject/types'
 
 interface Props {
     vxobject: vxSplineProps
@@ -12,6 +13,18 @@ interface Props {
 const handleShowSpline = (objectVxKey: string ) => {
     const toggleSetting = useObjectSettingsAPI.getState().toggleSetting;
     toggleSetting(objectVxKey, "showPositionPath")
+}
+
+const progressParam: VXObjectParam = {
+    title: "progress",
+    propertyPath: "splineProgress",
+    type: "slider", min: 0, max: 100, step: 0.5 
+}
+
+const tensionParam: VXObjectParam = {
+    title: "tension",
+    propertyPath: "splineTension",
+    type: "slider", min: 0, max: 1, step: 0.01
 }
 
 const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
@@ -29,24 +42,16 @@ const SplineProperties: React.FC<Props> = ({ vxobject: vxSpline }) => {
                     checked={settings?.["showPositionPath"].value}
                 />
             </div>
-            <div className="flex flex-col w-full gap-1 ">
-                <p className="text-xs font-light my-auto text-neutral-400">progress</p>
-                <PropInput
-                    param={{ type: "slider", min: 0, max: 100, step: 0.5 }}
-                    propertyPath={"splineProgress"}
-                    vxObject={vxSpline}
-                    vxkey={vxSpline.objectVxKey}
-                />
-            </div>
-            <div className="flex flex-col w-full gap-1 ">
-                <p className="text-xs font-light my-auto text-neutral-400">tension</p>
-                <PropInput
-                    param={{ type: "slider", min: 0, max: 1, step: 0.01 }}
-                    propertyPath={"splineTension"}
-                    vxObject={vxSpline}
-                    vxkey={vxSpline.objectVxKey}
-                />
-            </div>
+            <ParamInput
+                param={progressParam}
+                vxObject={vxSpline}
+                vxkey={vxSpline.objectVxKey}
+            />
+            <ParamInput
+                param={tensionParam}
+                vxObject={vxSpline}
+                vxkey={vxSpline.objectVxKey}
+            />
         </CollapsiblePanel>
     )
 }

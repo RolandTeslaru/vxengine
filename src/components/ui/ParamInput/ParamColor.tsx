@@ -12,18 +12,19 @@ import { RgbaColorPicker } from "react-colorful";
 import ColorPicker from '../ColorPicker';
 import { hsl } from "../ColorPicker/types"
 
-interface PropColorProps {
+interface ParamColorProps {
     vxkey: string
-    propertyPath: string
+    param: { propertyPath: string }
     vxObject: vxObjectProps
 }
 
 const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey, propertyPath) || getNestedProperty(ref, propertyPath) || 0
 
-const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) => {
-    const rPropertyPath = propertyPath !== "_" ? `${propertyPath}.r` : "r"
-    const gPropertyPath = propertyPath !== "_" ? `${propertyPath}.g` : "g"
-    const bPropertyPath = propertyPath !== "_" ? `${propertyPath}.b` : "b"
+const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
+    const { propertyPath } = param;
+    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
+    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
+    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
 
     const rTrackKey = `${vxkey}.${rPropertyPath}`
     const gTrackKey = `${vxkey}.${gPropertyPath}`
@@ -129,27 +130,42 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
                             <p className='text-xs my-auto'>red</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl trackKey={rTrackKey} disabled={false} />
+                                    <KeyframeControl 
+                                        vxkey={vxkey}  
+                                        param={{
+                                            propertyPath: rPropertyPath
+                                        }}
+                                        disabled={false} 
+                                    />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={rPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{propertyPath: rPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} 
+                                />
                             </div>
                         </div>
                         <div className='flex gap-2 justify-between'>
                             <p className='text-xs my-auto'>green</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl trackKey={gTrackKey} disabled={false} />
+                                    <KeyframeControl 
+                                        vxkey={vxkey} 
+                                        disabled={false} 
+                                        param={{ propertyPath: gPropertyPath }}
+                                    />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={gPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{ propertyPath: gPropertyPath }} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                             </div>
                         </div>
                         <div className='flex gap-2 justify-between'>
                             <p className='text-xs my-auto'>blue</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl trackKey={bTrackKey} disabled={false} />
+                                    <KeyframeControl 
+                                        vxkey={vxkey} 
+                                        param={{ propertyPath: bPropertyPath }} 
+                                        disabled={false} 
+                                    />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} propertyPath={bPropertyPath} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{propertyPath: bPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                             </div>
                         </div>
                     </div>
@@ -160,4 +176,4 @@ const PropColor: React.FC<PropColorProps> = ({ vxObject, vxkey, propertyPath }) 
     )
 }
 
-export default PropColor    
+export default ParamColor    

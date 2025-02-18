@@ -15,8 +15,7 @@ const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-const directionalLightParams: VXObjectParams = {}
-
+const directionalLightParams: VXObjectParams = []
 
 export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
     const { settings = {}, ...rest } = props;

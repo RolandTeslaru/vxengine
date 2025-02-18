@@ -16,6 +16,7 @@ import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../Timeli
 import { useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "../../store";
 import { EditorTrackTreeNode } from "@vxengine/types/data/editorData";
+import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
 
 const TRACK_HEIGHT = 34;
 
@@ -150,6 +151,7 @@ interface FinaNodeProps {
 
 const FinalPath: React.FC<FinaNodeProps> = (props) => {
     const { pathKey, trackKey } = props;
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
     return (
         <ContextMenu>
@@ -158,7 +160,7 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
                     {pathKey}
                 </p>
                 <div className="scale-90">
-                    <KeyframeControl trackKey={trackKey} />
+                    <KeyframeControl vxkey={vxkey} param={{ propertyPath }} />
                 </div>
             </ContextMenuTrigger>
             <FinalPathContextMenu {...props} />

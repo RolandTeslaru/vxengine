@@ -20,7 +20,8 @@ export type EditableObjectProps<T> = Omit<T, 'ref'> & {
 export type VXBaseInputType = {
     type: string,
     sideEffect?: TrackSideEffectCallback
-    overwritePropertyPath?: string
+    title?: string
+    propertyPath: string
 }
 export type VXNumberInputType = VXBaseInputType & {
     type: "number"
@@ -40,6 +41,6 @@ export type VXColorInputType = VXBaseInputType & {
 
 export type VXObjectParam = VXNumberInputType | VXSliderInputType | VXColorInputType;
 
-export type VXObjectParams = Record<string, VXObjectParam>
+export type VXObjectParams = VXObjectParam[]
 
 export type VXObjectSettings = Record<string, ISetting>

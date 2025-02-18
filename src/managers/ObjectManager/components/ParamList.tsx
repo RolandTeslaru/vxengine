@@ -1,5 +1,5 @@
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
-import PropInput from '@vxengine/components/ui/PropInput'
+import ParamInput from '@vxengine/components/ui/ParamInput'
 import React, { useMemo } from 'react'
 import { useObjectManagerAPI } from '..'
 
@@ -14,11 +14,9 @@ interface Props {
     vxobject: vxObjectProps
 }
 
-interface PropertyTreeNode {
+interface ParamTreeNode {
     key: string; // The name of the property
-    propertyPath?: string; // The full property path (e.g., "parent.child.key")
-    type?: "number" | "color" | "slider";
-    children: Record<string, PropertyTreeNode>; // Nested children
+    children: Record<string, ParamTreeNode>; // Nested children
     param: VXObjectParam
 }
 
@@ -30,16 +28,14 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     const threeObjectType = refObject.type
 
-    const params = vxobject.params ?? {}
+    const params = vxobject.params ?? []
 
     const tree = useMemo(() => {
-        const tree: Record<string, any> = {}
-        Object.entries(vxobject.params ?? {}).forEach(([propertyPath, param]) => {
-            tree[propertyPath] = {
-                key: propertyPath,
-                propertyPath,
+        const tree: Record<string, ParamTreeNode> = {}
+        params.forEach((param) => {
+            tree[param.propertyPath] = {
+                key: param.title ?? param.propertyPath,
                 children: {},
-                type: param.type,
                 param
             }
         })
@@ -48,20 +44,19 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     if (Object.entries(params).length === 0) return
 
-    const renderNodeContent = (node: PropertyTreeNode, { NodeTemplate }) => {
+    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (<NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
             <ContextMenu>
                 <ContextMenuTrigger className='w-full'>
-                    <div className={`flex ${node.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
+                    <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
                         <p className={`text-xs my-auto font-light text-neutral-400`}>
                             {node.key}
                         </p>
-                        {node.propertyPath && (
-                            <PropInput
+                        {node.param && (
+                            <ParamInput
                                 vxObject={vxobject}
                                 param={node.param}
                                 className="ml-auto w-fit"
-                                propertyPath={node.propertyPath}
                             />
                         )}
                     </div>

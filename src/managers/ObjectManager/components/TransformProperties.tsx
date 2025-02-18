@@ -1,6 +1,6 @@
 import React from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import PropInput from "@vxengine/components/ui/PropInput";
+import ParamInput from "@vxengine/components/ui/ParamInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
@@ -27,11 +27,10 @@ export const TransformProperties: React.FC<Props> = ({ vxobject }) => {
 
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => (
-            <PropInput
+            <ParamInput
                 vxObject={vxobject}
                 key={`${property}-${axis}`}
-                param={{ type: "number" }}
-                propertyPath={`${property}.${axis}`}
+                param={{ propertyPath: `${property}.${axis}`, type: "number" }}
                 horizontal={true}
                 disabled={disabled}
             />

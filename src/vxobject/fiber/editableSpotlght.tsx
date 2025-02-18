@@ -14,13 +14,13 @@ export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
     ref?: React.Ref<SpotLight>;
 };
 
-const spotLightParams: VXObjectParams = {
-    "color": { type: "color"},
-    'intensity': { type: "number" },
-    'distance': { type: "number" },
-    'penumbra': { type: "number" },
-    'decay': { type: "number" },
-}
+const spotLightParams: VXObjectParams = [
+    { propertyPath: "color", type: "color"},
+    { propertyPath: "intensity", type: "number" },
+    { propertyPath: "distance", type: "number" },
+    { propertyPath: "penumbra", type: "number" },
+    { propertyPath: "decay", type: "number" },
+]
 
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},

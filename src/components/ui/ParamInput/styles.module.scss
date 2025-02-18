@@ -1,0 +1,44 @@
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    margin: 10px 0;
+
+    // Style the track for WebKit browsers
+    &::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 19px;
+        background: rgba(177, 7, 7, 0.8); // Unfilled track color
+        border-radius: 9999px;
+    }
+
+    // Style the thumb for WebKit browsers
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 19px;
+        width: 1px;
+        background: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 0; // Align with track
+    }
+
+    // Firefox: Style the track
+    &::-moz-range-track {
+        width: 100%;
+        height: 19px;
+        background: rgba(256, 55, 55, 0.8);
+        border-radius: 9999px;
+        border: 1px solid #ccc;
+    }
+
+    // Firefox: Style the thumb
+    &::-moz-range-thumb {
+        height: 19px;
+        width: 1px;
+        background: white;
+        border: none;
+        cursor: pointer;
+    }
+}

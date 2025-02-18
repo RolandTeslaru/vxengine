@@ -4,12 +4,11 @@ import KeyframeControl from '../KeyframeControl'
 import ValueRenderer from '../ValueRenderer'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { VXObjectParam } from '@vxengine/vxobject/types';
-import PropSlider from './PropSlider';
-import PropColor from './PropColor';
+import ParamSlider from './ParamSlider';
+import ParamColor from './ParamColor';
 
 interface Props extends InputProps {
     vxObject: vxObjectProps
-    propertyPath: string
     param: VXObjectParam
     vxkey?: string;   // spline has a vxkey with the ".spline" prefix
     horizontal?: boolean
@@ -20,21 +19,19 @@ interface Props extends InputProps {
 const renderKeyframeControl = (props: any) => <div className='mx-auto my-auto'><KeyframeControl {...props} /></div>
 
 const COMPONENT_MAP = {
-    slider: [PropSlider, renderKeyframeControl, ValueRenderer],
+    slider: [ParamSlider, renderKeyframeControl, ValueRenderer],
     number: [renderKeyframeControl, ValueRenderer],
-    color: [PropColor]
+    color: [ParamColor]
 }
 
-export const PropInput: FC<Props> = (props) => {
-    const { vxObject, propertyPath, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
+export const ParamInput: FC<Props> = (props) => {
+    const { vxObject, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
 
     let { vxkey } = props
     if (!vxkey)
         vxkey = vxObject.vxkey
 
-    const trackKey = vxkey + "." + propertyPath
-
-    const components = COMPONENT_MAP[param.type] || []
+    const components = COMPONENT_MAP[param.type ?? "number"] || []
 
     return (
         <div className={`flex relative ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
@@ -43,8 +40,6 @@ export const PropInput: FC<Props> = (props) => {
                     key={index}
                     vxkey={vxkey}
                     vxObject={vxObject}
-                    propertyPath={param.overwritePropertyPath ?? propertyPath}
-                    trackKey={trackKey}
                     param={param}
                     disabled={disabled || disableTracking}
                     inputProps={{ ...inputProps, disabled }}
@@ -54,4 +49,4 @@ export const PropInput: FC<Props> = (props) => {
     )
 }
 
-export default PropInput
+export default ParamInput
