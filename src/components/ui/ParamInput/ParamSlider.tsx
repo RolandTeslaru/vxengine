@@ -71,7 +71,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
                 step={param.step ?? 0.1}
             >
                 <div className='absolute left-0 z-10 flex w-full ml-1'>
-                    <p className=' text-neutral-300'>{param.title ?? param.propertyPath}</p>
+                    <p className=' text-neutral-300 '>{param.title ?? param.propertyPath}</p>
                 </div>
                 <SliderPrimitive.Track className="relative bg-neutral-800 bg-opacity-80 cursor-ew-resize h-[17px] w-full grow overflow-hidden rounded-full "
                 >
@@ -82,7 +82,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
                     />
                 </SliderPrimitive.Track>
                 <SliderPrimitive.Thumb
-                    className="block h-[19px] w-[2px] bg-neutral-400  ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                    className="block h-[19px] w-[2px] bg-neutral-400"
                 />
             </SliderPrimitive.Root>
         </div>

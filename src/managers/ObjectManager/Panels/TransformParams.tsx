@@ -89,7 +89,7 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                         <Switch
                             onClick={() => toggleSetting(vxkey, "showPositionPath")}
                             checked={settings["showPositionPath"].value}
-                            className='ml-auto my-auto scale-[80%]'
+                            className='ml-auto my-auto'
                         />
                     </div>
                 )}

@@ -39,7 +39,7 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
                     <Switch
                         onClick={() => toggleFunction(vxkey, settingKey)}
                         checked={setting.value}
-                        className="ml-auto my-auto scale-[80%]"
+                        className="ml-auto my-auto"
                     />
                 </div>
             )

@@ -69,7 +69,7 @@ const TimelineEditorFooter = () => {
           <div className='flex flex-row gap-2'>
               <p className='font-light h-auto my-auto' style={{ fontSize: "10px" }}>Snap</p>
               <Switch
-                  className='my-auto scale-75'
+                  className='my-auto '
                   onClick={() => setSnap(!snap)}
                   checked={snap}
               />
