@@ -126,7 +126,7 @@ export const EffectsManagerDriver = React.memo(
         ref: composer,
         vxkey,
         name: "Effects",
-        params: {},
+        params: [],
         disabledParams: [],
         parentKey: "global",
       };
