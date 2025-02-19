@@ -27,20 +27,20 @@ export const WindowControlDots: React.FC<Props> = ({ isAttached }) => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2">
             <Popover>
                 <PopoverTrigger disableStyling={true}>
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-row gap-1 p-1 cursor-pointer bg-neutral-500 
-                        rounded-full bg-opacity-0 hover:bg-opacity-40 
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-row gap-1 p-1 cursor-pointer bg-neutral-300 
+                        rounded-full bg-opacity-0 hover:bg-opacity-20 
                         data-[state=open]:bg-opacity-40 ease-in-out overflow-visible"
                     >
                         <span
-                            className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                            className="content-[' '] rounded-full bg-neutral-200 bg-opacity-30 w-1 h-1 block"
                         >
                         </span>
                         <span
-                            className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                            className="content-[' '] rounded-full bg-neutral-200 bg-opacity-30 w-1 h-1 block"
                         >
                         </span>
                         <span
-                            className="content-[' '] rounded-full bg-neutral-500 w-1 h-1 block"
+                            className="content-[' '] rounded-full bg-neutral-200 bg-opacity-30 w-1 h-1 block"
                         >
                         </span>
                     </div>

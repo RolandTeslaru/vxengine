@@ -107,9 +107,9 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
 
 
 const sceneParams: VXObjectParams = [
-  {type: "number", propertyPath: "environmentIntensity"},
-  {type: "number", propertyPath: "backgroundBlurriness"},
-  {type: "number", propertyPath: "backgroundIntensity"},
+  {type: "number", propertyPath: "environmentIntensity", title: "envIntensity"},
+  {type: "number", propertyPath: "backgroundBlurriness", title: "bgBlurriness"},
+  {type: "number", propertyPath: "backgroundIntensity", title: "bgIntensity"},
 ]
 
 const SceneDriver = React.memo(() => {
