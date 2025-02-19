@@ -3,7 +3,7 @@ import React from 'react';
 import { create, StateCreator } from 'zustand';
 import { persist, PersistOptions } from "zustand/middleware";
 
-type DialogType = "normal" | "alert" | "danger"
+export type DialogType = "normal" | "alert" | "danger"
 
 interface DialogEntry {
     id: string;

@@ -54,21 +54,20 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                     {track && (
                         <>
                             Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{Object.values(keyframes).length}</span> keyframes will be erased!
+                            This function returns the property to its default value defined in code.
                         </>
                     )}
                     {staticProp && (
                         <>
                             StaticProp <span className='text-yellow-500'>{key}</span> will be erased!
+                            This function returns the property to its default value defined in code.
                         </>
                     )}
                     {!track && !staticProp && (
                         <>
-                            Property path <span className='text-yellow-500'>{key}</span> isnt a track nor a staticProp. Nothing to reset!
+                            Property path <span className='text-yellow-500'>{key}</span> isn't a track nor a staticProp. Nothing to reset!
                         </>
                     )}
-                    <p>
-                        <br/> This function returns the property to its default value defined in code.
-                    </p>
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
