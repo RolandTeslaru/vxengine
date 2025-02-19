@@ -14,6 +14,7 @@ import "./globals.css"
 import { pushDialogStatic } from './managers/UIManager/store'
 import { DANGER_ProjectNameUnSync } from './components/ui/DialogAlerts/Danger'
 import animationEngineInstance from './singleton'
+import { vxEngineWindowRefs } from './utils/useRefStore'
 
 interface VXEngineContextProps {
   composer: React.MutableRefObject<EffectComposer | null>
@@ -66,14 +67,13 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   
   useEffect(() => {
-    const handleBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
-
-    if (IS_DEVELOPMENT)
-      window.addEventListener('beforeunload', handleBeforeUnload)
+    if (IS_DEVELOPMENT){
+      window.addEventListener('beforeunload', beforeUnloadMasterCallback)
+    }
 
     return () => {
       if (IS_DEVELOPMENT)
-        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('beforeunload', beforeUnloadMasterCallback);
     }
   }, [])
 
@@ -89,3 +89,12 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 })
 
 export const useVXEngine = () => useContext(VXEngineContext)
+
+const beforeUnloadMasterCallback = (event: BeforeUnloadEvent) => {
+  const sourceBeforeUnload = useSourceManagerAPI.getState().handleBeforeUnload
+  sourceBeforeUnload(event);
+
+  vxEngineWindowRefs.forEach((window, vxWindowId) => {
+    window.close();
+  })
+}

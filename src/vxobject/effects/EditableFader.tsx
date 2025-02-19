@@ -31,7 +31,7 @@ class FadeShaderEffectImpl extends Effect {
 }
 
 const fadeProps: VXObjectParams = [
-    { propertyPath: "uniforms.fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01}
+    { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01}
 ]
 
 export const EditableFadeEffect = memo(forwardRef((props, ref) => {

@@ -49,14 +49,16 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             <ContextMenu>
                 <ContextMenuTrigger className='w-full'>
                     <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
-                        <p className={`text-xs my-auto font-light text-neutral-400`}>
-                            {node.key}
-                        </p>
+                        {node.param.type !== "slider" &&
+                            <p className={`text-xs w-auto mr-auto my-auto font-light text-neutral-400`}>
+                                {node.key}
+                            </p>
+                        }
                         {node.param && (
                             <ParamInput
                                 vxObject={vxobject}
                                 param={node.param}
-                                className="ml-auto w-fit"
+                                className=""
                             />
                         )}
                     </div>

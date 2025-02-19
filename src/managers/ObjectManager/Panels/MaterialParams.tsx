@@ -65,7 +65,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <ScrollArea className='h-96' scrollbarPosition='left' scrollBarThumbClassName='bg-blue-500'>
+            <ScrollArea className='h-96' scrollbarPosition='right' scrollBarThumbClassName='bg-blue-500'>
                 <Tree tree={filteredPropertiesTree as Record<string, ParamTreeNode>} renderNodeContent={renderNodeContent}/>
             </ScrollArea>
         </CollapsiblePanel>

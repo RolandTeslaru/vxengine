@@ -202,7 +202,7 @@ const stateComponents = {
         store: useVXObjectStore,
         depth: 2
     },
-    UIStore: {
+    UIManagerAPI: {
         store: useUIManagerAPI,
         depth: 2
     },
@@ -239,7 +239,6 @@ const StateVisualizer = () => {
             className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
             detachedClassName=" top-1 !left-1 !h-[100%] !min-w-[100%] "
         >
-            <>
                 <div className="w-full flex flex-row pb-1"
                 >
                     <h1 className="text-left ml-2 font-sans-menlo">
@@ -272,7 +271,6 @@ const StateVisualizer = () => {
                 <div className={`${isAttached ? "max-h-[400px] " : "max-h-[auto]"} overflow-hidden overflow-y-scroll mb-auto`}>
                     <StateComponent activeData={activeData}/>
                 </div>
-            </>
         </VXEngineWindow>
     )
 

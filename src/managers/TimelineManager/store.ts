@@ -712,7 +712,7 @@ function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, pro
     }
     state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
     state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
-
+    
     animationEngineInstance.hydrationService.hydrateStaticProp({
         action: "create",
         vxkey,

@@ -12,20 +12,17 @@ import VXEngineLogo from '@vxengine/components/ui/VXEngineLogo'
 import { INFO_About, INFO_Settings } from '@vxengine/components/ui/DialogInfos'
 import TimelineManagerSubMenu from '@vxengine/managers/TimelineManager/subMenu'
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
+import { StandardWindowStyling } from './VXEngineWindow'
 
 const LOG_MODULE = "VXMenubar"
 
 const VXMenubar = () => {
     return (
-        <div
-            className={`fixed top-6 left-6 z-10 w-fit border-neutral-400 border-opacity-20 border-[1px] text-white 
-                        backdrop-blur-lg bg-neutral-900 bg-opacity-70 rounded-3xl flex flex-row px-3 
-                    `}
-            id="VXEngineMenubar"
+        <StandardWindowStyling 
+            className='top-6 left-6 z-10 !px-3 !py-0 rounded-3xl text-white'
             style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6"}}
+            id="VXEngineMenubar"
         >
-            {/* Icon */}
-
             <div className='my-auto-fit !text-white font-sans-menlo flex flex-row text-sm'>
                 <Menubar className=' h-auto'>
                     <LogoButton />
@@ -37,8 +34,7 @@ const VXMenubar = () => {
                     <SceneButton />
                 </Menubar>
             </div>
-
-        </div>
+        </StandardWindowStyling>
     )
 }
 
@@ -185,24 +181,27 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 }
 
 const ViewButton = () => {
-    const windows = useUIManagerAPI(state => state.windows);
-    const windowVisibility = useUIManagerAPI(state => state.windowVisibility);
-    const setWindowVisibility = useUIManagerAPI(state => state.setWindowVisibility);
-
+    const vxWindows = useUIManagerAPI(state => state.vxWindows);    
+    const openVXWindow = useUIManagerAPI(state => state.openVXWindow);
+    const closeVXWindow = useUIManagerAPI(state => state.closeVXWindow);
+    
     const handleClick = (id: string) => {
-        const visibility = useUIManagerAPI.getState().windowVisibility[id];
-        setWindowVisibility(id, !visibility);
+        if(vxWindows[id].isOpen)
+            closeVXWindow(id);
+        else
+            openVXWindow(id);
     }
 
     return (
         <MenubarMenu>
             <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
             <MenubarContent>
-                {Object.entries(windows).map(([key, window]) =>
-                    <MenubarItem key={key} onClick={() => handleClick(window.id)}>
-                        {window.title} <MenubarShortcut><CheckVisualizer show={windowVisibility[window.id]} /></MenubarShortcut>
+                {Object.entries(vxWindows).map(([id, vxwindow]) => 
+                    <MenubarItem key={id} onClick={() => handleClick(id)}>
+                        {vxwindow.title} <MenubarShortcut><CheckVisualizer show={vxwindow.isOpen} /></MenubarShortcut>
                     </MenubarItem>
                 )}
+              
             </MenubarContent>
         </MenubarMenu>
     )

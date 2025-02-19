@@ -16,12 +16,14 @@ export const UIManagerDialogLayer = () => {
         const scale_offset = (index - (dialogTotal - 1)) * 8;
         const y_offset = (index - (dialogTotal - 1)) * 40;
 
+        const finalScale = 1 + scale_offset / 100
+
         if (type === "normal") {
           return (
             <Dialog key={id} open={open} onOpenChange={() => closeDialog(id)}>
               <DialogContent
                 style={{
-                  transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${1 + scale_offset / 100})`,
+                  transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${finalScale})`,
                   filter: `brightness(${1 / -(index - dialogTotal)})`,
                 }}
                 darkenBackground={index === 0}
@@ -39,11 +41,12 @@ export const UIManagerDialogLayer = () => {
               <AlertDialogContent
                 className={"flex flex-row" + " " + className}
                 style={{
-                  transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${1 + scale_offset / 100})`,
+                  transform: `translate(-50%, -50%) translateY(${y_offset}px) scale(${finalScale})`,
                   filter: `brightness(${1 / -(index - dialogTotal)})`,
                 }}
                 darkenBackground={index === 0}
                 blockTransparency={dialogTotal - index > 1}
+                showTriangle={showTriangle}
                 type={type}
               >
                 {/* <HazardStripes opacity={0.05}/> */}

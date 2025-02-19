@@ -1,8 +1,9 @@
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
-import React, { useEffect, useMemo, useRef, createContext, useContext, useState, FC, memo, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, createContext, useContext, useState, FC, memo, useCallback, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { WindowControlDots } from '../../components/ui/WindowControlDots';
 import classNames from 'classnames';
+import { vxEngineWindowRefs } from '@vxengine/utils/useRefStore';
 
 export interface VXEngineWindowProps {
     children: React.ReactNode;
@@ -13,6 +14,8 @@ export interface VXEngineWindowProps {
     className?: string;
     detachedClassName?: string;
     noStyling?: boolean
+    isAttached?: boolean
+    isOpen?: boolean
 }
 
 interface WindowContextProps {
@@ -33,21 +36,25 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     const { children, title = "VXEngine Window", windowClasses, vxWindowId, className,
            detachedClassName, noStyling = false, noPadding = false } = props;
 
-    const registerWindow = useUIManagerAPI((state) => state.registerWindow);
-    const isVisible = useUIManagerAPI((state) => state.windowVisibility[vxWindowId])
-    const setWindowAttachment = useUIManagerAPI((state) => state.setWindowAttachment);
-    const isAttached = useUIManagerAPI((state) => state.getAttachmentState(vxWindowId))
+    const registerWindow = useUIManagerAPI(state => state.registerWindow);
+
+    const isRegistered = useRef(false);
+    if (!isRegistered.current) {
+        registerWindow(vxWindowId, title);
+        isRegistered.current = true;
+    }
+
+    const vxWindow = useUIManagerAPI(state => state.vxWindows[vxWindowId]);
     const isStoreHydrated = useUIManagerAPI(state => state.hydrated);
+    const attachVXWindow = useUIManagerAPI(state => state.attachVXWindow);
 
     const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
 
-    useEffect(() => {
-        registerWindow({ id: vxWindowId, title })
-    }, [])
+    
 
-    const handleAttach = () => { setWindowAttachment(vxWindowId, true) }
+    const handleAttach = () => attachVXWindow(vxWindowId)
 
-    const Content = useMemo(() => {
+    const Content = () => {
         if (noStyling) {
             return <>{children}</>;
         } else {
@@ -55,28 +62,28 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
                 <StandardWindowStyling
                     className={className}
                     detachedClassName={detachedClassName}
-                    isDetached={!isAttached}
+                    isDetached={!vxWindow.isAttached}
                 >
                     <WindowControlDots
-                        isAttached={isAttached}
+                        isAttached={vxWindow.isAttached}
                     />
                     {children}
                 </StandardWindowStyling>
             );
         }
-    }, [noStyling, children, className, detachedClassName, isAttached,]);
+    }
 
     if(isStoreHydrated === false) return null;
 
-    if (isVisible === false) return null;
+    if (vxWindow.isOpen === false) return null;
 
     return (
         <WindowContext.Provider value={{ externalContainer, setExternalContainer, vxWindowId }}>
-            {isAttached ? (
-                    Content
+            {vxWindow.isAttached ? (
+                    <Content/>
             ) : (
-                <DetachableWindow onClose={handleAttach} title={title} windowClasses={windowClasses}>
-                    {Content}
+                <DetachableWindow vxWindowId={vxWindowId} onClose={handleAttach} title={title} windowClasses={windowClasses}>
+                    <Content/>
                 </DetachableWindow>
             )
             }
@@ -87,19 +94,22 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
 interface StandardWindowStylingProps {
     children: React.ReactNode
     className?: string
-    isDetached: boolean
+    isDetached?: boolean
     detachedClassName?: string
     onClick?: () => void
+    style?: React.CSSProperties
+    id?: string
 }
 
-const StandardWindowStyling = (props: StandardWindowStylingProps) => {
-    const { children, className, isDetached, detachedClassName, onClick } = props
+export const StandardWindowStyling = (props: StandardWindowStylingProps) => {
+    const { children, className, isDetached, style, id, detachedClassName, onClick } = props
     return (
         <div
-            className={classNames(`p-2 fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
-                        rounded-3xl flex flex-col pb-1 gap-2 ${isDetached && detachedClassName}`, className)}
+            className={classNames(className, `p-2 fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
+                        rounded-3xl flex flex-col pb-1 gap-2 ${isDetached && detachedClassName}`,)}
             onClick={onClick}
-            style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6"}}
+            style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6", ...style}}
+            id={id}
         >
             {children}
         </div>
@@ -108,6 +118,7 @@ const StandardWindowStyling = (props: StandardWindowStylingProps) => {
 
 
 interface DetachableWindowProps {
+    vxWindowId: string
     children: React.ReactNode;
     onClose: () => void;
     windowClasses: string;
@@ -115,7 +126,7 @@ interface DetachableWindowProps {
 }
 
 const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
-    const { children, onClose, windowClasses, title } = props;
+    const { children, onClose, vxWindowId, windowClasses, title } = props;
     const { setExternalContainer } = useWindowContext();
     const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
     const externalWindow = useRef<Window | null>(null);
@@ -170,7 +181,10 @@ const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
         const curWindow = externalWindow.current;
         curWindow.addEventListener('beforeunload', handleOnClose);
 
+        vxEngineWindowRefs.set(vxWindowId, curWindow);
+
         return () => {
+            vxEngineWindowRefs.delete(vxWindowId);
             curWindow.removeEventListener('beforeunload', handleOnClose);
             curWindow.close();
         };

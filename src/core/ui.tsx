@@ -4,7 +4,7 @@
 
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useLayoutEffect, useState } from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
 import { motion } from "framer-motion"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"

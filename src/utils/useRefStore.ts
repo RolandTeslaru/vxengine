@@ -22,6 +22,7 @@ export const trackSegmentsRef =  new Map<string, HTMLElement>()
 export const cursorRef = {
     current: null
 }
+export const vxEngineWindowRefs = new Map<string, Window>()
 
 export const useRefStore = create<refStoreProps>((set, get) => ({
     editAreaRef: React.createRef<HTMLDivElement>(),
