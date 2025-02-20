@@ -6,7 +6,6 @@ import React, { Suspense, useCallback, useContext, useEffect, useLayoutEffect, u
 import { Canvas, extend, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
-import { EffectsManagerDriver } from '../managers/EffectsManager'
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
 import { RenderPass } from 'three-stdlib'
 
@@ -14,15 +13,15 @@ import * as THREE from "three"
 
 extend({ MeshLineGeometry, MeshLineMaterial, RenderPass })
 
-import { Object3DNode, MaterialNode } from '@react-three/fiber'
+import { ThreeElement } from '@react-three/fiber'
 import CameraManagerDriver from '../managers/CameraManager/driver'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { useCameraManagerAPI } from '@vxengine/managers/CameraManager/store'
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
-    meshLineGeometry: Object3DNode<MeshLineGeometry, typeof MeshLineGeometry>
-    meshLineMaterial: MaterialNode<MeshLineMaterial, typeof MeshLineMaterial>
+    meshLineGeometry: ThreeElement<typeof MeshLineGeometry>
+    meshLineMaterial: ThreeElement<typeof MeshLineMaterial>
   }
 }
 
@@ -33,6 +32,7 @@ import { useVXEngine } from '@vxengine/engine'
 import VXRendererUtils from '@vxengine/utils/rendererUtils'
 import { VXObjectParams } from '@vxengine/vxobject/types'
 import animationEngineInstance from '@vxengine/singleton'
+import { EffectComposer } from '@react-three/postprocessing'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -92,9 +92,9 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
             <ObjectManagerDriver />
           </>
           }
-          <EffectsManagerDriver>
+          <EffectComposer>
             {effectsNode}
-          </EffectsManagerDriver>
+          </EffectComposer>
 
 
           <CameraManagerDriver />

@@ -1,13 +1,13 @@
-import React from "react"
-import GripVertical from "lucide-react/dist/esm/icons/grip-vertical"
+import React, {FC, ComponentProps} from "react"
+import { GripVertical } from "lucide-react";
 import * as ResizablePrimitive from "react-resizable-panels"
 
 import { cn } from "@vxengine/utils"
 
-const ResizablePanelGroup = ({
+const ResizablePanelGroup: FC<ComponentProps<typeof ResizablePrimitive.PanelGroup>> = ({
   className,
   ...props
-}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (
+}) => (
   <ResizablePrimitive.PanelGroup
     className={cn(
       "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",

@@ -5,6 +5,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 import topLevelAwait from 'vite-plugin-top-level-await';
 import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
+import tailwindcss from "@tailwindcss/vite";
 
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
@@ -77,6 +78,7 @@ export default defineConfig({
     target: 'esnext', // Ensure modern browser support for Next.js,
   },
   plugins: [
+    tailwindcss(),
     wasm(),
     topLevelAwait(),
     libInjectCss(),

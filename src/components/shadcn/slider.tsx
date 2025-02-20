@@ -1,13 +1,10 @@
 import * as React from "react"
 import * as SliderPrimitive from "@radix-ui/react-slider"
+import { ComponentProps, FC } from "react"
 
 import { cn } from "@vxengine/utils"
 
-
-const Slider = React.forwardRef<
-  React.ElementRef<typeof SliderPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className,onDragStart, onDragEnd, ...props }, ref) => {
+const Slider = ({ className,onDragStart, onDragEnd, ...props }): ComponentProps<typeof SliderPrimitive.Root>  => {
 
   const handlePointerDown = (event: any) => {
     onDragStart?.(event);
@@ -19,7 +16,6 @@ const Slider = React.forwardRef<
 
   return (
   <SliderPrimitive.Root
-    ref={ref}
     className={cn(
       "relative flex w-full touch-none select-none items-center",
       className
@@ -35,7 +31,7 @@ const Slider = React.forwardRef<
       onPointerUp={handlePointerUp}
     />
   </SliderPrimitive.Root>
-)})
+)}
 Slider.displayName = SliderPrimitive.Root.displayName
 
 export { Slider }

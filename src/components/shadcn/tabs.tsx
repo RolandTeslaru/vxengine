@@ -2,25 +2,22 @@
 
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { ComponentProps, FC } from "react"
 
 import { cn } from "@vxengine/utils"
 
 
 const Tabs = TabsPrimitive.Root
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
+const TabsList = ({ className, ...props }): ComponentProps<typeof TabsPrimitive.List> => (
   <TabsPrimitive.List
-    ref={ref}
     className={cn(
       "inline-flex h-auto items-center justify-center rounded-3xl bg-neutral-900 border border-neutral-800 text-muted-foreground",
       className
     )}
     {...props}
   />
-))
+)
 TabsList.displayName = TabsPrimitive.List.displayName
 
 const TabsTrigger = React.forwardRef<

@@ -5,7 +5,6 @@ import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { ISetting } from "@vxengine/AnimationEngine/types/engine";
-import { Accordion, AccordionItem, AccordionTrigger } from "@vxengine/components/shadcn/accordion";
 import { AccordionContent } from "@radix-ui/react-accordion";
 
 interface DialogProps {

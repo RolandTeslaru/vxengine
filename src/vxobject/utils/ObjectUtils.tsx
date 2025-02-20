@@ -9,7 +9,7 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 
 interface ObjectUtils {
     vxkey: string
-    children: React.ReactElement<ReactThreeFiber.Object3DNode<THREE.Object3D<THREE.Object3DEventMap>, any>, string | React.JSXElementConstructor<any>>
+    children: React.ReactElement<ReactThreeFiber.ThreeElement<any>, string | React.JSXElementConstructor<any>>
 }
 
 const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]

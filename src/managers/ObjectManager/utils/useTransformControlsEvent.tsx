@@ -7,8 +7,6 @@ const useTransformControlsEvent = (
     callback: () => void,
     dependencies: any[] = []
 ) => {
-    if(!document) return
-
     useEffect(() => {
         // Register the event listener
         document.addEventListener(eventName as any, callback);
