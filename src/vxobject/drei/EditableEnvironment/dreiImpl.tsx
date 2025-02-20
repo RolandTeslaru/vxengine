@@ -1,5 +1,5 @@
 import React, { useMemo, useLayoutEffect, useEffect } from "react"
-import { useThree, createPortal, extend, Object3DNode, Euler, applyProps, invalidate } from '@react-three/fiber'
+import { useThree, createPortal, extend, Euler, applyProps, invalidate, ThreeElement } from '@react-three/fiber'
 import { WebGLCubeRenderTarget, Texture, Scene, CubeCamera, HalfFloatType, CubeTexture } from 'three'
 import { GroundProjectedEnv as GroundProjectedEnvImpl } from 'three-stdlib'
 import { PresetsType } from '@react-three/drei/helpers/environment-assets'
@@ -38,14 +38,12 @@ export type EnvironmentProps = {
   }
 } & EnvironmentLoaderProps
 
-const isRef = (obj: any): obj is React.MutableRefObject<Scene> => obj.current && obj.current.isScene
-const resolveScene = (scene: Scene | React.MutableRefObject<Scene>) => (
-  isRef(scene) ? scene.current : scene
-)
+const isRef = (obj: any): obj is React.RefObject<Scene> => obj.current && obj.current.isScene
+const resolveScene = (scene: Scene | React.RefObject<Scene>) => (isRef(scene) ? scene.current : scene)
 
 function setEnvProps(
   background: boolean | 'only',
-  scene: Scene | React.MutableRefObject<Scene> | undefined,
+  scene: Scene | React.RefObject<Scene> | undefined,
   defaultScene: Scene,
   texture: Texture,
   sceneProps: Partial<EnvironmentProps> = {}
@@ -76,31 +74,21 @@ function setEnvProps(
     // @ts-ignore
     environmentRotation: target.environmentRotation?.clone?.() ?? [0, 0, 0],
   }
-  if (background !== 'only')
-    target.environment = texture
-  if (background)
-    target.background = texture
+  if (background !== 'only') target.environment = texture
+  if (background) target.background = texture
   applyProps(target as any, sceneProps)
 
-  invalidate();
-
   return () => {
-    if (background !== 'only')
-      target.environment = oldenv
-    if (background)
-      target.background = oldbg
+    if (background !== 'only') target.environment = oldenv
+    if (background) target.background = oldbg
     applyProps(target as any, oldSceneProps)
   }
 }
 
 export function VXEnvironmentMap({ scene, background = false, map, ...config }: EnvironmentProps) {
   const defaultScene = useThree((state) => state.scene)
-  useEffect(() => {
-    if (map) {
-      const cleanup = setEnvProps(background, scene, defaultScene, map, config);
-      invalidate(); // Trigger a re-render
-      return cleanup;
-    }
+  React.useLayoutEffect(() => {
+    if (map) return setEnvProps(background, scene, defaultScene, map, config)
   })
   return null
 }
@@ -166,11 +154,11 @@ export function VXEnvironmentPortal({
     return fbo
   }, [resolution])
 
-  useLayoutEffect(() => {
-    requestAnimationFrame(() => {
-      camera.current.update(gl as any, virtualScene);
-    });
-  }, []);
+  // useLayoutEffect(() => {
+  //   requestAnimationFrame(() => {
+  //     camera.current.update(gl as any, virtualScene);
+  //   });
+  // }, []);
   useLayoutEffect(() => {
     if (frames === 1) {
       camera.current.update(gl as any, virtualScene)
@@ -251,11 +239,9 @@ export function VXEnvironmentPortal({
   )
 }
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      groundProjectedEnvImpl: Object3DNode<GroundProjectedEnvImpl, typeof GroundProjectedEnvImpl>
-    }
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    groundProjectedEnvImpl: ThreeElement<typeof GroundProjectedEnvImpl>
   }
 }
 

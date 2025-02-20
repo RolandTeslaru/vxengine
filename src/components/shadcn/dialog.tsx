@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-
+import { ComponentProps } from "react"
 import { cn } from "@vxengine/utils"
 
 const Dialog = DialogPrimitive.Root
@@ -14,31 +14,25 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
-const DialogOverlay = React.forwardRef<
-    React.ElementRef<typeof DialogPrimitive.Overlay>,
-    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+
+const DialogOverlay = ({ className, ...props }): ComponentProps<typeof DialogPrimitive.Overlay> => (
     <DialogPrimitive.Overlay
-        ref={ref}
         className={cn(
             "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             className
         )}
         {...props}
     />
-))
+)
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 interface DialogContentProps
-    extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+    extends React.ComponentProps<typeof DialogPrimitive.Content> {
     darkenBackground?: boolean;
     blockTransparency?: boolean
 }
 
-const DialogContent = React.forwardRef<
-    React.ElementRef<typeof DialogPrimitive.Content>,
-    DialogContentProps
->(({ className, children, style, blockTransparency = false, darkenBackground = true, ...props }, ref) => (
+const DialogContent = ({ className, children, style, blockTransparency = false, darkenBackground = true, ref,...props }): DialogContentProps => (
     <DialogPortal>
         {darkenBackground === true && <DialogOverlay />}
         <DialogPrimitive.Content
@@ -66,7 +60,7 @@ const DialogContent = React.forwardRef<
             </DialogPrimitive.Close> */}
         </DialogPrimitive.Content>
     </DialogPortal>
-))
+)
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({

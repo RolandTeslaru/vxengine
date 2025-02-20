@@ -15,7 +15,6 @@ const CameraManagerDriver = React.memo(() => {
         <>
             <vx.perspectiveCamera
                 vxkey='perspectiveCamera'
-                // @ts-expect-error
                 makeDefault={mode === "attached"}
                 name="Camera"
             />

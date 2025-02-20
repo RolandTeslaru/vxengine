@@ -1,20 +1,27 @@
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import { ComponentProps } from "react"
 import { cn } from "@vxengine/utils"
 import classNames from "classnames"
 
 
 interface ScrollAreaProps
-  extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
+  extends ComponentProps<typeof ScrollAreaPrimitive.Root> {
   scrollbarPosition?: "left" | "right"
   scrollbarClassName?: string
   scrollBarThumbClassName?: string
 }
 
-const ScrollArea = React.forwardRef<
-  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-  ScrollAreaProps
->(({ className, scrollbarPosition = "right", scrollbarClassName, scrollBarThumbClassName,children, onScroll, ...props }, ref) => (
+const ScrollArea = ({ 
+  className, 
+  scrollbarPosition = "right", 
+  scrollbarClassName, 
+  scrollBarThumbClassName,
+  children, 
+  onScroll, 
+  ref,
+  ...props 
+}): ComponentProps<typeof ScrollAreaPrimitive.Root> => (
   <ScrollAreaPrimitive.Root
     className={cn("relative overflow-hidden", className)}
     {...props}
@@ -25,7 +32,7 @@ const ScrollArea = React.forwardRef<
     <ScrollBar position={scrollbarPosition} className={scrollbarClassName} scrollBarThumbClassName={scrollBarThumbClassName}/>
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
-))
+)
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
 
 interface ScrollBarProps

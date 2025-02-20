@@ -141,7 +141,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const timelines = diskData.timelines
     useAnimationEngineAPI.setState({ projectName: diskData.projectName })
 
-    if (this._IS_DEVELOPMENT && typeof window !== 'undefined') {
+    if (this._IS_DEVELOPMENT) {
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
       if (syncResult?.status === 'out_of_sync')
         useAnimationEngineAPI.setState({ isPlaying: false })

@@ -132,6 +132,8 @@ export const EffectsManagerDriver = React.memo(
       };
 
       addObject(newVXEntity, IS_DEVELOPMENT, { icon: "Effects"});
+
+      return () => removeObject(newVXEntity.vxkey, IS_DEVELOPMENT);
     }, [])
 
     useLayoutEffect(() => {
