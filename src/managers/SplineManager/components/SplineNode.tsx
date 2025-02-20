@@ -60,7 +60,7 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
                         <div className={`absolute -right-[120px] flex flex-col bg-neutral-900 p-1 px-2 rounded-full bg-opacity-70
                                          border-neutral-800 border-[1px] text-xs font-sans-menlo text-nowrap`}>
                             <p>
-                                <span className='!font-extrabold font-sans !text-base mr-2'>{index}</span> 
+                                <span className='font-extrabold! font-sans text-base! mr-2'>{index}</span> 
                                 <span>Spline Node</span>
                             </p>
                         </div>

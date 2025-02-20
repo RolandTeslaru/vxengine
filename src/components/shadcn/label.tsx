@@ -10,7 +10,7 @@ const labelVariants = cva(
     variants: {
       variant: {
         default: "",
-        secondary: " !font-sans-menlo !text-neutral-400 "
+        secondary: " font-sans-menlo! text-neutral-400! "
       }
     },
     defaultVariants: {

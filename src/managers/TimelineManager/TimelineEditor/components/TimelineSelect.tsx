@@ -17,7 +17,7 @@ const TimelineSelect = () => {
             value={currentTimelineID}
         >
             <SelectTrigger className="w-[180px] h-7 my-auto">
-                <SelectValue className='!text-xs' placeholder="Select a Timeline" />
+                <SelectValue className='text-xs!' placeholder="Select a Timeline" />
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>

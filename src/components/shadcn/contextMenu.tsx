@@ -25,7 +25,7 @@ const ContextMenuSubTrigger: FC<ContextMenuSubTriggerProps> =
   <ContextMenuPrimitive.SubTrigger
     className={cn(
       `relative flex hover:bg-neutral-800 hover:shadow-md shadow-black
-        rounded-md cursor-default select-none items-center px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
+        rounded-md cursor-default select-none items-center px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",
       className
     )}
@@ -44,7 +44,7 @@ const ContextMenuSubContent = React.forwardRef<
   <ContextMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      `z-50 min-w-[8rem] backdrop-blur-sm rounded-lg border border-neutral-600 bg-neutral-700 bg-opacity-80 p-1 text-popover-foreground shadow-lg shadow-neutral-950
+      `z-50 min-w-[8rem] backdrop-blur-xs rounded-lg border border-neutral-600 bg-neutral-700 bg-opacity-80 p-1 text-popover-foreground shadow-lg shadow-neutral-950
        data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
        data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 
        data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
@@ -66,7 +66,7 @@ const ContextMenuContent = React.forwardRef<
       <ContextMenuPrimitive.Content
         ref={ref}
         className={cn(
-          `z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-sm rounded-lg border border-neutral-600 bg-neutral-700 bg-opacity-80 p-1 text-popover-foreground shadow-lg shadow-neutral-950
+          `z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-xs rounded-lg border border-neutral-600 bg-neutral-700 bg-opacity-80 p-1 text-popover-foreground shadow-lg shadow-neutral-950
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
          data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           className
@@ -92,8 +92,8 @@ const ContextMenuItem = React.forwardRef<
         ref={ref}
         className={cn(
           `relative flex hover:bg-neutral-800 hover:shadow-md shadow-black gap-2 font-sans-menlo text-xs
-           rounded-md cursor-default select-none items-center px-2 py-1.5 outline-none 
-           focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-5 ${preventClose && "!pointer-events-none"}`,
+           rounded-md cursor-default select-none items-center px-2 py-1.5 outline-hidden 
+           focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-5 ${preventClose && "pointer-events-none!"}`,
           inset && "pl-8",
           className
         )}
@@ -110,7 +110,7 @@ const ContextMenuCheckboxItem = React.forwardRef<
   <ContextMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     checked={checked}
@@ -134,7 +134,7 @@ const ContextMenuRadioItem = React.forwardRef<
   <ContextMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     {...props}

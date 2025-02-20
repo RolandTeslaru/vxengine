@@ -9,7 +9,7 @@ const CameraManagerUI = () => {
 
     return (
         <StandardWindowStyling
-            className='top-6 right-6 w-[240px] !px-2 !py-1 !flex-row'
+            className='top-6 right-6 w-[240px] px-2! py-1! flex-row!'
             style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -2px rgb(0 0 0 / 0.6" }}
         >
             <p className='font-sans-menlo text-xs my-auto mx-auto h-auto'>Camera</p>

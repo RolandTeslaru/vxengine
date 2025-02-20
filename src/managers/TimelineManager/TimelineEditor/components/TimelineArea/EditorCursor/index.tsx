@@ -89,7 +89,7 @@ const EditorCursor = () => {
   })
 
   return (
-    <div className='sticky top-4  z-[999] h-0'>
+    <div className='sticky top-4  z-999 h-0'>
       <div ref={elementRef} className='absolute w-1 left-0 h-20'>
         <ContextMenu>
           <ContextMenuTrigger>
@@ -105,7 +105,7 @@ const EditorCursor = () => {
               />
             </svg>
             {/* Line */}
-            <div className={"w-[1px] relative h-full box-border top-0 border-x border-blue-500 z-[1]"}
+            <div className={"w-[1px] relative h-full box-border top-0 border-x border-blue-500 z-1"}
               style={{
                 transform: "translateX(-25%) scaleX(0.5)",
               }}

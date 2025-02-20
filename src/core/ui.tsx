@@ -68,8 +68,8 @@ const VXRightPanel = () => {
             vxWindowId={vxWindowId}
             title="VXEngine: RightPanel"
             windowClasses='width=256,height=702,right=200,top=200,resizable=0'
-            className="w-60 h-[686px] top-32 right-6 pt-3 !px-0"
-            detachedClassName="!top-2 !right-2 !left-2 w-auto"
+            className="w-60 h-[686px] top-32 right-6 pt-3 px-0!"
+            detachedClassName="top-2! right-2! left-2! w-auto"
             noPadding={true}
         >
             <div className="w-full  h-full  rounded-2xl overflow-y-scroll px-2">
@@ -96,7 +96,7 @@ const VXLeftPanel = () => {
             title="VXEngine: LeftPanel"
             windowClasses='width=310,height=702,left=200,top=200,resizable=0'
             className="w-60 h-[686px] top-32 left-6 pt-3"
-            detachedClassName="!top-2 !left-2 !right-2 w-[calc(100%-8px-8px-44px-8px)]"
+            detachedClassName="top-2! left-2! right-2! w-[calc(100%-8px-8px-44px-8px)]"
         >
             <div className="h-full overflow-y-scroll rounded-2xl ">
                 <div className="flex flex-col gap-2 h-fit">
@@ -127,7 +127,7 @@ const VXBottomRightBar = () => {
                 id="VXEngineTimelinePanel"
                 className={`fixed backdrop-blur-lg  text-sm bg-neutral-900 min-w-[960px] overflow-hidden
                             bg-opacity-70 border-neutral-400 border-opacity-20 border-[1px] rounded-3xl flex flex-col px-2
-                            ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " !h-[calc(100%_-_20px)] top-2 right-2"}
+                            ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " h-[calc(100%-20px)]! top-2 right-2"}
                           `}
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",

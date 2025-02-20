@@ -9,7 +9,7 @@ export type LightProps = JSX.IntrinsicElements['mesh'] & {
   map?: THREE.Texture
   toneMapped?: boolean
   color?: ReactThreeFiber.Color
-  form?: 'circle' | 'ring' | 'rect' | 'plane' | 'box' | any
+  form?: 'circle' | 'ring-3' | 'rect' | 'plane' | 'box' | any
   scale?: number | [number, number, number] | [number, number]
   intensity?: number
   target?: boolean | [number, number, number] | THREE.Vector3
@@ -50,7 +50,7 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
       <mesh ref={ref} scale={scale} {...props}>
         {Form === 'circle' ? (
           <ringGeometry args={args ? (args as any) : [0, 0.5, 64]} />
-        ) : Form === 'ring' ? (
+        ) : Form === 'ring-3' ? (
           <ringGeometry args={args ? (args as any) : [0.25, 0.5, 64]} />
         ) : Form === 'rect' || Form === 'plane' ? (
           <planeGeometry args={args ? (args as any) : [1, 1]} />

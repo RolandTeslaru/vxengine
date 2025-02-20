@@ -204,7 +204,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
           content: <DANGER_SyncConflict dialogId={dialogId}/>,
           type: "danger",
           showTriangle: false,
-          className: "!p-0 !max-w-4xl",
+          className: "p-0! max-w-4xl!",
           id: dialogId
         })
 

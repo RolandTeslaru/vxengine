@@ -237,7 +237,7 @@ const StateVisualizer = () => {
             title="VXEngine: State Visualizer"
             windowClasses='width=717,height=450,left=100,top=200,resizable=0'
             className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
-            detachedClassName=" top-1 !left-1 !h-[100%] !min-w-[100%] "
+            detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
         >
                 <div className="w-full flex flex-row pb-1"
                 >
@@ -256,12 +256,12 @@ const StateVisualizer = () => {
                         onValueChange={(value) => {
                             setActiveData(value)
                         }}>
-                        <SelectTrigger className="w-[180px] h-7 my-auto focus:outline-none !text-xs">
+                        <SelectTrigger className="w-[180px] h-7 my-auto focus:outline-hidden text-xs!">
                             <SelectValue placeholder="Select a Timeline" />
                         </SelectTrigger>
                         <SelectContent>
                             {Object.keys(stateComponents).map((key) => (
-                                <SelectItem key={key} value={key} className="!text-xs">
+                                <SelectItem key={key} value={key} className="text-xs!">
                                     {key}
                                 </SelectItem>
                             ))}

@@ -126,7 +126,7 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                         </div>
                     </div>
                     {/* Data Difs */}
-                    <div className="max-h-[500px] bg-neutral-950 !overflow-y-scroll text-xs">
+                    <div className="max-h-[500px] bg-neutral-950 overflow-y-scroll! text-xs">
                         <ReactDiffViewer
                             styles={defaultStyles}
                             oldValue={diskTimelinesString}

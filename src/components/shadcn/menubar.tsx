@@ -33,7 +33,7 @@ const MenubarTrigger: FC<ComponentProps<typeof MenubarPrimitive.Trigger>> =
   ({ className, ...props }) => (
     <MenubarPrimitive.Trigger
       className={cn(
-        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-none border-transparent border text-xs font-medium 
+        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs font-medium 
         focus:bg-neutral-700 focus:bg-opacity-50 focus:text-neutral-50
         hover:bg-neutral-700 hover:bg-opacity-50 
         hover:border-neutral-400 hover:border-opacity-20
@@ -52,7 +52,7 @@ type MenubarSubTriggerProps = ComponentProps<typeof MenubarPrimitive.SubTrigger>
 const MenubarSubTrigger: FC<MenubarSubTriggerProps> = ({ className, inset, children, ...props }) => (
   <MenubarPrimitive.SubTrigger
     className={cn(
-      `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-none border border-transparent
+      `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-hidden border border-transparent
         focus:text-neutral-50
          hover:bg-blue-600 hover:border-blue-500
       data-[state=open]:bg-blue-600 data-[state=open]:text-neutral-50 data-[state=open]:border-blue-500`,
@@ -110,8 +110,8 @@ const MenubarItem: FC<MenubarItemProps> =
   ({ className, inset, ...props }) => (
     <MenubarPrimitive.Item
       className={cn(
-        `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-none border border-transparent
-       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 
+        `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-hidden border border-transparent
+       data-disabled:pointer-events-none data-disabled:opacity-50 
        focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
        `,
         inset && "pl-8",
@@ -126,7 +126,7 @@ const MenubarCheckboxItem: FC<ComponentProps<typeof MenubarPrimitive.CheckboxIte
   ({ className, children, checked, ...props }) => (
     <MenubarPrimitive.CheckboxItem
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-neutral-100 focus:text-neutral-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
+        "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-neutral-100 focus:text-neutral-900 data-disabled:pointer-events-none data-disabled:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
         className
       )}
       checked={checked}
@@ -146,7 +146,7 @@ const MenubarRadioItem: FC<ComponentProps<typeof MenubarPrimitive.RadioItem>> =
   ({ className, children, ...props }) => (
     <MenubarPrimitive.RadioItem
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-neutral-100 focus:text-neutral-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
+        "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-neutral-100 focus:text-neutral-900 data-disabled:pointer-events-none data-disabled:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
         className
       )}
       {...props}

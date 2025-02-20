@@ -93,6 +93,7 @@
     "react-virtuoso": "^4.12.5",
     "react-window": "^1.8.11",
     "react18-json-view": "^0.2.9",
+    "tailwindcss": "^3.4.17",
     "tslib": "^2.8.1",
     "uuid": "^11.1.0",
     "vite-plugin-static-copy": "^2.2.0"
@@ -142,7 +143,6 @@
     "schema-utils": "^4.3.0",
     "source-map": "^0.7.4",
     "style-loader": "^4.0.0",
-    "tailwindcss": "^4.0.7",
     "terser": "^5.39.0",
     "terser-webpack-plugin": "^5.3.11",
     "ts-loader": "^9.5.2",

@@ -83,7 +83,7 @@ const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                 title={`Spline Node ${vxSplineNode.index}`}
                 contentClassName='gap-2'
             >
-                <div className='flex flex-col gap-1 w-auto px-auto [&>*]:bg-transparent [&>*]:p-1 [&>*]:rounded-lg'>
+                <div className='flex flex-col gap-1 w-auto px-auto *:bg-transparent *:p-1 *:rounded-lg'>
                     <Button 
                         variant="default" size="sm" className=' justify-start ' 
                         onClick={() => handleInsertBefore(splineKey, vxSplineNode.index - 1)}

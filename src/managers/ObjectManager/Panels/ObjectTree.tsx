@@ -48,7 +48,7 @@ const ObjectTree = () => {
         <CollapsiblePanel
             title="Object Tree"
             noPadding={true}
-            contentClassName='pb-0 !px-0 gap-2'
+            contentClassName='pb-0 px-0! gap-2'
         >
             {/* Head */}
             <div className='text-xs flex flex-row px-2 text-neutral-400 w-full'>
@@ -92,7 +92,7 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
             <ContextMenuTrigger className='w-full'>
                 <NodeTemplate className={
                     classNames(
-                        { "!bg-blue-700": isSelected === true },
+                        { "bg-blue-700!": isSelected === true },
                         { "hover:bg-blue-800": node.isSelectable }
                     )}
                     listClassNames={classNames(

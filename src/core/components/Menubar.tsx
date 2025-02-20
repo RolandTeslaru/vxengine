@@ -19,11 +19,11 @@ const LOG_MODULE = "VXMenubar"
 const VXMenubar = () => {
     return (
         <StandardWindowStyling 
-            className='top-6 left-6 z-10 !px-3 !py-0 rounded-3xl text-white'
+            className='top-6 left-6 z-10 px-3! py-0! rounded-3xl text-white'
             style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6"}}
             id="VXEngineMenubar"
         >
-            <div className='my-auto-fit !text-white font-sans-menlo flex flex-row text-sm'>
+            <div className='my-auto-fit text-white! font-sans-menlo flex flex-row text-sm'>
                 <Menubar className=' h-auto'>
                     <LogoButton />
                     <FileButton />
@@ -46,11 +46,11 @@ const LogoButton = () => {
 
     return (
         <MenubarMenu>
-            <MenubarTrigger className='!my-0 !py-0'>
+            <MenubarTrigger className='my-0! py-0!'>
                 <VXEngineLogo />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => pushDialog({content:<INFO_About/>, type: "normal", className:"!p-0"})}>About VXEngine</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<INFO_About/>, type: "normal", className:"p-0!"})}>About VXEngine</MenubarItem>
                 <MenubarItem onClick={() => pushDialog({content:<INFO_Settings/> , type:"normal"})}>Settings</MenubarItem>
             </MenubarContent>
         </MenubarMenu >

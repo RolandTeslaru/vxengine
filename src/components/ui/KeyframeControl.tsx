@@ -81,12 +81,12 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
     return (
         <ContextMenu>
             <ContextMenuTrigger className={`flex ${horizontal && "flex-col-reverse"} gap-2`}>
-                {hasSideEffect &&<Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} !text-neutral-500`}/>}
+                {hasSideEffect &&<Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} text-neutral-500!`}/>}
                 <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
                     {isPropertyTracked &&
                         <button
                             onClick={() => moveToPreviousKeyframeSTATIC(trackKey)}
-                            className='hover:*:stroke-[5] hover:*:stroke-white'
+                            className='*:hover:stroke-5 *:hover:stroke-white'
                             disabled={disabled}
                         >
                             <ChevronLeft className=' w-2 h-2 scale-150' />
@@ -94,7 +94,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                     }
                     <button
                         onClick={handleMiddleButton}
-                        className="hover:*:stroke-[5] mx-auto hover:*:stroke-white "
+                        className="*:hover:stroke-5 mx-auto *:hover:stroke-white "
                         disabled={disabled}
                     >
                         <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />
@@ -102,7 +102,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                     {isPropertyTracked &&
                         <button
                             onClick={() => moveToNextKeyframeSTATIC(trackKey)}
-                            className='hover:*:stroke-[5] hover:*:stroke-white'
+                            className='*:hover:stroke-5 *:hover:stroke-white'
                             disabled={disabled}
                         >
                             <ChevronRight className='w-2 h-2 scale-150' />
