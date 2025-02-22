@@ -35,7 +35,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
     isSelected
 }) => {
     const elementRef = useRef<SVGSVGElement>(null);
-    const interactableRef = useRef<Interactable>()
+    const interactableRef = useRef<Interactable>(null)
     const { externalContainer } = useWindowContext();
 
     const deltaX = useRef(0)
@@ -98,7 +98,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
                     id={keyframeKey}
                     viewBox="0 0 100 100"
                     className={`absolute my-auto w-[11px] z-10 fill-white hover:fill-blue-600 !cursor-pointer
-                                    ${isSelected && "!fill-yellow-300"}`
+                                    ${isSelected && "fill-yellow-300!"}`
                     }
                     style={{ height: DEFAULT_ROW_HEIGHT - 1 }}
                     onClick={(e) => handleOnClick(e, trackKey, keyframeKey)}

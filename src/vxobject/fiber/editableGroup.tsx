@@ -2,9 +2,9 @@ import React, { memo, forwardRef, useEffect } from "react";
 import { EditableObjectProps, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 import { Group } from "three";
-import { GroupProps } from "@react-three/fiber";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableGroupProps = EditableObjectProps<GroupProps> & {
+export type EditableGroupProps = EditableObjectProps<ThreeElements["group"]> & {
     ref?: React.Ref<Group>;
     settings?: {},
     temporarySettings?: {},

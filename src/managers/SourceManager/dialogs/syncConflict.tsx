@@ -3,10 +3,9 @@ import React, { useMemo } from "react";
 import { LocalStorageDataType, useSourceManagerAPI } from "../store";
 import { Button } from "@vxengine/components/shadcn/button";
 import ReactDiffViewer from 'react-diff-viewer-continued';
-import HardDrive from '@geist-ui/icons/hardDrive'
-import Server from '@geist-ui/icons/server'
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
 import { AlertDialogDescription, AlertDialogTitle } from "@vxengine/components/shadcn/alertDialog";
+import { HardDrive, Server } from "@vxengine/components/ui/icons";
 
 const defaultStyles = {
     variables: {
@@ -126,13 +125,16 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                         </div>
                     </div>
                     {/* Data Difs */}
-                    <div className="max-h-[500px] bg-neutral-950 !overflow-y-scroll text-xs">
-                        <ReactDiffViewer
-                            styles={defaultStyles}
-                            oldValue={diskTimelinesString}
-                            newValue={lsTimelinesString}
-                            splitView={true}
-                        />
+                    <div className="max-h-[500px] bg-neutral-950 overflow-y-scroll! text-xs">
+                        {
+                        // @ts-expect-error
+                        (<ReactDiffViewer
+                                styles={defaultStyles}
+                                oldValue={diskTimelinesString}
+                                newValue={lsTimelinesString}
+                                splitView={true}
+                            />
+                        )}
                     </div>
                     {/* Buttons */}
                     <div className="flex flex-row py-3 justify-items-center">

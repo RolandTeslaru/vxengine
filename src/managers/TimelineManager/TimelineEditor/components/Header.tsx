@@ -1,9 +1,9 @@
-import ChevronRight from '@geist-ui/icons/chevronRight'
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 import React from 'react'
 import ProgressionControls from './ProgressionControls'
 import TimelineSelect from './TimelineSelect'
+import { ChevronRight } from '@vxengine/components/ui/icons'
 
 const MinimizeButton = () => {
     const { vxWindowId } = useWindowContext();

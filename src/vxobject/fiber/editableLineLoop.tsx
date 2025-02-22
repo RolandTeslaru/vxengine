@@ -3,9 +3,9 @@ import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { LineLoop } from "three";
-import { LineLoopProps } from "@react-three/fiber";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableLineLoopProps = EditableObjectProps<LineLoopProps> & {
+export type EditableLineLoopProps = EditableObjectProps<ThreeElements["lineLoop"]> & {
     ref?: React.Ref<LineLoop>;
 };
 

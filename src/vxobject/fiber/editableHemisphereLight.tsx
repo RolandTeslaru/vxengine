@@ -4,9 +4,9 @@ import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps } from "../types"
 
 import { HemisphereLight } from "three";
-import { HemisphereLightProps } from "@react-three/fiber";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableHemisphereLightProps = EditableObjectProps<HemisphereLightProps> & {
+export type EditableHemisphereLightProps = EditableObjectProps<ThreeElements["hemisphereLight"]> & {
     ref?: React.Ref<HemisphereLight>;
     settings?: {}
 };

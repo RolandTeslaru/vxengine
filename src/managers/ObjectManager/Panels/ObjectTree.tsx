@@ -5,17 +5,13 @@ import { vxEntityProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/manag
 import { useObjectSettingsAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import Search from '@vxengine/components/ui/Search';
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
-import Video from '@geist-ui/icons/video'
-import Sun from '@geist-ui/icons/sun'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import ArrowUp from '@geist-ui/icons/arrowUp'
-import ArrowDown from "@geist-ui/icons/arrowDown"
-import X from '@geist-ui/icons/x'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
 import { useVXEngine } from '@vxengine/engine';
+import { ArrowDown, ArrowUp, Sun, Video, X } from '@vxengine/components/ui/icons';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -48,7 +44,7 @@ const ObjectTree = () => {
         <CollapsiblePanel
             title="Object Tree"
             noPadding={true}
-            contentClassName='pb-0 !px-0 gap-2'
+            contentClassName='pb-0 px-0! gap-2'
         >
             {/* Head */}
             <div className='text-xs flex flex-row px-2 text-neutral-400 w-full'>
@@ -92,7 +88,7 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
             <ContextMenuTrigger className='w-full'>
                 <NodeTemplate className={
                     classNames(
-                        { "!bg-blue-700": isSelected === true },
+                        { "bg-blue-700!": isSelected === true },
                         { "hover:bg-blue-800": node.isSelectable }
                     )}
                     listClassNames={classNames(

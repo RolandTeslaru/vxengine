@@ -2,10 +2,10 @@ import React, { memo, forwardRef, useEffect, useRef, useImperativeHandle } from 
 import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 import { DirectionalLight } from "three";
-import { DirectionalLightProps } from "@react-three/fiber";
 import VXEntityWrapper from "../entityWrapper";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableDirectionalLightProps = EditableObjectProps<DirectionalLightProps> & {
+export type EditableDirectionalLightProps = EditableObjectProps<ThreeElements["directionalLight"]> & {
     ref?: React.Ref<DirectionalLight>;
     settings?: {}
 };
@@ -17,8 +17,8 @@ const defaultSettings: VXObjectSettings = {
 
 const directionalLightParams: VXObjectParams = []
 
-export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, EditableDirectionalLightProps>((props, ref) => {
-    const { settings = {}, ...rest } = props;
+export const EditableDirectionalLight: React.FC<EditableDirectionalLightProps> = memo((props) => {
+    const { settings = {}, ref, ...rest } = props;
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
@@ -40,4 +40,3 @@ export const EditableDirectionalLight = memo(forwardRef<DirectionalLight, Editab
         </VXEntityWrapper>
     )
 })
-)

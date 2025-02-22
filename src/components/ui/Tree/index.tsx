@@ -147,8 +147,8 @@ const TreeCollapseButton = ({ onClick, level, isExpanded, isFinalSibling, size }
     return (
         <>
             <div className={
-                classNames(s.groupVerticalLine, `bg-neutral-500 ml-[7.5px] !h-[9px] left-[${level * 12}px]`,
-                    { "!h-[10.2px]": size === "md" }
+                classNames(s.groupVerticalLine, `bg-neutral-500 ml-[7.5px] h-[9px]! left-[${level * 12}px]`,
+                    { "h-[10.2px]!": size === "md" }
                 )} />
             <button
                 type="button"
@@ -164,8 +164,8 @@ const TreeCollapseButton = ({ onClick, level, isExpanded, isFinalSibling, size }
             {!isExpanded && !isFinalSibling && (
                 <div className={classNames(
                     s.groupVerticalLine, `bg-neutral-500  ml-[7.5px] left-[${level * 16 + 4}px ]`,
-                    { "mt-[21px] !h-[9px]": size === "sm" },
-                    { "mt-[22px] !h-[10px]": size === "md" },
+                    { "mt-[21px] h-[9px]!": size === "sm" },
+                    { "mt-[22px] h-[10px]!": size === "md" },
                 )} />
             )}
         </>
@@ -177,7 +177,7 @@ const TreeLine = ({ level, size }) => {
 }
 
 const TreeLineCorner = ({ level, size }) => {
-    return <div className={`${s.verticalLine} ml-[7.5px] !h-1/2  bg-neutral-500  left-[${level * 16 + 4}px ]`}></div>
+    return <div className={`${s.verticalLine} ml-[7.5px] h-1/2!  bg-neutral-500  left-[${level * 16 + 4}px ]`}></div>
 }
 
 const TreeLineConnect = () => {

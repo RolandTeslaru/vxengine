@@ -5,9 +5,9 @@ import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { AmbientLight } from "three";
-import { AmbientLightProps } from "@react-three/fiber";
+import { ThreeElement } from "@react-three/fiber";
 
-export type EditableAmbientLightProps = EditableObjectProps<AmbientLightProps> & {
+export type EditableAmbientLightProps = EditableObjectProps<ThreeElement<typeof AmbientLight>> & {
     ref?: React.Ref<AmbientLight>;
     settings?: {}
 };

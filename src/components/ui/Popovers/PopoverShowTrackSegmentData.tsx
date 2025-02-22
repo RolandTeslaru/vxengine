@@ -1,8 +1,8 @@
-import Info from '@geist-ui/icons/info';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import { trackSegmentsRef } from '@vxengine/utils/useRefStore';
 import React, { useCallback } from 'react'
 import JsonView from 'react18-json-view';
+import { Info } from '../icons';
 
 interface Props {
     firstKeyframeKey: string;

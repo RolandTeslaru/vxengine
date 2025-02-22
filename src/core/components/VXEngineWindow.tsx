@@ -101,11 +101,12 @@ interface StandardWindowStylingProps {
     id?: string
 }
 
+
 export const StandardWindowStyling = (props: StandardWindowStylingProps) => {
     const { children, className, isDetached, style, id, detachedClassName, onClick } = props
     return (
         <div
-            className={classNames(className, `p-2 fixed backdrop-blur-lg bg-neutral-900 bg-opacity-80 border-neutral-400 border-opacity-20 border-[1px] 
+            className={classNames(className, `p-2 fixed backdrop-blur-lg bg-neutral-900/80 border-neutral-400/20 border-[1px] 
                         rounded-3xl flex flex-col pb-1 gap-2 ${isDetached && detachedClassName}`,)}
             onClick={onClick}
             style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6", ...style}}

@@ -74,12 +74,12 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
             <Html center position={position} style={{ pointerEvents: "none" }}>
                 <div className="flex flex-row relative">
                     {firstObjectSelected?.vxkey === nodeKey && (
-                        <div className="absolute -left-[100px] flex flex-col bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px] text-xs font-sans-menlo">
+                        <div className="absolute -left-[100px] flex flex-col bg-neutral-900/70 p-1 rounded-xl border-neutral-800 border-[1px] text-xs font-sans-menlo">
                             <p>Keyframe Node</p>
                         </div>
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: "5px", marginLeft: 50, }}
-                        className="bg-neutral-900 p-1 rounded-xl bg-opacity-70 border-neutral-800 border-[1px]"
+                        className="bg-neutral-900/70 p-1 rounded-xl border-neutral-800 border-[1px]"
                     >
                         {axis.map((oneAxis) => (
                             <div key={oneAxis} style={{

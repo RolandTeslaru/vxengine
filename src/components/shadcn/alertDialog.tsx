@@ -8,39 +8,65 @@ import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
 import classNames from "classnames"
 import { DialogType } from "@vxengine/managers/UIManager/store"
 
-const AlertDialog = AlertDialogPrimitive.Root
+function AlertDialog({
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
+  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
+}
 
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger
+function AlertDialogTrigger({
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
+  return (
+    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+  )
+}
 
-const AlertDialogPortal = AlertDialogPrimitive.Portal
+function AlertDialogPortal({
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
+  return (
+    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+  )
+}
 
-const AlertDialogOverlay: FC<ComponentProps<typeof AlertDialogPrimitive.Overlay>> = 
-({ className, ...props }) => (
-  <AlertDialogPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    )}
-    {...props}
-  />
-)
+function AlertDialogOverlay({
+  className,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>) {
+  return (
+    <AlertDialogPrimitive.Overlay
+      className={cn(
+        "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
-interface AlertDialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> {
+
+
+type AlertDialogContentProps = typeof AlertDialogPrimitive.Content & {
   darkenBackground?: boolean;
   blockTransparency?: boolean
   showTriangle?: boolean
   type: DialogType
 }
 
-
-const AlertDialogContent = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Content>,
-  AlertDialogContentProps
->(({ 
+function AlertDialogContent({ 
   className, style, children, darkenBackground = true, 
-  blockTransparency = false, showTriangle = true, type, ...props }, ref) => {
+  blockTransparency = false, showTriangle = true, type, ...props 
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+  darkenBackground?: boolean;
+  blockTransparency?: boolean;
+  showTriangle?: boolean;
+  type: DialogType;
+}): JSX.Element  {
 
   const { externalContainer } = useWindowContext();
 
@@ -48,14 +74,13 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPortal container={externalContainer}>
       {darkenBackground === true && <AlertDialogOverlay />}
       <AlertDialogPrimitive.Content
-        ref={ref}
         className={cn(
           `fixed left-[50%]  top-[50%] z-50 w-auto translate-x-[-50%] translate-y-[-50%] duration-200
            data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
            data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
            data-[state=open]:slide-in-from-top-[48%]
-           ${blockTransparency ? " " : " backdrop-blur-lg bg-opacity-80 "} bg-neutral-900
-           flex border border-neutral-700 border-opacity-80 rounded-3xl overflow-hidden
+           ${blockTransparency ? "bg-neutral-900" : " backdrop-blur-lg bg-neutral-900/80 "}
+           flex border border-neutral-700/80 rounded-3xl overflow-hidden
            `,
         )}
         
@@ -77,7 +102,7 @@ const AlertDialogContent = React.forwardRef<
       </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   )
-})
+}
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
 const AlertDialogHeader = ({
@@ -108,62 +133,47 @@ const AlertDialogFooter = ({
 )
 AlertDialogFooter.displayName = "AlertDialogFooter"
 
-const AlertDialogTitle = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
->(({ className, ...props }, ref) => (
+const AlertDialogTitle = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Title>) => (
   <AlertDialogPrimitive.Title
-    ref={ref}
     className={cn("text-lg  text-neutral-300 font-semibold font-sans-menlo", className)}
     {...props}
   />
-))
+)
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
-const AlertDialogDescription = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
->(({ className, ...props }, ref) => (
+const AlertDialogDescription = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Description>) => (
   <AlertDialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm max-w-[500px] font-inter !text-neutral-400  text-muted-foreground", className)}
+    className={cn("text-sm max-w-[500px] font-inter", className)}
     {...props}
   />
-))
+)
 AlertDialogDescription.displayName =
   AlertDialogPrimitive.Description.displayName
 
 
 type AlertDialogActionType = {
   type?: 'error' | 'warning' | 'default'; // Define the allowed types
-} & React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>;
+}
 
-const AlertDialogAction = React.forwardRef<React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  AlertDialogActionType
->(({ className, type = 'default', ...props }, ref) => {
+// @ts-expect-error
+const AlertDialogAction = ({ className, type = 'default', ...props }: ComponentProps<typeof AlertDialogPrimitive.Action> & {type?: 'error' | 'warning' | 'default'; }) => {
   return (
     <AlertDialogPrimitive.Action
-      ref={ref}
       className={cn(
-        // @ts-expect-error
         buttonVariants({ variant: type }), // Map type to the correct variant
         className
       )}
       {...props}
     />
   );
-});
+}
 
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 
 
-const AlertDialogCancel = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
+const AlertDialogCancel = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Cancel> )=> (
   <AlertDialogPrimitive.Cancel
-    ref={ref}
     className={cn(
       buttonVariants({ variant: "outline" }),
       "mt-2 sm:mt-0 font-sans-menlo",
@@ -171,7 +181,7 @@ const AlertDialogCancel = React.forwardRef<
     )}
     {...props}
   />
-))
+)
 AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
 
 export {

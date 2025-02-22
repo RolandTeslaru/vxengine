@@ -35,7 +35,7 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
 
     const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (
-            <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+            <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <ContextMenu>
                     <ContextMenuTrigger className='w-full'>
                         <div className='flex flex-row w-full h-[22px]'>

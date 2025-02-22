@@ -1,16 +1,12 @@
 import React from "react";
 
-import PlayFill from "@geist-ui/icons/playFill"
-import PauseFill from "@geist-ui/icons/pauseFill"
-import Square from "@geist-ui/icons/square"
-import SkipBack from "@geist-ui/icons/skipBack"
-import SkipForward from "@geist-ui/icons/skipForward"
 
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import TimeRender from "./TimeRender";
 import { useTimelineManagerAPI } from "../..";
 import { useTimelineEditorAPI } from "../store";
 import animationEngineInstance from "@vxengine/singleton";
+import { PauseFill, Play, SkipBack, SkipForward, Square } from "@vxengine/components/ui/icons";
 
 const ProgressionControls = React.memo(() => {
     const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
@@ -47,7 +43,7 @@ const ProgressionControls = React.memo(() => {
                 {isPlaying ? (
                     <PauseFill className='scale-[65%] m-auto' />
                 ) : (
-                    <PlayFill className='scale-[65%] m-auto' />
+                    <Play className='scale-[65%] m-auto' />
                 )}
             </button>
             <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}

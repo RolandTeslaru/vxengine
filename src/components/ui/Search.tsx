@@ -11,11 +11,11 @@ const Search:React.FC<Props> = (props) => {
     const {searchQuery, setSearchQuery, className, inputClassName} = props
     return (
         <div 
-            className={'flex flex-row gap-1 h-[16px] px-1 bg-neutral-800 border border-neutral-700 border-opacity-40 w-24 rounded-full' + " " + className} 
+            className={'flex flex-row gap-1 h-[16px] px-1 bg-neutral-800 border border-neutral-700/40 w-24 rounded-full' + " " + className} 
         >
             <input
                 className={`h-full py-[1px] w-full text-neutral-400 bg-transparent
-                            placeholder-neutral-400 font-medium focus:outline-none` + " " + inputClassName}
+                            placeholder-neutral-400 font-medium focus:outline-hidden` + " " + inputClassName}
                 type="text"
                 placeholder='search'
                 style={{ fontSize: "10px" }}

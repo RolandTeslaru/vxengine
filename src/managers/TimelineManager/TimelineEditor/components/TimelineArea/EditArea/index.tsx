@@ -99,7 +99,7 @@ const TrackNode: React.FC<TrackNodeProps> = memo(({ node, timelineClientWidth, c
   return (
     <>
       <div
-        className={`relative border-t-[0.5px] border-b-[0.5px] border-neutral-800 ${!isTrack && "bg-neutral-950 bg-opacity-90"}`}
+        className={`relative border-t-[0.5px] border-b-[0.5px] border-neutral-800 ${!isTrack && "bg-neutral-950/90"}`}
         style={{
           width: timelineClientWidth,
           height: DEFAULT_ROW_HEIGHT

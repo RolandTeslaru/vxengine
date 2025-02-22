@@ -26,8 +26,8 @@ interface Props {
 const TrackSegment: React.FC<Props> = (props) => {
     const { trackKey, firstKeyframeKey, secondKeyframeKey } = props
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
-    const elementRef = useRef<HTMLElement>();
-    const interactableRef = useRef<Interactable>()
+    const elementRef = useRef<HTMLElement>(null);
+    const interactableRef = useRef<Interactable>(null)
 
     const { externalContainer } = useWindowContext();
 
@@ -105,7 +105,7 @@ const TrackSegment: React.FC<Props> = (props) => {
                 >
                     <div
                         key={`line-${firstKeyframeKey}-${secondKeyframeKey}`}
-                        className={`bg-white my-auto w-full hover:bg-neutral-300 h-[1.5px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "!bg-blue-500"}`}
+                        className={`bg-white my-auto w-full hover:bg-neutral-300 h-[1.5px] flex ${isSelectedFromKeyframes && "bg-yellow-400"} ${isSelectedFromTrackSegments && "bg-blue-500!"}`}
                     />
                 </div>
             </ContextMenuTrigger>

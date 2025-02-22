@@ -7,11 +7,12 @@ import { PointLightHelper } from "three";
 import VXEntityWrapper from "../entityWrapper";
 
 import { PointLight } from "three";
-import { PointLightProps } from "@react-three/fiber";
 import { useHelper } from "@react-three/drei";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
+import { ThreeElement } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 
-export type EditablePointLightProps = EditableObjectProps<PointLightProps> & {
+export type EditablePointLightProps = EditableObjectProps<ThreeElements["pointLight"]> & {
     ref?: React.Ref<PointLight>;
     settings?: {}
 };
@@ -28,8 +29,8 @@ export const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps>((props, ref) => {
-    const {settings = {}, ...rest} = props;
+export const EditablePointLight: React.FC<EditablePointLightProps> = (props) => {
+    const {settings = {}, ref, ...rest} = props;
     const vxkey = rest.vxkey;
 
     const internalRef = useRef<any>(null); 
@@ -56,4 +57,4 @@ export const EditablePointLight = forwardRef<PointLight, EditablePointLightProps
             <pointLight ref={internalRef} {...props} />
         </VXEntityWrapper>
     )
-})
+}

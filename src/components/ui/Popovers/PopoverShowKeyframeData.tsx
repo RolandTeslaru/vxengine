@@ -1,4 +1,3 @@
-import Info from '@geist-ui/icons/info';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Input } from '@vxengine/components/shadcn/input';
 import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
@@ -7,6 +6,7 @@ import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/util
 import { keyframesRef } from '@vxengine/utils/useRefStore';
 import React, { useCallback, useMemo, useState } from 'react'
 import JsonView from 'react18-json-view';
+import { Info } from '../icons';
 
 interface Props {
     trackKey: string;

@@ -1,11 +1,11 @@
 import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
-import { PerspectiveCamera, useHelper } from "@react-three/drei";
+import { PerspectiveCamera, PerspectiveCameraProps, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
 
-import { PerspectiveCameraProps, useFrame } from "@react-three/fiber";
+import { ThreeElement, ThreeElements, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
@@ -20,7 +20,6 @@ declare module 'three' {
 }
 
 export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCameraProps> & {
-    ref?: React.Ref<typeof PerspectiveCamera>;
     settings?: {}
 };
 
@@ -44,8 +43,8 @@ export const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamera, EditablePerspectiveCameraProps>((props, ref) => {
-    const { settings = {}, ...rest } = props;
+export const EditablePerspectiveCamera = memo((props: EditablePerspectiveCameraProps) => {
+    const { settings = {}, ref,...rest } = props;
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
 
@@ -97,4 +96,4 @@ export const EditablePerspectiveCamera = memo(forwardRef<typeof PerspectiveCamer
             <PerspectiveCamera name="VXPerspectiveCamera" />
         </VXEntityWrapper>
     );
-}));
+})

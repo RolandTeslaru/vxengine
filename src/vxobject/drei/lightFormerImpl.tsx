@@ -1,10 +1,10 @@
-import { applyProps, ReactThreeFiber } from '@react-three/fiber'
+import { applyProps, ReactThreeFiber, ThreeElements } from '@react-three/fiber'
 import * as React from 'react'
 import * as THREE from 'three'
 import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
 
 
-export type LightProps = JSX.IntrinsicElements['mesh'] & {
+export type LightProps = Omit<ThreeElements['mesh'], 'ref'> & {
   args?: any[]
   map?: THREE.Texture
   toneMapped?: boolean
@@ -13,7 +13,7 @@ export type LightProps = JSX.IntrinsicElements['mesh'] & {
   scale?: number | [number, number, number] | [number, number]
   intensity?: number
   target?: boolean | [number, number, number] | THREE.Vector3
-  light?: Partial<JSX.IntrinsicElements['pointLight']>
+  light?: Partial<ThreeElements['pointLight']>
 }
 
 export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PURE__ */ React.forwardRef(
@@ -50,7 +50,7 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
       <mesh ref={ref} scale={scale} {...props}>
         {Form === 'circle' ? (
           <ringGeometry args={args ? (args as any) : [0, 0.5, 64]} />
-        ) : Form === 'ring' ? (
+        ) : Form === 'ring-3' ? (
           <ringGeometry args={args ? (args as any) : [0.25, 0.5, 64]} />
         ) : Form === 'rect' || Form === 'plane' ? (
           <planeGeometry args={args ? (args as any) : [1, 1]} />

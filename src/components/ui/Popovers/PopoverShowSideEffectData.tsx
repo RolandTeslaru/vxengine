@@ -1,8 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import Lambda from '@geist-ui/icons/lambda'
 import React from 'react'
-import JsonView from 'react18-json-view';
 import animationEngineInstance from '@vxengine/singleton';
+import { Lambda } from '../icons';
 
 interface Props {
     trackKey: string;
@@ -39,7 +38,7 @@ const Content: React.FC<Props> = (props) => {
     }
 
     return (
-        <PopoverContent className={contentClassName + " !w-[auto] max-w-[600px]"} side={side || "left"} align={align}>
+        <PopoverContent className={contentClassName + " w-[auto]! max-w-[600px]"} side={side || "left"} align={align}>
             <p className='font-sans-menlo text-xs text-center mb-2'>SideEffect Data</p>
             <div className='max-h-[70vh] overflow-y-scroll flex flex-col w-full mt-2 text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <p className='font-sans-menlo'>

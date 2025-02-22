@@ -4,9 +4,7 @@ import { Button } from '@vxengine/components/shadcn/button';
 import { Input } from '@vxengine/components/shadcn/input';
 import { Tabs, TabsList, TabsTrigger } from '@vxengine/components/shadcn/tabs';
 import { useObjectManagerAPI } from '../stores/managerStore';
-import Move from '@geist-ui/icons/move';
-import RefreshCcw from '@geist-ui/icons/refreshCcw';
-import Globe from '@geist-ui/icons/globe';
+import { Globe, Move, RefreshCcw } from '@vxengine/components/ui/icons';
 
 export const DIALOG_setTransformMode = () => {
     const transformMode = useObjectManagerAPI(state => state.transformMode);

@@ -9,7 +9,7 @@ import { cn } from "@vxengine/utils"
 
 const Tabs = TabsPrimitive.Root
 
-const TabsList = ({ className, ...props }): ComponentProps<typeof TabsPrimitive.List> => (
+const TabsList = ({ className, ...props }: ComponentProps<typeof TabsPrimitive.List>) => (
   <TabsPrimitive.List
     className={cn(
       "inline-flex h-auto items-center justify-center rounded-3xl bg-neutral-900 border border-neutral-800 text-muted-foreground",
@@ -29,8 +29,8 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       `inline-flex items-center justify-center whitespace-nowrap rounded-2xl px-3 py-[3px] text-sm font-medium ring-offset-background transition-all 
         border border-transparent data-[state=active]:border-neutral-700
-       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 
-       data-[state=active]:bg-neutral-800 data-[state=active]:text-foreground data-[state=active]:shadow-sm`,
+       focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 
+       data-[state=active]:bg-neutral-800 data-[state=active]:text-foreground data-[state=active]:shadow-2xs`,
       className
     )}
     {...props}
@@ -45,7 +45,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "mt-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       className
     )}
     {...props}

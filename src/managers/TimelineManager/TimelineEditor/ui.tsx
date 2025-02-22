@@ -11,9 +11,10 @@ const TimelineEditor = () => {
             <TimelineEditorHeader/>
 
             <ResizablePanelGroup
-                className='relative flex flex-row w-full flex-grow overflow-hidden'
+                className='relative flex flex-row w-full grow overflow-hidden'
                 direction='horizontal'
             >
+                
                 <ResizablePanel defaultSize={28}>
                     <TrackVerticalList/>
                 </ResizablePanel>

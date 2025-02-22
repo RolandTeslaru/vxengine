@@ -1,7 +1,7 @@
 import React from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
-import Info from '@geist-ui/icons/info'
 import JsonView from 'react18-json-view'
+import { Info } from '../icons'
 
 interface Props {
     object: any

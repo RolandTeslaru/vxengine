@@ -1,13 +1,11 @@
 import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu'
 import PopoverShowKeyframeData from '@vxengine/components/ui/Popovers/PopoverShowKeyframeData'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
-import ArrowRight from '@geist-ui/icons/arrowRight'
-import ArrowLeft from "@geist-ui/icons/arrowLeft"
-import Maximize2 from '@geist-ui/icons/maximize2'
 
 import React from 'react'
 import { selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store'
+import { ArrowLeft, ArrowRight, Maximize2 } from '@vxengine/components/ui/icons'
 
 interface Props {
     trackKey: string,

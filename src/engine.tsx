@@ -17,7 +17,7 @@ import animationEngineInstance from './singleton'
 import { vxEngineWindowRefs } from './utils/useRefStore'
 
 interface VXEngineContextProps {
-  composer: React.MutableRefObject<EffectComposer | null>
+  composer: React.RefObject<EffectComposer | null>
   IS_PRODUCTION: boolean
   IS_DEVELOPMENT: boolean
 }

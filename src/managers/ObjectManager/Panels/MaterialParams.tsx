@@ -28,7 +28,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
     const renderNodeContent = (node: ParamTreeNode, { NodeTemplate}) => {
         return (
-            <NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+            <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <ContextMenu>
                     <ContextMenuTrigger className='w-full'>
                             <div className='flex flex-row w-full h-[22px]'>
@@ -59,7 +59,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
             title={(material as any).type}
             defaultOpen={true}
             noPadding={true}
-            contentClassName='!pb-0 gap-2 min-h-0'
+            contentClassName='pb-0! gap-2 min-h-0'
         >
             <div className='text-xs px-2 flex flex-row text-neutral-400'>
                 {/* Search input */}

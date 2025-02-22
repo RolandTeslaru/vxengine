@@ -1,11 +1,8 @@
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
+import { AlertDialogAction, AlertDialogCancel, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
 import React, { useMemo, useState } from "react"
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
-import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { ISetting } from "@vxengine/AnimationEngine/types/engine";
-import { AccordionContent } from "@radix-ui/react-accordion";
 
 interface DialogProps {
     vxkey: string

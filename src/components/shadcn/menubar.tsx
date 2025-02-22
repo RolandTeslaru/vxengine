@@ -33,13 +33,13 @@ const MenubarTrigger: FC<ComponentProps<typeof MenubarPrimitive.Trigger>> =
   ({ className, ...props }) => (
     <MenubarPrimitive.Trigger
       className={cn(
-        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-none border-transparent border text-xs font-medium 
-        focus:bg-neutral-700 focus:bg-opacity-50 focus:text-neutral-50
-        hover:bg-neutral-700 hover:bg-opacity-50 
-        hover:border-neutral-400 hover:border-opacity-20
-        data-[state=open]:bg-neutral-700 data-[state=open]:bg-opacity-50 
+        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs font-medium 
+        focus:bg-neutral-700/50 focus:text-neutral-50
+        hover:bg-neutral-700/50
+        hover:border-neutral-400/20
+        data-[state=open]:bg-neutral-700/50
         data-[state=open]:text-neutral-50 
-        data-[state=open]:border-neutral-400 data-[state=open]:border-opacity-20`,
+        data-[state=open]:border-neutral-400/20`,
         className
       )}
       {...props}
@@ -52,7 +52,7 @@ type MenubarSubTriggerProps = ComponentProps<typeof MenubarPrimitive.SubTrigger>
 const MenubarSubTrigger: FC<MenubarSubTriggerProps> = ({ className, inset, children, ...props }) => (
   <MenubarPrimitive.SubTrigger
     className={cn(
-      `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-none border border-transparent
+      `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-hidden border border-transparent
         focus:text-neutral-50
          hover:bg-blue-600 hover:border-blue-500
       data-[state=open]:bg-blue-600 data-[state=open]:text-neutral-50 data-[state=open]:border-blue-500`,
@@ -71,10 +71,10 @@ const MenubarSubContent: FC<ComponentProps<typeof MenubarPrimitive.SubContent>> 
   ({ className, ...props }) => (
     <MenubarPrimitive.SubContent
       className={cn(
-        `z-50 min-w-[12rem] backdrop-blur-xl  rounded-xl border p-1 shadow-md 
+        `z-50 min-w-[12rem] backdrop-blur-xl  rounded-xl border p-1 shadow-md shadow-black/50
        data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
        data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-       border-neutral-400 border-opacity-20 bg-neutral-900 bg-opacity-80 text-neutral-50`,
+       border-neutral-400/20 bg-neutral-900/80 text-neutral-50`,
         className
       )}
       {...props}
@@ -90,10 +90,12 @@ const MenubarContent: FC<ComponentProps<typeof MenubarPrimitive.Content>> =
         alignOffset={alignOffset}
         sideOffset={sideOffset}
         className={cn(
-          `z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 shadow-md
+          `bg-neutral-900/80 border-neutral-400/20 shadow-md shadow-black/50
+          z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-          border-neutral-400 border-opacity-20 bg-neutral-900 bg-opacity-80 text-neutral-50`,
+            text-neutral-50
+          `,
           className
         )}
         {...props}
@@ -110,8 +112,8 @@ const MenubarItem: FC<MenubarItemProps> =
   ({ className, inset, ...props }) => (
     <MenubarPrimitive.Item
       className={cn(
-        `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-none border border-transparent
-       data-[disabled]:pointer-events-none data-[disabled]:opacity-50 
+        `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-hidden border border-transparent
+       data-disabled:pointer-events-none data-disabled:opacity-50 
        focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
        `,
         inset && "pl-8",
@@ -126,7 +128,7 @@ const MenubarCheckboxItem: FC<ComponentProps<typeof MenubarPrimitive.CheckboxIte
   ({ className, children, checked, ...props }) => (
     <MenubarPrimitive.CheckboxItem
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-neutral-100 focus:text-neutral-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
+        "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-neutral-100 focus:text-neutral-900 data-disabled:pointer-events-none data-disabled:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
         className
       )}
       checked={checked}
@@ -146,7 +148,7 @@ const MenubarRadioItem: FC<ComponentProps<typeof MenubarPrimitive.RadioItem>> =
   ({ className, children, ...props }) => (
     <MenubarPrimitive.RadioItem
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-neutral-100 focus:text-neutral-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
+        "relative flex cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-neutral-100 focus:text-neutral-900 data-disabled:pointer-events-none data-disabled:opacity-50 dark:focus:bg-neutral-800 dark:focus:text-neutral-50",
         className
       )}
       {...props}
@@ -180,7 +182,7 @@ MenubarLabel.displayName = MenubarPrimitive.Label.displayName
 const MenubarSeparator: FC<ComponentProps<typeof MenubarPrimitive.Separator>> =
   ({ className, ...props }) => (
     <MenubarPrimitive.Separator
-      className={cn("-mx-1 my-1 h-px bg-neutral-400 bg-opacity-25", className)}
+      className={cn("-mx-1 my-1 h-px bg-neutral-400/25", className)}
       {...props}
     />
   )

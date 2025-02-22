@@ -3,9 +3,9 @@ import { EditableObjectProps, VXObjectSettings } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { Mesh } from "three";
-import { MeshProps } from "@react-three/fiber";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableMeshProps = EditableObjectProps<MeshProps> & {
+export type EditableMeshProps = EditableObjectProps<ThreeElements["mesh"]> & {
     ref?: React.Ref<Mesh>;
     settings?: {}
 };

@@ -7,10 +7,10 @@ import { SpotLightHelper } from "three";
 import VXEntityWrapper from "../entityWrapper";
 
 import { SpotLight } from "three";
-import { SpotLightProps } from "@react-three/fiber";
 import { useHelper } from "@react-three/drei";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableSpotLightProps = EditableObjectProps<SpotLightProps> & {
+export type EditableSpotLightProps = EditableObjectProps<ThreeElements["spotLight"]> & {
     ref?: React.Ref<SpotLight>;
 };
 
@@ -28,8 +28,8 @@ export const defaultSettings: VXObjectSettings = {
     useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
-export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((props, ref) => {
-    const {settings = {}, ...rest} = props;
+export const EditableSpotLight: React.FC<EditableSpotLightProps> = (props) => {
+    const {settings = {}, ref, ...rest} = props;
     const vxkey = rest.vxkey;
     
     const internalRef = useRef<any>(null); 
@@ -53,4 +53,4 @@ export const EditableSpotLight = forwardRef<SpotLight, EditableSpotLightProps>((
             <spotLight/>
         </VXEntityWrapper>
     );
-})
+}

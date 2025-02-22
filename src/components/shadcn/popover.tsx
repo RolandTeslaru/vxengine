@@ -46,8 +46,8 @@ const PopoverContent: FC<ComponentProps<typeof PopoverPrimitive.Content>> =
           side={side}
           sideOffset={sideOffset}
           className={cn(
-            `backdrop-blur-sm z-50 w-72 rounded-xl border-[1px] border-neutral-600 bg-opacity-80 bg-neutral-700 
-           p-2 text-popover-foreground shadow-lg shadow-neutral-950 outline-none 
+            `backdrop-blur-xs z-50 w-72 rounded-xl border-[1px] border-neutral-600 bg-neutral-700/80
+           p-2 text-popover-foreground shadow-lg shadow-neutral-950 outline-hidden 
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
          data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 
          data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
@@ -68,7 +68,8 @@ const PopoverItem: React.FC<PopoverItemProps> = (props) => {
   const { children, className, icon, ...rest } = props
   return (
     <div
-      className={`${className} cursor-pointer font-sans-menlo relative w-full gap-2 hover:bg-neutral-800 border border-transparent hover:border-neutral-700 px-2 py-[6px] rounded-md flex flex-row text-xs`}
+      className={`${className} cursor-pointer font-sans-menlo relative w-full gap-2 hover:bg-blue-600 border border-transparent
+       hover:border-blue-500 px-2 py-[6px] rounded-md flex flex-row text-xs`}
       {...rest}
     >
       <div className="absolute top-1/2 -translate-y-1/2 ">

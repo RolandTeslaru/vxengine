@@ -11,7 +11,7 @@ import { VXObjectParams } from "./types";
 export interface VXVirtualEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
     name?: string;
-    children: React.ReactElement<ReactThreeFiber.Object3DNode<T, any>>;
+    children: React.ReactElement<ReactThreeFiber.ThreeElement<any>>;
     params?: VXObjectParams
     disabledParams?: string[]
     disableClickSelect?: boolean

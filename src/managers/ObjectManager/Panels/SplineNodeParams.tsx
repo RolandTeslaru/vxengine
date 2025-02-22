@@ -1,16 +1,11 @@
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import React, { useCallback } from 'react'
 import { vxObjectProps, vxSplineNodeProps, vxSplineProps } from '../types/objectStore'
-import ArrowUp from '@geist-ui/icons/arrowUp'
-import ArrowDown from '@geist-ui/icons/arrowDown'
-import X from '@geist-ui/icons/x'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
-import ParamInput from '@vxengine/components/ui/ParamInput'
 import ValueRenderer from '@vxengine/components/ui/ValueRenderer'
 import { Button } from '@vxengine/components/shadcn/button'
-import { useObjectManagerAPI } from '../stores/managerStore'
 import { useVXObjectStore } from '../stores/objectStore'
-import SplineParams from './SplineParams'
+import { ArrowDown, ArrowUp, X } from '@vxengine/components/ui/icons'
 
 interface Props {
     vxobject: vxSplineNodeProps
@@ -83,7 +78,7 @@ const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                 title={`Spline Node ${vxSplineNode.index}`}
                 contentClassName='gap-2'
             >
-                <div className='flex flex-col gap-1 w-auto px-auto [&>*]:bg-transparent [&>*]:p-1 [&>*]:rounded-lg'>
+                <div className='flex flex-col gap-1 w-auto px-auto *:bg-transparent *:p-1 *:rounded-lg'>
                     <Button 
                         variant="default" size="sm" className=' justify-start ' 
                         onClick={() => handleInsertBefore(splineKey, vxSplineNode.index - 1)}

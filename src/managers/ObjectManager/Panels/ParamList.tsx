@@ -45,7 +45,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     if (Object.entries(params).length === 0) return
 
     const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
-        return (<NodeTemplate className="hover:bg-neutral-950 hover:bg-opacity-40 px-2">
+        return (<NodeTemplate className="hover:bg-neutral-950/40 px-2">
             <ContextMenu>
                 <ContextMenuTrigger className='w-full'>
                     <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>

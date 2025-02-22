@@ -3,20 +3,19 @@ import { EditableObjectProps } from "../types"
 import VXEntityWrapper from "../entityWrapper";
 
 import { Points } from "three";
-import { PointsProps } from "@react-three/fiber";
+import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditablePointsProps = EditableObjectProps<PointsProps> & {
+export type EditablePointsProps = EditableObjectProps<ThreeElements["points"]> & {
     ref?: React.Ref<Points>;
 };
 
-export const EditablePoints = forwardRef<Points, EditablePointsProps>((props, ref) => {
+export const EditablePoints: React.FC<EditablePointsProps> = ({ref, ...rest}) => {
     return (
         <VXEntityWrapper 
-            ref={ref} 
-            {...props}
+            {...rest}
         >
             <points ref={ref} />
         </VXEntityWrapper>
     );
-})
+}
 

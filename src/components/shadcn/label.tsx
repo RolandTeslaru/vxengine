@@ -10,7 +10,7 @@ const labelVariants = cva(
     variants: {
       variant: {
         default: "",
-        secondary: " !font-sans-menlo !text-neutral-400 "
+        secondary: " font-sans-menlo! text-neutral-400! "
       }
     },
     defaultVariants: {
@@ -19,7 +19,7 @@ const labelVariants = cva(
   }
 )
 
-const Label = ({ className, variant, ...props }): React.ComponentProps<typeof LabelPrimitive.Root> => (
+const Label = ({ className, variant, ...props }: React.ComponentProps<typeof LabelPrimitive.Root> & { variant?: "default" | "secondary"} ) => (
   <LabelPrimitive.Root
     className={cn(labelVariants({ variant }), className)}
     {...props}

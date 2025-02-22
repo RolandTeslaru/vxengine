@@ -1,9 +1,8 @@
-import Info from '@geist-ui/icons/info';
-import { Input } from '@vxengine/components/shadcn/input';
 import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import React, { useCallback } from 'react'
 import JsonView from 'react18-json-view';
+import { Info } from '../icons';
 
 interface Props {
     staticPropKey: string;
