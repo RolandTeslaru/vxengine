@@ -1,6 +1,6 @@
 {
   "name": "@vexr-labs/vxengine",
-  "version": "1.0.126",
+  "version": "1.0.127",
   "private": false,
   "scripts": {
     "build": "webpack --mode production",
@@ -35,7 +35,7 @@
     "@types/howler": ">=2.2.11",
     "@types/lodash": ">=4.14.202",
     "@types/node": "latest",
-    "@types/three": ">=0.169.0",
+    "@types/three": "^0.172.0",
     "baffle": ">=0.3.6",
     "howler": ">=2.2.4",
     "immer": ">=10.1.1",
@@ -84,7 +84,6 @@
     "motion": "^12.4.7",
     "next-themes": "^0.4.4",
     "postcss-modules-values": "^4.0.0",
-    "r3f-perf": ">=7.2.3",
     "react-colorful": "^5.6.1",
     "react-diff-viewer-continued": "^3.4.0",
     "react-icons": "^5.5.0",
@@ -145,7 +144,7 @@
     "terser-webpack-plugin": "^5.3.11",
     "ts-loader": "^9.5.2",
     "typed-scss-modules": "^8.1.1",
-    "typescript": "latest",
+    "typescript": "^5.7.3",
     "url-loader": "^4.1.1",
     "vite": "^6.1.1",
     "vite-plugin-css-injected-by-js": "^3.5.2",

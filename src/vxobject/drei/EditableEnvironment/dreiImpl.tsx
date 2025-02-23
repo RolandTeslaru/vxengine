@@ -8,7 +8,12 @@ import * as THREE from "three"
 import { useAnimationEngineEvent } from "@vxengine/AnimationEngine/utils/useAnimationEngineEvent"
 import useTransformControlsEvent from "@vxengine/managers/ObjectManager/utils/useTransformControlsEvent"
 import { vx } from "@vxengine/vxobject"
+import { VXObjectSettings } from "@vxengine/vxobject/types"
 
+
+const environmentSettings: VXObjectSettings = {
+  showAll: { title: "Show All", storage: "localStorage", value: false}
+}
 
 export type EnvironmentProps = {
   children?: React.ReactNode
@@ -191,10 +196,6 @@ export function VXEnvironmentPortal({
     }
   )
 
-  const temporarySettings = {
-    "Show All": false
-  }
-
   return (
     <>
       {createPortal(
@@ -213,7 +214,7 @@ export function VXEnvironmentPortal({
             isVirtual={true}
             type="Environment"
             overrideNodeTreeParentKey="global"
-            temporarySettings={temporarySettings}
+            settings={environmentSettings}
           >
             {children}
           </vx.group>

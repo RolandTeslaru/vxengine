@@ -1,4 +1,4 @@
-import { VXObjectParams } from "@vxengine/vxobject/types"
+import { VXElementParams } from "@vxengine/vxobject/types"
 
 export type vxObjectTypes = "entity" 
     | "effect" 
@@ -7,16 +7,19 @@ export type vxObjectTypes = "entity"
     | "virtualEntity"
 
 export interface BaseVxProps {
-    ref: React.MutableRefObject<any>
+    ref: React.RefObject<any>
     vxkey: string
-    params?: VXObjectParams
+    params?: VXElementParams
     disabledParams?: string[]
     name: string
     parentKey: string;
 }
 
-export interface vxEntityProps extends BaseVxProps {
+export interface vxElementProps extends BaseVxProps {
     type: "entity";
+}
+export interface vxHtmlElementProps extends BaseVxProps {
+    type: "htmlElement";
 }
 export interface vxVirtualEntityProps extends BaseVxProps {
     type: "virtualEntity";
@@ -48,7 +51,8 @@ export interface vxEffectProps extends BaseVxProps {
 export type vxObjectProps = vxEffectProps 
     | vxKeyframeNodeProps 
     | vxKeyframeNodeProps 
-    | vxEntityProps 
+    | vxElementProps 
+    | vxHtmlElementProps 
     | vxSplineNodeProps 
     | vxVirtualEntityProps
     | vxSplineProps

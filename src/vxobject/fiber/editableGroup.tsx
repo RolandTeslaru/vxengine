@@ -1,13 +1,11 @@
 import React, { memo, forwardRef, useEffect } from "react";
-import { EditableObjectProps, VXObjectSettings } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef, VXObjectSettings } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { Group } from "three";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableGroupProps = EditableObjectProps<ThreeElements["group"]> & {
-    ref?: React.Ref<Group>;
-    settings?: {},
-    temporarySettings?: {},
+export type VXElementGroupProps = VXElementPropsWithoutRef<ThreeElements["group"]> & {
+    ref?: React.RefObject<Group>;
     overrideNodeTreeParentKey?: string
 };
 
@@ -17,8 +15,8 @@ export const defaultSettings: VXObjectSettings = {
     useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
-export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, ref) => {
-    const { settings = {}, temporarySettings = {}, children: groupChildren, ...rest } = props;
+export const EditableGroup: React.FC<VXElementGroupProps> = (props) => {
+    const { settings = {}, children: groupChildren, ref, ...rest } = props;
 
     // INITIALIZE Settings
     const mergedSettings = {
@@ -27,14 +25,14 @@ export const EditableGroup = memo(forwardRef<Group, EditableGroupProps>((props, 
     }
 
     return (
-        <VXEntityWrapper
+        <VXThreeElementWrapper
             ref={ref}
             {...rest}
             settings={mergedSettings}
         >
-            <group ref={ref} {...rest} >
+            <group {...rest} >
                 {groupChildren}
             </group>
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     );
-}))
+}

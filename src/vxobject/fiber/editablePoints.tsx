@@ -1,21 +1,21 @@
 import React, { forwardRef, useEffect } from "react";
-import { EditableObjectProps } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { Points } from "three";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditablePointsProps = EditableObjectProps<ThreeElements["points"]> & {
-    ref?: React.Ref<Points>;
+export type VXElementPointsProps = VXElementPropsWithoutRef<ThreeElements["points"]> & {
+    ref?: React.RefObject<Points>;
 };
 
-export const EditablePoints: React.FC<EditablePointsProps> = ({ref, ...rest}) => {
+export const EditablePoints: React.FC<VXElementPointsProps> = ({ref, ...rest}) => {
     return (
-        <VXEntityWrapper 
+        <VXThreeElementWrapper 
             {...rest}
         >
-            <points ref={ref} />
-        </VXEntityWrapper>
+            <points/>
+        </VXThreeElementWrapper>
     );
 }
 

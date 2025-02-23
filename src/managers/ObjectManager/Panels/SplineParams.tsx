@@ -4,7 +4,7 @@ import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import ParamInput from '@vxengine/components/ui/ParamInput'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '../stores/settingsStore'
-import { VXObjectParam } from '@vxengine/vxobject/types'
+import { VXElementParam } from '@vxengine/vxobject/types'
 import { useVXObjectStore } from '../stores/objectStore'
 import SettingsList from './SettingsList'
 
@@ -17,13 +17,13 @@ const handleShowSpline = (objectVxKey: string ) => {
     toggleSetting(objectVxKey, "showPositionPath")
 }
 
-const progressParam: VXObjectParam = {
+const progressParam: VXElementParam = {
     title: "progress",
     propertyPath: "splineProgress",
     type: "slider", min: 0, max: 100, step: 0.5 
 }
 
-const tensionParam: VXObjectParam = {
+const tensionParam: VXElementParam = {
     title: "tension",
     propertyPath: "splineTension",
     type: "slider", min: 0, max: 1, step: 0.01

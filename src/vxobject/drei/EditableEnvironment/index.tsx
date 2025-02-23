@@ -1,11 +1,11 @@
 
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import { Lightformer, LightProps } from "@react-three/drei";
-import { EditableObjectProps } from "@vxengine/vxobject/types";
+import { VXElementPropsWithoutRef } from "@vxengine/vxobject/types";
 import { VXEnvironment, VXEnvironmentPortal, VXEnvironmentMap } from "./dreiImpl";
 
 
-export type EditableEnvironmentProps = EditableObjectProps<typeof VXEnvironment> & 
+export type EditableEnvironmentProps = VXElementPropsWithoutRef<typeof VXEnvironment> & 
     React.ComponentProps<typeof VXEnvironment> & { // Inherit all Environment props
     ref?: React.Ref<any>;
     settings?: {};
@@ -25,7 +25,7 @@ export const EditableEnvironment = forwardRef<typeof VXEnvironment, EditableEnvi
 
 
 
-export type EditableEnvironmentPortalProps = EditableObjectProps<typeof VXEnvironmentPortal> & 
+export type EditableEnvironmentPortalProps = VXElementPropsWithoutRef<typeof VXEnvironmentPortal> & 
     React.ComponentProps<typeof VXEnvironmentPortal> & { // Inherit all Environment props
     ref?: React.Ref<any>;
     settings?: {};
@@ -45,7 +45,7 @@ export const EditableEnvironmentPortal = forwardRef<typeof VXEnvironmentPortal, 
 
 
 
-export type EditableEnvironmentMapProps = EditableObjectProps<typeof VXEnvironmentMap> & 
+export type EditableEnvironmentMapProps = VXElementPropsWithoutRef<typeof VXEnvironmentMap> & 
     React.ComponentProps<typeof VXEnvironment> & { // Inherit all Environment props
     ref?: React.Ref<any>;
     settings?: {};

@@ -6,7 +6,7 @@
 
 import React, { useEffect, useLayoutEffect, useState } from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
@@ -55,7 +55,6 @@ export const VXStudio = () => {
         </div>
     )
 }
-
 
 const VXRightPanel = () => {
     const vxWindowId = "VXEngineRightPanel"
@@ -122,26 +121,25 @@ const VXBottomRightBar = () => {
             windowClasses='width=950,height=516,left=200,top=200'
             noStyling={true}
         >
-            <motion.div 
+            <div 
                 id="VXEngineTimelinePanel"
                 className={`fixed backdrop-blur-lg  text-sm bg-neutral-900/70 min-w-[960px] overflow-hidden
-                             border-neutral-400/20 border-[1px] rounded-3xl flex flex-col px-2
+                             border-neutral-400/20 border-[1px] rounded-3xl flex flex-col px-2 !transition-all transform-gpu
                             ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " h-[calc(100%-20px)]! top-2 right-2"}
                           `}
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
                     width: timelineEditorAttached ? 'auto' : 'calc(100% - 68px)',
+                    height: timelineEditorOpen ? '400px' : '45px',
+                    transition: 'height 300ms ease-in-out'
                 }}
-                initial={{ height: "45px" }}
-                animate={
-                    timelineEditorOpen ? { height: "400px" } : { height: "45px" }
-                }
+                
             >
                 <WindowControlDots
                     isAttached={timelineEditorAttached}
                 />
                 <TimelineEditor/>
-            </motion.div>
+            </div>
 
         </VXEngineWindow>
 

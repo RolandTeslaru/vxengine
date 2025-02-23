@@ -3,13 +3,13 @@ import * as THREE from "three"
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import ParamInput from '@vxengine/components/ui/ParamInput';
 import Search from '@vxengine/components/ui/Search';
-import { vxEntityProps, vxObjectProps } from '../types/objectStore';
+import { vxElementProps, vxObjectProps } from '../types/objectStore';
 import JsonView from 'react18-json-view';
 import Tree from '@vxengine/components/ui/Tree';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
-import { VXObjectParam } from '@vxengine/vxobject/types';
+import { VXElementParam } from '@vxengine/vxobject/types';
 import { createParamTree, ParamTreeNode } from '../utils/createPropertyTree';
 import { filterParamTree } from '../utils/filterParamTree';
 

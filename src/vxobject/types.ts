@@ -1,18 +1,18 @@
 import { ISetting, TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
+import { Object3D } from "three";
 
-export interface VXEntityWrapperProps {
+export interface VXThreeElementWrapperProps {
     type: string;
     children: React.ReactNode;
     vxkey: string;
 }
 
-export type EditableObjectProps<T> = Omit<T, 'ref'> & {
+export type VXElementPropsWithoutRef<T> = Omit<T, "ref" | "args"> &  {
     vxkey: string;
-    ref?: React.Ref<unknown>;
     isVirtual?: boolean
     addToNodeTree?: boolean
     icon?: string
-    settings?: {}
+    settings?: VXObjectSettings
     additionalSettings?: {}
 };
 
@@ -39,8 +39,8 @@ export type VXColorInputType = VXBaseInputType & {
     type: "color",
 }
 
-export type VXObjectParam = VXNumberInputType | VXSliderInputType | VXColorInputType;
+export type VXElementParam = VXNumberInputType | VXSliderInputType | VXColorInputType;
 
-export type VXObjectParams = VXObjectParam[]
+export type VXElementParams = VXElementParam[]
 
 export type VXObjectSettings = Record<string, ISetting>

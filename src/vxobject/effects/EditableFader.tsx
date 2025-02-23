@@ -4,8 +4,9 @@ import { Effect } from 'postprocessing'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
 import { useVXEngine } from '@vxengine/engine'
-import { VXObjectParams } from '../types'
+import { VXElementPropsWithoutRef, VXElementParams } from '../types'
 import animationEngineInstance from '@vxengine/singleton'
+import { ThreeElement, ThreeElements } from '@react-three/fiber'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -30,19 +31,23 @@ class FadeShaderEffectImpl extends Effect {
     }
 }
 
-const fadeProps: VXObjectParams = [
+const fadeProps: VXElementParams = [
     { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01}
 ]
 
-export const EditableFadeEffect = memo(forwardRef((props, ref) => {
+export type VXElementFadeEffect = VXElementPropsWithoutRef<ThreeElements["primitive"]> & {
+    ref?: React.RefObject<FadeShaderEffectImpl>
+}
+
+export const EditableFadeEffect: React.FC<VXElementFadeEffect> = (props) => {
     const vxkey = "fadeEffect"
     const name = "Fade Effect"
 
-    const { fadeIntensity } = props as any
+    const { fadeIntensity, ref } = props as any
 
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
 
-    const internalRef = useRef<any>(null);
+    const internalRef = useRef<FadeShaderEffectImpl>(null);
     useImperativeHandle(ref, () => internalRef.current);
 
     const { IS_DEVELOPMENT } = useVXEngine();
@@ -51,7 +56,7 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
         const addObject = useVXObjectStore.getState().addObject;
         const removeObject = useVXObjectStore.getState().removeObject;
         
-        internalRef.current.type = "FadeEffect"
+        (internalRef.current as any).type = "FadeEffect"
 
         const newVXObject: vxEffectProps = {
             type: "effect",
@@ -69,5 +74,4 @@ export const EditableFadeEffect = memo(forwardRef((props, ref) => {
     }, [])
 
     return <primitive ref={internalRef} object={effect} dispose={null} />
-})
-)
+}

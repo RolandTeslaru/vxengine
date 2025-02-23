@@ -1,4 +1,4 @@
-import { useThree } from '@react-three/fiber'
+import { ThreeElements, useThree } from '@react-three/fiber'
 import { useVXEngine } from '@vxengine/engine'
 import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager'
 import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
@@ -6,12 +6,7 @@ import animationEngineInstance from '@vxengine/singleton'
 import { LUT3DEffect, BlendFunction } from 'postprocessing'
 import React, { forwardRef, Ref, useLayoutEffect, useMemo } from 'react'
 import type { Texture } from 'three'
-
-export type LUTProps = {
-    lut: Texture
-    blendFunction?: BlendFunction
-    tetrahedralInterpolation?: boolean
-}
+import { VXElementPropsWithoutRef } from '../types'
 
 declare module 'postprocessing' {
     interface LUT3DEffect {
@@ -19,10 +14,15 @@ declare module 'postprocessing' {
     }
 }
 
-export const EditableLUT = forwardRef(function LUT(
-    { lut, tetrahedralInterpolation, ...props }: LUTProps,
-    ref: Ref<LUT3DEffect>
-) {
+export type VXElementLUT = VXElementPropsWithoutRef<ThreeElements["primitive"]>  & {
+    ref?: React.RefObject<LUT3DEffect>
+    lut: Texture
+    blendFunction?: BlendFunction
+    tetrahedralInterpolation?: boolean
+}
+
+export const EditableLUT: React.FC<VXElementLUT> = ({ ref, lut, tetrahedralInterpolation, ...props },
+) => {
     const vxkey = "lut"
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
@@ -56,4 +56,4 @@ export const EditableLUT = forwardRef(function LUT(
     }, [effect, invalidate, lut, tetrahedralInterpolation])
 
     return <primitive ref={ref} object={effect} dispose={null} />
-})
+}

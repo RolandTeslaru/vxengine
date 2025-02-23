@@ -1,20 +1,20 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
+import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 
 import { SpotLightHelper } from "three";
 
-import VXEntityWrapper from "../entityWrapper";
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { SpotLight } from "three";
 import { useHelper } from "@react-three/drei";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableSpotLightProps = EditableObjectProps<ThreeElements["spotLight"]> & {
-    ref?: React.Ref<SpotLight>;
+export type VXElementSpotLightProps = VXElementPropsWithoutRef<ThreeElements["spotLight"]> & {
+    ref?: React.RefObject<SpotLight>;
 };
 
-const spotLightParams: VXObjectParams = [
+const spotLightParams: VXElementParams = [
     { propertyPath: "color", type: "color"},
     { propertyPath: "intensity", type: "number" },
     { propertyPath: "distance", type: "number" },
@@ -28,7 +28,7 @@ export const defaultSettings: VXObjectSettings = {
     useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
-export const EditableSpotLight: React.FC<EditableSpotLightProps> = (props) => {
+export const EditableSpotLight: React.FC<VXElementSpotLightProps> = (props) => {
     const {settings = {}, ref, ...rest} = props;
     const vxkey = rest.vxkey;
     
@@ -44,13 +44,13 @@ export const EditableSpotLight: React.FC<EditableSpotLightProps> = (props) => {
     }
 
     return (
-        <VXEntityWrapper 
+        <VXThreeElementWrapper 
             ref={internalRef} 
             params={spotLightParams}
             settings={mergedSettings}
             {...props}
         >
             <spotLight/>
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     );
 }

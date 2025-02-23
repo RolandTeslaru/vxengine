@@ -30,6 +30,7 @@ export interface TimelineMangerAPIProps {
     getStaticPropsForObject: (vxkey: string) => EditorStaticProp[] | [],
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => void
+    removeObjectFromEditorData: (vxkey: string) => void
     
     makePropertyTracked: (staticPropKey: string, reRender?: boolean) => void
     makePropertyStatic: (trackKey: string, reRender?: boolean) => void

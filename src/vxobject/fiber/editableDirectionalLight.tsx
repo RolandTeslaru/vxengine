@@ -1,13 +1,12 @@
 import React, { memo, forwardRef, useEffect, useRef, useImperativeHandle } from "react";
 import { useAnimationEngineAPI } from "../../AnimationEngine"
-import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
+import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 import { DirectionalLight } from "three";
-import VXEntityWrapper from "../entityWrapper";
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableDirectionalLightProps = EditableObjectProps<ThreeElements["directionalLight"]> & {
-    ref?: React.Ref<DirectionalLight>;
-    settings?: {}
+export type VXElementDirectionalLightProps = VXElementPropsWithoutRef<ThreeElements["directionalLight"]> & {
+    ref?: React.RefObject<DirectionalLight>;
 };
 
 const defaultSettings: VXObjectSettings = {
@@ -15,12 +14,10 @@ const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-const directionalLightParams: VXObjectParams = []
+const directionalLightParams: VXElementParams = []
 
-export const EditableDirectionalLight: React.FC<EditableDirectionalLightProps> = memo((props) => {
+export const EditableDirectionalLight: React.FC<VXElementDirectionalLightProps> = (props) => {
     const { settings = {}, ref, ...rest } = props;
-    const internalRef = useRef<any>(null);
-    useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
     const mergedSettings = {
@@ -29,14 +26,12 @@ export const EditableDirectionalLight: React.FC<EditableDirectionalLightProps> =
     }
 
     return (
-        <VXEntityWrapper
-            ref={internalRef}
+        <VXThreeElementWrapper
             params={directionalLightParams}
             settings={mergedSettings}
             {...rest}
         >
-
             <directionalLight ref={ref} {...props} />
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     )
-})
+}

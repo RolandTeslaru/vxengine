@@ -1,6 +1,6 @@
 import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { PerspectiveCamera, PerspectiveCameraProps, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
@@ -19,15 +19,15 @@ declare module 'three' {
     }
 }
 
-export type EditablePerspectiveCameraProps = EditableObjectProps<PerspectiveCameraProps> & {
-    settings?: {}
+export type VXElementPerspectiveCameraProps = VXElementPropsWithoutRef<PerspectiveCameraProps> & {
+    ref?: React.RefObject<THREE.PerspectiveCamera>
 };
 
 const recalculatePerspectiveMatrixSideEffect:TrackSideEffectCallback = (animationEngine) => {
     animationEngine.cameraRequiresProjectionMatrixRecalculation = true;
 }
 
-const perspectiveCameraParams: VXObjectParams = [
+const perspectiveCameraParams: VXElementParams = [
     {propertyPath: "localRotationZ", type: "number"},
     {propertyPath: "far", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
     {propertyPath: "near", type: "number", sideEffect: recalculatePerspectiveMatrixSideEffect},
@@ -43,7 +43,7 @@ export const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-export const EditablePerspectiveCamera = memo((props: EditablePerspectiveCameraProps) => {
+export const EditablePerspectiveCamera: React.FC<VXElementPerspectiveCameraProps> = (props) => {
     const { settings = {}, ref,...rest } = props;
     const vxkey = rest.vxkey;
     const cameraRef = useRef(null)
@@ -85,7 +85,7 @@ export const EditablePerspectiveCamera = memo((props: EditablePerspectiveCameraP
     ]
 
     return (
-        <VXEntityWrapper
+        <VXThreeElementWrapper
             vxkey={vxkey}
             ref={cameraRef}
             params={perspectiveCameraParams}
@@ -94,6 +94,6 @@ export const EditablePerspectiveCamera = memo((props: EditablePerspectiveCameraP
             {...props}
         >
             <PerspectiveCamera name="VXPerspectiveCamera" />
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     );
-})
+}

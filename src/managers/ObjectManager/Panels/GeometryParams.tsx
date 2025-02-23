@@ -3,12 +3,12 @@ import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import ParamInput from "@vxengine/components/ui/ParamInput";
 
 import * as THREE from "three"
-import { vxEntityProps, vxObjectProps } from "../types/objectStore";
+import { vxElementProps, vxObjectProps } from "../types/objectStore";
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
 import PopoverShowObjectData from "@vxengine/components/ui/Popovers/PopoverShowObjectData";
 import Tree from "@vxengine/components/ui/Tree";
 import Search from "@vxengine/components/ui/Search";
-import { VXObjectParam } from "@vxengine/vxobject/types";
+import { VXElementParam } from "@vxengine/vxobject/types";
 import { createParamTree, ParamTreeNode } from "../utils/createPropertyTree";
 import { filterParamTree } from "../utils/filterParamTree";
 
@@ -16,7 +16,7 @@ export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.P
 // Add any other geometry types you want to support
 
 interface VXGeometryProps {
-    vxobject: vxEntityProps
+    vxobject: vxElementProps
 }
 
 export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {

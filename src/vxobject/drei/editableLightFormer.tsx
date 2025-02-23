@@ -1,14 +1,14 @@
 import React, { memo, forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { LightProps } from "@react-three/drei";
 import { invalidate, useFrame } from "@react-three/fiber";
-import { EditableObjectProps, VXObjectSettings } from "../types";
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef, VXObjectSettings } from "../types";
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import * as THREE from "three"
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { Lightformer } from "./lightFormerImpl";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 
-export type EditableLightformerProps = EditableObjectProps<LightProps> & {
+export type EditableLightformerProps = VXElementPropsWithoutRef<LightProps> & {
     ref?: React.Ref<LightProps>;
     settings?: VXObjectSettings;
     defaultScene?: THREE.Scene
@@ -99,14 +99,14 @@ export const EditableLightFormer = memo(
 
             return (
                 <>
-                    <VXEntityWrapper
+                    <VXThreeElementWrapper
                         ref={internalRef}
                         settings={mergedSettings}
                         isVirtual={true}
                         {...props}
                     >
                         <Lightformer/>
-                    </VXEntityWrapper>
+                    </VXThreeElementWrapper>
                 </>
             )
         }))

@@ -1,14 +1,14 @@
 import React, { memo, forwardRef, useRef, useImperativeHandle, useLayoutEffect } from "react";
-import { EditableObjectProps, VXObjectParams } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef, VXElementParams } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 import { Color } from "three";
 
-export type EditableColorProps = EditableObjectProps<ThreeElements["color"]> & {
-    ref?: React.Ref<ThreeElement<typeof Color>>;
+export type VXElementColorProps = VXElementPropsWithoutRef<ThreeElements["color"]> & {
+    ref?: React.RefObject<ThreeElement<typeof Color>>;
 }
 
-const colorParams: VXObjectParams = [
+const colorParams: VXElementParams = [
     {
         type: "color",  
         propertyPath: "",
@@ -21,7 +21,7 @@ const colorDisabledParams = [
     "scale"
 ]
 
-export const EditableColor: React.FC<EditableColorProps> = memo((props) => {
+export const EditableColor: React.FC<VXElementColorProps> = memo((props) => {
     const { settings = {}, ref, ...rest } = props
     const internalRef = useRef<any>(null);
     useImperativeHandle(ref, () => internalRef.current);
@@ -29,7 +29,7 @@ export const EditableColor: React.FC<EditableColorProps> = memo((props) => {
     const colorSettings = {}
 
     return (
-        <VXEntityWrapper
+        <VXThreeElementWrapper
             ref={internalRef}
             params={colorParams}
             settings={colorSettings}
@@ -38,6 +38,6 @@ export const EditableColor: React.FC<EditableColorProps> = memo((props) => {
             {...props}
         >
             <color />
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     )
 })

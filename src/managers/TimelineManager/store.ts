@@ -92,6 +92,15 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             state.editorObjects[newVxObject.vxkey] = newEdObject
         }))
     },
+    removeObjectFromEditorData: (vxkey: string) => {
+        if (!(vxkey in get().editorObjects)) {
+            return
+        }
+
+        set(produce((state: TimelineMangerAPIProps) => {
+            delete state.editorObjects[vxkey];
+        }))
+    },
 
     makePropertyTracked: (staticPropKey, reRender) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);

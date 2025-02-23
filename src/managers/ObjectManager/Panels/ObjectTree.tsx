@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import { useObjectManagerAPI } from '../stores/managerStore';
-import { vxEntityProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import { vxElementProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useObjectSettingsAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import Search from '@vxengine/components/ui/Search';
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';

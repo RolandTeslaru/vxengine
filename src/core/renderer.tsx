@@ -30,7 +30,7 @@ import { ObjectManagerDriver, useVXObjectStore } from '@vxengine/managers/Object
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useVXEngine } from '@vxengine/engine'
 import VXRendererUtils from '@vxengine/utils/rendererUtils'
-import { VXObjectParams } from '@vxengine/vxobject/types'
+import { VXElementParams } from '@vxengine/vxobject/types'
 import animationEngineInstance from '@vxengine/singleton'
 import { EffectComposer } from '@react-three/postprocessing'
 
@@ -94,7 +94,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
 }
 
 
-const sceneParams: VXObjectParams = [
+const sceneParams: VXElementParams = [
   {type: "number", propertyPath: "environmentIntensity", title: "envIntensity"},
   {type: "number", propertyPath: "backgroundBlurriness", title: "bgBlurriness"},
   {type: "number", propertyPath: "backgroundIntensity", title: "bgIntensity"},

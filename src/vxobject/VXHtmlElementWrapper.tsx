@@ -12,44 +12,47 @@ import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/t
 import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { VXObjectParams, VXObjectSettings } from "./types";
+import { VXElementParams, VXObjectSettings } from "./types";
 import animationEngineInstance from "@vxengine/singleton";
 import { cloneDeep } from "lodash";
 
-export interface VXEntityWrapperProps<T extends THREE.Object3D> {
-    vxkey: string;
-    name?: string;
-    children: React.ReactElement<ReactThreeFiber.ThreeElement<any>>;
-    params?: VXObjectParams
-    disabledParams?: string[]
-    disableClickSelect?: boolean
-    isVirtual?: boolean
-    addToNodeTree?: boolean
-    overrideNodeTreeParentKey?: string;
-    overrideNodeType?: string
-
-    settings?: VXObjectSettings,
-
-    icon?: string
-}
-
-declare module 'three' {
-    interface Object3D {
+export type VXHtmlElementWrapperProps<T extends HTMLElement = HTMLDivElement> =
+    Omit<JSX.IntrinsicElements["div"], "ref"> & {
+        ref?: React.RefObject<T>;
         vxkey: string;
-        rotationDegrees: THREE.Vector3
+        name?: string;
+        children: React.ReactElement<any>;
+        register?: boolean
+        params?: VXElementParams
+        disabledParams?: string[]
+        disableClickSelect?: boolean
+        isVirtual?: boolean
+        addToNodeTree?: boolean
+        overrideNodeTreeParentKey?: string;
+        overrideNodeType?: string
+
+        settings?: VXObjectSettings,
+
+        icon?: string
     }
-}
 
-const initializeDegreeRotations = (obj: THREE.Object3D) => {
-    obj.rotationDegrees = new THREE.Vector3(0,0,0);
-}
+const htmlDefaultParams:VXElementParams = [
+    {type:"number", propertyPath:"position.x"},
+    {type:"number", propertyPath:"position.y"},
+    {type:"number", propertyPath:"scale.x"},
+    {type:"number", propertyPath:"scale.y"},
+    {type:"number", propertyPath:"rotation.x"},
+    {type:"number", propertyPath:"rotation.y"}
+]
 
-const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperProps<THREE.Object3D>>(
+const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
     ({
+        ref,
         children,
         vxkey,
         params,
         disabledParams,
+        register = true,
         disableClickSelect = false,
         isVirtual = false,
         addToNodeTree = true,
@@ -57,7 +60,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         overrideNodeTreeParentKey,
         icon,
         ...props
-    }, ref) => {
+    }) => {
         if (vxkey === undefined)
             throw new Error(`ObjectStore: Error intializing vxobject! No vxkey was passed to: ${children}`);
 
@@ -70,13 +73,13 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         // Refresh settings when the current timeline changes
         useLayoutEffect(() => {
             if (currentTimelineID === undefined) return
-            
+
             const mergedSettingsForObject = cloneDeep(initialSettings);
             const rawObject = useAnimationEngineAPI.getState().currentTimeline.objects.find(obj => obj.vxkey === vxkey);
-            
-            if(rawObject){
+
+            if (rawObject) {
                 const rawSettings = rawObject.settings;
-                if(rawSettings){
+                if (rawSettings) {
                     Object.entries(rawSettings).forEach(([settingKey, rawSetting]) => {
                         mergedSettingsForObject[settingKey].value = rawSetting;
                     })
@@ -88,7 +91,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         }, [currentTimelineID])
 
 
-        const internalRef = useRef<THREE.Object3D | null>(null);
+        const internalRef = useRef<HTMLDivElement | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
 
         // Initializations
@@ -97,23 +100,20 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
             const removeObject = useVXObjectStore.getState().removeObject;
 
             const name = props.name || vxkey
-            const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
+            // const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
 
-            if(internalRef.current)
-                initializeDegreeRotations(internalRef.current)
-
-            const newVXEntity: vxObjectProps = {
-                type: isVirtual ? "virtualEntity" : "entity",
+            const newVXElement: vxObjectProps = {
+                type: "htmlElement",
                 ref: internalRef,
                 vxkey,
                 name,
-                params: params || [],
+                params: params ? [...htmlDefaultParams, ...params] : htmlDefaultParams,
                 disabledParams: disabledParams || [],
-                parentKey,
-            };            
-            
-            addObject(newVXEntity, IS_DEVELOPMENT, {icon});
-            animationEngineInstance.initObjectOnMount(newVXEntity);
+                parentKey: null,
+            };
+
+            addObject(newVXElement, IS_DEVELOPMENT, { icon });
+            animationEngineInstance.initObjectOnMount(newVXElement);
 
             return () => {
                 animationEngineInstance.handleObjectUnMount(vxkey);
@@ -122,7 +122,7 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         }, []);
 
         const modifiedChildren = React.cloneElement(children, {
-            ref: internalRef as React.MutableRefObject<THREE.Object3D>, // Allow ref to be a generic Object3D type
+            ref: internalRef, 
             ...props,
         },
             <>
@@ -133,13 +133,11 @@ const VXEntityWrapper = React.memo(forwardRef<THREE.Object3D, VXEntityWrapperPro
         return <>
             {modifiedChildren}
 
-            {vxObject && IS_DEVELOPMENT && (
-                <ObjectUtils vxkey={vxkey}>
-                    {children}
-                </ObjectUtils>
-            )}
+            {vxObject && IS_DEVELOPMENT &&
+                children
+            }
         </>;
     }
-));
 
-export default VXEntityWrapper
+
+export default VXHtmlElementWrapper

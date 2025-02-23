@@ -5,7 +5,7 @@ import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import { VXObjectParam } from '@vxengine/vxobject/types'
+import { VXElementParam } from '@vxengine/vxobject/types'
 import Tree from '@vxengine/components/ui/Tree'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
 import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData'
@@ -17,8 +17,15 @@ interface Props {
 interface ParamTreeNode {
     key: string; // The name of the property
     children: Record<string, ParamTreeNode>; // Nested children
-    param: VXObjectParam
+    param: VXElementParam
 }
+
+const excludeParamKeys = [
+    "position.x", "position.y", "position.z",
+    "rotation.x", "rotation.y", "rotation.z",
+    "rotationDegrees.x", "rotationDegrees.y", "rotationDegrees.z",
+    "scale.x", "scale.y", "scale.z",
+]
 
 const ParamList: React.FC<Props> = ({ vxobject }) => {
     if (!vxobject) return
@@ -33,11 +40,12 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     const tree = useMemo(() => {
         const tree: Record<string, ParamTreeNode> = {}
         params.forEach((param) => {
-            tree[param.propertyPath] = {
-                key: param.title ?? param.propertyPath,
-                children: {},
-                param
-            }
+            if(!excludeParamKeys.includes(param.propertyPath))
+                tree[param.propertyPath] = {
+                    key: param.title ?? param.propertyPath,
+                    children: {},
+                    param
+                }
         })
         return tree;
     }, [vxobject])

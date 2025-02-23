@@ -27,15 +27,18 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
     if (isPanelDisabled) return;
 
     const renderInputs = (property, disabled = false) => {
-        return ['x', 'y', 'z'].map((axis) => (
-            <ParamInput
-                vxObject={vxobject}
-                key={`${property}-${axis}`}
-                param={{ propertyPath: `${property}.${axis}`, type: "number" }}
-                horizontal={true}
-                disabled={disabled}
-            />
-        ));
+        return ['x', 'y', 'z'].map((axis) => {
+                const propertyPath = `${property}.${axis}`;
+                if(vxobject.params.find(param => param.propertyPath === propertyPath))
+                    return <ParamInput
+                        vxObject={vxobject}
+                        key={`${property}-${axis}`}
+                        param={{ propertyPath: `${property}.${axis}`, type: "number" }}
+                        horizontal={true}
+                        disabled={disabled}
+                    />
+            
+        })
     };
 
     return (

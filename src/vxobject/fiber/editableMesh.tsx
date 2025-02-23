@@ -1,13 +1,12 @@
-import React, { memo, forwardRef, useEffect, useLayoutEffect } from "react";
-import { EditableObjectProps, VXObjectSettings } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import React, { memo, forwardRef, useEffect, useLayoutEffect, ComponentProps } from "react";
+import { VXElementPropsWithoutRef, VXObjectSettings } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { Mesh } from "three";
-import { ThreeElement, ThreeElements } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 
-export type EditableMeshProps = EditableObjectProps<ThreeElements["mesh"]> & {
-    ref?: React.Ref<Mesh>;
-    settings?: {}
+export type VXElementMeshProps = VXElementPropsWithoutRef<ThreeElements["mesh"]> & {
+    ref?: React.RefObject<Mesh>;
 };
 
 export const defaultSettings: VXObjectSettings = {
@@ -17,8 +16,8 @@ export const defaultSettings: VXObjectSettings = {
 }
 
 
-export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref) => {
-    const { children: meshChildren, settings = {}, ...rest } = props;
+export const EditableMesh: React.FC<VXElementMeshProps> = (props) => {
+    const { children: meshChildren, settings = {}, ref, ...rest } = props;
 
     const mergedSettings = {
         ...defaultSettings,
@@ -26,14 +25,14 @@ export const EditableMesh = memo(forwardRef<Mesh, EditableMeshProps>((props, ref
     }
 
     return (
-        <VXEntityWrapper 
-            ref={ref} 
+        <VXThreeElementWrapper 
+            ref={ref}
             settings={mergedSettings}
             {...rest}
         >
             <mesh>
                 {meshChildren}
             </mesh>
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     );
-}));
+}

@@ -338,9 +338,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (!this._isReady)
       return;
 
-    // Add object to editor data
-    useTimelineManagerAPI.getState().addObjectToEditorData(vxObject);
-
     // Initialize all Side Effects
     Object.entries(vxObject.params).forEach(([propertyPath, param]) => {
       const sideEffect = param.sideEffect;

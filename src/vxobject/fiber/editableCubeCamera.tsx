@@ -1,29 +1,27 @@
 import { CubeCamera } from '@react-three/drei';
 import * as THREE from "three"
 import React, { forwardRef, memo } from 'react'
-import { EditableObjectProps } from '../types';
+import { VXElementPropsWithoutRef } from '../types';
 import VXVirtualEntityWrapper from '../virtualEntityWrapper';
-import VXEntityWrapper from '../entityWrapper';
+import VXThreeElementWrapper from '../VXThreeElementWrapper';
 import { ThreeElements } from '@react-three/fiber';
 
-
-
-export type EditableCubeCameraProps = EditableObjectProps<ThreeElements["cubeCamera"]> & {
-    ref?: React.Ref<THREE.CubeCamera>;
-    settings?: {};
+export type VXElementCubeCameraProps = VXElementPropsWithoutRef<ThreeElements["cubeCamera"]> & {
+    ref?: React.RefObject<THREE.CubeCamera>;
+    args?: (number | THREE.WebGLCubeRenderTarget)[]
     overrideNodeTreeParentKey?: string
 };
 
 
-export const EditableCubeCamera: React.FC<EditableCubeCameraProps> = memo((props) => {
+export const EditableCubeCamera: React.FC<VXElementCubeCameraProps> = memo((props) => {
     const { vxkey, ...rest } = props;
 
     return (
-        <VXEntityWrapper
+        <VXThreeElementWrapper
             vxkey={vxkey}
             {...rest}
         >
             <cubeCamera />
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     )
 })

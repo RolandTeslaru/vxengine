@@ -5,7 +5,7 @@ import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import { Input, InputProps } from '@vxengine/components/shadcn/input'
 import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { invalidate } from '@react-three/fiber'
-import { VXObjectParam } from '@vxengine/vxobject/types'
+import { VXElementParam } from '@vxengine/vxobject/types'
 
 interface ValueRendererProps {
     vxObject: vxObjectProps

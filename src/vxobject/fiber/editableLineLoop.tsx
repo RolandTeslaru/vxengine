@@ -1,22 +1,21 @@
 import React, {memo, forwardRef } from "react";
-import { EditableObjectProps } from "../types"
-import VXEntityWrapper from "../entityWrapper";
+import { VXElementPropsWithoutRef } from "../types"
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { LineLoop } from "three";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 
-export type EditableLineLoopProps = EditableObjectProps<ThreeElements["lineLoop"]> & {
-    ref?: React.Ref<LineLoop>;
+export type VXElementLineLoopProps = VXElementPropsWithoutRef<ThreeElements["lineLoop"]> & {
+    ref?: React.RefObject<LineLoop>;
 };
 
-export const EditableLineLoop = memo(forwardRef<LineLoop, EditableLineLoopProps>((props, ref) => {
+export const EditableLineLoop: React.FC<VXElementLineLoopProps> = (props) => {
 
     return (
-        <VXEntityWrapper 
-            ref={ref} 
+        <VXThreeElementWrapper 
             {...props}
         >
-            <lineLoop ref={ref} />
-        </VXEntityWrapper>
+            <lineLoop/>
+        </VXThreeElementWrapper>
     );
-}))
+}

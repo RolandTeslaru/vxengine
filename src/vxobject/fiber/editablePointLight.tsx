@@ -1,10 +1,10 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { EditableObjectProps, VXObjectParams, VXObjectSettings } from "../types"
+import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 
 import { PointLightHelper } from "three";
 
-import VXEntityWrapper from "../entityWrapper";
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { PointLight } from "three";
 import { useHelper } from "@react-three/drei";
@@ -12,12 +12,11 @@ import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settin
 import { ThreeElement } from "@react-three/fiber";
 import { ThreeElements } from "@react-three/fiber";
 
-export type EditablePointLightProps = EditableObjectProps<ThreeElements["pointLight"]> & {
-    ref?: React.Ref<PointLight>;
-    settings?: {}
+export type VXElementPointLightProps = VXElementPropsWithoutRef<ThreeElements["pointLight"]> & {
+    ref?: React.RefObject<PointLight>;
 };
 
-const pointLightParams: VXObjectParams = [
+const pointLightParams: VXElementParams = [
     { propertyPath: "color", type: "color" },
     { propertyPath: "distance", type: "number" },
     { propertyPath: "intensity", type: "number" },
@@ -29,11 +28,11 @@ export const defaultSettings: VXObjectSettings = {
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
 }
 
-export const EditablePointLight: React.FC<EditablePointLightProps> = (props) => {
+export const EditablePointLight: React.FC<VXElementPointLightProps> = (props) => {
     const {settings = {}, ref, ...rest} = props;
     const vxkey = rest.vxkey;
 
-    const internalRef = useRef<any>(null); 
+    const internalRef = useRef<PointLight>(null); 
     useImperativeHandle(ref, () => internalRef.current);
 
     // INITIALIZE Settings
@@ -48,13 +47,13 @@ export const EditablePointLight: React.FC<EditablePointLightProps> = (props) => 
     
 
     return (
-        <VXEntityWrapper 
+        <VXThreeElementWrapper 
             ref={internalRef} 
             params={pointLightParams}
             settings={mergedSettings}
             {...props}
         >
             <pointLight ref={internalRef} {...props} />
-        </VXEntityWrapper>
+        </VXThreeElementWrapper>
     )
 }

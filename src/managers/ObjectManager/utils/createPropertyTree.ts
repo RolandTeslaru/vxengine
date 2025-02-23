@@ -1,10 +1,10 @@
 import * as THREE from "three"
-import { VXObjectParam } from "@vxengine/vxobject/types";
+import { VXElementParam } from "@vxengine/vxobject/types";
 
 export interface ParamTreeNode {
     key: string; // The name of the property
     children: Record<string, ParamTreeNode>; // Nested children
-    param: VXObjectParam
+    param: VXElementParam
 }
 
 export type ParamTree = Record<string, ParamTreeNode>

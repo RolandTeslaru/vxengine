@@ -5,14 +5,14 @@
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { ReactThreeFiber, useFrame, createPortal, useThree } from '@react-three/fiber';
-import VXEntityWrapper from "./entityWrapper";
-import { VXObjectParams } from "./types";
+import VXThreeElementWrapper from "./VXThreeElementWrapper";
+import { VXElementParams } from "./types";
 
 export interface VXVirtualEntityWrapperProps<T extends THREE.Object3D> {
     vxkey: string;
     name?: string;
     children: React.ReactElement<ReactThreeFiber.ThreeElement<any>>;
-    params?: VXObjectParams
+    params?: VXElementParams
     disabledParams?: string[]
     disableClickSelect?: boolean
 
@@ -29,9 +29,9 @@ const VXVirtualEntityWrapper = forwardRef<THREE.Object3D, VXVirtualEntityWrapper
 
         return (
             <>
-                <VXEntityWrapper  ref={internalRef} {...rest} isVirtual={true}>
+                <VXThreeElementWrapper  ref={internalRef} {...rest} isVirtual={true}>
                     {children}
-                </VXEntityWrapper>
+                </VXThreeElementWrapper>
             </>
         );
     }

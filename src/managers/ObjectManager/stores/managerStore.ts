@@ -3,7 +3,7 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import { ObjectManagerStoreProps, ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
-import { vxEffectProps, vxEntityProps, vxObjectProps, vxObjectTypes, vxVirtualEntityProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import { vxEffectProps, vxElementProps, vxObjectProps, vxObjectTypes, vxVirtualEntityProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
@@ -71,7 +71,7 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         let { parentKey } = vxobject
 
         const type = icon ?? vxobject.ref?.current?.type;
-        const name = (vxobject as vxEntityProps).name ?? vxkey;
+        const name = (vxobject as vxElementProps).name ?? vxkey;
 
         if (nodesPresent[vxkey] === true) {
             return;
