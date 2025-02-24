@@ -19,11 +19,12 @@ export type VXElementLUT = VXElementPropsWithoutRef<ThreeElements["primitive"]> 
     lut: Texture
     blendFunction?: BlendFunction
     tetrahedralInterpolation?: boolean
+    vxkey?: string
 }
 
-export const EditableLUT: React.FC<VXElementLUT> = ({ ref, lut, tetrahedralInterpolation, ...props },
-) => {
-    const vxkey = "lut"
+export const EditableLUT: React.FC<VXElementLUT> = ({ 
+    ref, lut, tetrahedralInterpolation, vxkey = "lut", ...props 
+}) => {
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
 

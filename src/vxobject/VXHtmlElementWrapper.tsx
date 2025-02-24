@@ -30,6 +30,7 @@ export type VXHtmlElementWrapperProps<T extends HTMLElement = HTMLDivElement> =
         addToNodeTree?: boolean
         overrideNodeTreeParentKey?: string;
         overrideNodeType?: string
+        declarative?: boolean
 
         settings?: VXObjectSettings,
 
@@ -56,6 +57,7 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
         disableClickSelect = false,
         isVirtual = false,
         addToNodeTree = true,
+        declarative = true,
         settings: initialSettings = {},
         overrideNodeTreeParentKey,
         icon,
@@ -72,10 +74,14 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
 
         // Refresh settings when the current timeline changes
         useLayoutEffect(() => {
-            if (currentTimelineID === undefined) return
+            if(declarative) return
+
+            if (currentTimelineID === undefined) 
+                return
+            const currentTimeline = useAnimationEngineAPI.getState().currentTimeline
 
             const mergedSettingsForObject = cloneDeep(initialSettings);
-            const rawObject = useAnimationEngineAPI.getState().currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+            const rawObject = currentTimeline.objects?.find(obj => obj.vxkey === vxkey);
 
             if (rawObject) {
                 const rawSettings = rawObject.settings;
@@ -86,13 +92,14 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
                 }
             }
 
-
             useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
         }, [currentTimelineID])
 
 
         const internalRef = useRef<HTMLDivElement | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
+
+        console.log("Internal Ref ", internalRef?.current?.style?.left)
 
         // Initializations
         useLayoutEffect(() => {
@@ -113,10 +120,12 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
             };
 
             addObject(newVXElement, IS_DEVELOPMENT, { icon });
-            animationEngineInstance.initObjectOnMount(newVXElement);
+            if(!declarative)
+                animationEngineInstance.initObjectOnMount(newVXElement);
 
             return () => {
-                animationEngineInstance.handleObjectUnMount(vxkey);
+                if(!declarative)
+                    animationEngineInstance.handleObjectUnMount(vxkey);
                 removeObject(vxkey, IS_DEVELOPMENT)
             }
         }, []);

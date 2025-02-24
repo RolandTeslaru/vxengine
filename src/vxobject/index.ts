@@ -6,6 +6,7 @@ import { EditableLightFormer } from './drei/editableLightFormer';
 import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './drei/EditableEnvironment/dreiImpl';
 import { EditableLUT } from './effects/EditableLUT';
 import {EditableColor} from './fiber/editableColor';
+import EditableDiv from './html/editableDiv';
 
 
 export const vx = {
@@ -30,5 +31,8 @@ export const vx = {
     environment: VXEnvironment,
     environmentPortal: VXEnvironmentPortal,
     environmentMap: VXEnvironmentMap,
-    cubeCamera: EditableCubeCamera
+    cubeCamera: EditableCubeCamera,
+
+
+    div: EditableDiv
 };

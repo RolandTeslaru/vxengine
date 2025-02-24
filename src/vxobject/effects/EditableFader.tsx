@@ -37,14 +37,13 @@ const fadeProps: VXElementParams = [
 
 export type VXElementFadeEffect = VXElementPropsWithoutRef<ThreeElements["primitive"]> & {
     ref?: React.RefObject<FadeShaderEffectImpl>
+    vxkey?: string
+    name?: string
 }
 
-export const EditableFadeEffect: React.FC<VXElementFadeEffect> = (props) => {
-    const vxkey = "fadeEffect"
-    const name = "Fade Effect"
-
-    const { fadeIntensity, ref } = props as any
-
+export const EditableFadeEffect: React.FC<VXElementFadeEffect> = ({
+    vxkey = "fadeEffect", name = "Fade Effect", fadeIntensity, ref
+}) => {
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
 
     const internalRef = useRef<FadeShaderEffectImpl>(null);

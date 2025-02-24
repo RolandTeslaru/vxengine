@@ -12,6 +12,8 @@ import { useVXEngine } from "@vxengine/engine";
 
 export type EditableBloomProps = VXElementPropsWithoutRef<BloomEffectOptions> & {
   ref?: React.RefObject<typeof BloomEffect>
+  vxkey?: string
+  name?: string
 }
 
 const bloomParams: VXElementParams = [
@@ -22,9 +24,7 @@ const bloomParams: VXElementParams = [
 
 export const EditableBloom: React.FC<EditableBloomProps> = (
     (props) => {
-      const { ref, ...rest } = props;
-      const vxkey = "bloom"
-      const name = "Bloom";
+      const { ref, vxkey = "bloom", name = "Bloom", ...rest } = props;
 
       const internalRef = useRef<typeof BloomEffect | null>(null); // Use 'any' to bypass type mismatch
       useImperativeHandle(ref, () => internalRef.current);

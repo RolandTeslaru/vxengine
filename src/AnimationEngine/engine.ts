@@ -63,12 +63,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _id: string
   private _timerId: number;
   private _isReady: boolean = false
-  
+
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
-  
+
   private _currentTimeline: RawTimeline = null;
   private _currentTime: number = 0;
   private _prevTime: number;
@@ -84,7 +84,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     endHandleX: number,
     endHandleY: number,
     progress: number
-  ) => number = js_interpolateNumber;;
+  ) => number = js_interpolateNumber;
 
   // ====================================================
   // Services
@@ -294,7 +294,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     useAnimationEngineAPI.setState({ isPlaying: true })
 
     logReportingService.logInfo(
-      `Started Playing`, { module: "AnimationEngine", functionName: "play"})
+      `Started Playing`, { module: "AnimationEngine", functionName: "play" })
 
     this._timerId = requestAnimationFrame((time: number) => {
       this._prevTime = time;
@@ -342,7 +342,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     Object.entries(vxObject.params).forEach(([propertyPath, param]) => {
       const sideEffect = param.sideEffect;
       const trackKey = `${vxkey}.${propertyPath}`
-      if (sideEffect){
+      if (sideEffect) {
         this.registerSideEffect(trackKey, sideEffect)
       }
     })
@@ -350,7 +350,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Cache the THREE.Object3D reference
     const object3DRef = this._cacheObject3DRef(vxObject);
     if (DEBUG_OBJECT_INIT)
-      logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: {vxObject} })
+      logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: { vxObject } })
 
     const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
@@ -389,7 +389,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
   public getSideEffect(trackKey: string): TrackSideEffectCallback {
-    const { vxkey, propertyPath } =extractDataFromTrackKey(trackKey)
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
     return this._sideEffectCallbacks.get(trackKey) || AnimationEngine.defaultSideEffects[propertyPath];
   }
 
@@ -448,7 +448,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  
+
   /**
    * Caches the THREE.Object3D reference of the vxObject.
    * @param vxObject - The object whose reference is to be cached.
@@ -559,7 +559,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const cacheKey = `${vxkey}.${propertyPath}`;
     const lastValue = this._lastInterpolatedValues.get(cacheKey);
-    
+
 
     // Only update the property if its under the threshold
     // or its undefined ( in the initial state )
@@ -770,7 +770,36 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     // Use the cached setter function to update the property
     let setter = this._propertySetterCache.get(propertyPath);
-    if(setter)
+    if (setter)
+      setter(object3DRef, newValue);
+
+
+    const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
+    if (sideEffect)
+      sideEffect(
+        this,
+        vxkey,
+        propertyPath,
+        object3DRef,
+        newValue
+      );
+
+    if (this._IS_DEVELOPMENT)
+      updateProperty(vxkey, propertyPath, newValue);
+  }
+
+
+  public updateElementStyle(
+    vxkey: string,
+    propertyPath: string,
+    object3DRef: HTMLElement,
+    newValue: number
+  ) {
+    const generalKey = `${vxkey}.${propertyPath}`
+
+    // Use the cached setter function to update the property
+    let setter = this._propertySetterCache.get(propertyPath);
+    if (setter)
       setter(object3DRef, newValue);
 
 
@@ -791,11 +820,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  private _precomputePropertySetterCache(timeline): void {
+  private _precomputePropertySetterCache(timeline: RawTimeline): void {
     timeline.objects.forEach(rawObject => {
       rawObject.staticProps.forEach(rawStaticProp => {
         const propPath = rawStaticProp.propertyPath;
-        if(!this._propertySetterCache.has(propPath)){
+        if (!this._propertySetterCache.has(propPath)) {
           const setter = this._generatePropertySetter(propPath);
           this._propertySetterCache.set(propPath, setter);
         }
