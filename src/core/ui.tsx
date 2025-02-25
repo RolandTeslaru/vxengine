@@ -46,7 +46,7 @@ export const VXStudio = () => {
             <VXRightPanel/>
             <VXBottomRightBar/>
 
-            <StateVisualizer/>
+            {/* <StateVisualizer/> */}
             <CameraManagerUI/>
 
             <UIManagerDialogLayer/>

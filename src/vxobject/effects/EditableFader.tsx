@@ -35,7 +35,7 @@ const fadeProps: VXElementParams = [
     { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01}
 ]
 
-export type VXElementFadeEffect = VXElementPropsWithoutRef<ThreeElements["primitive"]> & {
+export type VXElementFadeEffect = Omit<VXElementPropsWithoutRef<ThreeElements["primitive"]>, "vxkey"> & {
     ref?: React.RefObject<FadeShaderEffectImpl>
     vxkey?: string
     name?: string

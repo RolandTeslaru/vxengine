@@ -8,8 +8,9 @@ import React, {
   createContext,
   useRef,
   useImperativeHandle,
+  memo,
 } from 'react'
-import { useThree, useFrame, useInstanceHandle } from '@react-three/fiber'
+import { useThree, useFrame, useInstanceHandle, Instance } from '@react-three/fiber'
 import {
   EffectComposer as EffectComposerImpl,
   RenderPass,
@@ -25,7 +26,6 @@ import { isWebGL2Available } from 'three-stdlib'
 import * as THREE from "three"
 import { useVXEngine } from "@vxengine/engine"
 
-import { EffectComposerProps } from "../../types/effectComposer"
 import { useObjectManagerAPI, useVXObjectStore } from '../ObjectManager'
 import { vxEffectProps, vxObjectProps } from '../ObjectManager/types/objectStore'
 
@@ -38,164 +38,188 @@ export const EffectComposerContext = createContext<{
   resolutionScale?: number
 }>(null!)
 
+export type EffectComposerProps = {
+  enabled?: boolean
+  children: JSX.Element | JSX.Element[]
+  depthBuffer?: boolean
+  /** Only used for SSGI currently, leave it disabled for everything else unless it's needed */
+  enableNormalPass?: boolean
+  stencilBuffer?: boolean
+  autoClear?: boolean
+  resolutionScale?: number
+  multisampling?: number
+  frameBufferType?: TextureDataType
+  renderPriority?: number
+  camera?: THREE.Camera
+  scene?: THREE.Scene
+}
+
 
 const isConvolution = (effect: Effect): boolean =>
   (effect.getAttributes() & EffectAttribute.CONVOLUTION) === EffectAttribute.CONVOLUTION
 
-// export const EffectsManagerDriver = React.memo(
-//   forwardRef(({
-//     children,
-//     camera: _camera,
-//     scene: _scene,
-//     resolutionScale,
-//     enabled = true,
-//     renderPriority = 1,
-//     autoClear = true,
-//     depthBuffer,
-//     disableNormalPass,
-//     stencilBuffer,
-//     multisampling = 8,
-//     frameBufferType = HalfFloatType,
-//   }: EffectComposerProps,
-//     ref
-//   ) => {
-//     const vxkey = "effects"
-//     const { gl, scene, camera, size } = useThree()
-//     const { composer } = useVXEngine()
+export const EffectComposerDriver = /* @__PURE__ */ memo(
+  /* @__PURE__ */ forwardRef<EffectComposerImpl, EffectComposerProps>(
+  (
+    {
+      children,
+      camera: _camera,
+      scene: _scene,
+      resolutionScale,
+      enabled = true,
+      renderPriority = 1,
+      autoClear = true,
+      depthBuffer,
+      enableNormalPass,
+      stencilBuffer,
+      multisampling = 8,
+      frameBufferType = HalfFloatType,
+    },
+    ref
+  ) => {
+    const vxkey = "effects"
+    const { gl, scene, camera, size } = useThree()
 
-//     const { IS_DEVELOPMENT } = useVXEngine();
+    const { IS_DEVELOPMENT } = useVXEngine();
 
-//     const [normalPass, downSamplingPass] = useMemo(() => {
-//       const webGL2Available = isWebGL2Available()
-//       // Initialize composer
-//       const effectComposer = new EffectComposerImpl(gl, {
-//         depthBuffer,
-//         stencilBuffer,
-//         multisampling: multisampling > 0 && webGL2Available ? multisampling : 0,
-//         frameBufferType,
-//       })
-//       // @ts-expect-error FIXME:
-//       composer.current = effectComposer
+    const composerRef = useRef<EffectComposerImpl>(null)
 
-//       // Add render pass
-//       effectComposer.addPass(new RenderPass(scene, camera))
+    const [composer, normalPass, downSamplingPass] = useMemo(() => {
+      const webGL2Available = isWebGL2Available()
+      // Initialize composer
+      const effectComposer = new EffectComposerImpl(gl, {
+        depthBuffer,
+        stencilBuffer,
+        multisampling,
+        frameBufferType,
+      })
 
-//       // Create normal pass
-//       let downSamplingPass = null
-//       let normalPass = null
-//       if (!disableNormalPass) {
-//         normalPass = new NormalPass(scene, camera)
-//         normalPass.enabled = false
-//         effectComposer.addPass(normalPass)
-//         if (resolutionScale !== undefined && webGL2Available) {
-//           downSamplingPass = new DepthDownsamplingPass({ normalBuffer: normalPass.texture, resolutionScale })
-//           downSamplingPass.enabled = false
-//           effectComposer.addPass(downSamplingPass)
-//         }
-//       }
+      composerRef.current = effectComposer
 
-//       return [effectComposer, normalPass, downSamplingPass]
-//     }, [
-//       camera,
-//     ])
+      // Add render pass
+      effectComposer.addPass(new RenderPass(scene, camera))
 
-//     useEffect(() => composer?.current.setSize(size.width, size.height), [composer, size])
+      // Create normal pass
+      let downSamplingPass = null
+      let normalPass = null
+      if (enableNormalPass) {
+        normalPass = new NormalPass(scene, camera)
+        normalPass.enabled = false
+        effectComposer.addPass(normalPass)
+        if (resolutionScale !== undefined) {
+          downSamplingPass = new DepthDownsamplingPass({ normalBuffer: normalPass.texture, resolutionScale })
+          downSamplingPass.enabled = false
+          effectComposer.addPass(downSamplingPass)
+        }
+      }
 
-//     useFrame((_, delta) => {
-//       if (enabled) {
-//         const currentAutoClear = gl.autoClear
-//         gl.autoClear = autoClear
-//         if (stencilBuffer && !autoClear) gl.clearStencil()
-//         composer.current.render(delta)
-//         gl.autoClear = currentAutoClear
-//       }
-//     },
-//       enabled ? renderPriority : 0
-//     )
+      return [effectComposer, normalPass, downSamplingPass]
+    }, [
+      camera,
+      gl,
+      depthBuffer,
+      stencilBuffer,
+      multisampling,
+      frameBufferType,
+      scene,
+      enableNormalPass,
+      resolutionScale,
+    ])
 
-//     const group = useRef(null)
-//     const instance = useInstanceHandle(group)
+    useEffect(() => composer?.setSize(size.width, size.height), [composer, size])
+    useFrame(
+      (_, delta) => {
+        if (enabled) {
+          const currentAutoClear = gl.autoClear
+          gl.autoClear = autoClear
+          if (stencilBuffer && !autoClear) gl.clearStencil()
+          composer.render(delta)
+          gl.autoClear = currentAutoClear
+        }
+      },
+      enabled ? renderPriority : 0
+    )
 
-//     useLayoutEffect(() => {
+    const group = useRef(null)
 
-//       const addObject = useVXObjectStore.getState().addObject;
-//       const removeObject = useVXObjectStore.getState().removeObject;
+    useLayoutEffect(() => {
 
-//       const newVXEntity: vxEffectProps = {
-//         type: "effect",
-//         ref: composer,
-//         vxkey,
-//         name: "Effects",
-//         params: [],
-//         disabledParams: [],
-//         parentKey: "global",
-//       };
+      const addObject = useVXObjectStore.getState().addObject;
+      const removeObject = useVXObjectStore.getState().removeObject;
 
-//       addObject(newVXEntity, IS_DEVELOPMENT, { icon: "Effects"});
+      const newVXEntity: vxEffectProps = {
+        type: "effect",
+        ref: composerRef,
+        vxkey,
+        name: "Effects",
+        params: [],
+        disabledParams: [],
+        parentKey: "global",
+      };
 
-//       return () => removeObject(newVXEntity.vxkey, IS_DEVELOPMENT);
-//     }, [])
+      addObject(newVXEntity, IS_DEVELOPMENT, { icon: "Effects" });
 
-//     useLayoutEffect(() => {
-//       const passes: Pass[] = []
+      return () => removeObject(newVXEntity.vxkey, IS_DEVELOPMENT);
+    }, [])
 
-//       if (group.current && instance.current && composer) {
-//         const children = instance.current.objects as unknown[]
+    useLayoutEffect(() => {
+      const passes: Pass[] = []
 
-//         for (let i = 0; i < children.length; i++) {
-//           const child = children[i]
+      // TODO: rewrite all of this with R3F v9
+      const groupInstance = (group.current as THREE.Group & { __r3f: Instance<THREE.Group> }).__r3f
 
-//           if (child instanceof Effect) {
-//             const effects: Effect[] = [child]
+      if (groupInstance && composer) {
+        const children = groupInstance.children
 
-//             if (!isConvolution(child)) {
-//               let next: unknown = null
-//               while ((next = children[i + 1]) instanceof Effect) {
-//                 if (isConvolution(next)) break
-//                 effects.push(next)
-//                 i++
-//               }
-//             }
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i].object
 
-//             const pass = new EffectPass(camera, ...effects)
-//             passes.push(pass)
-//           } else if (child instanceof Pass) {
-//             passes.push(child)
-//           }
-//         }
+          if (child instanceof Effect) {
+            const effects: Effect[] = [child]
 
-//         // @ts-expect-error FIXME
-//         for (const pass of passes) composer?.current.addPass(pass)
+            if (!isConvolution(child)) {
+              let next: unknown = null
+              while ((next = children[i + 1]?.object) instanceof Effect) {
+                if (isConvolution(next)) break
+                effects.push(next)
+                i++
+              }
+            }
 
-//         // @ts-expect-error FIXME
-//         if (normalPass) normalPass.enabled = true
-//         if (downSamplingPass) downSamplingPass.enabled = true
-//       }
+            const pass = new EffectPass(camera, ...effects)
+            passes.push(pass)
+          } else if (child instanceof Pass) {
+            passes.push(child)
+          }
+        }
 
-//       return () => {
-//         // @ts-expect-error FIXME
-//         for (const pass of passes) composer?.current.removePass(pass)
-//         // @ts-expect-error FIXME
-//         if (normalPass) normalPass.enabled = false
-//         if (downSamplingPass) downSamplingPass.enabled = false
-//       }
-//     }, [composer, children, camera, normalPass, downSamplingPass, instance])
+        for (const pass of passes) composer?.addPass(pass)
 
-//     // Memoize state, otherwise it would trigger all consumers on every render
-//     const state = useMemo(
-//       () => ({ composer, normalPass, downSamplingPass, resolutionScale, camera, scene }),
-//       [composer, normalPass, downSamplingPass, resolutionScale, camera, scene]
-//     )
+        if (normalPass) normalPass.enabled = true
+        if (downSamplingPass) downSamplingPass.enabled = true
+      }
 
-//     // Expose the composer
-//     useImperativeHandle(ref, () => composer, [composer])
+      return () => {
+        for (const pass of passes) composer?.removePass(pass)
+        if (normalPass) normalPass.enabled = false
+        if (downSamplingPass) downSamplingPass.enabled = false
+      }
+    }, [composer, children, camera, normalPass, downSamplingPass])
 
-//     return (
-//       // @ts-expect-error FIXME
-//       <EffectComposerContext.Provider value={state}>
-//         <group ref={group}>{children}</group>
-//       </EffectComposerContext.Provider>
-//     )
-//   }
-//   )
-// )
+    // Memoize state, otherwise it would trigger all consumers on every render
+    const state = useMemo(
+      () => ({ composer, normalPass, downSamplingPass, resolutionScale, camera, scene }),
+      [composer, normalPass, downSamplingPass, resolutionScale, camera, scene]
+    )
+
+    // Expose the composer
+    useImperativeHandle(ref, () => composer, [composer])
+
+    return (
+      <EffectComposerContext.Provider value={state}>
+        <group ref={group}>{children}</group>
+      </EffectComposerContext.Provider>
+    )
+  }
+)
+)

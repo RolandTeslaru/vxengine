@@ -14,7 +14,7 @@ declare module 'postprocessing' {
     }
 }
 
-export type VXElementLUT = VXElementPropsWithoutRef<ThreeElements["primitive"]>  & {
+export type VXElementLUT = Omit<VXElementPropsWithoutRef<ThreeElements["primitive"]>, "vxkey">  & {
     ref?: React.RefObject<LUT3DEffect>
     lut: Texture
     blendFunction?: BlendFunction
@@ -23,7 +23,7 @@ export type VXElementLUT = VXElementPropsWithoutRef<ThreeElements["primitive"]> 
 }
 
 export const EditableLUT: React.FC<VXElementLUT> = ({ 
-    ref, lut, tetrahedralInterpolation, vxkey = "lut", ...props 
+    ref, lut, tetrahedralInterpolation, vxkey = "lut", params, ...props 
 }) => {
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
@@ -41,6 +41,7 @@ export const EditableLUT: React.FC<VXElementLUT> = ({
             name: "LUT",
             vxkey,
             ref: { current: effect },
+            params: params ?? [],
             parentKey: "effects"
         }
 

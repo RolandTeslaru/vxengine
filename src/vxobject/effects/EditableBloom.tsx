@@ -3,14 +3,14 @@ import { VXElementPropsWithoutRef, VXElementParams } from "../types";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 
 import { SelectiveBloomProps } from "@react-three/postprocessing";
-import { Bloom } from "@react-three/postprocessing";
 import { BloomEffect } from "postprocessing";
 import { vxEffectProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { BloomEffectOptions } from "postprocessing";
 import animationEngineInstance from "@vxengine/singleton";
 import { useVXEngine } from "@vxengine/engine";
+import { Bloom } from "./impl/BloomFiber";
 
-export type EditableBloomProps = VXElementPropsWithoutRef<BloomEffectOptions> & {
+export type EditableBloomProps = Omit<VXElementPropsWithoutRef<BloomEffectOptions>, "vxkey"> & {
   ref?: React.RefObject<typeof BloomEffect>
   vxkey?: string
   name?: string
@@ -53,5 +53,6 @@ export const EditableBloom: React.FC<EditableBloomProps> = (
       }, []);
 
       return <Bloom ref={internalRef} {...rest} />;
+
     }
   )

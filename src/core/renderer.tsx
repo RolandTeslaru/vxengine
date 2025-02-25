@@ -32,7 +32,7 @@ import { useVXEngine } from '@vxengine/engine'
 import VXRendererUtils from '@vxengine/utils/rendererUtils'
 import { VXElementParams } from '@vxengine/vxobject/types'
 import animationEngineInstance from '@vxengine/singleton'
-import { EffectComposer } from '@react-three/postprocessing'
+import { EffectComposerDriver } from '@vxengine/managers/EffectsManager/driver'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -81,9 +81,9 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
             <ObjectManagerDriver />
           </>
           }
-          <EffectComposer>
+          <EffectComposerDriver>
             {effectsNode}
-          </EffectComposer>
+          </EffectComposerDriver>
 
 
           <CameraManagerDriver />

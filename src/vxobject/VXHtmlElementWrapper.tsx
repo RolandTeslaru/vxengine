@@ -99,8 +99,6 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
         const internalRef = useRef<HTMLDivElement | null>(null);
         useImperativeHandle(ref, () => internalRef.current, [])
 
-        console.log("Internal Ref ", internalRef?.current?.style?.left)
-
         // Initializations
         useLayoutEffect(() => {
             const addObject = useVXObjectStore.getState().addObject;
