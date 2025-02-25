@@ -165,10 +165,8 @@ export function VXEnvironmentPortal({
   //   });
   // }, []);
   useLayoutEffect(() => {
-    if (frames === 1) {
-      camera.current.update(gl as any, virtualScene)
-      invalidate();
-    }
+    camera.current.update(gl as any, virtualScene)
+    invalidate();
     return setEnvProps(background, scene, defaultScene as any, fbo.texture, {
       blur,
       backgroundBlurriness,

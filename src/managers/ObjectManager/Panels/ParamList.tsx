@@ -28,8 +28,6 @@ const excludeParamKeys = [
 ]
 
 const ParamList: React.FC<Props> = ({ vxobject }) => {
-    if (!vxobject) return
-
     const refObject = vxobject?.ref?.current as THREE.Object3D;
     if (!refObject) return;
 
@@ -50,7 +48,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
         return tree;
     }, [vxobject])
 
-    if (Object.entries(params).length === 0) return
+    if (Object.entries(tree).length === 0) return
 
     const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (<NodeTemplate className="hover:bg-neutral-950/40 px-2">

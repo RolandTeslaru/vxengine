@@ -75,7 +75,7 @@ function AlertDialogContent({
       {darkenBackground === true && <AlertDialogOverlay />}
       <AlertDialogPrimitive.Content
         className={cn(
-          `fixed left-[50%]  top-[50%] z-50 w-auto translate-x-[-50%] translate-y-[-50%] duration-200
+          `fixed left-[50%]  top-[50%] z-50 w-auto duration-200
            data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
            data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
            data-[state=open]:slide-in-from-top-[48%]
@@ -135,7 +135,7 @@ AlertDialogFooter.displayName = "AlertDialogFooter"
 
 const AlertDialogTitle = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Title>) => (
   <AlertDialogPrimitive.Title
-    className={cn("text-lg  text-neutral-300 font-semibold font-sans-menlo", className)}
+    className={cn("text-lg  text-neutral-200 font-semibold font-sans-menlo", className)}
     {...props}
   />
 )
@@ -143,7 +143,7 @@ AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
 const AlertDialogDescription = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Description>) => (
   <AlertDialogPrimitive.Description
-    className={cn("text-sm max-w-[500px] font-inter", className)}
+    className={cn("text-sm text-neutral-400 max-w-[500px] font-inter", className)}
     {...props}
   />
 )

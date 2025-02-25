@@ -43,6 +43,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   public static defaultSideEffects: Record<string, TrackSideEffectCallback> = defaultSideEffects;
 
   public cameraRequiresProjectionMatrixRecalculation: boolean = false;
+  public environmentRequiresUpdate: boolean = false
 
   // ====================================================
   // Public Instance Getters (API)

@@ -15,13 +15,13 @@ const TimelineEditor = () => {
                 direction='horizontal'
             >
                 
-                {/* <ResizablePanel defaultSize={28}>
+                <ResizablePanel defaultSize={28}>
                     <TrackVerticalList/>
                 </ResizablePanel>
                 <ResizableHandle withHandle className='mx-1' />
                 <ResizablePanel defaultSize={72}>
                     <TimelineArea/>
-                </ResizablePanel> */}
+                </ResizablePanel>
             </ResizablePanelGroup>
 
             <TimelineEditorFooter />
