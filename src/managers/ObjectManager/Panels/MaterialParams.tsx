@@ -4,12 +4,8 @@ import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import ParamInput from '@vxengine/components/ui/ParamInput';
 import Search from '@vxengine/components/ui/Search';
 import { vxElementProps, vxObjectProps } from '../types/objectStore';
-import JsonView from 'react18-json-view';
 import Tree from '@vxengine/components/ui/Tree';
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import PopoverShowObjectData from '@vxengine/components/ui/Popovers/PopoverShowObjectData';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
-import { VXElementParam } from '@vxengine/vxobject/types';
 import { createParamTree, ParamTreeNode } from '../utils/createPropertyTree';
 import { filterParamTree } from '../utils/filterParamTree';
 
@@ -19,37 +15,28 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
     const propertiesTree = useMemo(() => {
         return createParamTree(material, "material")
-    },[vxobject])
-    
+    }, [vxobject])
+
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredPropertiesTree = useMemo(() =>
         filterParamTree(propertiesTree, searchQuery), [material, searchQuery])
 
-    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate}) => {
+    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-                <ContextMenu>
-                    <ContextMenuTrigger className='w-full'>
-                            <div className='flex flex-row w-full h-[22px]'>
-                                <p className={`text-xs my-auto font-light text-neutral-400`}>
-                                    {node.key}
-                                </p>
-                        {node.param && 
-                                <ParamInput
-                                    vxObject={vxobject}
-                                    param={node.param}
-                                    className="ml-auto w-fit"
-                                    />
-                        }
-                            </div>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                        <PopoverShowObjectData object={node} title='TreeNode Data' >
-                            Show data
-                        </PopoverShowObjectData>
-                    </ContextMenuContent>
-                </ContextMenu>
+                <div className='flex flex-row w-full h-[22px]'>
+                    <p className={`text-xs my-auto font-light text-neutral-400`}>
+                        {node.key}
+                    </p>
+                    {node.param &&
+                        <ParamInput
+                            vxObject={vxobject}
+                            param={node.param}
+                            className="ml-auto w-fit"
+                        />
+                    }
+                </div>
             </NodeTemplate>
         )
     }
@@ -66,7 +53,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             <ScrollArea className='h-96' scrollbarPosition='right'>
-                <Tree tree={filteredPropertiesTree as Record<string, ParamTreeNode>} renderNodeContent={renderNodeContent}/>
+                <Tree tree={filteredPropertiesTree as Record<string, ParamTreeNode>} renderNodeContent={renderNodeContent} />
             </ScrollArea>
         </CollapsiblePanel>
     )
@@ -75,7 +62,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
 // const MaterialPropertyNode = () => {
 //     return (
-        
+
 //     )
 // }
 

@@ -15,10 +15,6 @@ import { useAnimationEngineAPI } from './store';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 import { cloneDeep } from 'lodash';
 
-import {
-  Spline as wasm_Spline,
-} from '../wasm/pkg';
-
 import { useSourceManagerAPI } from '../managers/SourceManager/store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';

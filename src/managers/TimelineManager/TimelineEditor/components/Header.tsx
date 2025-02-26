@@ -15,7 +15,8 @@ const MinimizeButton = () => {
 
     return (
         <button
-            className={"h-7 w-7 flex hover:bg-neutral-800 rounded-2xl cursor-pointer "}
+            className={`h-7 w-7 flex  border border-transparent rounded-2xl cursor-pointer 
+                        hover:bg-neutral-800/40 hover:border-neutral-400/10  transition-all  `}
             onClick={() => setOpen(!open)}
         >
             <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
@@ -33,7 +34,7 @@ const TimelineEditorHeader = () => {
         >
             <MinimizeButton/>
 
-            <p className='font-sans-menlo text-sm my-auto h-auto'>
+            <p className='font-roboto-mono text-sm my-auto h-auto'>
                 Timeline Editor
             </p>
 

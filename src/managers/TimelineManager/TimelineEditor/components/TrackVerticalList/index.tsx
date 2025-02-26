@@ -2,21 +2,19 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, memo, ComponentProps } from "react";
 import KeyframeControl from "@vxengine/components/ui/KeyframeControl";
 import { cursorRef, useRefStore } from "@vxengine/utils/useRefStore";
 import { useTimelineManagerAPI } from "../../..";
 import Search from "@vxengine/components/ui/Search";
 import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
 import { ContextMenu, ContextMenuContent, ContextMenuSub, ContextMenuItem, ContextMenuTrigger, ContextMenuSubTrigger, ContextMenuSubContent } from "@vxengine/components/shadcn/contextMenu";
-import PopoverShowTrackData from "@vxengine/components/ui/Popovers/PopoverShowTrackData";
-import Box from '@geist-ui/icons/box'
-import Maximize2 from "@geist-ui/icons/maximize2";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
 import { useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "../../store";
 import { EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
+import JsonView from "react18-json-view";
 
 const TRACK_HEIGHT = 34;
 
@@ -32,9 +30,9 @@ const TrackVerticalList = memo(() => {
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target as HTMLDivElement;
         if (!timelineAreaRef.current) return
-        
+
         if (scrollSyncId.current) cancelAnimationFrame(scrollSyncId.current);
-        
+
         scrollSyncId.current = requestAnimationFrame(() => {
             const newScrollTop = scrollContainer.scrollTop;
             timelineAreaRef.current.scrollTop = newScrollTop;
@@ -56,26 +54,32 @@ const TrackVerticalList = memo(() => {
     const { IS_PRODUCTION } = useVXEngine()
 
     return (
-        <div className={`w-full h-full flex flex-col rounded-2xl relative overflow-hidden border border-neutral-800 bg-neutral-900/90`}>
-            <div className={`h-[32px] flex flex-row px-2 `}>
+        <div 
+            className={`w-[32%] h-full flex flex-col rounded-2xl relative overflow-y-scroll border border-neutral-800 bg-neutral-900`}
+            ref={trackListRef}
+            onScroll={handleOnScroll}
+        >
+            <div 
+                className={`sticky top-0 w-full min-h-[28px] z-10 flex flex-row px-2`}
+                style={{background: "linear-gradient(0deg, rgba(23,23,23,0) 0%, rgba(23,23,23,0.9) 71%)"}}
+            >
                 <Search
-                    className="w-36 px-2 bg-neutral-800 ml-auto my-auto"
+                    className="w-36 px-2 bg-neutral-800 ml-auto my-auto "
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
             </div>
-            {IS_PRODUCTION && 
+            {IS_PRODUCTION &&
                 <div className="absolute top-1/2 -translate-y-1/2">
-                    <p className="text-xs font-sans-menlo text-center text-red-600 px-2">
+                    <p className="text-xs font-roboto-mono text-center text-red-600 px-2">
                         Track Tree is not generated in Production Mode!
                     </p>
-                </div>  
+                </div>
             }
             {filteredTree && (
                 <div
-                    className="overflow-y-scroll w-full h-full text-xs"
-                    ref={trackListRef}
-                    onScroll={handleOnScroll}
+                    className="h-fit text-xs"
+                    
                 >
                     {Object.values(filteredTree).map((node, index) =>
                         <TreeNode node={node} level={1} key={index} />
@@ -100,11 +104,11 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
     return (
         <>
             <li className={`flex items-center hover:bg-neutral-800 w-full px-1`}
-                style={{ height: DEFAULT_ROW_HEIGHT}}
+                style={{ height: DEFAULT_ROW_HEIGHT }}
             >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
                     {hasChildren && <TreeCollapseButton nodeKey={node.key} isCollapsed={isCollapsed} />}
-                    <RenderPaths paths={paths} isLinearTrack={isLinearTrack} trackKey={node.track}/>
+                    <RenderPaths paths={paths} isLinearTrack={isLinearTrack} trackKey={node.track} />
                 </div>
             </li>
             {!isCollapsed && hasChildren && (
@@ -118,7 +122,7 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
     )
 })
 
-const RenderPaths = ({paths, isLinearTrack, trackKey}: {paths: string[], isLinearTrack: boolean, trackKey: string}) => {
+const RenderPaths = ({ paths, isLinearTrack, trackKey }: { paths: string[], isLinearTrack: boolean, trackKey: string }) => {
     return paths.map((path, index) => {
         const isFinal = index === paths.length - 1;
         const showArrow = index < paths.length - (isLinearTrack ? 2 : 1);
@@ -172,12 +176,17 @@ const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
 
     return (
         <ContextMenuContent>
-            <PopoverShowTrackData trackKey={trackKey} side="right">
-                <p className="text-xs font-sans-menlo">Show Data</p>
-            </PopoverShowTrackData>
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
-                    <p className="text-xs font-sans-menlo">Select...</p>
+                    <p>Show Data</p>
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <TrackData trackKey={trackKey}/>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                    <p className="text-xs font-roboto-mono">Select...</p>
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <ContextMenuItem onClick={() => selectAllKeyframesOnTrack(trackKey)}>
@@ -218,3 +227,16 @@ const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string,
 }
 
 export default TrackVerticalList;
+
+const TrackData = ({trackKey}: {trackKey: string}) => {
+    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
+
+    return (
+        <div>
+            <p className='font-roboto-mono text-xs text-center mb-2'>Track Data</p>
+            <div className='max-h-[70vh] overflow-y-scroll flex flex-col w-full mt-2 text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
+                <JsonView src={track} collapsed={({ depth }) => depth > 1} />
+            </div>
+        </div>
+    )
+}

@@ -3,16 +3,16 @@ import { TransformControls } from "three-stdlib";
 import { create } from "zustand";
 
 export interface refStoreProps {
-    editAreaRef: React.MutableRefObject<HTMLDivElement | null>
-    trackListRef: React.MutableRefObject<HTMLDivElement | null>
-    timelineAreaRef: React.MutableRefObject<HTMLDivElement | null>
-    draggingLeftRef: React.MutableRefObject<number | null>
-    scrollSyncId: React.MutableRefObject<number | null>
-    scrollLeftRef: React.MutableRefObject<number | null>
+    editAreaRef: React.RefObject<HTMLDivElement | null>
+    trackListRef: React.RefObject<HTMLDivElement | null>
+    timelineAreaRef: React.RefObject<HTMLDivElement | null>
+    draggingLeftRef: React.RefObject<number | null>
+    scrollSyncId: React.RefObject<number | null>
+    scrollLeftRef: React.RefObject<number | null>
 
-    transformControlsRef: React.MutableRefObject<TransformControls | null>
+    transformControlsRef: React.RefObject<TransformControls | null>
 
-    entityListRef: React.MutableRefObject<any>
+    entityListRef: React.RefObject<any>
     keyframesRef: Map<string, HTMLElement>
     trackSegmentsRef: Map<string, HTMLElement>
 }

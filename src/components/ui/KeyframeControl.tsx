@@ -2,20 +2,58 @@ import React, { useMemo, useState, FC, memo, useLayoutEffect, useCallback } from
 import { moveToNextKeyframeSTATIC, moveToPreviousKeyframeSTATIC } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu';
-import PopoverShowTrackData from './Popovers/PopoverShowTrackData';
-import PopoverShowStaticPropData from './Popovers/PopoverShowStaticPropData';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '../shadcn/contextMenu';
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from './DialogAlerts/Alert';
 import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
 import animationEngineInstance from '@vxengine/singleton';
-import PopoverShowSideEffectData from './Popovers/PopoverShowSideEffectData';
 import { ChevronLeft, ChevronRight, Lambda, Square } from './icons';
+import StaticPropData from './DataContextContext/StaticProp';
+import SideEffectData from './DataContextContext/SideEffect';
+import { TrackData } from './DataContextContext/Track';
+import { EditorTrack } from '@vxengine/types/data/editorData';
 
 interface TimelineKeyframeControlProps {
     vxkey: string,
     param: { propertyPath: string }
     disabled?: boolean
     horizontal?: boolean
+}
+
+const handleMiddleButton = (generalKey: string, isPropertyTracked: boolean) => {
+    const makePropertyTracked = useTimelineManagerAPI.getState().makePropertyTracked;
+    const createKeyframe = useTimelineManagerAPI.getState().createKeyframe
+    if (isPropertyTracked === true) {
+        const trackKey = generalKey;
+        createKeyframe({ trackKey }) // auto sets the value to the ref property path of the object
+    }
+    else if (isPropertyTracked === false) {
+        // This is a singular static prop
+        const staticPropKey = generalKey;
+        makePropertyTracked(staticPropKey)
+    }
+}
+
+const checkIfOnKeyframe = (time: number, track: EditorTrack, setIsOnKeyframe: (value: boolean) => void, isPropertyTracked: boolean, orderedKeyframeKeys: string[]) => {
+    if (!isPropertyTracked) return;
+
+    let left = 0;
+    let right = orderedKeyframeKeys.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const midKey = orderedKeyframeKeys[mid];
+        const midTime = track.keyframes[midKey].time;
+
+        if (midTime === time) {
+            setIsOnKeyframe(true);
+            return;
+        } else if (midTime < time) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    setIsOnKeyframe(false);
 }
 
 const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled, horizontal = false }) => {
@@ -32,51 +70,15 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
     // Initialize
     useLayoutEffect(() => {
         const time = animationEngineInstance.currentTime
-        checkIfOnKeyframe({ time })
+        checkIfOnKeyframe(time, track, setIsOnKeyframe, isPropertyTracked, orderedKeyframeKeys)
     }, [vxkey, propertyPath, orderedKeyframeKeys])
 
-    const checkIfOnKeyframe = useCallback(({ time }) => {
-        if (!isPropertyTracked) return;
-
-        let left = 0;
-        let right = orderedKeyframeKeys.length - 1;
-
-        while (left <= right) {
-            const mid = Math.floor((left + right) / 2);
-            const midKey = orderedKeyframeKeys[mid];
-            const midTime = track.keyframes[midKey].time;
-    
-            if (midTime === time) {
-                setIsOnKeyframe(true);
-                return;
-            } else if (midTime < time) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-        setIsOnKeyframe(false);
-    }, [track?.orderedKeyframeKeys, track?.keyframes])
-
-    useAnimationEngineEvent("timeUpdated", checkIfOnKeyframe)
-
-    const handleMiddleButton = useCallback(() => {
-        const makePropertyTracked = useTimelineManagerAPI.getState().makePropertyTracked;
-        const createKeyframe = useTimelineManagerAPI.getState().createKeyframe
-        if (isPropertyTracked === true) {
-            createKeyframe({ trackKey }) // auto sets the value to the ref property path of the object
-        }
-        else if (isPropertyTracked === false) {
-            // This is a singular static prop
-            const staticPropKey = trackKey;
-            makePropertyTracked(staticPropKey)
-        }
-    }, [isPropertyTracked])
+    useAnimationEngineEvent("timeUpdated", ({ time }) => checkIfOnKeyframe(time, track, setIsOnKeyframe, isPropertyTracked, orderedKeyframeKeys))
 
     return (
         <ContextMenu>
             <ContextMenuTrigger className={`flex ${horizontal && "flex-col-reverse"} gap-2`}>
-                {hasSideEffect && <Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} text-neutral-500!`}/>}
+                {hasSideEffect && <Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} text-neutral-500!`} />}
                 <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
                     {isPropertyTracked &&
                         <button
@@ -88,7 +90,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         </button>
                     }
                     <button
-                        onClick={handleMiddleButton}
+                        onClick={() => handleMiddleButton(trackKey, isPropertyTracked)}
                         className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
                         disabled={disabled}
                     >
@@ -107,28 +109,43 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent className='flex flex-col'>
-                {isPropertyTracked ?
-                    <PopoverShowTrackData trackKey={trackKey}>
-                        <p>Show Track Data</p>
-                    </PopoverShowTrackData>
-                    :
-                    <PopoverShowStaticPropData staticPropKey={trackKey} side='left'>
-                        <p>Show StaticProp Data</p>
-                    </PopoverShowStaticPropData>
-                }
+                <ContextMenuSub>
+                    {isPropertyTracked ?
+                        <>
+                            <ContextMenuSubTrigger>
+                                <p>Show Track Data</p>
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                                <TrackData trackKey={trackKey} />
+                            </ContextMenuSubContent>
+                        </>
+                        :
+                        <>
+                            <ContextMenuSubTrigger>
+                                <p>Show StaticProp Data</p>
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                                <StaticPropData staticPropKey={trackKey} />
+                            </ContextMenuSubContent>
+                        </>
+                    }
+                </ContextMenuSub>
                 {hasSideEffect && (
-                    <PopoverShowSideEffectData trackKey={trackKey}>
-                        <p>Show SideEffect</p>
-                    </PopoverShowSideEffectData>
+                    <ContextMenuSub>
+                        <ContextMenuSubTrigger>
+                            <p>Show SideEffect</p>
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent>
+                            <SideEffectData trackKey={trackKey} />
+                        </ContextMenuSubContent>
+                    </ContextMenuSub>
                 )}
                 {isPropertyTracked &&
                     <ContextMenuItem
-                        onClick={(e) => {
-                            pushDialogStatic({
-                                content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, 
-                                type: "alert"
-                            })
-                        }}
+                        onClick={(e) => pushDialogStatic({
+                            content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
+                            type: "alert"
+                        })}
                     >
                         <p className=' text-red-500'>
                             Make Property Static
@@ -137,7 +154,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                 }
                 <ContextMenuItem
                     onClick={() => pushDialogStatic({
-                        content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, 
+                        content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
                         type: "alert"
                     })}
                 >

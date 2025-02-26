@@ -104,7 +104,7 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                     <AlertDialogTitle>
                         Data Sync Conflict Detected!
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="my-0 py-0 text-xs font-sans-menlo">
+                    <AlertDialogDescription className="my-0 py-0 text-xs font-roboto-mono">
                             A conflict between local storage data and disk data has been found. <br/>
                             project name: <span className="text-red-500">{projectName}</span>
                     </AlertDialogDescription>
@@ -117,11 +117,11 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                     <div className="flex flex-row w-full py-3 text-neutral-300 text-sm">
                         <div className="flex flex-row gap-2 w-1/2 justify-center">
                             <HardDrive size={20} />
-                            <p className="font-sans-menlo">Disk Data <span className="text-xs text-neutral-500">{`(old)`}</span></p>
+                            <p className="font-roboto-mono">Disk Data <span className="text-xs text-neutral-500">{`(old)`}</span></p>
                         </div>
                         <div className="flex flex-row gap-2 w-1/2 justify-center ">
                             <Server size={20} />
-                            <p className="font-sans-menlo">Local Storage Data <span className="text-xs text-neutral-500">{`(new)`}</span></p>
+                            <p className="font-roboto-mono">Local Storage Data <span className="text-xs text-neutral-500">{`(new)`}</span></p>
                         </div>
                     </div>
                     {/* Data Difs */}
@@ -140,12 +140,12 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                     <div className="flex flex-row py-3 justify-items-center">
                         <div className="w-1/2 flex h-full">
                             <Button variant="error" className="m-auto w-52 bg-red-950 border-red-900 hover:bg-red-950" onClick={onClickKeepDisk}>
-                                <p className="font-sans-menlo text-xs text-neutral-200">Keep Disk Data</p>
+                                <p className="font-roboto-mono text-xs text-neutral-200">Keep Disk Data</p>
                             </Button>
                         </div>
                         <div className="w-1/2 flex">
                             <Button variant="error" className="mx-auto w-52 bg-red-950 border-red-900 hover:bg-red-950" onClick={onClickLocalStorage}>
-                                <p className="font-sans-menlo text-xs text-neutral-200">Keep Local Storage Data</p>
+                                <p className="font-roboto-mono text-xs text-neutral-200">Keep Local Storage Data</p>
                             </Button>
                         </div>
                     </div>

@@ -4,11 +4,8 @@ import ParamInput from "@vxengine/components/ui/ParamInput";
 
 import * as THREE from "three"
 import { vxElementProps, vxObjectProps } from "../types/objectStore";
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
-import PopoverShowObjectData from "@vxengine/components/ui/Popovers/PopoverShowObjectData";
 import Tree from "@vxengine/components/ui/Tree";
 import Search from "@vxengine/components/ui/Search";
-import { VXElementParam } from "@vxengine/vxobject/types";
 import { createParamTree, ParamTreeNode } from "../utils/createPropertyTree";
 import { filterParamTree } from "../utils/filterParamTree";
 
@@ -29,32 +26,23 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
     }, [vxobject])
 
     const filteredPropertiesTree = useMemo(() =>
-        filterParamTree(propertiesTree, searchQuery), 
-    [geometry, searchQuery])
+        filterParamTree(propertiesTree, searchQuery),
+        [geometry, searchQuery])
 
 
     const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-                <ContextMenu>
-                    <ContextMenuTrigger className='w-full'>
-                        <div className='flex flex-row w-full h-[22px]'>
-                            <p className={`text-xs my-auto font-light text-neutral-400`}>
-                                {node.key}
-                            </p>
-                            <ParamInput
-                                vxObject={vxobject}
-                                param={node.param}
-                                className="ml-auto w-fit"
-                            />
-                        </div>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                        <PopoverShowObjectData object={node} title='TreeNode Data' >
-                            Show data
-                        </PopoverShowObjectData>
-                    </ContextMenuContent>
-                </ContextMenu>
+                <div className='flex flex-row w-full h-[22px]'>
+                    <p className={`text-xs my-auto font-light text-neutral-400`}>
+                        {node.key}
+                    </p>
+                    <ParamInput
+                        vxObject={vxobject}
+                        param={node.param}
+                        className="ml-auto w-fit"
+                    />
+                </div>
             </NodeTemplate>
         )
     }
@@ -70,7 +58,7 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             <div className='flex flex-col'>
-                <Tree  tree={filteredPropertiesTree} renderNodeContent={renderNodeContent} />
+                <Tree tree={filteredPropertiesTree} renderNodeContent={renderNodeContent} />
             </div>
         </CollapsiblePanel>
     )

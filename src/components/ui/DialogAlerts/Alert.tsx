@@ -24,7 +24,7 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <p className='text-neutral-600 text-opacity-40 text-sm font-sans-menlo mr-auto my-auto '>{`MakePropertyStatic()`}</p>
+                    <p className='text-neutral-600 text-opacity-40 text-sm font-roboto-mono mr-auto my-auto '>{`MakePropertyStatic()`}</p>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                         //@ts-expect-error
@@ -71,7 +71,7 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <p className='text-neutral-600 text-opacity-40 text-sm font-sans-menlo mr-auto my-auto '>{`RemoveProperty()`}</p>
+                <p className='text-neutral-600 text-opacity-40 text-sm font-roboto-mono mr-auto my-auto '>{`RemoveProperty()`}</p>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                     //@ts-expect-error

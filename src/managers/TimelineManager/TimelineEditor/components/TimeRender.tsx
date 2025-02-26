@@ -27,7 +27,7 @@ const TimeRender = () => {
   }, [])
 
   return <p 
-      className="font-sans-menlo text-lg text-center h-auto my-auto mx-2" 
+      className="font-roboto-mono text-lg text-center h-auto my-auto mx-2" 
       ref={displayRef}
       />
 };

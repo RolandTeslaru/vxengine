@@ -1,39 +1,12 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Input } from '@vxengine/components/shadcn/input';
-import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
-import React, { useCallback, useMemo, useState } from 'react'
-import JsonView from 'react18-json-view';
-import { Info } from '../icons';
+import React, { useCallback, useMemo } from 'react'
+import JsonView from 'react18-json-view'
 
-interface Props {
-    trackKey: string;
-    keyframeKey: string
-    children: React.ReactNode
-    triggerClassName?: string
-    contentClassName?: string
-    side?: "left" | "right" | "top" | "bottom"
-    align?: "center" | "end" | "start"
-}
-
-export const PopoverShowKeyframeData: React.FC<Props> = (props) => {
-    const { children, triggerClassName } = props
-
-    return (
-        <Popover>
-            <PopoverTrigger icon={<Info size={15}/>}>
-                {children}
-            </PopoverTrigger>
-            <Content {...props} />
-        </Popover>
-    )
-}
-
-
-const Content: React.FC<Props> = (props) => {
-    const { trackKey, keyframeKey, contentClassName, side, align } = props
+const KeyframeData = ({ trackKey, keyframeKey }: { trackKey: string, keyframeKey: string }) => {
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
     const currentTimeline = useAnimationEngineAPI(state => state.currentTimeline);
 
@@ -82,26 +55,26 @@ const Content: React.FC<Props> = (props) => {
     const keyframe = useTimelineManagerAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
 
     return (
-        <PopoverContent className={contentClassName + " gap-2 flex flex-col"} side={side} align={align}>
-            <p className='font-sans-menlo text-xs text-center'>Editor Keyframe Data</p>
+        <div className='w-72 flex flex-col'>
+            <p className='font-roboto-mono text-xs text-center'>Editor Keyframe Data</p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={keyframe} customizeNode={customizeNode} collapsed={({ depth }) => depth > 1} />
             </div>
-            <p className='font-sans-menlo text-xs text-center'>Raw Keyframe</p>
+            <p className='font-roboto-mono text-xs text-center'>Raw Keyframe</p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={rawKeyframe} collapsed={({ depth }) => depth > 1} />
             </div>
-            <p className='font-sans-menlo text-xs text-center'>
+            <p className='font-roboto-mono text-xs text-center'>
                 Keyframe Element Dataset
             </p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={extractDatasetFromObject(keyframeElement)} collapsed={({ depth }) => depth > 1} />
             </div>
-        </PopoverContent>
+        </div>
     )
 }
 
-export default PopoverShowKeyframeData
+export default KeyframeData
 
 
 function extractDatasetFromObject(element) {

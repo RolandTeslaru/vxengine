@@ -78,7 +78,7 @@ const TimelineArea = (() => {
 
   return (
     <div
-      className={`w-full h-full border border-neutral-800 bg-neutral-900/90
+      className={`w-[68%] h-full border border-neutral-800 bg-neutral-900/90
                     rounded-2xl relative overflow-auto `}
       ref={timelineAreaRef}
       onScroll={handleOnScroll}

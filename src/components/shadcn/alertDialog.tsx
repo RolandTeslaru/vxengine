@@ -135,7 +135,7 @@ AlertDialogFooter.displayName = "AlertDialogFooter"
 
 const AlertDialogTitle = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Title>) => (
   <AlertDialogPrimitive.Title
-    className={cn("text-lg  text-neutral-200 font-semibold font-sans-menlo", className)}
+    className={cn("text-lg  text-neutral-200 font-semibold font-roboto-mono", className)}
     {...props}
   />
 )
@@ -176,7 +176,7 @@ const AlertDialogCancel = ({ className, ...props }: ComponentProps<typeof AlertD
   <AlertDialogPrimitive.Cancel
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0 font-sans-menlo",
+      "mt-2 sm:mt-0 font-roboto-mono",
       className
     )}
     {...props}

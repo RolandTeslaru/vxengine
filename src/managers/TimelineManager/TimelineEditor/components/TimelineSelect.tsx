@@ -4,7 +4,7 @@ import animationEngineInstance from '@vxengine/singleton';
 import React from 'react'
 
 
-const TimelineSelect = () => {
+const TimelineSelect = React.memo(() => {
     const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID);
     const timelines = useAnimationEngineAPI(state => state.timelines)
 
@@ -32,6 +32,6 @@ const TimelineSelect = () => {
             </SelectContent>
         </Select>
     )
-}
+})
 
 export default TimelineSelect

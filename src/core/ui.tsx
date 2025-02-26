@@ -4,7 +4,7 @@
 
 "use client"
 
-import React, { useEffect, useLayoutEffect, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
 import { motion } from "motion/react"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
@@ -26,76 +26,97 @@ import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegm
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
+import { Button } from "@vxengine/components/shadcn/button"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
     return (
         <div id="VXEngineStudio" className='fixed top-0 left-0 z-50'>
             {IS_PRODUCTION && (
-                <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">   
-                    <AlertTriangle size={30} className="h-auto my-auto"/>
-                    <div className="text-xs font-sans-menlo">
+                <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">
+                    <AlertTriangle size={30} className="h-auto my-auto" />
+                    <div className="text-xs font-roboto-mono">
                         <p>VXEngine Running in Production Mode!</p>
                         <p>VXStudio should not be mounted!</p>
 
                     </div>
                 </div>
             )}
-            <VXMenubar/>
-            <VXLeftPanel/>
-            <VXRightPanel/>
-            <VXBottomRightBar/>
+            <VXMenubar />
 
-            <StateVisualizer/>
-            <CameraManagerUI/>
+            <VXEngineWindow
+                vxWindowId="VXEngineLeftPanel"
+                title="VXEngine: LeftPanel"
+                windowClasses='width=310,height=702,left=200,top=200,resizable=0'
+                className="w-60 h-[686px] top-32 left-6 pt-3"
+                detachedClassName="top-2! left-2! right-2! w-[calc(100%-8px-8px-44px-8px)]"
+            >
+                <VXLeftPanel />
+            </VXEngineWindow>
 
-            <UIManagerDialogLayer/>
+            <VXEngineWindow
+                vxWindowId="VXEngineRightPanel"
+                title="VXEngine: RightPanel"
+                windowClasses='width=256,height=702,right=200,top=200,resizable=0'
+                className="w-60 h-[686px] top-32 right-6 pt-3 px-0!"
+                detachedClassName="top-2! right-2! left-2! w-auto"
+                noPadding={true}
+            >
+                <VXRightPanel />
+            </VXEngineWindow>
 
-            <Watermark/>
+            <VXEngineWindow
+                vxWindowId="VXEngineBottomRightBar"
+                title="VXEngine: TimelineEditor"
+                windowClasses='width=950,height=516,left=200,top=200'
+                noStyling={true}
+            >
+                <VXBottomRightBar />
+            </VXEngineWindow>
+
+            <VXEngineWindow
+                vxWindowId={"stateVisualizerWindow"}
+                title="VXEngine: State Visualizer"
+                windowClasses='width=717,height=450,left=100,top=200,resizable=0'
+                className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
+                detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
+            >
+                <StateVisualizer />
+            </VXEngineWindow>
+
+
+            <CameraManagerUI />
+
+            <UIManagerDialogLayer />
+
+            <Watermark />
         </div>
     )
 }
 
 const VXRightPanel = () => {
-    const vxWindowId = "VXEngineRightPanel"
     const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
-    const vxObject =  useVXObjectStore(state => state.objects[vxkey]);
+    const vxObject = useVXObjectStore(state => state.objects[vxkey]);
 
     return (
-        <VXEngineWindow
-            vxWindowId={vxWindowId}
-            title="VXEngine: RightPanel"
-            windowClasses='width=256,height=702,right=200,top=200,resizable=0'
-            className="w-60 h-[686px] top-32 right-6 pt-3 px-0!"
-            detachedClassName="top-2! right-2! left-2! w-auto"
-            noPadding={true}
-        >
-            <div className="w-full  h-full  rounded-2xl overflow-y-scroll px-2">
-                <div className="h-fit flex flex-col gap-2">
-                    {vxObject && (
-                        <>
-                            <ObjectPropertiesPanel vxobject={vxObject} />
-                            <ParamList vxobject={vxObject} />
-                            <SettingsList vxobject={vxObject} />
-                            <ObjectInfoPanel vxobject={vxObject}/>
-                        </>
-                    )}
-                </div>
+        <div className="w-full  h-full  rounded-2xl overflow-y-scroll px-2">
+            <div className="h-fit flex flex-col gap-2">
+                {vxObject && (
+                    <>
+                        <ObjectPropertiesPanel vxobject={vxObject} />
+                        <ParamList vxobject={vxObject} />
+                        <SettingsList vxobject={vxObject} />
+                        <ObjectInfoPanel vxobject={vxObject} />
+                    </>
+                )}
             </div>
-        </VXEngineWindow>
+        </div>
     )
 }
 
 const VXLeftPanel = () => {
-    const vxWindowId = "VXEngineLeftPanel"
     return (
-        <VXEngineWindow
-            vxWindowId={vxWindowId}
-            title="VXEngine: LeftPanel"
-            windowClasses='width=310,height=702,left=200,top=200,resizable=0'
-            className="w-60 h-[686px] top-32 left-6 pt-3"
-            detachedClassName="top-2! left-2! right-2! w-[calc(100%-8px-8px-44px-8px)]"
-        >
+        <>
             <div className="h-full overflow-y-scroll rounded-2xl ">
                 <div className="flex flex-col gap-2 h-fit">
                     <ObjectList />
@@ -104,7 +125,7 @@ const VXLeftPanel = () => {
             </div>
 
             <ObjectTransformControls />
-        </VXEngineWindow>
+        </>
     )
 }
 
@@ -115,34 +136,24 @@ const VXBottomRightBar = () => {
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId));
 
     return (
-        <VXEngineWindow
-            vxWindowId={vxWindowId}
-            title="VXEngine: TimelineEditor"
-            windowClasses='width=950,height=516,left=200,top=200'
-            noStyling={true}
-        >
-            <div 
-                id="VXEngineTimelinePanel"
-                className={`fixed backdrop-blur-lg  text-sm bg-neutral-900/70 min-w-[960px] overflow-hidden
-                             border-neutral-400/20 border-[1px] rounded-3xl flex flex-col px-2 !transition-all transform-gpu
+        <div
+            id="VXEngineTimelinePanel"
+            className={`fixed backdrop-blur-lg h-[400px] text-sm bg-neutral-900/70 min-w-[960px] overflow-hidden
+                      border-neutral-400/20 border-[1px] rounded-3xl flex flex-col px-2 !transform-gpu
                             ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " h-[calc(100%-20px)]! top-2 right-2"}
                           `}
-                style={{
-                    boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
-                    width: timelineEditorAttached ? 'auto' : 'calc(100% - 68px)',
-                    height: timelineEditorOpen ? '400px' : '45px',
-                    transition: 'height 300ms ease-in-out'
-                }}
-                
-            >
-                <WindowControlDots
-                    isAttached={timelineEditorAttached}
-                />
-                <TimelineEditor/>
-            </div>
-
-        </VXEngineWindow>
-
+            style={{
+                boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
+                width: timelineEditorAttached ? 'auto' : 'calc(100% - 68px)',
+                transition: 'height 300ms ease-in-out',
+                height: timelineEditorOpen ? "400px" : "45px"
+            }}
+        >
+            <WindowControlDots
+                isAttached={timelineEditorAttached}
+            />
+            <TimelineEditor />
+        </div>
     )
 }
 

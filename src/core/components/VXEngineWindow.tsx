@@ -50,8 +50,6 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
 
     const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
 
-    
-
     const handleAttach = () => attachVXWindow(vxWindowId)
 
     const Content = () => {

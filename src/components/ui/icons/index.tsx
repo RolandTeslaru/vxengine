@@ -4,6 +4,7 @@ interface IconProps {
     size?: number, 
     className?: string
     fill?: string
+    style?: React.CSSProperties
 }
 
 
@@ -13,7 +14,7 @@ export const ArrowRight = ({size = 24, className, fill="none"}: IconProps) => <s
 export const ArrowUp = ({size = 24, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
 export const ArrowDown = ({size = 24, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M12 5v14M19 12l-7 7-7-7"></path></svg>
 export const ChevronLeft = ({size = 24, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M15 18l-6-6 6-6"></path></svg>
-export const ChevronRight = ({size = 24, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M9 18l6-6-6-6"></path></svg>
+export const ChevronRight = ({size = 24, className, fill="none", style}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor", ...style}}><path d="M9 18l6-6-6-6"></path></svg>
 export const Move = ({size = 15, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"></path></svg>
 export const Box = ({size = 15, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"></path></svg>
 export const Maximize2 = ({size = 15, className, fill="none"}: IconProps) => <svg className={className} fill={fill} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" shapeRendering="geometricPrecision" viewBox="0 0 24 24" height={size} width={size} style={{ color: "currentcolor"}}><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path></svg>

@@ -5,13 +5,13 @@ import { vxElementProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/mana
 import { useObjectSettingsAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import Search from '@vxengine/components/ui/Search';
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
-import PopoverShowVXObjectData from '@vxengine/components/ui/Popovers/PopoverShowVXObjectData';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
 import { useVXEngine } from '@vxengine/engine';
 import { ArrowDown, ArrowUp, Sun, Video, X } from '@vxengine/components/ui/icons';
+import VxObjectData from '@vxengine/components/ui/DataContextContext/VxObject';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -64,7 +64,7 @@ const ObjectTree = () => {
             </div>
             {IS_PRODUCTION &&
                 <div>
-                    <p className='text-xs text-center font-sans-menlo text-red-600'>
+                    <p className='text-xs text-center font-roboto-mono text-red-600'>
                         Object Tree is not generated in Production Mode!
                     </p>
                 </div>
@@ -185,10 +185,13 @@ const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
         toggleSetting(objVxKey, "useSplinePath");
     }
     return (
-        <ContextMenuContent className='font-sans-menlo'>
-            <PopoverShowVXObjectData vxkey={vxkey} side="right" >
-                Show Data
-            </PopoverShowVXObjectData>
+        <ContextMenuContent className='font-roboto-mono'>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <VxObjectData vxkey={vxkey}/>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
             <ContextMenuItem onClick={handleDeleteSpline} className='text-xs gap-2 text-red-600'>
                 <X size={15} />
                 Delete Spline
@@ -221,10 +224,13 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
     }
 
     return (
-        <ContextMenuContent className='font-sans-menlo'>
-            <PopoverShowVXObjectData vxkey={nodeKey}>
-                Show Data
-            </PopoverShowVXObjectData>
+        <ContextMenuContent className='font-roboto-mono'>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <VxObjectData vxkey={nodeKey}/>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
             {nodeIndex !== 0 &&
                 <ContextMenuItem onClick={handleInsertBefore} className='text-xs gap-2'>
                     <ArrowUp size={15} />
@@ -245,10 +251,13 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
 
 const DefaultContextMenu = ({ vxkey }) => {
     return (
-        <ContextMenuContent className='text-xs font-sans-menlo'>
-            <PopoverShowVXObjectData vxkey={vxkey} side='right'>
-                Show Data
-            </PopoverShowVXObjectData>
+        <ContextMenuContent className='text-xs font-roboto-mono'>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <VxObjectData vxkey={vxkey}/>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
         </ContextMenuContent>
     )
 }

@@ -23,7 +23,7 @@ const VXMenubar = () => {
             style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6"}}
             id="VXEngineMenubar"
         >
-            <div className='my-auto-fit text-white! font-sans-menlo flex flex-row text-sm'>
+            <div className='my-auto-fit text-white! font-roboto-mono flex flex-row text-sm'>
                 <Menubar className=' h-auto'>
                     <LogoButton />
                     <FileButton />
@@ -60,7 +60,7 @@ const LogoButton = () => {
 const FileButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>File</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>File</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>New</MenubarItem>
                 <MenubarItem>Open</MenubarItem>
@@ -76,7 +76,7 @@ const FileButton = () => {
 const EditButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>Edit</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>Edit</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>
                     Undo <MenubarShortcut>⌘Z</MenubarShortcut>
@@ -113,7 +113,7 @@ const SelectButton = React.memo(() => {
 
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>Select</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>Select</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem onClick={handleSelectAll}>All</MenubarItem>
                 <MenubarItem onClick={handleSelectNone}>None</MenubarItem>
@@ -126,7 +126,7 @@ const SelectButton = React.memo(() => {
 const ManagersButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>Debug</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>Debug</p></MenubarTrigger>
             <MenubarContent>
 
                 <ObjectManagerSubMenu />
@@ -147,7 +147,7 @@ const ManagersButton = () => {
 const AddButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>Add</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>Add</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>Group</MenubarItem>
                 <MenubarSub>
@@ -194,7 +194,7 @@ const ViewButton = () => {
 
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>View</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>View</p></MenubarTrigger>
             <MenubarContent>
                 {Object.entries(vxWindows).map(([id, vxwindow]) => 
                     <MenubarItem key={id} onClick={() => handleClick(id)}>
@@ -210,7 +210,7 @@ const ViewButton = () => {
 const SceneButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-sans-menlo'>Scene</p></MenubarTrigger>
+            <MenubarTrigger><p className='font-roboto-mono'>Scene</p></MenubarTrigger>
             <MenubarContent>
                 <MenubarItem onClick={() => invalidate()}>Invalidate</MenubarItem>
                 <MenubarSub>
