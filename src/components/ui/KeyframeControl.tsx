@@ -130,7 +130,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                             })
                         }}
                     >
-                        <p className=' text-red-600'>
+                        <p className=' text-red-500'>
                             Make Property Static
                         </p>
                     </ContextMenuItem>
@@ -141,7 +141,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         type: "alert"
                     })}
                 >
-                    <p className=' text-red-600'>
+                    <p className=' text-red-500'>
                         Remove Property
                     </p>
                 </ContextMenuItem>

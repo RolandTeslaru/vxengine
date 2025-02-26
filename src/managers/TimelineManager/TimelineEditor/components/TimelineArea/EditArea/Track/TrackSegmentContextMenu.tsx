@@ -23,7 +23,7 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
             <ContextMenuItem onClick={() =>
                 pushDialogStatic({content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
             >
-                <p className='text-xs font-sans-menlo text-red-600'>Make Property Static </p>
+                <p className='text-xs font-sans-menlo text-red-500'>Make Property Static </p>
             </ContextMenuItem>
         </ContextMenuContent>
     )

@@ -46,7 +46,7 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
             <ContextMenuItem
                 onClick={handleRemoveSelectedKeyframes}
             >
-                <p className='font-sans-menlo text-xs text-red-600'>
+                <p className=' text-xs font-roboto-mono font-medium text-red-500'>
                     {selectedKeyframesLength < 2
                         ? <>Delete Keyframe</>
                         : <>Delete Keyframes</>
