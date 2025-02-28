@@ -56,6 +56,8 @@ const checkIfOnKeyframe = (time: number, track: EditorTrack, setIsOnKeyframe: (v
     setIsOnKeyframe(false);
 }
 
+
+
 const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled, horizontal = false }) => {
     const trackKey = `${vxkey}.${propertyPath}`;
     const [isOnKeyframe, setIsOnKeyframe] = useState(false);

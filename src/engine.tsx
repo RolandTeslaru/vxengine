@@ -40,7 +40,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
 
   useLayoutEffect(() => {
     if(!isProjectLoaded.current){
-      animationEngineInstance?.loadProject(animations_json, nodeEnv as "production" | "development");
+      animationEngineInstance?.loadProject(animations_json, nodeEnv as "production" | "development", true);
       isProjectLoaded.current = true;
     }
   }, [animations_json, nodeEnv])

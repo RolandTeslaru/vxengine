@@ -27,6 +27,7 @@ import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoP
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
 import { Button } from "@vxengine/components/shadcn/button"
+import { TextureDebugView } from "./components/TextureDebugView"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
@@ -82,6 +83,17 @@ export const VXStudio = () => {
                 detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
             >
                 <StateVisualizer />
+            </VXEngineWindow>
+
+            
+            <VXEngineWindow
+                vxWindowId={"renderTargetWindow"}
+                title="VXEngine: Render Target Texture Visualizer"
+                windowClasses='width=717,height=450,left=100,top=200,resizable=0'
+                className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
+                detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
+            >
+                <TextureDebugView />
             </VXEngineWindow>
 
 

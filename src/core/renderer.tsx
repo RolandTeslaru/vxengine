@@ -72,6 +72,11 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           max: 0.4,
           ...performance
         }}
+        onCreated={(state) => {
+          animationEngineInstance.initGpuComputeService(state.gl)
+          const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
+          animationEngineInstance.gpuComputeService.buildTextures(currentTimeline)
+        }}
         {...restCanvasProps}
       >
         <SceneDriver/>

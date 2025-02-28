@@ -62,7 +62,6 @@ const TimelineEditor = React.memo(() => {
     return (
         <>
             <TimelineEditorHeader />
-
             <div ref={containerRef} className='flex flex-row grow overflow-hidden'>
                 <TrackVerticalList />
                 <div className='h-full flex'>

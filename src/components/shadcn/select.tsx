@@ -38,9 +38,9 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        `flex h-10 w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/80 px-3 py-2 text-xs
+        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/80 px-3 py-1 text-xs
        ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
-        shadow-md shadow-black/20
+        shadow-md shadow-black/20 h-fit
       `,
         className
       )}
@@ -135,7 +135,7 @@ const SelectLabel = ({
   ...props
 }): ComponentProps<typeof SelectPrimitive.Label> => (
   <SelectPrimitive.Label
-    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+    className={cn("py-1.5 pl-8 pr-2 text-xs font-semibold", className)}
     {...props}
   />
 )
@@ -150,7 +150,7 @@ function SelectItem({
     <SelectPrimitive.Item
       className={cn(
         `relative flex w-full  cursor-default select-none items-center rounded-lg py-1 pl-7 pr-1 
-       text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50
+       text-xs outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50
        hover:bg-blue-600 hover:shadow-md shadow-black/30 hover:border-blue-500 border border-transparent 
        `,
         className

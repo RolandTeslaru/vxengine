@@ -24,11 +24,14 @@ import { logReportingService } from './services/LogReportingService';
 import { WasmService } from './services/WasmService';
 import { SplineService } from './services/SplineService';
 import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
+import { GpuComputeService } from './services/GpuComputeService';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
 
 const LOG_MODULE = "AnimationEngine"
+
+
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   // ====================================================
@@ -53,6 +56,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   public get splineService(): SplineService { return this._splineService }
   public get hydrationService(): HydrationService { return this._hydrationService }
+  public get gpuComputeService(): GpuComputeService { 
+    if(!this._gpuComputeService) return undefined
+      // logReportingService.logFatal(
+      //   `GpuComputeService isn't initialized. Ensure you're using this after the VXRenderer element mounts.`, {module: LOG_MODULE, functionName: "get gpuComputeService()"})
+    return this._gpuComputeService;
+  }
 
   // ====================================================
   // Private Instance Properties
@@ -89,6 +98,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _hydrationService: HydrationService;
   private _splineService: SplineService
   private _wasmService: WasmService;
+  private _gpuComputeService: GpuComputeService;
 
   private _IS_DEVELOPMENT: boolean = false;
   private _IS_PRODUCTION: boolean = false;
@@ -117,12 +127,15 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // Public API Methods
   // ====================================================
 
+  public initGpuComputeService(renderer: THREE.WebGLRenderer){
+    this._gpuComputeService = new GpuComputeService(renderer);
+  }
 
   /**
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
   * @param timelines - A record of timelines to load.
   */
-  public loadProject(diskData: RawProject, nodeEnv: "production" | "development") {
+  public loadProject(diskData: RawProject, nodeEnv: "production" | "development", isMounting = false) {
     if (nodeEnv === "production")
       this._IS_PRODUCTION = true;
     else if (nodeEnv === "development")
@@ -150,7 +163,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const firstTimeline = Object.values(timelines)[0];
     const firstTimelineID = firstTimeline.id;
 
-    this.setCurrentTimeline(firstTimelineID);
+    this.setCurrentTimeline(firstTimelineID, isMounting);
 
     logReportingService.logInfo(
       `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`, LOG_CONTEXT)
@@ -167,8 +180,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   /**
    * Sets the current timeline by updating the state, caching splines, and re-rendering.
    * @param timelineId - The identifier of the timeline to set as current.
+   * @param isMounting - During the initial mount phase, the Canvas element isn't mounted.
    */
-  public setCurrentTimeline(timelineId: string) {
+  public setCurrentTimeline(timelineId: string, isMounting: boolean = false) {
     const LOG_CONTEXT = {
       module: "AnimationEngine",
       functionName: "setCurrentTimeline",
@@ -179,7 +193,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     logReportingService.logInfo(`Setting current timeline to ${timelineId}`, LOG_CONTEXT)
 
     const selectedTimeline: RawTimeline = this.timelines[timelineId];
-
     if (!selectedTimeline)
       logReportingService.logFatal(
         `Timeline with id ${timelineId} was not found`, LOG_CONTEXT)
@@ -187,9 +200,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Set the states in the store
     useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
     useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
-
     this._currentTimeline = selectedTimeline;
+
     this._precomputePropertySetterCache(selectedTimeline);
+
+    if(isMounting === false){
+      this._gpuComputeService.buildTextures(selectedTimeline);
+      this._applyTracksOnTimeline(this.currentTime, true)
+    }
 
     const { objects: rawObjects, splines: rawSplines } = selectedTimeline;
     // Cache the splines asynchronously
@@ -201,7 +219,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         `Error caching splines, ${error}`, LOG_CONTEXT)
     });
 
-    this._applyTracksOnTimeline(this.currentTime, true)
 
     if (this._IS_DEVELOPMENT) {
       this.hydrationService.setCurrentTimeline(selectedTimeline);
@@ -428,6 +445,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this.setCurrentTime(newCurrentTime, true);
     this._applyTracksOnTimeline(newCurrentTime);
+    this._gpuComputeService.computeInterpolationTexutre(newCurrentTime);
     this._updateCameraIfNeeded();
 
     invalidate();
@@ -513,26 +531,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  /**
-   * Updates the camera's projection matrix if required.
-   */
-  private _updateCameraIfNeeded() {
-    if (!this.cameraRequiresProjectionMatrixRecalculation)
-      return;
-
-    const camera = this._object3DCache.get('perspectiveCamera') as THREE.PerspectiveCamera;
-    if (camera) {
-      camera.updateProjectionMatrix();
-      this.cameraRequiresProjectionMatrixRecalculation = false;
-    } else
-      logReportingService.logWarning(
-        "PerspectiveCamera was not found in object cache", { module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
-  }
-
-
-
-
-
 
   /**
    * Applies interpolated keyframe values to the specified object's property.
@@ -565,6 +563,26 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._lastInterpolatedValues.set(cacheKey, newValue);
     }
   }
+
+
+
+
+  /**
+   * Updates the camera's projection matrix if required.
+   */
+  private _updateCameraIfNeeded() {
+    if (!this.cameraRequiresProjectionMatrixRecalculation)
+      return;
+
+    const camera = this._object3DCache.get('perspectiveCamera') as THREE.PerspectiveCamera;
+    if (camera) {
+      camera.updateProjectionMatrix();
+      this.cameraRequiresProjectionMatrixRecalculation = false;
+    } else
+      logReportingService.logWarning(
+        "PerspectiveCamera was not found in object cache", { module: LOG_MODULE, functionName: "_updateCameraIfNeeded" })
+  }
+
 
 
 
