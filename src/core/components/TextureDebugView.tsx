@@ -24,7 +24,7 @@ export const TextureDebugView: React.FC<TextureDebugViewProps> = () => {
         else if (selectedTexture === "handlesTexture")
             return gpuComputeService.handleTexture
         else if (selectedTexture === "computationTexture")
-            return gpuComputeService.computeRenderTargetTexture
+            return gpuComputeService.computeTexture
     }, [selectedTexture])
 
     console.log("Texture ", texture)
@@ -68,8 +68,8 @@ export const TextureDebugView: React.FC<TextureDebugViewProps> = () => {
                     </div>
                     <div className='text-xs font-roboto-mono text-white'>
                         <p>Gpu Compute Service <span className='text-green-400'>ready</span></p>
-                        <p>{`Texture Width ${gpuComputeService.computeTextureWidth}`}</p>
-                        <p>{`Texture Height ${gpuComputeService.computeTextureHeight}`}</p>
+                        <p>{`Texture Width ${texture.source.data.width}`}</p>
+                        <p>{`Texture Height ${texture.source.data.height}`}</p>
                         <Popover>
                             <PopoverTrigger>
                                 Show Data
@@ -87,7 +87,10 @@ export const TextureDebugView: React.FC<TextureDebugViewProps> = () => {
 
 const TexturePopoverContent = ({ texture }: { texture: any }) => {
     return (
-        <PopoverContent side='right'>
+        <PopoverContent side='right' className='gap-2 flex flex-col'>
+            <p className='font-roboto-mono text-center text-xs'>
+                Texture Data
+            </p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={texture} collapsed={({ depth }) => depth > 1} />
             </div>
