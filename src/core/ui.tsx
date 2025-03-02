@@ -4,9 +4,8 @@
 
 "use client"
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
-import { motion } from "motion/react"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
 import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
@@ -17,7 +16,6 @@ import SettingsList from "@vxengine/managers/ObjectManager/Panels/SettingsList"
 import { useObjectManagerAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
 import VXMenubar from "@vxengine/core/components/Menubar"
-import { useSourceManagerAPI } from "@vxengine/managers/SourceManager"
 import { UIManagerDialogLayer } from "@vxengine/managers/UIManager/ui"
 import Watermark from "@vxengine/components/ui/Watermark"
 import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/components/ObjectTrasnformControls"
@@ -26,8 +24,6 @@ import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegm
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
-import { Button } from "@vxengine/components/shadcn/button"
-import { TextureDebugView } from "./components/TextureDebugView"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
@@ -83,17 +79,6 @@ export const VXStudio = () => {
                 detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
             >
                 <StateVisualizer />
-            </VXEngineWindow>
-
-            
-            <VXEngineWindow
-                vxWindowId={"renderTargetWindow"}
-                title="VXEngine: Render Target Texture Visualizer"
-                windowClasses='width=717,height=450,left=100,top=200,resizable=0'
-                className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
-                detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
-            >
-                <TextureDebugView />
             </VXEngineWindow>
 
 

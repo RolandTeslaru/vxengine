@@ -24,10 +24,9 @@ import { logReportingService } from './services/LogReportingService';
 import { WasmService } from './services/WasmService';
 import { SplineService } from './services/SplineService';
 import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
-import { GpuComputeService } from './services/GpuComputeService';
 
 const DEBUG_RERENDER = false;
-const DEBUG_OBJECT_INIT = true;
+const DEBUG_OBJECT_INIT = false;
 
 const LOG_MODULE = "AnimationEngine"
 
@@ -56,12 +55,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   public get splineService(): SplineService { return this._splineService }
   public get hydrationService(): HydrationService { return this._hydrationService }
-  public get gpuComputeService(): GpuComputeService {
-    if (!this._gpuComputeService) return undefined
-    // logReportingService.logFatal(
-    //   `GpuComputeService isn't initialized. Ensure you're using this after the VXRenderer element mounts.`, {module: LOG_MODULE, functionName: "get gpuComputeService()"})
-    return this._gpuComputeService;
-  }
 
   // ====================================================
   // Private Instance Properties
@@ -70,8 +63,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _timerId: number;
   private _isReady: boolean = false
 
-  private _objectPropertiesSetterCache: Map<string, Map<string, (newValue: number) => void>> = new Map()
-  private _tracksArray: { vxkey: string, propertyPath: string, trackKey: string }[] = []
+  private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
@@ -79,6 +71,19 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _currentTimeline: RawTimeline = null;
   private _currentTime: number = 0;
   private _prevTime: number;
+  /**
+   * Interpolation function used for keyframe interpolation.
+   * Defaults to a JS implementation, then replaced by the WASM version.
+   */
+  private _interpolateNumberFunction: (
+    startValue: number,
+    endValue: number,
+    startHandleX: number,
+    startHandleY: number,
+    endHandleX: number,
+    endHandleY: number,
+    progress: number
+  ) => number = js_interpolateNumber;
 
   // ====================================================
   // Services
@@ -86,7 +91,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _hydrationService: HydrationService;
   private _splineService: SplineService
   private _wasmService: WasmService;
-  private _gpuComputeService: GpuComputeService;
 
   private _IS_DEVELOPMENT: boolean = false;
   private _IS_PRODUCTION: boolean = false;
@@ -99,10 +103,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       `Created instance with ID: ${this._id}`, { module: LOG_MODULE, functionName: "constructor" });
 
     // Initialize Services
-    this._wasmService = new WasmService("/assets/wasm/rust_bg.wasm");
+    this._wasmService = new WasmService(
+      "/assets/wasm/rust_bg.wasm",
+      (wasm_interpolator) => {
+        this._interpolateNumberFunction = wasm_interpolator;
+      }
+    );
     this._splineService = new SplineService(this._wasmService);
     this._hydrationService = new HydrationService(this.splineService);
-    this._gpuComputeService = new GpuComputeService();
   }
 
 
@@ -110,6 +118,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // ====================================================
   // Public API Methods
   // ====================================================
+
   /**
   * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
   * @param timelines - A record of timelines to load.
@@ -123,13 +132,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._hydrationService.setMode(nodeEnv);
 
     const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
+
     logReportingService.logInfo(
       `Loading Project ${diskData.projectName} in ${(nodeEnv === "production") && "production mode"} ${(nodeEnv === "development") && "dev mode"}`, LOG_CONTEXT)
 
-
     const timelines = diskData.timelines
     useAnimationEngineAPI.setState({ projectName: diskData.projectName })
-
 
     if (this._IS_DEVELOPMENT) {
       const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
@@ -138,7 +146,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     }
     else
       useAnimationEngineAPI.setState({ timelines: timelines })
-
 
     // Load the first timeline
     const firstTimeline = Object.values(timelines)[0];
@@ -183,14 +190,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
     this._currentTimeline = selectedTimeline;
 
-    this._computeTracksArray(selectedTimeline);
+    this._precomputePropertySetterCache(selectedTimeline);
 
-    
-    this._gpuComputeService.buildTextures(selectedTimeline);
-    this._gpuComputeService.computeInterpolations(this._currentTime);
-
-    if (isMounting === false) {
-      // compute isn't present on Canvas mount because it needs the renderer
+    if(isMounting === false){
       this._applyTracksOnTimeline(this.currentTime, true)
     }
 
@@ -356,10 +358,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (!rawObject)
       return
 
-    this._computeObjectPropertySetterCache(vxObject.ref.current, rawObject);
-    
-    this._applyInitialTracksOnTimelineForObject(vxkey);
-
+    this._applyTracksOnObject(this._currentTime, rawObject)
     this._applyStaticPropsOnObject(rawObject, object3DRef);
   }
 
@@ -484,6 +483,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._updateObjectProperty(
         rawObject.vxkey,
         staticProp.propertyPath,
+        object3DRef,
         staticProp.value
       );
     });
@@ -494,35 +494,59 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _applyTracksOnTimeline(currentTime: number, force?: boolean) {
-    this._gpuComputeService.computeInterpolations(currentTime);
-    const pixelBuffer = this._gpuComputeService.pixelBuffer;
-    const numTracks = this._gpuComputeService.computeTextureHeight;
-
-    for (let i = 0; i < numTracks; i++) {
-      const valueIndex = i * 4; // the value is stored on the "r" index of (rgba)
-      const newValue = pixelBuffer[valueIndex];
-      const { vxkey, propertyPath, trackKey } = this._tracksArray[i]
- 
-      this._updateObjectProperty(vxkey, propertyPath, newValue);
-    }
+    this.currentTimeline.objects.forEach(rawObject =>
+      this._applyTracksOnObject(currentTime, rawObject, force)
+    )
   }
 
-  private _applyInitialTracksOnTimelineForObject(vxkey: string){
-    const pixelBuffer = this._gpuComputeService.pixelBuffer;
-    const numTracks = this._gpuComputeService.computeTextureHeight;
-    
-    const setterMap = this._objectPropertiesSetterCache.get(vxkey);
-    if(!setterMap){
-      console.error(`Setter map for ${vxkey} is undefined in applyInitialTracksOnTimelineForObject but it should exist`)
-    }
-    for(let i=0; i< numTracks; i++){
-      const {vxkey: _vxkey, propertyPath, trackKey} = this._tracksArray[i];
-      if(vxkey === _vxkey){
-        const valueIndex = i * 4;
-        const newValue = pixelBuffer[valueIndex];
-        
-        this._updateObjectProperty(vxkey, propertyPath, newValue);
-      }
+
+  private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean
+  ) {
+    rawObject.tracks.forEach(rawTrack =>
+      this._applyKeyframesOnTrack(
+        rawObject.vxkey,
+        rawTrack.propertyPath,
+        rawTrack.keyframes,
+        currentTime,
+        force
+      )
+    )
+  }
+
+
+
+
+
+
+  /**
+   * Applies interpolated keyframe values to the specified object's property.
+   * @param vxkey - The unique identifier for the object.
+   * @param propertyPath - The path to the property to be updated.
+   * @param keyframes - An array of keyframes for interpolation.
+   * @param currentTime - The current time in the animation timeline.
+   * @param recalculateAll - Whether to recalculate outside keyframe bounds.
+   */
+  private _applyKeyframesOnTrack(
+    vxkey: string,
+    propertyPath: string,
+    keyframes: RawKeyframe[],
+    currentTime: number,
+    force: boolean = false
+  ) {
+    const object3DRef = this._object3DCache.get(vxkey);
+    if (!object3DRef || keyframes.length === 0) return;
+
+    const newValue = this._calculateInterpolatedValue(keyframes, currentTime);
+
+    const cacheKey = `${vxkey}.${propertyPath}`;
+    const lastValue = this._lastInterpolatedValues.get(cacheKey);
+
+
+    // Only update the property if its under the threshold
+    // or its undefined ( in the initial state )
+    if (lastValue === undefined || Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
+      this._updateObjectProperty(vxkey, propertyPath, object3DRef, newValue);
+      this._lastInterpolatedValues.set(cacheKey, newValue);
     }
   }
 
@@ -550,22 +574,176 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
+
+  /**
+   * Calculates the interpolated value for the given keyframes at the specified time.
+   * @param keyframes - An array of keyframes.
+   * @param currentTime - The current time in the animation timeline.
+   * @returns The interpolated value 
+   */
+  private _calculateInterpolatedValue(
+    keyframes: RawKeyframe[],
+    currentTime: number,
+  ): number {
+    if (currentTime < keyframes[0].time) {
+      return keyframes[0].value;
+    }
+    if (currentTime > keyframes[keyframes.length - 1].time) {
+      return keyframes[keyframes.length - 1].value;
+    }
+
+    return this._interpolateKeyframes(keyframes, currentTime);
+  }
+
+
+
+
+
+
+  /**
+   * Interpolates the value between keyframes based on the current time.
+   * @param keyframes - Array of keyframes sorted by time.
+   * @param currentTime - The current time in the animation timeline.
+   * @returns The interpolated value at the current time.
+   */
+  private _interpolateKeyframes(keyframes: RawKeyframe[], currentTime: number): number {
+    // Handle edge cases where currentTime is outside the keyframe time range
+    if (currentTime <= keyframes[0].time) {
+      return keyframes[0].value;
+    }
+    if (currentTime >= keyframes[keyframes.length - 1].time) {
+      return keyframes[keyframes.length - 1].value;
+    }
+
+    // Find the index of the next keyframe after the current time
+    const rightIndex = this._findNextKeyframeIndex(keyframes, currentTime);
+    const leftIndex = rightIndex - 1;
+
+    const startKeyframe = keyframes[leftIndex];
+    const endKeyframe = keyframes[rightIndex];
+    const duration = endKeyframe.time - startKeyframe.time;
+
+    // Avoid division by zero
+    if (duration === 0) {
+      return startKeyframe.value;
+    }
+
+    // Calculate the normalized progress between the two keyframes
+    const progress = AnimationEngine.truncateToDecimals(
+      (currentTime - startKeyframe.time) / duration,
+      AnimationEngine.ENGINE_PRECISION + 1
+    );
+
+    // Interpolate the value using the progress
+    const interpolatedValue = this._interpolateNumber(startKeyframe, endKeyframe, progress);
+
+    // Truncate the result to ensure precision
+    return AnimationEngine.truncateToDecimals(
+      interpolatedValue,
+      AnimationEngine.ENGINE_PRECISION
+    );
+  }
+
+
+
+
+
+
+  /**
+   * Finds the index of the next keyframe after the current time.
+   * @param keyframes - Array of keyframes sorted by time.
+   * @param currentTime - The current time in the animation timeline.
+   * @returns The index of the next keyframe.
+   */
+  private _findNextKeyframeIndex(keyframes: RawKeyframe[], currentTime: number): number {
+    let left = 0;
+    let right = keyframes.length - 1;
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const midTime = keyframes[mid].time;
+
+      if (currentTime < midTime) {
+        right = mid - 1;
+      } else if (currentTime > midTime) {
+        left = mid + 1;
+      } else {
+        // Exact match found
+        return mid;
+      }
+    }
+
+    // Left is the index of the next keyframe after currentTime
+    return left;
+  }
+
+
+
+
+
+
+  /**
+   * Interpolates between two numeric keyframes using Bezier curves.
+   * @param startKeyframe - The starting keyframe.
+   * @param endKeyframe - The ending keyframe.
+   * @param progress - Normalized progress between the keyframes (0 to 1).
+   * @returns The interpolated numeric value.
+   */
+  private _interpolateNumber(
+    startKeyframe: RawKeyframe,
+    endKeyframe: RawKeyframe,
+    progress: number
+  ): number {
+    const startValue = startKeyframe.value as number;
+    const endValue = endKeyframe.value as number;
+
+    // Default handle positions for Bezier curve if not specified
+    const DEFAULT_IN_HANDLE = 0.3;
+    const DEFAULT_OUT_HANDLE = 0.7;
+
+    const startHandleX = startKeyframe.handles[2] ?? DEFAULT_IN_HANDLE;
+    const startHandleY = startKeyframe.handles[3] ?? DEFAULT_IN_HANDLE;
+
+    const endHandleX = endKeyframe.handles[0] ?? DEFAULT_OUT_HANDLE;
+    const endHandleY = endKeyframe.handles[1] ?? DEFAULT_OUT_HANDLE;
+
+    return this._interpolateNumberFunction(
+      startValue,
+      endValue,
+      startHandleX,
+      startHandleY,
+      endHandleX,
+      endHandleY,
+      progress
+    );
+  }
+
+
+
+
+
+
   /**
    * Applies all static properties to their respective objects.
    */
   private _applyAllStaticProps() {
-    this.currentTimeline.objects.forEach(rawObj => {
-      if (rawObj.staticProps.length === 0) {
+    this.currentTimeline.objects.forEach(obj => {
+      if (obj.staticProps.length === 0) {
         return
       }
 
-      const vxkey = rawObj.vxkey;
+      const vxkey = obj.vxkey;
+      const object3DRef = this._object3DCache.get(vxkey);
 
-      rawObj.staticProps.forEach(rawStaticProp => {
+      if (!object3DRef)
+        return;
+
+      obj.staticProps.forEach(staticProp => {
         this._updateObjectProperty(
           vxkey,
-          rawStaticProp.propertyPath,
-          rawStaticProp.value
+          staticProp.propertyPath,
+          object3DRef,
+          staticProp.value
         );
       });
     });
@@ -586,23 +764,45 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _updateObjectProperty(
     vxkey: string,
     propertyPath: string,
+    object3DRef: THREE.Object3D,
     newValue: number
   ) {
-    const object3DRef = this._object3DCache.get(vxkey);
-    if(!object3DRef)
-      return
     const generalKey = `${vxkey}.${propertyPath}`
 
-    const settersMap = this._objectPropertiesSetterCache.get(vxkey);
-    if(!settersMap){
-      console.warn(`No setters map for object ${vxkey} was found. Initializing one`);
-      return 
-    }
+    // Use the cached setter function to update the property
+    let setter = this._propertySetterCache.get(propertyPath);
+    if (setter)
+      setter(object3DRef, newValue);
 
-    const setter = settersMap.get(propertyPath);
-    setter(newValue);
 
-    console.log(`Setting new Value for ${generalKey} newValue: ${newValue}`)
+    const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
+    if (sideEffect)
+      sideEffect(
+        this,
+        vxkey,
+        propertyPath,
+        object3DRef,
+        newValue
+      );
+
+    if (this._IS_DEVELOPMENT)
+      updateProperty(vxkey, propertyPath, newValue);
+  }
+
+
+  public updateElementStyle(
+    vxkey: string,
+    propertyPath: string,
+    object3DRef: HTMLElement,
+    newValue: number
+  ) {
+    const generalKey = `${vxkey}.${propertyPath}`
+
+    // Use the cached setter function to update the property
+    let setter = this._propertySetterCache.get(propertyPath);
+    if (setter)
+      setter(object3DRef, newValue);
+
 
     const sideEffect = this._sideEffectCallbacks.get(generalKey) || AnimationEngine.defaultSideEffects[propertyPath];
     if (sideEffect)
@@ -620,35 +820,23 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  private _computeObjectPropertySetterCache(object: any, rawObject: RawObject): void {
-    const settersMap = new Map<string, (newValue: number) => void>()
-    
-    rawObject.tracks.forEach(rawTrack => {
-      const setter = this._generateObjectPropertySetter(object, rawTrack.propertyPath);
-      settersMap.set(rawTrack.propertyPath, setter);
-    })
 
-    rawObject.staticProps.forEach(rawStaticProp => {
-      const setter = this._generateObjectPropertySetter(object, rawStaticProp.propertyPath);
-      settersMap.set(rawStaticProp.propertyPath, setter);
-    })
-
-    this._objectPropertiesSetterCache.set(rawObject.vxkey, settersMap);
-  }
-
-
-
-
-  private _computeTracksArray(timeline: RawTimeline): void {
-    let index = 0;
-    timeline.objects.forEach(rawObj => {
-      rawObj.tracks.forEach(rawTrack => {
-        this._tracksArray[index] = {
-          vxkey: rawObj.vxkey,
-          propertyPath: rawTrack.propertyPath,
-          trackKey: `${rawObj.vxkey}.${rawTrack.propertyPath}`
+  private _precomputePropertySetterCache(timeline: RawTimeline): void {
+    timeline.objects.forEach(rawObject => {
+      rawObject.staticProps.forEach(rawStaticProp => {
+        const propPath = rawStaticProp.propertyPath;
+        if (!this._propertySetterCache.has(propPath)) {
+          const setter = this._generatePropertySetter(propPath);
+          this._propertySetterCache.set(propPath, setter);
         }
-        index++;
+      })
+
+      rawObject.tracks.forEach(rawTrack => {
+        const propPath = rawTrack.propertyPath;
+        if (!this._propertySetterCache.has(propPath)) {
+          const setter = this._generatePropertySetter(propPath);
+          this._propertySetterCache.set(propPath, setter);
+        }
       })
     })
   }
@@ -657,56 +845,71 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  private _generateObjectPropertySetter(object: any, propertyPath: string): (newValue: any) => void {
+
+  /**
+   * Generates a setter function for a given property path.
+   * The setter function updates the property on the target object.
+   * @param propertyPath - Dot-separated path to the property.
+   * @returns A setter function that updates the specified property on a target object.
+   */
+  private _generatePropertySetter(propertyPath: string): (targetObject: any, newValue: any) => void {
     const propertyKeys = propertyPath.split('.');
-    let target = object;
+    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "_generatePropertySetter" }
 
-    for (let i = 0; i < propertyKeys.length - 1; i++) {
-      const key = propertyKeys[i];
+    return (targetObject: any, newValue: any) => {
+      let target = targetObject;
 
-      if (Array.isArray(target)) {
-        const index = parseInt(key, 10);
-        if (Number.isNaN(index)) {
-          throw new Error(`Invalid array index '${key}' in path '${propertyPath}'`);
+      // Traverse the property path
+      for (let i = 0; i < propertyKeys.length - 1; i++) {
+        let key = propertyKeys[i];
+
+        // Check if target is an array
+        if (Array.isArray(target)) {
+          // Try to parse the key as an integer index
+          const index = parseInt(key, 10);
+          if (Number.isNaN(index)) {
+            logReportingService.logWarning(
+              `Key ${key} is not a valid array index in ${propertyKeys}`, LOG_CONTEXT)
+            return;
+          }
+          target = target[index];
+        } else {
+          // Regular object property access
+          target = target[key];
         }
-        target = target[index];
-      } else {
-        target = target[key];
+
+        if (target === undefined) {
+          // logReportingService.logWarning(
+          //   `AnimationEngine: Property '${key}' is undefined in propertyPath '${propertyPath}'.`, LOG_CONTEXT)
+          return;
+        }
       }
 
-      if (target === undefined || target === null) {
-        console.log("Issues on object ", object)
-        debugger
-        throw new Error(`Property '${key}' is undefined or null in path '${propertyPath}'`);
-      }
-    }
+      const finalPropertyKey = propertyKeys[propertyKeys.length - 1];
 
-    const finalKey = propertyKeys[propertyKeys.length - 1];
-
-    // Handle the final key based on the target type
-    if (Array.isArray(target)) {
-      const index = parseInt(finalKey, 10);
-      if (Number.isNaN(index)) {
-        throw new Error(`Final key '${finalKey}' is not a valid array index in '${propertyPath}'`);
-      }
-      return (newValue: any) => {
+      // The final property might also be on an array, so handle that too
+      if (Array.isArray(target)) {
+        const index = parseInt(finalPropertyKey, 10);
+        if (Number.isNaN(index)) {
+          logReportingService.logWarning(
+            `AnimationEngine: Final key '${finalPropertyKey}' is not a valid array index in '${propertyPath}'.`, LOG_CONTEXT)
+          return;
+        }
         target[index] = newValue;
-      };
-    } else if (target instanceof Map) {
-      return (newValue: any) => {
-        const mapValue = target.get(finalKey);
+      } else if (target instanceof Map) {
+        const mapValue = target.get(finalPropertyKey);
         if (mapValue) {
           mapValue.value = newValue;
         } else {
-          throw new Error(`Key '${finalKey}' not found in Map at path '${propertyPath}'`);
+          logReportingService.logWarning(
+            `AnimationEngine: Key '${finalPropertyKey}' not found in Map at path '${propertyPath}'.`, LOG_CONTEXT)
         }
-      };
-    } else {
-      return (newValue: any) => {
-        target[finalKey] = newValue;
-      };
-    }
+      } else {
+        target[finalPropertyKey] = newValue;
+      }
+    };
   }
+
 
 
 
