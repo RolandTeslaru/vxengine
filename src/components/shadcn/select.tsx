@@ -38,7 +38,7 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/80 px-3 py-1 text-xs
+        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/80 px-2 text-xs
        ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
         shadow-md shadow-black/20 h-fit
       `,
@@ -103,7 +103,7 @@ function SelectContent({
       <SelectPrimitive.Content
         className={cn(
           `relative z-50 max-h-96 min-w-[8rem] overflow-hidden backdrop-blur-lg rounded-xl border border-neutral-400/20 
-          bg-neutral-800/90 text-popover-foreground shadow-md shadow-black
+          bg-neutral-800/90 text-popover-foreground shadow-md shadow-black/20
           data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
           data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           position === "popper" &&

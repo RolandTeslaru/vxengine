@@ -17,12 +17,12 @@ export const startLeft = 0;
 const TimelineArea = (() => {
   const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
   const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
-  const scale = useTimelineEditorAPI(state => state.scale)
 
   // Sync Cursor with Engine time
   useAnimationEngineEvent(
     'timeUpdatedByEngine',
     ({ time }) => {
+      const scale = useTimelineEditorAPI.getState().scale
       const clientWidth = timelineAreaRef.current.offsetWidth
 
       const autoScrollFrom = clientWidth * 70 / 100;

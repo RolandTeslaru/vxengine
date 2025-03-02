@@ -6,9 +6,11 @@ export const TrackData = ({trackKey}: {trackKey: string}) => {
     const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
 
     return (
-        <div className='flex flex-col'>
+        <div className='w-72 flex flex-col'>
             <p className='font-roboto-mono text-xs text-center'>Track Data</p>
-            <JsonView src={track} collapsed={({ depth }) => depth > 1} />
+            <div className='max-h-[70vh] overflow-y-scroll flex flex-col w-full mt-2 text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
+                <JsonView src={track} collapsed={({ depth }) => depth > 1} />
+            </div>
         </div>
     )
 }

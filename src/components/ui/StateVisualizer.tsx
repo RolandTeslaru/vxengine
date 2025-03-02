@@ -253,7 +253,7 @@ const StateVisualizer = () => {
                     </SelectTrigger>
                     <SelectContent>
                         {Object.keys(stateComponents).map((key) => (
-                            <SelectItem key={key} value={key} className="text-xs!">
+                            <SelectItem key={key} value={key}>
                                 {key}
                             </SelectItem>
                         ))}

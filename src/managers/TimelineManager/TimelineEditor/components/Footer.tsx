@@ -126,7 +126,9 @@ const ScaleSlider = () => {
 
   return (
       <div className='flex flex-row gap-2'>
-          <p className='font-light h-auto my-auto whitespace-nowrap' style={{ fontSize: "10px" }}>Scale {scale}</p>
+          <p className='font-light h-auto my-auto whitespace-nowrap w-16' style={{ fontSize: "10px" }}>
+            Scale {scale}
+        </p>
           <Slider
               defaultValue={[scale]}
               max={20}

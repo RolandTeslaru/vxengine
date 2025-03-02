@@ -22,7 +22,7 @@ const Slider = ({ className,onDragStart, onDragEnd, ...props }: ComponentProps<t
     )}
     {...props}
   >
-    <SliderPrimitive.Track className="relative bg-black/80 h-2.5 w-full grow overflow-hidden rounded-full">
+    <SliderPrimitive.Track className="relative shadow-sm shadow-black/20 bg-black/80 h-2.5 w-full grow overflow-hidden rounded-full">
       <SliderPrimitive.Range className="absolute h-full bg-neutral-700" />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb 
