@@ -8,48 +8,50 @@ export class GpuComputeService {
     public keyframeTexture: THREE.DataTexture
     public handleTexture: THREE.DataTexture
 
-    private _width: number
-    private _height: number
+    private _pixelBuffer: Float32Array;
 
-    public computeTexture: THREE.Texture
+    private _inputTextureWidth: number
+    private _computeHeight: number
+
     public computeVariable: Variable
 
-    public get computeTextureWidth() { return this._width }
-    public get computeTextureHeight() { return this._height }
+    public get computeTextureWidth() { return this._inputTextureWidth }
+    public get computeTextureHeight() { return this._computeHeight }
+    public get pixelBuffer() { return this._pixelBuffer }
 
 
     private _renderer: THREE.WebGLRenderer
 
-    constructor(
-        renderer: THREE.WebGLRenderer
-    ) {
-        this._renderer = renderer
+    constructor() {
+        this._renderer = new THREE.WebGLRenderer();
     }
 
     public buildTextures(rawTimeline: RawTimeline) {
 
         const flatTracks: RawTrack[] = rawTimeline.objects.reduce((acc, obj) => acc.concat(obj.tracks), []);
         const numTracks = flatTracks.length
+        
+        this._pixelBuffer = new Float32Array(numTracks * 4);
 
         let maxKeyframeCount = 0;
         for (let rawObj of rawTimeline.objects)
             for (let rawTrack of rawObj.tracks)
                 maxKeyframeCount = Math.max(maxKeyframeCount, rawTrack.keyframes.length);
 
-        this._width = maxKeyframeCount;
-        this._height = numTracks;
+        this._inputTextureWidth = maxKeyframeCount;
+        this._computeHeight = numTracks;
 
-        this.gpuCompute = new GPUComputationRenderer(1, this._height, this._renderer)
+        this.gpuCompute = new GPUComputationRenderer(1, this._computeHeight, this._renderer)
 
-        const keyframeData = new Float32Array(this._width * this._height * 4);
-        const handleData = new Float32Array(this._width * this._height * 4);
+        const keyframeData = new Float32Array(this._inputTextureWidth * this._computeHeight * 4);
+        const handleData = new Float32Array(this._inputTextureWidth * this._computeHeight * 4);
 
         for (let trackIndex = 0; trackIndex < numTracks; trackIndex++) {
             const track = flatTracks[trackIndex];
 
             for (let kfIndex = 0; kfIndex < track.keyframes.length; kfIndex++) {
                 const keyframe = track.keyframes[kfIndex];
-                const pixelIndex = (trackIndex * this._width + kfIndex) * 4;
+                const pixelIndex = (trackIndex * this._inputTextureWidth + kfIndex) * 4;
 
                 // Keyframe data (time, value)
                 keyframeData[pixelIndex + 0] = keyframe.time;     // R: time
@@ -67,15 +69,15 @@ export class GpuComputeService {
 
         this.keyframeTexture = new THREE.DataTexture(
             keyframeData,
-            this._width,
-            this._height,
+            this._inputTextureWidth,
+            this._computeHeight,
             THREE.RGBAFormat,
             THREE.FloatType
         );
         this.handleTexture = new THREE.DataTexture(
             handleData,
-            this._width,
-            this._height,
+            this._inputTextureWidth,
+            this._computeHeight,
             THREE.RGBAFormat,
             THREE.FloatType
         );
@@ -97,7 +99,7 @@ export class GpuComputeService {
             keyframeTexture: { value: this.keyframeTexture },
             handleTexture: { value: this.handleTexture },
             currentTime: { value: 0.0 },
-            textureWidth: { value: this._width}
+            textureWidth: { value: this._inputTextureWidth}
         }
 
         this.gpuCompute.setVariableDependencies(this.computeVariable, []);
@@ -108,13 +110,21 @@ export class GpuComputeService {
         }
     }
 
-    public computeInterpolationTexutre(newTime: number) {
+    public computeInterpolations(newTime: number) {
+        console.log("Computing interpolation ")
         this.computeVariable.material.uniforms.currentTime.value = newTime;
         this.gpuCompute.compute();
 
-        this.computeTexture = this.gpuCompute.getCurrentRenderTarget(this.computeVariable).texture
+        const renderTarget = this.gpuCompute.getCurrentRenderTarget(this.computeVariable);
 
-        return this.computeTexture
+        this._renderer.readRenderTargetPixels(
+            renderTarget,
+            0,
+            0,
+            1,
+            this._computeHeight,
+            this._pixelBuffer
+        )
     }
 
     private getComputeShader(): string {
