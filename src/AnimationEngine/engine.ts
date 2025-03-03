@@ -97,6 +97,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   constructor() {
     super(new Events());
+    if (this._isOnServer()) {
+      console.warn("AnimationEngine instantiation skipped on server-side.");
+      return;
+    }
 
     this._id = Math.random().toString(36).substring(2, 9); // Generate a random unique ID
     logReportingService.logInfo(
@@ -911,6 +915,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
+  private _isOnServer(): boolean {
+    return typeof window === "undefined"
+  }
 
 
   /**

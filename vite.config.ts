@@ -4,9 +4,10 @@ import path from 'path';
 import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 import topLevelAwait from 'vite-plugin-top-level-await';
-import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
-
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+// import obfuscatorPlugin from "vite-plugin-javascript-obfuscator";
+// import { viteStaticCopy } from 'vite-plugin-static-copy'
+import react from '@vitejs/plugin-react'; 
+import eslintPlugin from "vite-plugin-eslint"
 
 
 export default defineConfig({
@@ -76,6 +77,13 @@ export default defineConfig({
     target: 'esnext', // Ensure modern browser support for Next.js,
   },
   plugins: [
+    react({
+      babel: {
+        plugins: [
+          ["babel-plugin-react-compiler"]
+        ]
+      }
+    }),
     wasm(),
     topLevelAwait(),
     libInjectCss(),
