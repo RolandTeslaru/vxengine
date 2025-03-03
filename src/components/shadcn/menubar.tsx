@@ -33,7 +33,8 @@ const MenubarTrigger: FC<ComponentProps<typeof MenubarPrimitive.Trigger>> =
   ({ className, ...props }) => (
     <MenubarPrimitive.Trigger
       className={cn(
-        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs font-medium 
+        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs
+         antialiased font-bold
         focus:bg-neutral-700/50 focus:text-neutral-50
         hover:bg-neutral-700/50
         hover:border-neutral-400/20

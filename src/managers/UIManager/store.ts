@@ -176,7 +176,6 @@ export const useUIManagerAPI = create<UIManagerProps>()(
             partialize: (state) =>
                 Object.fromEntries(
                     Object.entries(state).filter(([key]) => ![
-                        "vxWindows", 
                         "dialogContent", 
                         "hydrated", 
                         "setHydrated", 

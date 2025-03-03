@@ -34,7 +34,7 @@ const TimelineEditorHeader = () => {
         >
             <MinimizeButton/>
 
-            <p className='font-roboto-mono text-sm my-auto h-auto'>
+            <p className='font-roboto-mono font-bold antialiased text-sm my-auto h-auto'>
                 Timeline Editor
             </p>
 

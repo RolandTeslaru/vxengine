@@ -14,7 +14,7 @@ const TimeRender = () => {
   const displayRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    if(displayRef.current){
+    if (displayRef.current) {
       const initialTime = animationEngineInstance.currentTime
 
       displayRef.current.textContent = parseTimeToTimeRenderString(initialTime)
@@ -22,13 +22,13 @@ const TimeRender = () => {
   }, [])
 
   useAnimationEngineEvent("timeUpdated", ({ time }) => {
-    if (displayRef.current) 
+    if (displayRef.current)
       displayRef.current.textContent = parseTimeToTimeRenderString(time)
   }, [])
 
-  return <p 
-      className="font-roboto-mono text-lg text-center h-auto my-auto mx-2" 
-      ref={displayRef}
-      />
+  return <p
+    className="font-roboto-mono text-lg antialiased font-bold text-center h-auto my-auto mx-2"
+    ref={displayRef}
+  />
 };
 export default TimeRender;

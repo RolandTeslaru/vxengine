@@ -63,7 +63,7 @@ export const ObjectManagerDriver = () => {
 
   const vxObjectRef: THREE.Object3D = vxobject?.ref?.current;
   const type = vxObjectRef?.type
-  const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath);
+  const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath?.value ?? false);
 
   const setSplineNodePosition = useTimelineManagerAPI(state => state.setSplineNodePosition);
 
@@ -78,6 +78,8 @@ export const ObjectManagerDriver = () => {
     isUsingSplinePath ||
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
+
+  console.log(`is transform disabled `, isTransformDisabled)
 
   const oldProps = useRef({
     position: new THREE.Vector3,
