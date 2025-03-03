@@ -55,7 +55,7 @@ const TrackVerticalList = memo(() => {
 
     return (
         <div 
-            className={`w-[32%] h-full flex flex-col rounded-2xl relative overflow-y-scroll border border-neutral-800 bg-neutral-900`}
+            className={`antialiased w-[32%] h-full flex flex-col rounded-2xl relative overflow-y-scroll border border-neutral-800 bg-neutral-900`}
             ref={trackListRef}
             onScroll={handleOnScroll}
         >
@@ -138,7 +138,7 @@ const RenderPaths = ({ paths, isLinearTrack, trackKey }: { paths: string[], isLi
 const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
-            <p className="font-normal text-neutral-400" style={{ fontSize: "11px" }}>
+            <p className="font-medium text-neutral-400" style={{ fontSize: "11px" }}>
                 {pathKey}
             </p>
             {showArrow &&

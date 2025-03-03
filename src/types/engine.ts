@@ -4,7 +4,7 @@ import { RawProject } from "./data/rawData";
 
 export interface EngineContextProps {
     mountCoreUI: boolean
-    composer: React.MutableRefObject<EffectComposer | null>;
+    composer: React.RefObject<EffectComposer | null>;
     animationEngine: AnimationEngine;
 }
 
@@ -21,7 +21,7 @@ export interface VXEngineStoreProps {
     mountCoreRenderer: boolean;
     setMountCoreRenderer: (value: boolean) => void;
 
-    composer: React.MutableRefObject<EffectComposer | null>;
+    composer: React.RefObject<EffectComposer | null>;
 
     IS_DEVELOPMENT: boolean;
     IS_PRODUCTION: boolean;

@@ -27,7 +27,7 @@ export interface RawKeyframe {
     keyframeKey: string;
     time: number; 
     value: number;
-    handles: [number, number, number, number]
+    handles: [number, number, number, number] | number[]
 }
 
 export interface RawStaticProp {

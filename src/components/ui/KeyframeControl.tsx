@@ -115,7 +115,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                     {isPropertyTracked ?
                         <>
                             <ContextMenuSubTrigger>
-                                <p>Show Track Data</p>
+                                Show Track Data
                             </ContextMenuSubTrigger>
                             <ContextMenuSubContent>
                                 <TrackData trackKey={trackKey} />
@@ -148,10 +148,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                             content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
                             type: "alert"
                         })}
+                        className='text-red-500'
                     >
-                        <p className=' text-red-500'>
                             Make Property Static
-                        </p>
                     </ContextMenuItem>
                 }
                 <ContextMenuItem
@@ -159,10 +158,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
                         type: "alert"
                     })}
+                    className='text-red-500'
                 >
-                    <p className=' text-red-500'>
-                        Remove Property
-                    </p>
+                    Remove Property
                 </ContextMenuItem>
             </ContextMenuContent>
         </ContextMenu>

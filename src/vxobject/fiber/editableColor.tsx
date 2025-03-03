@@ -4,8 +4,18 @@ import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { ThreeElement, ThreeElements } from "@react-three/fiber";
 import { Color } from "three";
 
+type ColorRepresentation =
+    | string
+    | number
+    | { r: number; g: number; b: number; a?: number }
+    | [number, number, number]
+    | [number, number, number, number];
+
+
+
 export type VXElementColorProps = VXElementPropsWithoutRef<ThreeElements["color"]> & {
     ref?: React.RefObject<ThreeElement<typeof Color>>;
+    args?: ColorRepresentation
 }
 
 const colorParams: VXElementParams = [
