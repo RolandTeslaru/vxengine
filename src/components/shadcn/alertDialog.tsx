@@ -135,7 +135,7 @@ AlertDialogFooter.displayName = "AlertDialogFooter"
 
 const AlertDialogTitle = ({ className, ...props }: ComponentProps<typeof AlertDialogPrimitive.Title>) => (
   <AlertDialogPrimitive.Title
-    className={cn("text-lg  text-neutral-200 font-semibold font-roboto-mono", className)}
+    className={cn("text-lg  text-neutral-200 antialiased font-semibold font-roboto-mono", className)}
     {...props}
   />
 )
@@ -160,6 +160,7 @@ const AlertDialogAction = ({ className, type = 'default', ...props }: ComponentP
   return (
     <AlertDialogPrimitive.Action
       className={cn(
+        " antialiased",
         buttonVariants({ variant: type }), // Map type to the correct variant
         className
       )}
@@ -176,7 +177,7 @@ const AlertDialogCancel = ({ className, ...props }: ComponentProps<typeof AlertD
   <AlertDialogPrimitive.Cancel
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0 font-roboto-mono",
+      "mt-2 sm:mt-0 font-roboto-mono antialiased",
       className
     )}
     {...props}

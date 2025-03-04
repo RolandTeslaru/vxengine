@@ -78,27 +78,27 @@ const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                 title={`Spline Node ${vxSplineNode.index}`}
                 contentClassName='gap-2'
             >
-                <div className='flex flex-col gap-1 w-auto px-auto *:bg-transparent *:p-1 *:rounded-lg'>
-                    <Button 
-                        variant="default" size="sm" className=' justify-start ' 
-                        onClick={() => handleInsertBefore(splineKey, vxSplineNode.index - 1)}
-                    >
-                        <ArrowUp size={16} />
-                        Insert Node Before
-                    </Button>
+                <div className=' antialiased  flex flex-col gap-1 w-auto px-auto *:bg-transparent *:p-1 *:rounded-lg'>
                     <Button
-                        variant="default" size="sm" className=' justify-start text-red-600' 
-                        onClick={() => handleDelete(splineKey, vxSplineNode.index)}
-                    >
-                        <X size={16} />
-                        Delete Node
-                    </Button>
-                    <Button
-                        variant="default" size="sm" className=' justify-start' 
+                        variant="default" size="sm" className='font-medium justify-start' 
                         onClick={() => handleInsertAfter(splineKey, vxSplineNode.index)}
                     >
-                        <ArrowDown size={15} />
+                        <ArrowUp size={15} className='stroke-2'/>
                         Insert Node After
+                    </Button>
+                    <Button
+                        variant="default" size="sm" className='font-medium justify-start text-red-600' 
+                        onClick={() => handleDelete(splineKey, vxSplineNode.index)}
+                    >
+                        <X size={16} className='stroke-2'/>
+                        Delete Node
+                    </Button>
+                    <Button 
+                        variant="default" size="sm" className='font-medium justify-start ' 
+                        onClick={() => handleInsertBefore(splineKey, vxSplineNode.index - 1)}
+                    >
+                        <ArrowDown size={15} className='stroke-2'/>
+                        Insert Node Before
                     </Button>
                 </div>
             </CollapsiblePanel>

@@ -7,7 +7,7 @@
 import React from "react"
 import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
-import { VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
+import { StandardWindowStyling, VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
@@ -133,24 +133,26 @@ const VXBottomRightBar = () => {
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId));
 
     return (
-        <div
+        <>
+        <StandardWindowStyling
             id="VXEngineTimelinePanel"
-            className={`fixed backdrop-blur-lg h-[400px] text-sm bg-neutral-900/70 min-w-[960px] overflow-hidden
-                      border-neutral-400/20 border-[1px] rounded-3xl flex flex-col px-2 !transform-gpu
-                            ${timelineEditorAttached ? " bottom-5 right-6 lg:max-w-[50vw] " : " h-[calc(100%-20px)]! top-2 right-2"}
-                          `}
+            className="fixed bottom-5 right-6 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
+            isDetached={!timelineEditorAttached}
+            detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
             style={{
                 boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
-                width: timelineEditorAttached ? 'auto' : 'calc(100% - 68px)',
                 transition: 'height 300ms ease-in-out',
                 height: timelineEditorOpen ? "400px" : "45px"
             }}
         >
+
             <WindowControlDots
                 isAttached={timelineEditorAttached}
             />
             <TimelineEditor />
-        </div>
+
+        </StandardWindowStyling>
+        </>
     )
 }
 

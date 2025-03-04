@@ -75,7 +75,7 @@ const MenubarSubContent: FC<ComponentProps<typeof MenubarPrimitive.SubContent>> 
         `z-50 min-w-[12rem] backdrop-blur-xl  rounded-xl border p-1 shadow-md shadow-black/50
        data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
        data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-       border-neutral-400/20 bg-neutral-900/80 text-neutral-50`,
+       border-neutral-400/20 bg-neutral-800/80 text-neutral-50`,
         className
       )}
       {...props}
@@ -91,7 +91,7 @@ const MenubarContent: FC<ComponentProps<typeof MenubarPrimitive.Content>> =
         alignOffset={alignOffset}
         sideOffset={sideOffset}
         className={cn(
-          `bg-neutral-900/80 border-neutral-400/20 shadow-md shadow-black/50
+          `bg-neutral-800/80 border-neutral-400/20 shadow-md shadow-black/50
           z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 

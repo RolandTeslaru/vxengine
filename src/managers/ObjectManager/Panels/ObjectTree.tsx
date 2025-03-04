@@ -192,8 +192,8 @@ const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
             </ContextMenuSub>
-            <ContextMenuItem onClick={handleDeleteSpline} className='text-xs gap-2 text-red-600'>
-                <X size={15} />
+            <ContextMenuItem onClick={handleDeleteSpline} className='text-xs antialiased font-medium gap-2 text-red-600'>
+                <X size={15} className='stroke-2' />
                 Delete Spline
             </ContextMenuItem>
         </ContextMenuContent>
@@ -232,17 +232,17 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
                 </ContextMenuSubContent>
             </ContextMenuSub>
             {nodeIndex !== 0 &&
-                <ContextMenuItem onClick={handleInsertBefore} className='text-xs gap-2'>
-                    <ArrowUp size={15} />
+                <ContextMenuItem onClick={handleInsertBefore} className='text-xs antialiased font-medium gap-2'>
+                    <ArrowUp size={15} className='stroke-2'/>
                     Insert Node Before
                 </ContextMenuItem>
             }
-            <ContextMenuItem onClick={handleDelete} className='text-xs gap-2 text-red-600'>
-                <X size={15} />
+            <ContextMenuItem onClick={handleDelete} className='text-xs antialiased font-medium gap-2 text-red-600'>
+                <X size={15} className='stroke-2'/>
                 Delete Node {nodeIndex}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleInsertAfter} className='text-xs gap-2'>
-                <ArrowDown size={15} />
+            <ContextMenuItem onClick={handleInsertAfter} className='text-xs antialiased font-medium gap-2'>
+                <ArrowDown size={15} className='stroke-2'/>
                 Insert Node After
             </ContextMenuItem>
         </ContextMenuContent>

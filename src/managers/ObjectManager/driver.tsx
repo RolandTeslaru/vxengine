@@ -79,8 +79,6 @@ export const ObjectManagerDriver = () => {
     vxobject?.disabledParams?.includes("position") ||
     !isValid;
 
-  console.log(`is transform disabled `, isTransformDisabled)
-
   const oldProps = useRef({
     position: new THREE.Vector3,
     rotation: new THREE.Quaternion,

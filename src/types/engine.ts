@@ -1,6 +1,5 @@
 import { EffectComposer } from "three-stdlib";
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
-import { RawProject } from "./data/rawData";
 
 export interface EngineContextProps {
     mountCoreUI: boolean
@@ -12,7 +11,7 @@ export interface VXEngineProviderProps {
     children: React.ReactNode;
     mount?: boolean;
     projectName: string
-    animations_json: RawProject;
+    animations_json: any;
     autoWriteToDisk?: boolean
     nodeEnv: 'development' | 'production' | 'test';
 }
