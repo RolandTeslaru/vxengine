@@ -136,7 +136,7 @@ const VXBottomRightBar = () => {
         <>
         <StandardWindowStyling
             id="VXEngineTimelinePanel"
-            className="fixed bottom-5 right-6 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
+            className="fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
             isDetached={!timelineEditorAttached}
             detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
             style={{

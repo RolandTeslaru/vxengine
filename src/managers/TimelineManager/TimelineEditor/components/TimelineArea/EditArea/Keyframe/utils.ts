@@ -59,6 +59,7 @@ export const selectAllKeyframesOnObject = (trackKey: string) => {
     const vxkey = trackKey.split(".")[0];
     const edObject = state.editorObjects[vxkey];
     if (edObject) {
+        debugger
         edObject.trackKeys.forEach((_trackKey) => {
             selectAllKeyframesOnTrack(_trackKey);
         })

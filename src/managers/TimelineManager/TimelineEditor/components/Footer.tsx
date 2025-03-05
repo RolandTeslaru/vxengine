@@ -64,7 +64,7 @@ const TimelineEditorFooter = () => {
   }, [])
 
   return (
-      <div className='mt-auto relative pl-2 flex flex-row gap-4 font-roboto-mono'>
+      <div className='mt-auto  relative px-4 flex flex-row gap-4 font-roboto-mono'>
           <ScaleSlider />
           <div className='flex flex-row gap-2'>
               <p className='font-light h-auto my-auto' style={{ fontSize: "10px" }}>Snap</p>

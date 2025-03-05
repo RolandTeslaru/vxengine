@@ -29,7 +29,7 @@ const TimelineEditorHeader = () => {
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId))
 
     return (
-        <div className={`flex flex-row gap-2 w-full py-2 
+        <div className={`flex flex-row gap-2 w-full py-2 px-2
             ${timelineEditorAttached ? "pr-2" : "px-2"}`}
         >
             <MinimizeButton/>

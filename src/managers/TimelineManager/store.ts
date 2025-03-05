@@ -79,23 +79,38 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     addObjectToEditorData: (newVxObject: vxObjectProps) => {
         // Check if the object is already in the editorObjects.
-        // it usually means it was added by the animationEngineInstance when processing the raw data
-        if (newVxObject.vxkey in get().editorObjects) {
+        // it usually means it was added by the animationEngine when processing the raw data
+        if (newVxObject.vxkey in get().editorObjects)
             return
-        }
+        
+        const vxkey = newVxObject.vxkey;
+
+        const trackKeys:string[] = [];
+        const staticPropKeys:string[] = [];
+        const currentTimeline = animationEngineInstance.currentTimeline;
+
+        currentTimeline.objects.forEach(rawObj => {
+            if(rawObj.vxkey === vxkey){
+                rawObj.tracks.forEach(rawTrack => {
+                    trackKeys.push(`${vxkey}.${rawTrack.propertyPath}`)})
+
+                rawObj.staticProps.forEach(rawStaticProp => {
+                    staticPropKeys.push(`${vxkey}.${rawStaticProp.propertyPath}`)})
+            }
+        })
+
         const newEdObject: EditorObject = {
-            vxkey: newVxObject.vxkey,
-            trackKeys: [],
-            staticPropKeys: []
+            vxkey,
+            trackKeys,
+            staticPropKeys
         }
         set(produce((state: TimelineMangerAPIProps) => {
             state.editorObjects[newVxObject.vxkey] = newEdObject
         }))
     },
     removeObjectFromEditorData: (vxkey: string) => {
-        if (!(vxkey in get().editorObjects)) {
+        if (!(vxkey in get().editorObjects))
             return
-        }
 
         set(produce((state: TimelineMangerAPIProps) => {
             delete state.editorObjects[vxkey];
@@ -123,7 +138,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         })
 
         set(produce((state: TimelineMangerAPIProps) => {
-            let value;
+            let value: number;
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
 

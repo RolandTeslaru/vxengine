@@ -77,6 +77,7 @@ export default function processRawData(
             trackKeys: trackKeys,
             staticPropKeys: staticPropKeys,
         };
+
     });
 
     // Just to be sure recreate the edSpline object
