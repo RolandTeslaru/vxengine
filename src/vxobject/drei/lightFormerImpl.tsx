@@ -1,11 +1,10 @@
 import { applyProps, ReactThreeFiber, ThreeElements } from '@react-three/fiber'
-import * as React from 'react'
+import React, { useImperativeHandle, useLayoutEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { ForwardRefComponent } from '@react-three/drei/helpers/ts-utils'
 
-
-export type LightProps = Omit<ThreeElements['mesh'], 'ref'> & {
-  args?: any[]
+export type LightFormerProps = Omit<ThreeElements['mesh'], 'ref'> & {
+  ref?: React.RefObject<THREE.Mesh>
+  args?: number[]
   map?: THREE.Texture
   toneMapped?: boolean
   color?: ReactThreeFiber.Color
@@ -16,9 +15,7 @@ export type LightProps = Omit<ThreeElements['mesh'], 'ref'> & {
   light?: Partial<ThreeElements['pointLight']>
 }
 
-export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PURE__ */ React.forwardRef(
-  (
-    {
+export const Lightformer: React.FC<LightFormerProps> = ({
       light,
       args,
       map,
@@ -29,14 +26,13 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
       scale = 1,
       target = [0, 0, 0],
       children,
+      ref: forwardRef,
       ...props
-    }: LightProps,
-    forwardRef
-  ) => {
+    }) => {
     // Apply emissive power
-    const ref = React.useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>(null!)
-    React.useImperativeHandle(forwardRef, () => ref.current, [])
-    React.useLayoutEffect(() => {
+    const ref = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>(null!)
+    useImperativeHandle(forwardRef, () => ref.current, [])
+    useLayoutEffect(() => {
       if (!children && !props.material) {
         applyProps(ref.current.material as any, { color })
         ref.current.material.color.multiplyScalar(intensity)
@@ -64,4 +60,3 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
       </mesh>
     )
   }
-)

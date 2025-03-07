@@ -1,11 +1,11 @@
-import React, { memo, forwardRef, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import React, { useImperativeHandle, useRef } from "react";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { PerspectiveCamera, PerspectiveCameraProps, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
 
-import { ThreeElement, ThreeElements, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
@@ -49,6 +49,7 @@ export const EditablePerspectiveCamera: React.FC<VXElementPerspectiveCameraProps
     const cameraRef = useRef(null)
 
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref.current)
+    useImperativeHandle(ref, () => cameraRef.current, []);
 
     const { IS_DEVELOPMENT } = useVXEngine();
 

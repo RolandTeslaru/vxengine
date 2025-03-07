@@ -1,9 +1,9 @@
-import React, { forwardRef, useEffect } from "react";
+import React from "react";
 import { VXElementPropsWithoutRef } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { Points } from "three";
-import { ThreeElement, ThreeElements } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 
 export type VXElementPointsProps = VXElementPropsWithoutRef<ThreeElements["points"]> & {
     ref?: React.RefObject<Points>;

@@ -1,14 +1,12 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
-import { useAnimationEngineAPI } from "../../AnimationEngine"
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { AmbientLight } from "three";
-import { ThreeElement } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 
-export type VXElementAmbientLightProps = VXElementPropsWithoutRef<ThreeElement<typeof AmbientLight>> & {
-    ref?: React.Ref<AmbientLight>;
+export type VXElementAmbientLightProps = VXElementPropsWithoutRef<ThreeElements["ambientLight"]> & {
+    ref?: React.RefObject<AmbientLight>;
 };
 
 export const defaultSettings: VXObjectSettings = {
@@ -21,13 +19,9 @@ const ambientLightParams: VXElementParams = [
     {propertyPath: "color", type: "color"}
 ]
 
-export const EditableAmbientLight = forwardRef<AmbientLight, VXElementAmbientLightProps>((props, ref) => {
+export const EditableAmbientLight: React.FC<VXElementAmbientLightProps> = (props) => {
     const {settings = {}, ...rest} = props;
-    
-    const internalRef = useRef<any>(null); 
-    useImperativeHandle(ref, () => internalRef.current);
 
-    // INITIALIZE Settings
     const mergedSettings = {
         ...defaultSettings,
         ...settings
@@ -35,13 +29,12 @@ export const EditableAmbientLight = forwardRef<AmbientLight, VXElementAmbientLig
     
     return (
         <VXThreeElementWrapper 
-            ref={internalRef} 
             params={ambientLightParams}
             settings={mergedSettings}
             {...rest}
         >
-            <ambientLight {...rest} />
+            <ambientLight/>
 
         </VXThreeElementWrapper>
     )
-})
+}

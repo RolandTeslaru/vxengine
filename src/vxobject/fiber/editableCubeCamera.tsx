@@ -8,20 +8,14 @@ import { ThreeElements } from '@react-three/fiber';
 
 export type VXElementCubeCameraProps = VXElementPropsWithoutRef<ThreeElements["cubeCamera"]> & {
     ref?: React.RefObject<THREE.CubeCamera>;
-    args?: (number | THREE.WebGLCubeRenderTarget)[]
     overrideNodeTreeParentKey?: string
 };
 
 
-export const EditableCubeCamera: React.FC<VXElementCubeCameraProps> = memo((props) => {
-    const { vxkey, ...rest } = props;
-
+export const EditableCubeCamera: React.FC<VXElementCubeCameraProps> = (props) => {
     return (
-        <VXThreeElementWrapper
-            vxkey={vxkey}
-            {...rest}
-        >
+        <VXThreeElementWrapper {...props}>
             <cubeCamera />
         </VXThreeElementWrapper>
     )
-})
+}
