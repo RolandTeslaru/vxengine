@@ -1,4 +1,4 @@
-import React, { memo, forwardRef, useEffect, useLayoutEffect, ComponentProps } from "react";
+import React from "react";
 import { VXElementPropsWithoutRef, VXObjectSettings } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
@@ -17,7 +17,7 @@ export const defaultSettings: VXObjectSettings = {
 
 
 export const EditableMesh: React.FC<VXElementMeshProps> = (props) => {
-    const { children: meshChildren, settings = {}, ref, ...rest } = props;
+    const { children: meshChildren, settings = {}, ...rest } = props;
 
     const mergedSettings = {
         ...defaultSettings,
@@ -25,14 +25,11 @@ export const EditableMesh: React.FC<VXElementMeshProps> = (props) => {
     }
 
     return (
-        <VXThreeElementWrapper 
-            ref={ref}
+        <VXThreeElementWrapper<"mesh">
             settings={mergedSettings}
             {...rest}
         >
-            <mesh>
-                {meshChildren}
-            </mesh>
+            <mesh>{meshChildren}</mesh>
         </VXThreeElementWrapper>
     );
 }

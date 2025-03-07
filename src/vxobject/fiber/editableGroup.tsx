@@ -2,11 +2,10 @@ import React, { memo, forwardRef, useEffect } from "react";
 import { VXElementPropsWithoutRef, VXObjectSettings } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { Group } from "three";
-import { ThreeElement, ThreeElements } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 
 export type VXElementGroupProps = VXElementPropsWithoutRef<ThreeElements["group"]> & {
     ref?: React.RefObject<Group>;
-    overrideNodeTreeParentKey?: string
 };
 
 export const defaultSettings: VXObjectSettings = {
@@ -16,7 +15,7 @@ export const defaultSettings: VXObjectSettings = {
 }
 
 export const EditableGroup: React.FC<VXElementGroupProps> = (props) => {
-    const { settings = {}, children: groupChildren, ref, ...rest } = props;
+    const { settings = {}, children: groupChildren, ...rest } = props;
 
     // INITIALIZE Settings
     const mergedSettings = {
@@ -26,11 +25,10 @@ export const EditableGroup: React.FC<VXElementGroupProps> = (props) => {
 
     return (
         <VXThreeElementWrapper
-            ref={ref}
-            {...rest}
             settings={mergedSettings}
+            {...rest}
         >
-            <group {...rest} >
+            <group>
                 {groupChildren}
             </group>
         </VXThreeElementWrapper>

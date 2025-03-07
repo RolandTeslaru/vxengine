@@ -7,15 +7,20 @@ export interface VXThreeElementWrapperProps {
     vxkey: string;
 }
 
-export type VXElementPropsWithoutRef<T> = Omit<T, "ref" | "args"> &  {
+export type VXPrimitiveProps = {
     vxkey: string;
     isVirtual?: boolean
     addToNodeTree?: boolean
     icon?: string
     settings?: VXObjectSettings
-    additionalSettings?: {}
-};
+    overrideNodeTreeParentKey?: string
+    params?: VXElementParams
+    name?: string
+}
 
+export type VXElementProps<T> = T & VXPrimitiveProps
+
+export type VXElementPropsWithoutRef<T> = VXElementProps<Omit<T, "ref">> 
 
 export type VXBaseInputType = {
     type: string,

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import React, { useImperativeHandle, useRef } from "react";
 import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 
@@ -9,7 +9,6 @@ import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { PointLight } from "three";
 import { useHelper } from "@react-three/drei";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
-import { ThreeElement } from "@react-three/fiber";
 import { ThreeElements } from "@react-three/fiber";
 
 export type VXElementPointLightProps = VXElementPropsWithoutRef<ThreeElements["pointLight"]> & {

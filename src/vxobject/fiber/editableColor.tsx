@@ -1,7 +1,7 @@
-import React, { memo, forwardRef, useRef, useImperativeHandle, useLayoutEffect } from "react";
+import React, { memo, useRef, useImperativeHandle } from "react";
 import { VXElementPropsWithoutRef, VXElementParams } from "../types"
 import VXThreeElementWrapper from "../VXThreeElementWrapper";
-import { ThreeElement, ThreeElements } from "@react-three/fiber";
+import { ThreeElements } from "@react-three/fiber";
 import { Color } from "three";
 
 type ColorRepresentation =
@@ -11,43 +11,31 @@ type ColorRepresentation =
     | [number, number, number]
     | [number, number, number, number];
 
-
-
 export type VXElementColorProps = VXElementPropsWithoutRef<ThreeElements["color"]> & {
-    ref?: React.RefObject<ThreeElement<typeof Color>>;
-    args?: ColorRepresentation
+    ref?: React.RefObject<Color>;
 }
 
 const colorParams: VXElementParams = [
-    {
-        type: "color",  
-        propertyPath: "",
-        title: "color"
-    }
+    { type: "color", propertyPath: "", title: "color"}
 ]
+
 const colorDisabledParams = [
     "position",
     "rotation",
     "scale"
 ]
 
-export const EditableColor: React.FC<VXElementColorProps> = memo((props) => {
-    const { settings = {}, ref, ...rest } = props
-    const internalRef = useRef<any>(null);
-    useImperativeHandle(ref, () => internalRef.current);
-
-    const colorSettings = {}
+export const EditableColor: React.FC<VXElementColorProps> = (props) => {
+    const { ...rest } = props
 
     return (
         <VXThreeElementWrapper
-            ref={internalRef}
             params={colorParams}
-            settings={colorSettings}
             disabledParams={colorDisabledParams}
             icon="Color"
-            {...props}
+            {...rest}
         >
             <color />
         </VXThreeElementWrapper>
     )
-})
+}
