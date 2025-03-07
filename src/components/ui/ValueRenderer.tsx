@@ -60,7 +60,6 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 type='number'
                 className="h-fit text-[10px] bg-neutral-800 p-0.5 max-w-[40px] border border-neutral-700/70"
                 {...inputProps}
-                style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)" }}
             />
         );
     }

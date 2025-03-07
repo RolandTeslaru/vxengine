@@ -14,10 +14,11 @@ export type EditableLightformerProps = VXElementPropsWithoutRef<LightProps> & {
     defaultScene?: THREE.Scene
 };
 
-const outlineMaterial = new THREE.MeshStandardMaterial({
+const outlineMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     side: THREE.DoubleSide,
     fog: false,
+    wireframe: true
 })
 
 const defaultSettings: VXObjectSettings = {

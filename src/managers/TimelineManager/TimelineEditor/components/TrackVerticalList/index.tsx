@@ -179,14 +179,12 @@ const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
 
     return (
         <ContextMenuContent>
-            <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                    Show Data
-                </ContextMenuSubTrigger>
+            {/* <ContextMenuSub>
+                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <TrackData trackKey={trackKey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub>
+            </ContextMenuSub> */}
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     Select...

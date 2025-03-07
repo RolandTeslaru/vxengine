@@ -7,7 +7,7 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> { }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, style, type, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -16,6 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
+        style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)", ...style}}
         {...props}
       />
     )

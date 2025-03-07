@@ -57,7 +57,7 @@ const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: C
   // @ts-expect-error
   <ContextMenuPrimitive.SubTrigger
     className={cn(
-      `text-xs font-roboto-mon antialiased font-semibold relative flex 
+      `text-xs font-roboto-mono antialiased font-semibold relative flex 
       hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-1
         rounded-md cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",

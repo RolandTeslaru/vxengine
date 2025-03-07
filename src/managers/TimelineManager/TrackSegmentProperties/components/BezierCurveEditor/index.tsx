@@ -168,6 +168,12 @@ const BezierCurveEditor = ({
   };
 
   useEffect(() => {
+    if (!movingStartHandle && !movingEndHandle) {
+      setValue(value);
+    }
+  }, [value, movingStartHandle, movingEndHandle, setValue]);
+
+  useEffect(() => {
     window.addEventListener('mousemove', handleWindowMouseMove);
     window.addEventListener('touchmove', handleWindowTouchMove);
     window.addEventListener('mouseup', stopMovingAll);

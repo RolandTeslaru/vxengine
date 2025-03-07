@@ -43,9 +43,8 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     selectedKeyframeKeys: {},
     selectedKeyframesFlatMap: [],
     selectKeyframe: (trackKey, keyframeKey) => {
-        set(
-            produce((state: TimelineEditorAPIProps) => selectKeyframeLogic(state, trackKey, keyframeKey))
-        )
+        set(produce((state: TimelineEditorAPIProps) => {
+            selectKeyframeLogic(state, trackKey, keyframeKey)}))
     },
     removeSelectedKeyframe: (trackKey, keyframeKey) => {
         set(

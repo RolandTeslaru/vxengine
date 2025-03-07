@@ -50,7 +50,7 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
       <mesh ref={ref} scale={scale} {...props}>
         {Form === 'circle' ? (
           <ringGeometry args={args ? (args as any) : [0, 0.5, 64]} />
-        ) : Form === 'ring-3' ? (
+        ) : Form === 'ring' ? (
           <ringGeometry args={args ? (args as any) : [0.25, 0.5, 64]} />
         ) : Form === 'rect' || Form === 'plane' ? (
           <planeGeometry args={args ? (args as any) : [1, 1]} />
@@ -59,7 +59,7 @@ export const Lightformer: ForwardRefComponent<LightProps, THREE.Mesh> = /* @__PU
         ) : (
           <Form args={args} />
         )}
-        {children ? children : <meshBasicMaterial toneMapped={toneMapped} map={map} side={THREE.DoubleSide} />}
+        {children ? children : <meshBasicMaterial wireframe={true} toneMapped={toneMapped} map={map} side={THREE.DoubleSide} />}
         {light && <pointLight castShadow {...light} />}
       </mesh>
     )

@@ -77,30 +77,20 @@ const TrackSegment: React.FC<Props> = (props) => {
         }
     }, [firstKeyframeKey, secondKeyframeKey])
 
-    const isSelectedFromKeyframes = useTimelineEditorAPI(
-        state => state.selectedKeyframeKeys[trackKey]?.[firstKeyframeKey] && state.selectedKeyframeKeys[trackKey]?.[secondKeyframeKey]
+    const isSelectedFromKeyframes = useTimelineEditorAPI(state => 
+        state.selectedKeyframeKeys[trackKey]?.[firstKeyframeKey] && state.selectedKeyframeKeys[trackKey]?.[secondKeyframeKey]
     );
-    const isSelectedFromTrackSegments = useTimelineEditorAPI(
-        state =>
-            state.selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey &&
-            state.selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
+    const isSelectedFromTrackSegments = useTimelineEditorAPI(state =>
+        state.selectedTrackSegment?.firstKeyframeKey === firstKeyframeKey &&
+        state.selectedTrackSegment?.secondKeyframeKey === secondKeyframeKey
     );
-    const setSelectedTrackSegment = useTimelineEditorAPI(state => state.setSelectedTrackSegment);
-    const clearSelectedKeyframes = useTimelineEditorAPI(state => state.clearSelectedKeyframes);
-
-
-    const handleOnClick = useCallback(() => {
-        clearSelectedKeyframes();
-        selectKeyframe(trackKey, firstKeyframeKey)
-        selectKeyframe(trackKey, secondKeyframeKey)
-        setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
-    }, [trackKey, firstKeyframeKey, secondKeyframeKey])
 
     return (
         <ContextMenu>
             <ContextMenuTrigger>
                 <div className='absolute h-full flex '
-                    onClick={handleOnClick}
+                    onClick={() => handleOnClick(trackKey, firstKeyframeKey, secondKeyframeKey)}
+                    onContextMenu={() => handleOnContextMenu(trackKey, firstKeyframeKey, secondKeyframeKey)}
                     ref={elementRef as any}
                 >
                     <div
@@ -115,6 +105,20 @@ const TrackSegment: React.FC<Props> = (props) => {
 }
 
 export default TrackSegment
+
+const handleOnContextMenu = (trackKey: string, firstKeyframeKey: string, secondKeyframeKey:string) => {
+    const state = useTimelineEditorAPI.getState();
+    state.setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+}
+
+const handleOnClick = (trackKey: string, firstKeyframeKey: string, secondKeyframeKey:string) => {
+    const state = useTimelineEditorAPI.getState();
+
+    state.clearSelectedKeyframes();
+    state.selectKeyframe(trackKey, firstKeyframeKey);
+    state.selectKeyframe(trackKey, secondKeyframeKey);
+    state.setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+}
 
 
 
