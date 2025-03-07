@@ -80,7 +80,8 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
 
         // Refresh settings when the current timeline changes
         useLayoutEffect(() => {
-            if (currentTimelineID === undefined) return
+            if (currentTimelineID === undefined) 
+                return
 
             const mergedSettingsForObject = cloneDeep(initialSettings);
             const rawObject = useAnimationEngineAPI.getState().currentTimeline.objects.find(obj => obj.vxkey === vxkey);
@@ -93,7 +94,6 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
                     })
                 }
             }
-
 
             useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
         }, [currentTimelineID])
@@ -141,6 +141,7 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
 
         const modifiedChildren = React.cloneElement(children, {
             ref: internalRef,
+            vxkey,
             ...threeElementProps,
         },
             <>

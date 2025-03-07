@@ -4,6 +4,7 @@ import ParamInput from "@vxengine/components/ui/ParamInput";
 import { Switch } from "@vxengine/components/shadcn/switch";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
+import SettingNode from "../components/SettingNode";
 
 interface Props {
     vxobject: vxObjectProps
@@ -87,14 +88,12 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                     </div>
                 }
                 {"showPositionPath" in settings && (
-                    <div className="flex flex-row mb-1">
-                        <p className="text-xs font-light text-neutral-400">{isUsingSplinePath ? "show spline path" : "show position path"}</p>
-                        <Switch
-                            onClick={() => toggleSetting(vxkey, "showPositionPath")}
-                            checked={settings["showPositionPath"].value}
-                            className='ml-auto my-auto'
-                        />
-                    </div>
+                    <SettingNode 
+                        vxkey={vxkey} 
+                        settingKey="showPositionPath" 
+                        setting={settings["showPositionPath"]} 
+                        title={isUsingSplinePath ? "show spline path" : "show position path"}
+                    />
                 )}
             </div>
         </CollapsiblePanel>

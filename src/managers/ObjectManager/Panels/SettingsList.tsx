@@ -5,6 +5,7 @@ import { useObjectSettingsAPI } from '..'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { ISetting } from '@vxengine/AnimationEngine/types/engine'
 import { VXObjectSettings } from '@vxengine/vxobject/types'
+import SettingNode from '../components/SettingNode'
 
 const excludeSettingsKeys = [
     "showPositionPath"
@@ -18,7 +19,6 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
     const vxkey = vxobject.vxkey
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting)
 
     const filteredSettings = useMemo(() => {
         if(!settings) return {};
@@ -31,26 +31,15 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
             }, {} as VXObjectSettings);
     }, [settings]);
 
-    const renderSettings = (settingsObj, toggleFunction) =>
-        Object.entries(settingsObj).map(([settingKey, setting]: [settingKey: string, value: ISetting]) => (
-            !excludeSettingsKeys.includes(settingKey) && (
-                <div key={settingKey} className="flex flex-row py-1">
-                    <p className="text-xs font-light text-neutral-400">{setting.title}</p>
-                    <Switch
-                        onClick={() => toggleFunction(vxkey, settingKey)}
-                        checked={setting.value}
-                        className="ml-auto my-auto"
-                    />
-                </div>
-            )
-        ))
-
     return (
         <>
             {Object.values(filteredSettings).length > 0 &&
                 <CollapsiblePanel title="Settings">
                     <div className="flex flex-col">
-                        {renderSettings(settings, toggleSetting)}
+                        {Object.entries(settings).map(([settingKey, setting]) => (
+                            !excludeSettingsKeys.includes(settingKey) && 
+                                <SettingNode key={settingKey} vxkey={vxkey} settingKey={settingKey} setting={setting}/>
+                        ))}
                     </div>
                 </CollapsiblePanel>
             }
