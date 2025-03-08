@@ -47,5 +47,8 @@ export interface TimelineEditorAPIProps {
     collapsedTrackNodes: Record<string, boolean>
     setCollapsedTrackNodes: (groupKey: string) => void;
 
-    rebuildTrackTree: (tracks: Record<string, EditorTrack>) => void
+    addObjectToTrackTree: (vxkey: string, tracks: Record<string, EditorTrack>) => void
+    addTrackToTrackTree: (vxkey: string, propertyPath: string) => void
+    removeTrackFromTrackTree: (vxkey: string, propertyPath: string) => void
+    removeObjectFromTrackTree: (vxkey: string) => void
 }

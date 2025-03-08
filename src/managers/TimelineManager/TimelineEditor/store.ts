@@ -7,6 +7,7 @@ import { produce } from "immer";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
+import { TimelineMangerAPIProps } from "../types/store";
 
 export type SelectedKeyframe = {
     trackKey: string;
@@ -44,7 +45,8 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     selectedKeyframesFlatMap: [],
     selectKeyframe: (trackKey, keyframeKey) => {
         set(produce((state: TimelineEditorAPIProps) => {
-            selectKeyframeLogic(state, trackKey, keyframeKey)}))
+            selectKeyframeLogic(state, trackKey, keyframeKey)
+        }))
     },
     removeSelectedKeyframe: (trackKey, keyframeKey) => {
         set(
@@ -98,7 +100,7 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         let time = parserPixelToTime(left, cursorStartLeft)
         time = truncateToDecimals(time);
 
-        
+
         animationEngineInstance.setCurrentTime(time, false);
 
         handleCursorMutation(left);
@@ -133,12 +135,115 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
             get().setTime(prevKeyframe.time)
     },
 
+    addObjectToTrackTree: (vxkey, tracks) => {
+        console.log(`Adding object ${vxkey} to track tree`)
+        if (Object.entries(tracks).length === 0)
+            return
 
-    rebuildTrackTree: (tracks) => {
         set(produce((state: TimelineEditorAPIProps) => {
-            state.trackTree = buildTrackTree(tracks)
+            const root = state.trackTree;
+
+            for (const key in tracks) {
+                const path = key.split(".")
+                let currentLevel = root;
+
+                path.forEach((part, index) => {
+                    if (!currentLevel[part]) {
+                        currentLevel[part] = {
+                            key: part,
+                            children: {}
+                        }
+                    }
+
+                    if (index === path.length - 1) {
+                        currentLevel[part].track = key
+                    }
+
+                    currentLevel = currentLevel[part].children
+                })
+            }
+
+            for (const key in state.trackTree) {
+                state.trackTree[key] = mergeSingleChildNodes(state.trackTree[key])
+            }
+        }))
+    },
+
+    addTrackToTrackTree: (vxkey, propertyPath) => {
+        const timelineMangerAPI = useTimelineManagerAPI.getState();
+        const trackKey = `${vxkey}.${propertyPath}`
+
+        const track = timelineMangerAPI.tracks[trackKey]
+        if (!track) return
+
+        set(produce((state: TimelineEditorAPIProps) => {
+            // Collect all tracks for this vxkey, including the new one
+            const tracksForObject = Object.keys(timelineMangerAPI.tracks)
+                .filter(key => key.startsWith(`${vxkey}.`));
+    
+            // Rebuild and set the track tree for vxkey
+            state.trackTree[vxkey] = buildTrackTree(vxkey, tracksForObject);
+        }));
+    },
+
+    removeTrackFromTrackTree: (vxkey, propertyPath) => {
+        const trackKeyToRemove = `${vxkey}.${propertyPath}`
+
+        set(produce((state: TimelineEditorAPIProps) => {
+            const root = state.trackTree[vxkey];
+            if(!root) return;
+
+            // Step 1: remove node with the matching track
+            function removeNode(node: EditorTrackTreeNode){
+                if(node.children){
+                    for (const key in node.children){
+                        const child = node.children[key];
+                        if(child.track === trackKeyToRemove){
+                            delete node.children[key];
+                            return true;
+                        } else if (removeNode(child)) {
+                            return true
+                        }
+                    }
+                }
+            }
+            removeNode(root);
+
+            // Step 2: Cleanup up nodes with no children and no track
+            function cleanupEmptyNodes(node: EditorTrackTreeNode){
+                if(node.children){
+                    for (const key in node.children)
+                        if(cleanupEmptyNodes(node.children[key]))
+                            delete node.children[key]
+
+                    if(Object.keys(node.children).length === 0 && !node.track)
+                        return true;
+                    
+                }
+                return false;
+            }
+
+            cleanupEmptyNodes(root);
+
+            // Step 3: Remove the root if it becomes empty and has no track
+            if(Object.keys(root.children).length === 0 && !root.track)
+                delete state.trackTree[vxkey]
+
+            // Step 4: Re-merge all roots to maintain optimization
+            for (const key in state.trackTree){
+                state.trackTree[key] = mergeSingleChildNodes(state.trackTree[key])
+            }
+        }))
+    },
+
+    removeObjectFromTrackTree: (vxkey) => {
+        console.log(`Removing object ${vxkey} from trackTree`)
+
+        set(produce((state: TimelineEditorAPIProps) => {
+            delete state.trackTree[vxkey];
         }))
     }
+
 }))
 
 
@@ -168,35 +273,31 @@ function selectKeyframeLogic(state: TimelineEditorAPIProps, trackKey: string, ke
 }
 
 
-export const buildTrackTree = (tracks: Record<string, EditorTrack>) => {
-    const root: Record<string, EditorTrackTreeNode> = {};
+function buildTrackTree(vxkey, tracksForObject) {
+    // Initialize the root node with the object's vxkey
+    const root = { key: vxkey, children: {} };
 
-    for (const key in tracks) {
-        const path = key.split(".");
-        let currentLevel = root;
-
+    // Build the unmerged tree from all tracks
+    tracksForObject.forEach(trackKey => {
+        const propertyPath = trackKey.slice(vxkey.length + 1); // Remove 'vxkey.' prefix
+        const path = propertyPath.split(".");
+        let currentLevel = root.children;
         path.forEach((part, index) => {
             if (!currentLevel[part]) {
                 currentLevel[part] = {
                     key: part,
                     children: {}
-                }
+                };
             }
-
             if (index === path.length - 1) {
-                currentLevel[part].track = key;
+                currentLevel[part].track = trackKey;
             }
-
             currentLevel = currentLevel[part].children;
-        })
-    }
+        });
+    });
 
-    // Process merging single-child nodes recursively
-    for (const key in root) {
-        root[key] = mergeSingleChildNodes(root[key]);
-    }
-
-    return root;
+    // Optimize the tree by merging single-child nodes
+    return mergeSingleChildNodes(root);
 }
 
 

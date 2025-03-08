@@ -46,9 +46,12 @@ export const EditableLUT: React.FC<VXElementLUT> = ({
         }
 
         addObject(newVxObject, IS_DEVELOPMENT)
-        animationEngineInstance.initObjectOnMount(newVxObject);
+        animationEngineInstance.registerObject(newVxObject);
 
-        return () => removeObject(vxkey, IS_DEVELOPMENT);
+        return () => {
+            removeObject(vxkey, IS_DEVELOPMENT);
+            animationEngineInstance.unregisterObject(vxkey);
+        } 
     }, [])
 
     useLayoutEffect(() => {

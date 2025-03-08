@@ -31,15 +31,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     setEditorData: (rawObjects, rawSplines, IS_DEVELOPMENT) => {
-        const { editorObjects, tracks, staticProps, splines } = processRawData(rawObjects, rawSplines);
-        
-        if(IS_DEVELOPMENT)
-            useTimelineEditorAPI.getState().rebuildTrackTree(tracks)
+        const { splines } = processRawData(rawObjects, rawSplines);
 
         set({
-            editorObjects,
-            tracks,
-            staticProps,
             splines,
         });
     },
@@ -76,46 +70,6 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     // Writer Functions
-
-    addObjectToEditorData: (newVxObject: vxObjectProps) => {
-        // Check if the object is already in the editorObjects.
-        // it usually means it was added by the animationEngine when processing the raw data
-        if (newVxObject.vxkey in get().editorObjects)
-            return
-        
-        const vxkey = newVxObject.vxkey;
-
-        const trackKeys:string[] = [];
-        const staticPropKeys:string[] = [];
-        const currentTimeline = animationEngineInstance.currentTimeline;
-
-        currentTimeline.objects.forEach(rawObj => {
-            if(rawObj.vxkey === vxkey){
-                rawObj.tracks.forEach(rawTrack => {
-                    trackKeys.push(`${vxkey}.${rawTrack.propertyPath}`)})
-
-                rawObj.staticProps.forEach(rawStaticProp => {
-                    staticPropKeys.push(`${vxkey}.${rawStaticProp.propertyPath}`)})
-            }
-        })
-
-        const newEdObject: EditorObject = {
-            vxkey,
-            trackKeys,
-            staticPropKeys
-        }
-        set(produce((state: TimelineMangerAPIProps) => {
-            state.editorObjects[newVxObject.vxkey] = newEdObject
-        }))
-    },
-    removeObjectFromEditorData: (vxkey: string) => {
-        if (!(vxkey in get().editorObjects))
-            return
-
-        set(produce((state: TimelineMangerAPIProps) => {
-            delete state.editorObjects[vxkey];
-        }))
-    },
 
     makePropertyTracked: (staticPropKey, reRender) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
@@ -158,10 +112,9 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             // Handle Track 
             createTrackLogic(state, vxkey, propertyPath)
             createKeyframeLogic(state, trackKey, keyframeKey, value,)
-
-            // Recompute Track Tree
-            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
+
+        useTimelineEditorAPI.getState().addTrackToTrackTree(vxkey, propertyPath);
 
         if(reRender)
             animationEngineInstance.reRender({force: true})
@@ -173,7 +126,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         let doesTrackExist = false;
 
+        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
+
         set(produce((state: TimelineMangerAPIProps) => {
+
             const vxObject = useVXObjectStore.getState().objects[vxkey]
             const value = getNestedProperty(vxObject?.ref?.current, propertyPath) || 0
             const edObject = useTimelineManagerAPI.getState().editorObjects[vxkey];
@@ -184,9 +140,6 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
                 removeTrackLogic(state, vxkey, propertyPath)
 
             createStaticPropLogic(state, vxkey, propertyPath, value)
-
-            // Recompute grouped Paths for Visual 
-            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
 
         if(reRender)
@@ -206,8 +159,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         set(produce((state: TimelineMangerAPIProps) => {
             createTrackLogic(state, vxkey, propertyPath)
-            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
+
+        useTimelineEditorAPI.getState().addTrackToTrackTree(vxkey, propertyPath)
+
         get().addChange()
     },
 
@@ -215,9 +170,10 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const {vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         set(produce((state: TimelineMangerAPIProps) => {
             removeTrackLogic(state, vxkey, propertyPath)
-            useTimelineEditorAPI.getState().rebuildTrackTree(state.tracks)
         }))
-        
+
+        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
+
         if(reRender)
             animationEngineInstance.reRender({force: true})
         get().addChange()
@@ -305,7 +261,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         animationEngineInstance.reRender({force: true})
 
-        useTimelineEditorAPI.getState().rebuildTrackTree(get().tracks)
+        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, "splineProgress");
+        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, "splineTension");
 
         get().addChange();
     },
@@ -597,6 +554,8 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         set(produce((state: TimelineMangerAPIProps) => {
             removePropertyLogic(state, vxkey, propertyPath);
         }))
+
+        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
        
         if(reRender)
             animationEngineInstance.reRender({ force: true });

@@ -15,8 +15,13 @@ import { VXElementParams, VXObjectSettings, VXPrimitiveProps } from "./types";
 import animationEngineInstance from "@vxengine/singleton";
 import { cloneDeep } from "lodash";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
+import { EditorTrack, EditorKeyframe, EditorStaticProp, EditorObject } from "@vxengine/types/data/editorData";
+import { v4 as uuidv4 } from 'uuid';
+import { TimelineMangerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
+import { produce } from "immer";
 
-export type VXThreeElementWrapperProps<T extends keyof ThreeElements> = 
+export type VXThreeElementWrapperProps<T extends keyof ThreeElements> =
     Omit<ThreeElements[T], "ref"> & VXPrimitiveProps &
     {
         ref?: React.RefObject<any>; // Ref has the " | Readonly<>" which breaks typing idk
@@ -54,111 +59,198 @@ const threeDefaultParams: VXElementParams = [
 ]
 
 const VXThreeElementWrapper = <T extends keyof ThreeElements>({
-        ref,
-        children,
-        vxkey,
-        params,
-        disabledParams,
-        disableClickSelect = false,
-        isVirtual = false,
-        addToNodeTree = true,
-        settings: initialSettings = {},
-        overrideNodeTreeParentKey,
-        icon,
-        ...threeElementProps
-    }: VXThreeElementWrapperProps<T> ) => {
-        if (vxkey === undefined)
-            throw new Error(`ObjectStore: Error initializing vxobject! No vxkey was passed to: ${children}`);
+    ref,
+    children,
+    vxkey,
+    params,
+    disabledParams,
+    disableClickSelect = false,
+    isVirtual = false,
+    addToNodeTree = true,
+    settings: initialSettings = {},
+    overrideNodeTreeParentKey,
+    icon,
+    ...threeElementProps
+}: VXThreeElementWrapperProps<T>) => {
+    if (vxkey === undefined)
+        throw new Error(`ObjectStore: Error initializing vxobject! No vxkey was passed to: ${children}`);
 
-        const vxObject = useVXObjectStore(state => state.objects[vxkey])
-        const addObjectToEditorData = useTimelineManagerAPI(state => state.addObjectToEditorData)
-        const removeObjectFromEditorData = useTimelineManagerAPI(state => state.removeObjectFromEditorData)
-        const { IS_DEVELOPMENT } = useVXEngine();
+    const internalRef = useRef<THREE.Object3D | null>(null);
+    useImperativeHandle(ref, () => internalRef.current, [])
 
-        // Initialize settings
-        const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
-        // Refresh settings when the current timeline changes
-        useLayoutEffect(() => {
-            if (currentTimelineID === undefined) 
-                return
+    const { IS_DEVELOPMENT } = useVXEngine();
+    const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
+    useLayoutEffect(() => {
+        if (currentTimelineID === undefined || IS_DEVELOPMENT === false)
+            return
+
+        const animationEngineAPI = useAnimationEngineAPI.getState();
+        const timelineEditorAPI = useTimelineEditorAPI.getState();
+        const timelineMangerAPI = useTimelineManagerAPI.getState();
+        const objectSettingsAPI = useObjectSettingsAPI.getState();
+
+        const rawObject = animationEngineAPI.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+        // Create editor Tracks for object
+        const tracks: Record<string, EditorTrack> = {}
+        const trackKeys: string[] = []
+
+        const staticProps: Record<string, EditorStaticProp> = {}
+        const staticPropKeys: string[] = []
+
+        if (rawObject) {
+            // Handle settings
             const mergedSettingsForObject = cloneDeep(initialSettings);
-            const rawObject = useAnimationEngineAPI.getState().currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
-            if (rawObject) {
-                const rawSettings = rawObject.settings;
-                if (rawSettings) {
-                    Object.entries(rawSettings).forEach(([settingKey, rawSetting]) => {
-                        mergedSettingsForObject[settingKey].value = rawSetting;
-                    })
+            const rawSettings = rawObject.settings;
+            if (rawSettings) {
+                Object.entries(rawSettings).forEach(([settingKey, rawSetting]) => {
+                    mergedSettingsForObject[settingKey].value = rawSetting;
+                })
+            }
+
+            objectSettingsAPI.initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
+
+            // Handle Track
+            rawObject.tracks.forEach(rawTrack => {
+                const trackKey = `${vxkey}.${rawTrack.propertyPath}`
+                trackKeys.push(trackKey)
+
+                const editorTrack: EditorTrack = {
+                    keyframes: {} as Record<string, EditorKeyframe>,
+                    propertyPath: rawTrack.propertyPath,
+                    vxkey,
+                    orderedKeyframeKeys: []
                 }
-            }
 
-            useObjectSettingsAPI.getState().initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
-        }, [currentTimelineID])
+                rawTrack.keyframes.forEach(rawKeyframe => {
+                    const keyframeKey = rawKeyframe.keyframeKey || `keyframe-${uuidv4()}`;
+                    if (!rawKeyframe.keyframeKey)
+                        rawKeyframe.keyframeKey = keyframeKey;
 
+                    const editorKeyframe: EditorKeyframe = {
+                        id: keyframeKey,
+                        vxkey,
+                        propertyPath: rawTrack.propertyPath,
+                        time: rawKeyframe.time,
+                        value: rawKeyframe.value,
+                        handles: {
+                            in: {
+                                x: rawKeyframe.handles[0],
+                                y: rawKeyframe.handles[1]
+                            },
+                            out: {
+                                x: rawKeyframe.handles[2],
+                                y: rawKeyframe.handles[3]
+                            }
+                        }
+                    }
+                    editorTrack.keyframes[keyframeKey] = editorKeyframe;
+                    editorTrack.orderedKeyframeKeys.push(keyframeKey);
 
-        const internalRef = useRef<THREE.Object3D | null>(null);
-        useImperativeHandle(ref, () => internalRef.current, [])
+                    tracks[trackKey] = editorTrack
+                })
+            })
 
-        // Initializations
-        useLayoutEffect(() => {
-            const addObject = useVXObjectStore.getState().addObject;
-            const removeObject = useVXObjectStore.getState().removeObject;
+            // Handle Static prop
+            rawObject.staticProps.forEach(staticProp => {
+                const staticPropKey = `${vxkey}.${staticProp.propertyPath}`;
+                staticPropKeys.push(staticPropKey);
 
-            const name = threeElementProps.name || vxkey
-            const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
+                const newStaticProp: EditorStaticProp = {
+                    vxkey,
+                    value: staticProp.value,
+                    propertyPath: staticProp.propertyPath
+                };
+                staticProps[staticPropKey] = newStaticProp;
+            })
 
-            if (internalRef.current)
-                initializeDegreeRotations(internalRef.current)
+        }
 
-            const newVXEntity: vxObjectProps = {
-                type: isVirtual ? "virtualEntity" : "entity",
-                ref: internalRef,
-                vxkey,
-                name,
-                params: params ? [...threeDefaultParams, ...params] : threeDefaultParams,
-                disabledParams: disabledParams || [],
-                parentKey,
-            };
+        const editorObject: EditorObject = {
+            vxkey,
+            trackKeys,
+            staticPropKeys
+        }
 
-            // Add the Store
-            addObject(newVXEntity, IS_DEVELOPMENT, { icon });
-            // Add to Editor
-            if (IS_DEVELOPMENT)
-                addObjectToEditorData(newVXEntity);
-            // Add to animationEngine
-            animationEngineInstance.initObjectOnMount(newVXEntity);
+        useTimelineManagerAPI.setState(produce((state: TimelineMangerAPIProps) => {
+            state.tracks = { ...state.tracks, ...tracks }
+            state.staticProps = { ...state.staticProps, ...staticProps }
+            state.editorObjects[vxkey] = editorObject;
+        }))
 
-            return () => {
-                animationEngineInstance.handleObjectUnMount(vxkey);
-                removeObject(vxkey, IS_DEVELOPMENT)
-                if (IS_DEVELOPMENT)
-                    removeObjectFromEditorData(vxkey);
-            }
-        }, []);
+        timelineEditorAPI.addObjectToTrackTree(vxkey, tracks);
 
-        const modifiedChildren = React.cloneElement(children, {
+        return () => {
+            useTimelineManagerAPI.setState(produce((state: TimelineMangerAPIProps) => {
+                Object.entries(state.tracks).forEach(([trackKey, _track]) => {
+                    if (_track.vxkey === vxkey)
+                        delete state.tracks[trackKey]
+                })
+
+                Object.entries(state.staticProps).forEach(([staticPropKey, _staticProp]) => {
+                    if (_staticProp.vxkey === vxkey)
+                        delete state.staticProps[staticPropKey];
+                })
+
+                delete state.editorObjects[vxkey]
+            }))
+
+            timelineEditorAPI.removeObjectFromTrackTree(vxkey)
+        }
+    }, [currentTimelineID])
+
+    useLayoutEffect(() => {
+        const vxObjectStoreAPI = useVXObjectStore.getState();
+
+        const name = threeElementProps.name || vxkey
+        const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
+
+        if (internalRef.current)
+            initializeDegreeRotations(internalRef.current)
+
+        const newVXEntity: vxObjectProps = {
+            type: isVirtual ? "virtualEntity" : "entity",
             ref: internalRef,
             vxkey,
-            ...threeElementProps,
-        },
-            <>
-                {children.props.children}
-            </>
-        );
+            name,
+            params: params ? [...threeDefaultParams, ...params] : threeDefaultParams,
+            disabledParams: disabledParams || [],
+            parentKey,
+        };
 
-        return <>
-            {modifiedChildren}
+        vxObjectStoreAPI.addObject(newVXEntity, IS_DEVELOPMENT, { icon });
 
-            {vxObject && IS_DEVELOPMENT && (
-                <ObjectUtils vxkey={vxkey}>
-                    {children}
-                </ObjectUtils>
-            )}
-        </>;
-    }
+        animationEngineInstance.registerObject(newVXEntity);
+
+        return () => {
+            animationEngineInstance.unregisterObject(vxkey);
+            vxObjectStoreAPI.removeObject(vxkey, IS_DEVELOPMENT)
+        }
+    }, []);
+
+
+    const modifiedChildren = React.cloneElement(children, {
+        ref: internalRef,
+        vxkey,
+        ...threeElementProps,
+    },
+        <>
+            {children.props.children}
+        </>
+    );
+
+    return <>
+        {modifiedChildren}
+
+        {IS_DEVELOPMENT && (
+            <ObjectUtils vxkey={vxkey}>
+                {children}
+            </ObjectUtils>
+        )}
+    </>;
+}
 
 
 export default VXThreeElementWrapper

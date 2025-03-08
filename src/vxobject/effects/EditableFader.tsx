@@ -67,9 +67,12 @@ export const EditableFadeEffect: React.FC<VXElementFadeEffect> = ({
         }
 
         addObject(newVXObject, IS_DEVELOPMENT);
-        animationEngineInstance.initObjectOnMount(newVXObject);
+        animationEngineInstance.registerObject(newVXObject);
 
-        return () => removeObject(vxkey, IS_DEVELOPMENT);
+        return () => {
+            removeObject(vxkey, IS_DEVELOPMENT);
+            animationEngineInstance.unregisterObject(vxkey)
+        }
     }, [])
 
     return <primitive ref={internalRef} object={effect} dispose={null} />

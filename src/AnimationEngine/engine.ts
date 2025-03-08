@@ -337,7 +337,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Applies initial tracks and static properties to the object.
    * @param vxObject - The object to initialize.
    */
-  public initObjectOnMount(vxObject: vxObjectProps) {
+  public registerObject(vxObject: vxObjectProps) {
     const vxkey = vxObject.vxkey;
 
     if (!this._isReady)
@@ -374,7 +374,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * Removes the object reference from internal caches.
    * @param vxkey - The unique key of the object to clean up.
    */
-  public handleObjectUnMount(vxkey: string) {
+  public unregisterObject(vxkey: string) {
     if (!this._isReady)
       return;
 

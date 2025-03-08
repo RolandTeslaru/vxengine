@@ -2,6 +2,8 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
+"use client"
+
 import * as THREE from "three"
 import React, { forwardRef, useCallback, useEffect, useRef, useImperativeHandle, useLayoutEffect } from 'react';
 import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
@@ -119,11 +121,11 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
 
             addObject(newVXElement, IS_DEVELOPMENT, { icon });
             if(!declarative)
-                animationEngineInstance.initObjectOnMount(newVXElement);
+                animationEngineInstance.registerObject(newVXElement);
 
             return () => {
                 if(!declarative)
-                    animationEngineInstance.handleObjectUnMount(vxkey);
+                    animationEngineInstance.unregisterObject(vxkey);
                 removeObject(vxkey, IS_DEVELOPMENT)
             }
         }, []);

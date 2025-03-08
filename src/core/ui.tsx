@@ -134,24 +134,24 @@ const VXBottomRightBar = () => {
 
     return (
         <>
-        <StandardWindowStyling
-            id="VXEngineTimelinePanel"
-            className="fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
-            isDetached={!timelineEditorAttached}
-            detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
-            style={{
-                boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
-                transition: 'height 300ms ease-in-out',
-                height: timelineEditorOpen ? "400px" : "45px"
-            }}
-        >
+            <StandardWindowStyling
+                id="VXEngineTimelinePanel"
+                className="fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
+                isDetached={!timelineEditorAttached}
+                detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
+                style={{
+                    boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
+                    transition: 'height 300ms ease-in-out',
+                    height: timelineEditorOpen ? "400px" : "45px"
+                }}
+            >
 
-            <WindowControlDots
-                isAttached={timelineEditorAttached}
-            />
-            <TimelineEditor />
+                <WindowControlDots
+                    isAttached={timelineEditorAttached}
+                />
+                <TimelineEditor />
 
-        </StandardWindowStyling>
+            </StandardWindowStyling>
         </>
     )
 }
