@@ -201,7 +201,6 @@ export function VXEnvironmentPortal({
           <vx.cubeCamera
             vxkey="environmentCamera"
             name="EnvCamera"
-            isVirtual={true}
             ref={camera}
             args={[near, far, fbo]}
             overrideNodeTreeParentKey={"environment"}
@@ -209,7 +208,6 @@ export function VXEnvironmentPortal({
           <vx.group
             vxkey="environment"
             name="Environment"
-            isVirtual={true}
             type="Environment"
             overrideNodeTreeParentKey="global"
             settings={environmentSettings}

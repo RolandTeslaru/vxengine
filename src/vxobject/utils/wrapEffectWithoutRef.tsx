@@ -6,7 +6,7 @@ let i = 0
 const components = new WeakMap<EffectConstructor, React.ExoticComponent<any> | string>()
 
  export const wrapEffectWithoutRef = <T extends EffectConstructor>(effect: T, defaults?: EffectProps<T>) =>
-    /* @__PURE__ */ function Effect({ blendFunction = defaults?.blendFunction, opacity = defaults?.opacity, ref,...props }) {
+    /* @__PURE__ */ function Effect({ blendFunction = defaults?.blendFunction, opacity = defaults?.opacity,...props }) {
       let Component = components.get(effect)
       if (!Component) {
         const key = `@react-three/postprocessing/${effect.name}-${i++}`
@@ -18,7 +18,7 @@ const components = new WeakMap<EffectConstructor, React.ExoticComponent<any> | s
       const args = React.useMemo(
         () => [...(defaults?.args ?? []), ...(props.args ?? [{ ...defaults, ...props }])],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [JSON.stringify(props)]
+        [props]
       )
   
       return (
@@ -28,7 +28,6 @@ const components = new WeakMap<EffectConstructor, React.ExoticComponent<any> | s
           blendMode-opacity-value={opacity}
           {...props}
           args={args}
-          ref={ref}
         />
       )
     }

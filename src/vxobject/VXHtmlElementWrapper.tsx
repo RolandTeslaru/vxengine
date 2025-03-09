@@ -28,7 +28,6 @@ export type VXHtmlElementWrapperProps<T extends HTMLElement = HTMLDivElement> =
         params?: VXElementParams
         disabledParams?: string[]
         disableClickSelect?: boolean
-        isVirtual?: boolean
         addToNodeTree?: boolean
         overrideNodeTreeParentKey?: string;
         overrideNodeType?: string
@@ -39,7 +38,7 @@ export type VXHtmlElementWrapperProps<T extends HTMLElement = HTMLDivElement> =
         icon?: string
     }
 
-const htmlDefaultParams:VXElementParams = [
+const htmlDefaultParams: VXElementParams = [
     {type:"number", propertyPath:"position.x"},
     {type:"number", propertyPath:"position.y"},
     {type:"number", propertyPath:"scale.x"},
@@ -57,7 +56,6 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
         disabledParams,
         register = true,
         disableClickSelect = false,
-        isVirtual = false,
         addToNodeTree = true,
         declarative = true,
         settings: initialSettings = {},
@@ -80,10 +78,9 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
 
             if (currentTimelineID === undefined) 
                 return
-            const currentTimeline = useAnimationEngineAPI.getState().currentTimeline
 
             const mergedSettingsForObject = cloneDeep(initialSettings);
-            const rawObject = currentTimeline.objects?.find(obj => obj.vxkey === vxkey);
+            const rawObject = animationEngineInstance.rawObjectCache.get(vxkey)
 
             if (rawObject) {
                 const rawSettings = rawObject.settings;
@@ -107,7 +104,7 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
             const removeObject = useVXObjectStore.getState().removeObject;
 
             const name = props.name || vxkey
-            // const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || null
+            const parentKey = overrideNodeTreeParentKey || "html"
 
             const newVXElement: vxObjectProps = {
                 type: "htmlElement",
@@ -116,7 +113,7 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
                 name,
                 params: params ? [...htmlDefaultParams, ...params] : htmlDefaultParams,
                 disabledParams: disabledParams || [],
-                parentKey: null,
+                parentKey,
             };
 
             addObject(newVXElement, IS_DEVELOPMENT, { icon });

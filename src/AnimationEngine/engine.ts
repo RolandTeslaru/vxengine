@@ -51,6 +51,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   public get isPaused() { return !this.isPlaying; }
   public get playRate() { return useAnimationEngineAPI.getState().playRate }
   public get currentTimeline() { return this._currentTimeline }
+  public get rawObjectCache() { return this._rawObjectCache }
   public get currentTime() { return this._currentTime }
 
   public get splineService(): SplineService { return this._splineService }
@@ -65,6 +66,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   private _propertySetterCache: Map<string, (target: any, newValue: any) => void> = new Map();
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
+  private _rawObjectCache: Map<string, RawObject> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
   private _sideEffectCallbacks: Map<string, TrackSideEffectCallback> = new Map();
 
@@ -194,9 +196,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
     this._currentTimeline = selectedTimeline;
 
-    this._precomputePropertySetterCache(selectedTimeline);
+    this._currentTimeline.objects.forEach(rawObject => {
+      this._precomputePropertySetterCacheForObject(rawObject);
+      this._rawObjectCache.set(rawObject.vxkey, rawObject);
+    })
 
-    if(isMounting === false){
+
+    if (isMounting === false) {
       this._applyTracksOnTimeline(this.currentTime, true)
     }
 
@@ -498,22 +504,22 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
   private _applyTracksOnTimeline(currentTime: number, force?: boolean) {
-    this.currentTimeline.objects.forEach(rawObject =>
+    this.currentTimeline.objects.forEach(rawObject => {
       this._applyTracksOnObject(currentTime, rawObject, force)
-    )
+    });
   }
 
 
   private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean
   ) {
-    rawObject.tracks.forEach(rawTrack =>
+    rawObject.tracks.forEach(rawTrack => {
       this._applyKeyframesOnTrack(
         rawObject.vxkey,
         rawTrack.propertyPath,
         rawTrack.keyframes,
         currentTime,
         force
-      )
+      )}
     )
   }
 
@@ -825,23 +831,21 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
 
 
-  private _precomputePropertySetterCache(timeline: RawTimeline): void {
-    timeline.objects.forEach(rawObject => {
-      rawObject.staticProps.forEach(rawStaticProp => {
-        const propPath = rawStaticProp.propertyPath;
-        if (!this._propertySetterCache.has(propPath)) {
-          const setter = this._generatePropertySetter(propPath);
-          this._propertySetterCache.set(propPath, setter);
-        }
-      })
+  private _precomputePropertySetterCacheForObject(rawObject: RawObject): void {
+    rawObject.staticProps.forEach(rawStaticProp => {
+      const propPath = rawStaticProp.propertyPath;
+      if (!this._propertySetterCache.has(propPath)) {
+        const setter = this._generatePropertySetter(propPath);
+        this._propertySetterCache.set(propPath, setter);
+      }
+    })
 
-      rawObject.tracks.forEach(rawTrack => {
-        const propPath = rawTrack.propertyPath;
-        if (!this._propertySetterCache.has(propPath)) {
-          const setter = this._generatePropertySetter(propPath);
-          this._propertySetterCache.set(propPath, setter);
-        }
-      })
+    rawObject.tracks.forEach(rawTrack => {
+      const propPath = rawTrack.propertyPath;
+      if (!this._propertySetterCache.has(propPath)) {
+        const setter = this._generatePropertySetter(propPath);
+        this._propertySetterCache.set(propPath, setter);
+      }
     })
   }
 

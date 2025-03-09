@@ -8,13 +8,12 @@ import { useVXObjectStore } from '@vxengine/managers/ObjectManager';
 import { useVXEngine } from "@vxengine/engine";
 import { ReactThreeFiber, ThreeElements } from '@react-three/fiber';
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import ObjectUtils from "./utils/ObjectUtils";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { VXElementParams, VXPrimitiveProps } from "./types";
 import animationEngineInstance from "@vxengine/singleton";
 import { cleanupEditorObject, initTimelineEditorObject } from "./utils/handleObjectEditorData";
 
-export type VXThreeElementWrapperProps<T extends keyof ThreeElements> =
+export type VXEffectWrapper<T extends keyof ThreeElements> =
     Omit<ThreeElements[T], "ref"> & VXPrimitiveProps &
     {
         ref?: React.RefObject<any>; // Ref has the " | Readonly<>" which breaks typing idk
@@ -50,7 +49,7 @@ const threeDefaultParams: VXElementParams = [
     { type: "number", propertyPath: "rotationDegrees.z" },
 ]
 
-const VXThreeElementWrapper = <T extends keyof ThreeElements>({
+const VXEffectWrapper = <T extends keyof ThreeElements>({
     ref,
     children,
     vxkey,
@@ -62,7 +61,7 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
     overrideNodeTreeParentKey,
     icon,
     ...threeElementProps
-}: VXThreeElementWrapperProps<T>) => {
+}: VXEffectWrapper<T>) => {
     if (vxkey === undefined)
         throw new Error(`ObjectStore: Error initializing vxobject! No vxkey was passed to: ${children}`);
 
@@ -86,24 +85,23 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
         const vxObjectStoreAPI = useVXObjectStore.getState();
 
         const name = threeElementProps.name || vxkey
-        const parentKey = overrideNodeTreeParentKey || internalRef.current?.parent?.vxkey || "scene"
 
         if (internalRef.current)
             initializeDegreeRotations(internalRef.current)
 
-        const newVXObject: vxObjectProps = {
-            type: "entity",
+        const newVXEntity: vxObjectProps = {
+            type: "effect",
             ref: internalRef,
             vxkey,
             name,
             params: params ? [...threeDefaultParams, ...params] : threeDefaultParams,
             disabledParams: disabledParams || [],
-            parentKey,
+            parentKey: "effects",
         };
 
-        vxObjectStoreAPI.addObject(newVXObject, IS_DEVELOPMENT, { icon });
+        vxObjectStoreAPI.addObject(newVXEntity, IS_DEVELOPMENT, { icon });
 
-        animationEngineInstance.registerObject(newVXObject);
+        animationEngineInstance.registerObject(newVXEntity);
 
         return () => {
             animationEngineInstance.unregisterObject(vxkey);
@@ -124,14 +122,8 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
 
     return <>
         {modifiedChildren}
-
-        {IS_DEVELOPMENT && (
-            <ObjectUtils vxkey={vxkey}>
-                {children}
-            </ObjectUtils>
-        )}
     </>;
 }
 
 
-export default VXThreeElementWrapper
+export default VXEffectWrapper

@@ -2,11 +2,11 @@ import React, { memo, forwardRef, useEffect, useImperativeHandle, useMemo, useRe
 import { LightProps } from "@react-three/drei";
 import { invalidate, useFrame } from "@react-three/fiber";
 import { VXElementProps, VXElementPropsWithoutRef, VXObjectSettings } from "../types";
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import * as THREE from "three"
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { Lightformer } from "./lightFormerImpl";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
+import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 export type EditableLightformerProps = VXElementProps<LightProps> & {
     ref?: React.RefObject<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>;
@@ -100,7 +100,6 @@ export const EditableLightFormer: React.FC<EditableLightformerProps> = (props) =
             <VXThreeElementWrapper
                 ref={internalRef}
                 settings={mergedSettings}
-                isVirtual={true}
                 {...props}
             >
                 <Lightformer />

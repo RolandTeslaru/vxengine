@@ -36,6 +36,13 @@ const initialTree: Record<string, ObjectTreeNodeProps> = {
         type: "Splines",
         children: {},
         isSelectable: false
+    },
+    ["html"]: {
+        key: "html",
+        name: "HTML",
+        type: "HTML",
+        children: {},
+        isSelectable: false
     }
 }
 

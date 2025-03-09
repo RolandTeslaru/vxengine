@@ -10,14 +10,14 @@ export default function processRawData(
 ) {
     const splines: Record<string, EditorSpline> = {};
 
-// Just to be sure recreate the edSpline object
-Object.values(rawSplines).forEach(rawSpline => {
-    splines[rawSpline.splineKey] = {
-        splineKey: rawSpline.splineKey,
-        vxkey: rawSpline.vxkey,
-        nodes: rawSpline.nodes.map(node => [...node])
-    }
-})
+    // Just to be sure recreate the edSpline object
+    Object.values(rawSplines).forEach(rawSpline => {
+        splines[rawSpline.splineKey] = {
+            splineKey: rawSpline.splineKey,
+            vxkey: rawSpline.vxkey,
+            nodes: rawSpline.nodes.map(node => [...node])
+        }
+    })
 
-return { splines };
+    return { splines };
 }

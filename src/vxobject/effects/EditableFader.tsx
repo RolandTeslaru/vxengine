@@ -1,12 +1,9 @@
-import React, { memo, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
+import React, {  useMemo } from 'react'
 import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
-import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import { useVXObjectStore } from '../../managers/ObjectManager/stores/objectStore'
-import { useVXEngine } from '@vxengine/engine'
 import { VXElementPropsWithoutRef, VXElementParams } from '../types'
-import animationEngineInstance from '@vxengine/singleton'
-import { ThreeElement, ThreeElements } from '@react-three/fiber'
+import {  ThreeElements } from '@react-three/fiber'
+import VXEffectWrapper from '../VXEffectWrapper'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -32,7 +29,7 @@ class FadeShaderEffectImpl extends Effect {
 }
 
 const fadeProps: VXElementParams = [
-    { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01}
+    { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01 }
 ]
 
 export type VXElementFadeEffect = Omit<VXElementPropsWithoutRef<ThreeElements["primitive"]>, "vxkey"> & {
@@ -42,38 +39,19 @@ export type VXElementFadeEffect = Omit<VXElementPropsWithoutRef<ThreeElements["p
 }
 
 export const EditableFadeEffect: React.FC<VXElementFadeEffect> = ({
-    vxkey = "fadeEffect", name = "Fade Effect", fadeIntensity, ref
+    vxkey = "fadeEffect", name= "Fade Effect", fadeIntensity = 1.0, ...rest
 }) => {
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
 
-    const internalRef = useRef<FadeShaderEffectImpl>(null);
-    useImperativeHandle(ref, () => internalRef.current);
-
-    const { IS_DEVELOPMENT } = useVXEngine();
-
-    useEffect(() => {
-        const addObject = useVXObjectStore.getState().addObject;
-        const removeObject = useVXObjectStore.getState().removeObject;
-        
-        (internalRef.current as any).type = "FadeEffect"
-
-        const newVXObject: vxEffectProps = {
-            type: "effect",
-            ref: internalRef,
-            vxkey,
-            name,
-            params: fadeProps,
-            parentKey: "effects"
-        }
-
-        addObject(newVXObject, IS_DEVELOPMENT);
-        animationEngineInstance.registerObject(newVXObject);
-
-        return () => {
-            removeObject(vxkey, IS_DEVELOPMENT);
-            animationEngineInstance.unregisterObject(vxkey)
-        }
-    }, [])
-
-    return <primitive ref={internalRef} object={effect} dispose={null} />
+    return (
+        <VXEffectWrapper 
+            vxkey={vxkey}
+            name={name} 
+            params={fadeProps} 
+            icon="FadeEffect" 
+            {...rest}
+        >
+            <primitive object={effect} dispose={null} />
+        </VXEffectWrapper>
+    )
 }

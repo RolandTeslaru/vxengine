@@ -7,6 +7,7 @@ import { LUT3DEffect, BlendFunction } from 'postprocessing'
 import React, { forwardRef, Ref, useLayoutEffect, useMemo } from 'react'
 import type { Texture } from 'three'
 import { VXElementPropsWithoutRef } from '../types'
+import VXEffectWrapper from '../VXEffectWrapper'
 
 declare module 'postprocessing' {
     interface LUT3DEffect {
@@ -28,37 +29,20 @@ export const EditableLUT: React.FC<VXElementLUT> = ({
     const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
     const invalidate = useThree((state) => state.invalidate)
 
-    const { IS_DEVELOPMENT } = useVXEngine();
-
-    useLayoutEffect(() => {
-        const addObject = useVXObjectStore.getState().addObject;
-        const removeObject = useVXObjectStore.getState().removeObject;
-
-        effect.type = "LUTEffect"
-        
-        const newVxObject: vxEffectProps = {
-            type: "effect",
-            name: "LUT",
-            vxkey,
-            ref: { current: effect },
-            params: params ?? [],
-            parentKey: "effects"
-        }
-
-        addObject(newVxObject, IS_DEVELOPMENT)
-        animationEngineInstance.registerObject(newVxObject);
-
-        return () => {
-            removeObject(vxkey, IS_DEVELOPMENT);
-            animationEngineInstance.unregisterObject(vxkey);
-        } 
-    }, [])
-
     useLayoutEffect(() => {
         if (tetrahedralInterpolation) effect.tetrahedralInterpolation = tetrahedralInterpolation
         if (lut) effect.lut = lut
         invalidate()
     }, [effect, invalidate, lut, tetrahedralInterpolation])
 
-    return <primitive ref={ref} object={effect} dispose={null} />
+    return (
+        <VXEffectWrapper
+            ref={ref}
+            vxkey={vxkey}
+            name="LUT"
+            icon="LUTEffect"
+        >
+            <primitive object={effect} dispose={null} />
+        </VXEffectWrapper>
+    )
 }

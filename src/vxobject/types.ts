@@ -9,7 +9,6 @@ export interface VXThreeElementWrapperProps {
 
 export type VXPrimitiveProps = {
     vxkey: string;
-    isVirtual?: boolean
     addToNodeTree?: boolean
     icon?: string
     settings?: VXObjectSettings

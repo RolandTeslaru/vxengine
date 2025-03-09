@@ -19,6 +19,7 @@ export const EditableDiv: React.FC<VXElementDivProps> = (props) => {
     return (
         <VXHtmlElementWrapper 
             settings={mergedSettings}
+            icon="div"
             {...rest}
         >
             <div>
