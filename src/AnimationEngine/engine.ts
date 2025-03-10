@@ -30,8 +30,6 @@ const DEBUG_OBJECT_INIT = false;
 
 const LOG_MODULE = "AnimationEngine"
 
-
-
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
   // ====================================================
   // Public Static Members

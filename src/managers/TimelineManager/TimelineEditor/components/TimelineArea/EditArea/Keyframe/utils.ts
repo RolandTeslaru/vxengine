@@ -12,6 +12,7 @@ import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
 import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 import animationEngineInstance from '@vxengine/singleton';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
+import { DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();
@@ -69,6 +70,34 @@ export const selectAllKeyframesOnObject = (trackKey: string) => {
 
 
 
+const boundsLeft = keyframeStartLeft;
+
+const isOutsideBoundry = (mostOnLeft, mostOnRight) => {
+    const currentTimelineLength = useTimelineManagerAPI.getState().currentTimelineLength;
+    const scale = useTimelineEditorAPI.getState().scale;  
+    const boundsRight = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale - keyframeStartLeft
+
+    let isOutside = false
+
+    if (mostOnLeft < boundsLeft)
+        isOutside = true;
+    else if (boundsRight < mostOnRight)
+        isOutside = true
+
+    console.log("boundryLeft:",boundsLeft, "mostOnLeft:", mostOnLeft, "mostOnRight:", mostOnRight, "boundryRight:", boundsRight)
+
+    console.log("Is Outside:", isOutside)
+
+    return isOutside
+}
+
+const getRightBounds = () => {
+    const currentTimelineLength = useTimelineManagerAPI.getState().currentTimelineLength;
+    const scale = useTimelineEditorAPI.getState().scale;  
+    return currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + keyframeStartLeft
+}
+
+
 export const handleKeyframeDrag = (
     newLeft: number,
     prevLeft: number,
@@ -80,15 +109,66 @@ export const handleKeyframeDrag = (
     const { selectedKeyframesFlatMap, scale } = useTimelineEditorAPI.getState();
     const setKeyframeTime = useTimelineManagerAPI.getState().setKeyframeTime
 
+    const boundsRight = getRightBounds();
+
     if (selectedKeyframesFlatMap.length === 0)
         selectKeyframe(trackKey, keyframeKey)
     // Single Keyframe Drag
     else if (selectedKeyframesFlatMap.length === 1) {
+        if(newLeft < boundsLeft){
+            newLeft = boundsLeft;
+        }
+        if(newLeft > boundsRight){
+            newLeft = boundsRight;
+        }
         const newTime = parserPixelToTime(newLeft, keyframeStartLeft, true, scale)
         setKeyframeTime(keyframeKey, trackKey, newTime, true, mutateUI);
     }
     // Multiple Keyframe Drag
     else if (selectedKeyframesFlatMap.length > 1) {
+        // const unsafeDeltaLeft = newLeft - prevLeft;
+        // let mostOnLeft = newLeft;
+        // let mostOnRight = newLeft;
+
+        // let safeDeltaLeft = unsafeDeltaLeft;
+        // // let firstKfTime = parserPixelToTime(newLeft, keyframeStartLeft, true, scale);
+        // // let
+
+        // let firstKf: HTMLElement;
+        // let lastKf: HTMLElement;
+
+        // selectedKeyframesFlatMap.forEach((_kf) => {
+        //     const keyframeElement = keyframesRef.get(_kf.keyframeKey);
+        //     const kfLeft = parseFloat(keyframeElement.dataset.left);
+
+        //     if (kfLeft < mostOnLeft){
+        //         firstKf = keyframeElement;
+        //     }
+        //     if (mostOnRight < kfLeft){
+        //         lastKf = keyframeElement
+        //     }
+        // })
+
+        // let firstKfTime = parseFloat(firstKf.dataset.time)
+        // let lastKfTime = parseFloat(lastKf.dataset.time)
+        // let safeDeltaTime = 0;
+
+        // if(mostOnLeft + unsafeDeltaLeft < boundsLeft){
+        //     const deltaOutLeft = boundsLeft - mostOnLeft;
+        //     const previousMostOnLeft = mostOnLeft;
+        //     mostOnLeft = boundsLeft;
+        //     safeDeltaLeft = previousMostOnLeft - mostOnLeft;
+            
+        //     firstKfTime = 0;
+        //     safeDeltaTime = 
+        // }
+        // if(mostOnRight + unsafeDeltaLeft > boundsRight){
+        //     const deltaOutRight = boundsRight - mostOnRight;
+
+        //     lastKfTime = useTimelineManagerAPI.getState().currentTimelineLength;
+        //     // newLeft += deltaOutRight;
+        // }
+        
         const lastTime = parserPixelToTime(prevLeft, keyframeStartLeft)
         const newTime = parserPixelToTime(newLeft, keyframeStartLeft)
         const deltaTime = newTime - lastTime;
@@ -116,7 +196,7 @@ export const handleKeyframeDrag = (
 
             // Handle UI Mutation
             if (mutateUI)
-                handleKeyframeMutation(_kfKey, _newTime, true)
+                handleKeyframeMutationByTime(_kfKey, _newTime, true)
         })
 
         // Handle Keyframe Order in track
@@ -152,15 +232,35 @@ export const hydrateKeyframeKeysOrder = () => {
     )
 }
 
-export const handleKeyframeMutation = (
+export const handleKeyframeMutationByTime = (
     keyframeKey: string,
     newTime: number,
     mutateTrackSegments: boolean
 ) => {
-    const keyframeElement = keyframesRef.get(keyframeKey);
     const scale = useTimelineEditorAPI.getState().scale
+    const newKfLeft = parserTimeToPixel(newTime, keyframeStartLeft, scale)
 
-    let newKfLeft = parserTimeToPixel(newTime, keyframeStartLeft, scale)
+    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments)
+}
+
+export const handleKeyframeMutationByPixel = (
+    keyframeKey: string,
+    newKfLeft: number,
+    mutateTrackSegments: boolean
+) => {
+    const scale = useTimelineEditorAPI.getState().scale;
+    const newTime = parserPixelToTime(newKfLeft, keyframeStartLeft)
+    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments)
+}
+
+export const handleKeyframeMutation = (
+    keyframeKey: string,
+    newKfLeft: number,
+    newTime: number,
+    scale: number,
+    mutateTrackSegments: boolean
+) => {
+    const keyframeElement = keyframesRef.get(keyframeKey);
 
     // Handle Keyframe Mutation
     keyframeElement.style.left = `${newKfLeft}px`

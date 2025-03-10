@@ -269,7 +269,11 @@ function selectKeyframeLogic(state: TimelineEditorAPIProps, trackKey: string, ke
     state.selectedKeyframeKeys[trackKey][keyframeKey] = true;
 
     // Update the flat map using the reusable function
-    state.selectedKeyframesFlatMap = createFlatMap(state);
+    state.selectedKeyframesFlatMap.push({
+        trackKey,
+        keyframeKey,
+        isSelected: true
+    })
 }
 
 

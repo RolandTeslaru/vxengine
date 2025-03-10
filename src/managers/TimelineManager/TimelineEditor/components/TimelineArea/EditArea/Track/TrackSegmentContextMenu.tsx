@@ -21,7 +21,7 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
             <ContextMenuSub>
                 <ContextMenuSubTrigger>Curve Editor</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <p className='text-xs font-roboto-mono text-center mb-1'>Bezier Curve Editor</p>
+                    <p className='text-xs antialiased font-medium font-roboto-mono text-center mb-1'>Bezier Curve Editor</p>
                     <TrackSegmentEditor trackSegment={{
                         firstKeyframeKey, secondKeyframeKey, trackKey
                     }}/>
@@ -36,7 +36,7 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
             <ContextMenuItem onClick={() =>
                 pushDialogStatic({content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
             >
-                <p className='text-xs font-roboto-mono text-red-500'>Make Property Static </p>
+                <p className='text-xs antialiased font-medium font-roboto-mono text-red-500'>Make Property Static </p>
             </ContextMenuItem>
         </ContextMenuContent>
     )

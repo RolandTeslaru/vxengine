@@ -3,7 +3,7 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import React, { memo, useRef, useLayoutEffect } from 'react'
 import KeyframeContextMenu from './KeyframeContextMenu';
-import { DEFAULT_ROW_HEIGHT } from '@vxengine/AnimationEngine/interface/const';
+import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import interact from "interactjs";
 import { DragEvent, Interactable } from "@interactjs/types";
@@ -14,6 +14,7 @@ import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { startLeft } from '../..';
 
 export type EditKeyframeProps = {
     keyframeKey: string;
@@ -180,9 +181,18 @@ const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframeKey: s
 
 const rowHeight = DEFAULT_ROW_HEIGHT
 
-const boundsLeft = keyframeStartLeft;
+// const boundsLeft = keyframeStartLeft;
 
+// const handleBoundryCheck = (mostOnLeft, mostOnRight) => {
+//     const currentTimelineLength = useTimelineManagerAPI.getState().currentTimelineLength;
+//     const scale = useTimelineEditorAPI.getState().scale;  
+//     const boundsRight = currentTimelineLength * DEFAULT_SCALE_WIDTH / scale + startLeft
 
+//     if (mostOnLeft < boundsLeft)
+//         return boundsLeft;
+//     else if (boundsRight < mostOnRight)
+//         return boundsRight;
+// }
 
 const handleOnMove = (e: DragEvent, deltaXRef: { current: number }, trackKey: string, keyframeKey: string) => {
     const target = e.target;
@@ -194,10 +204,6 @@ const handleOnMove = (e: DragEvent, deltaXRef: { current: number }, trackKey: st
 
     deltaXRef.current += e.dx
     let newLeft = prevLeft + e.dx;
-
-    // Handle Bounds
-    if (newLeft < boundsLeft)
-        newLeft = boundsLeft;
 
     // Handle TimelineEditor Data and UI Mutation
     handleKeyframeDrag(newLeft, prevLeft, trackKey, keyframeKey)

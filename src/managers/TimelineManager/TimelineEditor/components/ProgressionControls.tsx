@@ -37,8 +37,9 @@ const ProgressionControls = React.memo(() => {
             >
                 <SkipBack fill="white" className='scale-[65%] m-auto' />
             </button>
-            <button className={"bg-neutral-950 border h-7 w-7 flex hover:bg-neutral-800 border-neutral-600 rounded-lg cursor-pointer "}
+            <button className={`${isPlaying ? "bg-blue-600  border-blue-500 " : "bg-neutral-950 hover:bg-neutral-800 border-neutral-600"} border h-7 w-7 flex   rounded-lg cursor-pointer `}
                 onClick={handlePlayOrPause}
+                style={{boxShadow: isPlaying ? "0px 0px 10px 1px oklch(0.623 0.214 259.815" : ""}}
             >
                 {isPlaying ? (
                     <PauseFill className='scale-[65%] m-auto' />

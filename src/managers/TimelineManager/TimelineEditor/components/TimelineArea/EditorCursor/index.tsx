@@ -90,7 +90,7 @@ const EditorCursor = () => {
 
   return (
     <div className='sticky top-4  z-999 h-0'>
-      <div ref={elementRef} className='absolute w-1 left-0 h-20'>
+      <div ref={elementRef} className='absolute w-1 left-0 h-20 '>
         <ContextMenu>
           <ContextMenuTrigger>
             {/* Thumb */}

@@ -88,7 +88,7 @@ const TrackSegment: React.FC<Props> = (props) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger>
-                <div className='absolute h-full flex '
+                <div className='absolute h-full flex !cursor-ew-resize '
                     onClick={() => handleOnClick(trackKey, firstKeyframeKey, secondKeyframeKey)}
                     onContextMenu={() => handleOnContextMenu(trackKey, firstKeyframeKey, secondKeyframeKey)}
                     ref={elementRef as any}

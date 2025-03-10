@@ -55,7 +55,7 @@ const TrackVerticalList = memo(() => {
 
     return (
         <div 
-            className={`antialiased w-[25%] h-full flex flex-col rounded-2xl relative overflow-y-scroll 
+            className={`antialiased w-[29%] h-full flex flex-col rounded-2xl relative overflow-y-scroll 
                         border border-neutral-800 bg-neutral-900`}
             ref={trackListRef}
             onScroll={handleOnScroll}

@@ -9,7 +9,7 @@ import processRawData from './utils/processRawData';
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { isEqual } from 'lodash';
 import { AnimationEngine } from '@vxengine/AnimationEngine/engine';
-import { handleKeyframeMutation } from './TimelineEditor/components/TimelineArea/EditArea/Keyframe/utils';
+import { handleKeyframeMutation, handleKeyframeMutationByTime } from './TimelineEditor/components/TimelineArea/EditArea/Keyframe/utils';
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { v4 as uuidv4 } from 'uuid';
 import animationEngineInstance from '@vxengine/singleton';
@@ -445,7 +445,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         // Handle UI Mutation
         if (mutateUI)
-            handleKeyframeMutation(keyframeKey, newTime, true);
+            handleKeyframeMutationByTime(keyframeKey, newTime, true);
 
         if(reRender)
             animationEngineInstance.reRender({force: true})

@@ -21,12 +21,12 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
     return (
         <ContextMenuContent>
-            {/* <ContextMenuSub>
+            <ContextMenuSub>
                 <ContextMenuSubTrigger icon={<Info size={15} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <KeyframeData trackKey={trackKey} keyframeKey={keyframeKey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub> */}
+            </ContextMenuSub>
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     <p className='text-xs font-roboto-mono w-full'>
