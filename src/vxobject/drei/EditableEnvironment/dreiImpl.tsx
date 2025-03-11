@@ -33,7 +33,7 @@ export type EnvironmentProps = {
 
   map?: Texture
   preset?: PresetsType
-  scene?: Scene | React.MutableRefObject<Scene>
+  scene?: Scene | React.RefObject<Scene>
   ground?:
   | boolean
   | {
