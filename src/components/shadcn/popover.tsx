@@ -69,7 +69,7 @@ const PopoverItem: React.FC<PopoverItemProps> = (props) => {
   return (
     <div
       className={`${className} cursor-pointer font-roboto-mono relative w-full gap-2 hover:bg-blue-600 border border-transparent
-       hover:border-blue-500 px-2 py-[6px] rounded-md flex flex-row text-xs`}
+       hover:border-blue-500 px-2 py-[6px] rounded-lg flex flex-row text-xs`}
       {...rest}
     >
       <div className="absolute top-1/2 -translate-y-1/2 ">

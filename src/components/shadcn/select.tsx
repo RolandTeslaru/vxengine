@@ -38,7 +38,7 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/80 px-2 text-xs
+        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/70 px-2 text-xs
        ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
         shadow-md shadow-black/20 h-fit
       `,

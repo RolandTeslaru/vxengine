@@ -1,11 +1,12 @@
 import * as React from "react"
 import { FC, ReactNode, ComponentProps } from "react"
 import * as MenubarPrimitive from "@radix-ui/react-menubar"
-import { Check } from "lucide-react"
+import { Check, Menu } from "lucide-react"
 import { ChevronRight } from "lucide-react"
 import { Circle } from "lucide-react"
 
 import { cn } from "../../utils"
+import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
 
 const MenubarMenu = MenubarPrimitive.Menu
 
@@ -69,18 +70,23 @@ const MenubarSubTrigger: FC<MenubarSubTriggerProps> = ({ className, inset, child
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
 
 const MenubarSubContent: FC<ComponentProps<typeof MenubarPrimitive.SubContent>> =
-  ({ className, ...props }) => (
-    <MenubarPrimitive.SubContent
-      className={cn(
-        `z-50 min-w-[12rem] backdrop-blur-xl  rounded-xl border p-1 shadow-md shadow-black/50
-       data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
-       data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-       border-neutral-400/20 bg-neutral-800/80 text-neutral-50`,
-        className
-      )}
-      {...props}
-    />
-  )
+  ({ className, ...props }) => {
+    const {externalContainer} = useWindowContext();
+    return (
+      <MenubarPrimitive.Portal container={externalContainer}>
+        <MenubarPrimitive.SubContent
+          className={cn(
+            `z-50 min-w-[12rem] backdrop-blur-sm  rounded-xl border p-1 shadow-md shadow-black/50
+         data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
+         data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
+         border-neutral-400/20 bg-neutral-800/70 text-neutral-50`,
+            className
+          )}
+          {...props}
+        />
+      </MenubarPrimitive.Portal>
+    )
+  }
 MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName
 
 const MenubarContent: FC<ComponentProps<typeof MenubarPrimitive.Content>> =
@@ -91,8 +97,8 @@ const MenubarContent: FC<ComponentProps<typeof MenubarPrimitive.Content>> =
         alignOffset={alignOffset}
         sideOffset={sideOffset}
         className={cn(
-          `bg-neutral-800/80 border-neutral-400/20 shadow-md shadow-black/50
-          z-50 min-w-[12rem] backdrop-blur-lg rounded-xl border p-1 
+          `bg-neutral-800/70 border-neutral-400/20 shadow-md shadow-black/50
+          z-50 min-w-[12rem] backdrop-blur-sm rounded-xl border p-1 
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
             text-neutral-50

@@ -53,13 +53,13 @@ function ContextMenuRadioGroup({
 }
 
 
-const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: ComponentProps<typeof ContextMenuPrimitive.Trigger> &{ inset?: boolean, icon?: React.ReactNode }) => (
+const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: ComponentProps<typeof ContextMenuPrimitive.Trigger> & { inset?: boolean, icon?: React.ReactNode }) => (
   // @ts-expect-error
   <ContextMenuPrimitive.SubTrigger
     className={cn(
       `text-xs font-roboto-mono antialiased font-semibold relative flex 
       hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-1
-        rounded-md cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
+        rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",
       className
     )}
@@ -75,21 +75,26 @@ ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName
 
 
 
-const ContextMenuSubContent = ({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.SubContent>) => (
-  <ContextMenuPrimitive.SubContent
-    className={cn(
-      `z-60 min-w-[8rem] rounded-lg border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/30
-       data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
-       data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 
-       data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
-      className
-    )}
-    style={{backdropFilter: "blur(10px)"}}
-    {...props}
-  >
-    {children}
-  </ContextMenuPrimitive.SubContent>
-)
+const ContextMenuSubContent = ({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.SubContent>) => {
+  const { externalContainer } = useWindowContext();
+
+  return (
+    <ContextMenuPrimitive.Portal container={externalContainer}>
+      <ContextMenuPrimitive.SubContent
+        className={cn(
+          `z-[60] min-w-[8rem] backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/30
+        data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
+        data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 
+        data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </ContextMenuPrimitive.SubContent>
+    </ContextMenuPrimitive.Portal>
+  )
+}
 ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName
 
 function ContextMenuContent({
@@ -102,7 +107,7 @@ function ContextMenuContent({
     <ContextMenuPrimitive.Portal container={externalContainer}>
       <ContextMenuPrimitive.Content
         className={cn(
-          `z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-xs rounded-lg border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/60
+          `z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/60
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
          data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           className
@@ -131,19 +136,19 @@ function ContextMenuItem({
   preventClose?: boolean
 }) {
   return (
-      <ContextMenuPrimitive.Item
-        className={cn(
-          `relative flex 
+    <ContextMenuPrimitive.Item
+      className={cn(
+        `relative flex 
            antialiased font-medium
           hover:bg-blue-600 hover:border-blue-500 hover:shadow-md hover:shadow-black/20 gap-2 font-roboto-mono text-xs
             border border-transparent 
-           rounded-md cursor-default select-none items-center px-2 py-1.5 outline-hidden 
+           rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden 
            focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-5 ${preventClose && "pointer-events-none!"}`,
-          inset && "pl-8",
-          className
-        )}
-        {...props}
-      />
+        inset && "pl-8",
+        className
+      )}
+      {...props}
+    />
   );
 }
 ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName

@@ -43,8 +43,8 @@ function DialogContent({
             <DialogPrimitive.Content
                 ref={ref}
                 className={cn(
-                    `fixed top-[50%] left-[50%] ${blockTransparency ? "bg-neutral-900" : " backdrop-blur-md bg-neutral-900/80"} py-6 px-8  z-50 grid w-auto
-                          gap-4 border border-neutral-600/80  duration-200 
+                    `fixed top-[50%] left-[50%] ${blockTransparency ? "bg-neutral-800" : " backdrop-blur-md bg-neutral-800/70"} py-6 px-8  z-50 grid w-auto
+                          gap-4 border border-neutral-400/20  duration-200 
                          overflow-hidden
                          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
                          data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 

@@ -8,7 +8,6 @@ import { EditorKeyframe } from "@vxengine/types/data/editorData";
 
 const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
-    const trackKeys = useTimelineManagerAPI(state => state.editorObjects[vxkey].trackKeys, shallow);
 
     const trackX = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.x`]);
     const trackY = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.y`]);
