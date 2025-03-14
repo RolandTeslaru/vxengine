@@ -27,7 +27,7 @@ function SelectGroup({
 function SelectValue({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+  return <SelectPrimitive.Value className="text-label-primary" data-slot="select-value" {...props} />
 }
 
 function SelectTrigger({
@@ -38,8 +38,8 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        `flex w-full items-center justify-between rounded-xl border border-neutral-400/20 bg-neutral-800/70 px-2 text-xs
-       ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
+        `flex w-full items-center justify-between rounded-xl border border-primary-thick  bg-secondary-regular px-2 text-xs
+       ring-offset-background placeholder:text-white disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
         shadow-md shadow-black/20 h-fit
       `,
         className
@@ -48,7 +48,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-50" />
+        <ChevronDown className="h-4 w-4 opacity-50 text-white" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -102,8 +102,8 @@ function SelectContent({
     <SelectPrimitive.Portal container={externalContainer}>
       <SelectPrimitive.Content
         className={cn(
-          `relative z-50 max-h-96 min-w-[8rem] overflow-hidden backdrop-blur-lg rounded-xl border border-neutral-400/20 
-          bg-neutral-800/90 text-popover-foreground shadow-md shadow-black/20
+          `relative z-50 max-h-96 min-w-[8rem] overflow-hidden backdrop-blur-lg rounded-xl dark:border dark:border-neutral-400/20 
+         bg-neutral-800/90 shadow-md shadow-black/20
           data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
           data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           position === "popper" &&
@@ -149,21 +149,25 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        `relative flex w-full  cursor-default select-none items-center rounded-lg py-1 pl-7 pr-1 
-       text-xs outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50
+        `group relative flex w-full  cursor-default select-none items-center rounded-lg py-1 pl-7 pr-1
+       text-xs outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50
        hover:bg-blue-600 hover:shadow-md shadow-black/30 hover:border-blue-500 border border-transparent 
        `,
         className
       )}
       {...props}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center text-label-primary">
         <SelectPrimitive.ItemIndicator>
-          <Check className="h-4 w-4" />
+          <Check className="h-4 w-4 text-white" />
         </SelectPrimitive.ItemIndicator>
       </span>
 
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>
+        <span className="text-white group-hover:text-neutral-100">
+          {children}
+        </span>
+      </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>)
 }
 SelectItem.displayName = SelectPrimitive.Item.displayName

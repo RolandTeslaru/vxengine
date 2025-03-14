@@ -21,7 +21,7 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
             <ContextMenuSub>
                 <ContextMenuSubTrigger>Curve Editor</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <p className='text-xs antialiased font-medium font-roboto-mono text-center mb-1'>Bezier Curve Editor</p>
+                    <p className='text-xs antialiased font-medium font-roboto-mono text-center mb-1 text-label-primary'>Bezier Curve Editor</p>
                     <TrackSegmentEditor trackSegment={{
                         firstKeyframeKey, secondKeyframeKey, trackKey
                     }}/>

@@ -24,11 +24,13 @@ import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegm
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
+import { Tabs, TabsList, TabsTrigger } from "@vxengine/components/shadcn/tabs"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
+    const theme = useUIManagerAPI(state => state.theme)
     return (
-        <div id="VXEngineStudio" className='fixed top-0 left-0 z-50'>
+        <div id="VXEngineStudio" className={`${theme} fixed top-0 left-0 z-50`}>
             {IS_PRODUCTION && (
                 <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">
                     <AlertTriangle size={30} className="h-auto my-auto" />
@@ -84,6 +86,8 @@ export const VXStudio = () => {
 
             <CameraManagerUI />
 
+            <VXThemeSwitcher/>
+
             <UIManagerDialogLayer />
 
             <Watermark />
@@ -123,6 +127,26 @@ const VXLeftPanel = () => {
 
             <ObjectTransformControls />
         </>
+    )
+}
+
+const VXThemeSwitcher = () => {
+    const theme = useUIManagerAPI(state => state.theme)
+    const setTheme = useUIManagerAPI(state => state.setTheme)
+    return (
+        <StandardWindowStyling id="VXEngineThemeSwitcher" className="fixed py-1 top-6 right-[300px] z-50 flex flex-row">
+            <p className="font-roboto-mono text-white text-xs h-auto my-auto">theme</p>
+            <Tabs defaultValue={theme}>
+                <TabsList>
+                    <TabsTrigger value="light" onClick={() => setTheme("light")} className="text-white text-xs font-roboto-mono">
+                        Light
+                    </TabsTrigger>
+                    <TabsTrigger value="dark" onClick={() => setTheme("dark")} className="text-white text-xs font-roboto-mono">
+                        dark
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+        </StandardWindowStyling>
     )
 }
 

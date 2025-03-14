@@ -47,26 +47,19 @@ function AlertDialogOverlay({
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 
 
-
-type AlertDialogContentProps = typeof AlertDialogPrimitive.Content & {
-  darkenBackground?: boolean;
-  blockTransparency?: boolean
-  showTriangle?: boolean
-  type: DialogType
-}
+interface AlertDialogContentProps 
+  extends React.ComponentProps<typeof AlertDialogPrimitive.Content> {
+    darkenBackground?: boolean;
+    blockTransparency?: boolean
+    showTriangle?: boolean
+    type: DialogType
+    theme?: "dark" | "light"
+  }
 
 function AlertDialogContent({ 
   className, style, children, darkenBackground = true, 
-  blockTransparency = false, showTriangle = true, type, ...props 
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
-  darkenBackground?: boolean;
-  blockTransparency?: boolean;
-  showTriangle?: boolean;
-  type: DialogType;
-}): JSX.Element  {
+  blockTransparency = false, showTriangle = true, type, theme ="dark", ...props 
+}: AlertDialogContentProps) {
 
   const { externalContainer } = useWindowContext();
 
@@ -74,12 +67,12 @@ function AlertDialogContent({
     <AlertDialogPortal container={externalContainer}>
       {darkenBackground === true && <AlertDialogOverlay />}
       <AlertDialogPrimitive.Content
-        className={cn(
-          `fixed left-[50%]  top-[50%] z-50 w-auto duration-200
+        className={classNames(
+          `${theme} fixed left-[50%]  top-[50%] z-50 w-auto duration-200
            data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
            data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
            data-[state=open]:slide-in-from-top-[48%]
-           ${blockTransparency ? "bg-neutral-900" : " backdrop-blur-lg bg-neutral-900/80 "}
+           ${blockTransparency ? " bg-background-opaque " : " backdrop-blur-lg bg-background "}
            flex border border-neutral-700/80 rounded-3xl overflow-hidden
            `,
         )}
@@ -160,7 +153,7 @@ const AlertDialogAction = ({ className, type = 'default', ...props }: ComponentP
   return (
     <AlertDialogPrimitive.Action
       className={cn(
-        " antialiased",
+        " antialiased text-label-primary ",
         buttonVariants({ variant: type }), // Map type to the correct variant
         className
       )}
@@ -177,7 +170,7 @@ const AlertDialogCancel = ({ className, ...props }: ComponentProps<typeof AlertD
   <AlertDialogPrimitive.Cancel
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0 font-roboto-mono antialiased",
+      "mt-2 sm:mt-0 font-roboto-mono antialiased text-label-primary",
       className
     )}
     {...props}

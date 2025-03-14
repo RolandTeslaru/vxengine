@@ -19,8 +19,8 @@ const  CollapsiblePanel: React.FC<Props> = memo(
     return (
         <div className={
             classNames(className, {"h-[40px]!": open === false}, {"px-1": noPadding === false}, 
-                        `z-50 h-fit relative !transform-gpu rounded-2xl bg-neutral-900/90 overflow-hidden
-                         shadow-md shadow-neutral-900 border border-neutral-400/15
+                        `z-50 h-fit relative !transform-gpu rounded-2xl bg-foreground overflow-hidden
+                         shadow-md shadow-foreground-shadow border border-neutral-400/15
                       `)}
         >
             {/* Title */}
@@ -28,16 +28,16 @@ const  CollapsiblePanel: React.FC<Props> = memo(
                 <button className={"absolute top-[7px] h-6 w-6 flex hover:bg-neutral-800 rounded-xl cursor-pointer "}
                     onClick={() => setOpen(!open)}
                 >
-                    <ChevronRight className={`${open === true && " rotate-90 "}  scale-[60%] m-auto`} />
+                    <ChevronRight className={`${open === true && " rotate-90 "} stroke-label-primary scale-[60%] m-auto`} />
                 </button>
-                <p className='text-center text-xs font-roboto-mono text-neutral-200 font-bold antialiased py-1'>
+                <p className='text-center text-xs font-roboto-mono text-label-secondary font-bold antialiased py-1'>
                     {title}
                 </p>
             </div>
             {open && 
                 <div className={
                     classNames(contentClassName, {"px-1": noPadding === false},
-                               'text-xs h-auto border-t  flex flex-col py-2 bg-none transition-all text-neutral-400')}
+                               'text-xs h-auto border-t  flex flex-col py-2 bg-none transition-all text-label-quaternary')}
                     style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                 >
                     {children}

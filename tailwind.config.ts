@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss"
 
 const config = {
-  darkMode:  ['selector', '[data-mode="dark"]'],
+  darkMode:  "class",
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
@@ -20,6 +20,40 @@ const config = {
       },
     },
     extend: {
+      colors: {
+        'primary-opaque': 'var(--primary-opaque)',
+        'primary-thick': 'var(--primary-thick)',
+        'primary-regular': 'var(--primary-regular)',
+        'primary-thin': 'var(--primary-thin)',
+
+        'secondary-opaque': 'var(--secondary-opaque)',
+        'secondary-thick': 'var(--secondary-thick)',
+        'secondary-regular': 'var(--secondary-regular)',
+        'secondary-thin': 'var(--secondary-thin)',
+
+        'tertiary-opaque': 'var(--tertiary-opaque)',
+        'tertiary-thick': 'var(--tertiary-thick)',
+        'tertiary-regular': 'var(--tertiary-regular)',
+        'tertiary-thin': 'var(--tertiary-thin)',
+
+        'quaternary-opaque': 'var(--quaternary-opaque)',
+        'quaternary-thick': 'var(--quaternary-thick)',
+        'quaternary-regular': 'var(--quaternary-regular)',
+        'quaternary-thin': 'var(--quaternary-thin)',
+
+        'background': 'var(--background)',
+        'background-opaque': 'var(--background-opaque)',
+        'border-background': 'var(--border-background)',
+
+        
+        'foreground': 'var(--foreground)',
+        'foreground-shadow': 'var(--foreground-shadow)',
+        'border-accent': 'var(--border-accent)',
+        'label-primary': 'var(--label-primary)',
+        'label-secondary': 'var(--label-secondary)',
+        'label-tertiary': 'var(--label-tertiary)',
+        'label-quaternary': 'var(--label-quaternary)',
+      },
       boxShadow: {
         "contextItem": "0 0 5px black "
       },

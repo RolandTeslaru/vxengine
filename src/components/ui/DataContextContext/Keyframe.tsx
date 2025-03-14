@@ -61,15 +61,15 @@ const KeyframeData = ({ trackKey, keyframeKey }: { trackKey: string, keyframeKey
 
     return (
         <div className='w-72 flex flex-col'>
-            <p className='font-roboto-mono text-xs text-center'>Editor Keyframe Data</p>
+            <p className='font-roboto-mono text-xs text-center text-label-secondary'>Editor Keyframe Data</p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={keyframe} collapsed={({ depth }) => depth > 1} />
             </div>
-            <p className='font-roboto-mono text-xs text-center'>Raw Keyframe</p>
+            <p className='font-roboto-mono text-xs text-center text-label-secondary'>Raw Keyframe</p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={rawKeyframe} collapsed={({ depth }) => depth > 1} />
             </div>
-            <p className='font-roboto-mono text-xs text-center'>
+            <p className='font-roboto-mono text-xs text-center text-label-secondary'>
                 Keyframe Element Dataset
             </p>
             <div className='max-h-[400px] overflow-y-scroll flex flex-col w-full text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>

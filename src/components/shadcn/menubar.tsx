@@ -7,6 +7,8 @@ import { Circle } from "lucide-react"
 
 import { cn } from "../../utils"
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
+import classNames from "classnames"
 
 const MenubarMenu = MenubarPrimitive.Menu
 
@@ -31,55 +33,68 @@ const Menubar: FC<ComponentProps<typeof MenubarPrimitive.Root>> =
 Menubar.displayName = MenubarPrimitive.Root.displayName
 
 const MenubarTrigger: FC<ComponentProps<typeof MenubarPrimitive.Trigger>> =
-  ({ className, ...props }) => (
-    <MenubarPrimitive.Trigger
-      className={cn(
-        `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs
-         antialiased font-bold
+  ({ className, ...props }) => {
+    const theme = useUIManagerAPI(state => state.theme);
+    return (
+      <MenubarPrimitive.Trigger
+        className={classNames(
+          { "dark": theme === "dark" },
+          { "light": theme === "light" },
+          `flex cursor-default select-none items-center rounded-lg px-3 py-1 outline-hidden border-transparent border text-xs
+         antialiased font-bold text-label-primary
         focus:bg-neutral-700/50 focus:text-neutral-50
         hover:bg-neutral-700/50
         hover:border-neutral-400/20
         data-[state=open]:bg-neutral-700/50
         data-[state=open]:text-neutral-50 
         data-[state=open]:border-neutral-400/20`,
-        className
-      )}
-      {...props}
-    />
-  )
+          className
+        )}
+        {...props}
+      />
+    )
+  }
 MenubarTrigger.displayName = MenubarPrimitive.Trigger.displayName
 
 type MenubarSubTriggerProps = ComponentProps<typeof MenubarPrimitive.SubTrigger> & { inset?: boolean }
 
-const MenubarSubTrigger: FC<MenubarSubTriggerProps> = ({ className, inset, children, ...props }) => (
-  <MenubarPrimitive.SubTrigger
-    className={cn(
-      `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-hidden border border-transparent
-        focus:text-neutral-50
-         hover:bg-blue-600 hover:border-blue-500
+const MenubarSubTrigger: FC<MenubarSubTriggerProps> = ({ className, inset, children, ...props }) => {
+  const theme = useUIManagerAPI(state => state.theme);
+
+  return (
+    <MenubarPrimitive.SubTrigger
+      className={classNames(
+        { "dark": theme === "dark" },
+        { "light": theme === "light" },
+        `flex cursor-default select-none items-center rounded-lg p-2 py-1.5 text-xs font-medium outline-hidden border border-transparent
+        text-label-primary
+         hover:bg-blue-600 hover:text-white hover:border-blue-500
       data-[state=open]:bg-blue-600 data-[state=open]:text-neutral-50 data-[state=open]:border-blue-500`,
-      inset && "pl-8",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
-  </MenubarPrimitive.SubTrigger>
-)
+        inset && "pl-8",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <ChevronRight className="ml-auto h-4 w-4" />
+    </MenubarPrimitive.SubTrigger>
+  )
+}
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
 
 const MenubarSubContent: FC<ComponentProps<typeof MenubarPrimitive.SubContent>> =
   ({ className, ...props }) => {
-    const {externalContainer} = useWindowContext();
+    const theme = useUIManagerAPI(state => state.theme)
     return (
-      <MenubarPrimitive.Portal container={externalContainer}>
+      <MenubarPrimitive.Portal>
         <MenubarPrimitive.SubContent
-          className={cn(
+          className={classNames(
+            { "dark": theme === "dark" },
+            { "light": theme === "light" },
             `z-50 min-w-[12rem] backdrop-blur-sm  rounded-xl border p-1 shadow-md shadow-black/50
          data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
          data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
-         border-neutral-400/20 bg-neutral-800/70 text-neutral-50`,
+         border-border-background bg-background text-label-primary`,
             className
           )}
           {...props}
@@ -90,25 +105,31 @@ const MenubarSubContent: FC<ComponentProps<typeof MenubarPrimitive.SubContent>> 
 MenubarSubContent.displayName = MenubarPrimitive.SubContent.displayName
 
 const MenubarContent: FC<ComponentProps<typeof MenubarPrimitive.Content>> =
-  ({ className, align = "start", alignOffset = -4, sideOffset = 8, ...props }) => (
-    <MenubarPrimitive.Portal>
-      <MenubarPrimitive.Content
-        align={align}
-        alignOffset={alignOffset}
-        sideOffset={sideOffset}
-        className={cn(
-          `bg-neutral-800/70 border-neutral-400/20 shadow-md shadow-black/50
+  ({ className, align = "start", alignOffset = -4, sideOffset = 8, ...props }) => {
+    const theme = useUIManagerAPI(state => state.theme)
+
+    return (
+      <MenubarPrimitive.Portal>
+        <MenubarPrimitive.Content
+          align={align}
+          alignOffset={alignOffset}
+          sideOffset={sideOffset}
+          className={classNames(
+            { "dark": theme === "dark" },
+            { "light": theme === "light" },
+            ` bg-background border-border-background shadow-md shadow-black/50
           z-50 min-w-[12rem] backdrop-blur-sm rounded-xl border p-1 
            data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 
            data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 
             text-neutral-50
           `,
-          className
-        )}
-        {...props}
-      />
-    </MenubarPrimitive.Portal>
-  )
+            className
+          )}
+          {...props}
+        />
+      </MenubarPrimitive.Portal>
+    )
+  }
 MenubarContent.displayName = MenubarPrimitive.Content.displayName
 
 type MenubarItemProps = ComponentProps<typeof MenubarPrimitive.Item> & {
@@ -116,19 +137,25 @@ type MenubarItemProps = ComponentProps<typeof MenubarPrimitive.Item> & {
 }
 
 const MenubarItem: FC<MenubarItemProps> =
-  ({ className, inset, ...props }) => (
-    <MenubarPrimitive.Item
-      className={cn(
-        `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-hidden border border-transparent
-       data-disabled:pointer-events-none data-disabled:opacity-50 
-       focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
+  ({ className, inset, ...props }) => {
+    const theme = useUIManagerAPI(state => state.theme);
+
+    return (
+      <MenubarPrimitive.Item
+        className={classNames(
+          { "dark": theme === "dark" },
+          { "light": theme === "light" },
+          `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-hidden border border-transparent
+        data-disabled:pointer-events-none data-disabled:opacity-50 text-label-primary
+        focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
        `,
-        inset && "pl-8",
-        className
-      )}
-      {...props}
-    />
-  )
+          inset && "pl-8",
+          className
+        )}
+        {...props}
+      />
+    )
+  }
 MenubarItem.displayName = MenubarPrimitive.Item.displayName
 
 const MenubarCheckboxItem: FC<ComponentProps<typeof MenubarPrimitive.CheckboxItem>> =

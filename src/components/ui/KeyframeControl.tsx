@@ -85,10 +85,10 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                     {isPropertyTracked &&
                         <button
                             onClick={() => moveToPreviousKeyframeSTATIC(trackKey)}
-                            className='hover:*:stroke-5 hover:*:stroke-white'
+                            className='hover:*:stroke-5 hover:*:stroke-white *:'
                             disabled={disabled}
                         >
-                            <ChevronLeft className=' w-2 h-2 scale-150' />
+                            <ChevronLeft className='!text-label-primary w-2 h-2 scale-150' />
                         </button>
                     }
                     <button
@@ -96,7 +96,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
                         disabled={disabled}
                     >
-                        <Square className={`rotate-45 w-2 h-2 ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-neutral-800 stroke-neutral-800"}`} />
+                        <Square className={`rotate-45 w-2 h-2 !text-label-primary ${isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-primary-regular stroke-neutral-800"}`} />
                     </button>
                     {isPropertyTracked &&
                         <button
@@ -104,7 +104,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                             className='hover:*:stroke-5 hover:*:stroke-white'
                             disabled={disabled}
                         >
-                            <ChevronRight className='w-2 h-2 scale-150' />
+                            <ChevronRight className='w-2 h-2 scale-150 !text-label-primary' />
                         </button>
 
                     }

@@ -53,7 +53,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
                     {node.param.type !== "slider" &&
-                        <p className={`text-xs w-auto mr-auto my-auto font-light text-neutral-400`}>
+                        <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
                             {node.key}
                         </p>
                     }

@@ -87,7 +87,9 @@ export const TimeArea = () => {
           >
             {shouldDisplayNumber && (
               <div className={prefix("time-unit-scale") + " font-medium select-none"} style={{ fontSize: "10px" }}>
-                {index / OneSecondUnitSplitCount}
+                <p className='text-white' style={{ fontSize: "10px" }}>
+                  {index / OneSecondUnitSplitCount}
+                </p>
               </div>
             )}
           </div>

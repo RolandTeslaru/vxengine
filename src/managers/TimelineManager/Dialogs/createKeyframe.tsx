@@ -52,7 +52,7 @@ export const DIALOG_createKeyframe = () => {
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label
                                 htmlFor="trackKey"
-                                className="text-right font-roboto-mono text-neutral-400"
+                                className="text-right font-roboto-mono"
                             >
                                 trackKey
                             </Label>
@@ -67,7 +67,7 @@ export const DIALOG_createKeyframe = () => {
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label
                                 htmlFor="value"
-                                className="text-right font-roboto-mono text-neutral-400"
+                                className="text-right font-roboto-mono "
                             >
                                 value
                             </Label>

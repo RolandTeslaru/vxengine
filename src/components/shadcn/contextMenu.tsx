@@ -3,6 +3,8 @@ import { FC, ComponentProps } from "react"
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu"
 import { cn } from "@vxengine/utils"
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
+import classNames from "classnames"
 
 
 function ContextMenu({
@@ -53,11 +55,12 @@ function ContextMenuRadioGroup({
 }
 
 
-const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: ComponentProps<typeof ContextMenuPrimitive.Trigger> & { inset?: boolean, icon?: React.ReactNode }) => (
+const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: ComponentProps<typeof ContextMenuPrimitive.Trigger> & { inset?: boolean, icon?: React.ReactNode }) => {
+  return (
   // @ts-expect-error
   <ContextMenuPrimitive.SubTrigger
-    className={cn(
-      `text-xs font-roboto-mono antialiased font-semibold relative flex 
+    className={classNames(
+      `text-xs font-roboto-mono antialiased font-semibold relative flex text-label-primary
       hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-1
         rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",
@@ -69,7 +72,7 @@ const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: C
     {children}
     <svg className="ml-auto h-4 w-4" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
   </ContextMenuPrimitive.SubTrigger>
-)
+)}
 ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName
 
 
@@ -78,11 +81,13 @@ ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName
 const ContextMenuSubContent = ({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.SubContent>) => {
   const { externalContainer } = useWindowContext();
 
+  const theme = useUIManagerAPI(state => state.theme)
+
   return (
     <ContextMenuPrimitive.Portal container={externalContainer}>
       <ContextMenuPrimitive.SubContent
-        className={cn(
-          `z-[60] min-w-[8rem] backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/30
+        className={classNames(
+          `${theme} z-[60] min-w-[8rem] backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/30
         data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
         data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 
         data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
@@ -103,11 +108,13 @@ function ContextMenuContent({
 }: React.ComponentProps<typeof ContextMenuPrimitive.Content>) {
   const { externalContainer } = useWindowContext();
 
+  const theme = useUIManagerAPI(state => state.theme)
+
   return (
     <ContextMenuPrimitive.Portal container={externalContainer}>
       <ContextMenuPrimitive.Content
-        className={cn(
-          `z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/60
+        className={classNames(
+          `${theme} z-50 min-w-[8rem] overflow-y-auto overflow-visible backdrop-blur-xs rounded-xl border border-neutral-600 bg-neutral-700/80 p-1 text-popover-foreground shadow-lg shadow-black/60
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
          data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           className

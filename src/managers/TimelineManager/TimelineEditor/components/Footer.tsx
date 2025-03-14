@@ -67,7 +67,7 @@ const TimelineEditorFooter = () => {
       <div className='mt-auto  relative px-4 flex flex-row gap-4 font-roboto-mono'>
           <ScaleSlider />
           <div className='flex flex-row gap-2'>
-              <p className='font-light h-auto my-auto' style={{ fontSize: "10px" }}>Snap</p>
+              <p className='font-light h-auto my-auto text-label-tertiary' style={{ fontSize: "10px" }}>Snap</p>
               <Switch
                   className='my-auto '
                   onClick={() => setSnap(!snap)}
@@ -75,7 +75,7 @@ const TimelineEditorFooter = () => {
               />
           </div>
           <div className='flex flex-row h-fit text-xs gap-2'>
-              <p className='h-auto my-auto font-light' style={{ fontSize: "10px" }}>length</p>
+              <p className='h-auto my-auto font-light text-label-tertiary' style={{ fontSize: "10px" }}>length</p>
               <Input className='px-1 py-0 font-light my-auto h-fit w-10' style={{ fontSize: "10px" }}
                   value={currentTimelineLength}
                   onChange={handleTimelineLengthChange}
@@ -126,7 +126,7 @@ const ScaleSlider = () => {
 
   return (
       <div className='flex flex-row gap-2'>
-          <p className='font-light h-auto my-auto whitespace-nowrap w-16' style={{ fontSize: "10px" }}>
+          <p className='font-light h-auto my-auto whitespace-nowrap w-16 text-label-tertiary' style={{ fontSize: "10px" }}>
             Scale {scale}
         </p>
           <Slider

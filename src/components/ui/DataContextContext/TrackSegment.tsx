@@ -9,7 +9,7 @@ const TrackSegmentData = ({ firstKeyframeKey, secondKeyframeKey }: { firstKeyfra
 
     return (
         <div className='w-72 flex flex-col'>
-            <p className='font-roboto-mono text-xs text-center'>Track Segment Element Data</p>
+            <p className='font-roboto-mono text-xs text-center text-label-primary'>Track Segment Element Data</p>
             <div className='max-h-[70vh] overflow-y-scroll flex flex-col w-full mt-2 text-xs bg-neutral-900 p-1 rounded-md shadow-lg'>
                 <JsonView src={extractDatasetFromObject(trackSegmentElement)} collapsed={({ depth }) => depth > 1} />
             </div>

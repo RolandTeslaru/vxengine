@@ -5,12 +5,12 @@ import { cn } from "@vxengine/utils/shadcn"
 
 
 const labelVariants = cva(
-  "text-xs font-roboto-mono text-neutral-300 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+  "text-xs font-roboto-mono  text-label-secondary leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
   {
     variants: {
       variant: {
         default: "",
-        secondary: " font-roboto-mono! text-neutral-400! "
+        secondary: " font-roboto-mono! "
       }
     },
     defaultVariants: {

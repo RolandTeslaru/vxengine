@@ -59,14 +59,14 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                     >z</p>
                 </div>
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-400" >position</p>
+                    <p className="text-xs font-light text-label-quaternary" >position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('position', isPositionDisabled)}
                     </div>
                 </div>
 
                 <div className='flex flex-row'>
-                    <p className="text-xs font-light text-neutral-400">scale</p>
+                    <p className="text-xs font-light text-label-quaternary">scale</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {renderInputs('scale', isScaleDisabled)}
                     </div>
@@ -74,14 +74,14 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
 
                 {isUsingRotationDegrees ? 
                     <div className='flex flex-row gap-2'>
-                        <p className="text-xs font-light text-neutral-400">rotation deg.</p>
+                        <p className="text-xs font-light text-label-quaternary">rotation deg.</p>
                         <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                             {renderInputs('rotationDegrees', isRotationDisabled)}
                         </div>
                     </div>
                     :
                     <div className='flex flex-row gap-2'>
-                        <p className="text-xs font-light text-neutral-400">rotation</p>
+                        <p className="text-xs font-light text-label-quaternary">rotation</p>
                         <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                             {renderInputs('rotation', isRotationDisabled)}
                         </div>

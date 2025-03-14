@@ -13,7 +13,7 @@ interface Props {
 const SettingNode:React.FC<Props> = ({vxkey, settingKey, setting, title}) => {
     return (
         <div className='flex flex-row py-1'>
-            <p className="text-xs font-light text-neutral-400">{title ?? setting.title}</p>
+            <p className="text-xs font-light text-label-quaternary">{title ?? setting.title}</p>
             <Switch
                 onClick={() => toggleSettingSTATIC(vxkey, settingKey)}
                 checked={setting.value}

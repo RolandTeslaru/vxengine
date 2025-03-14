@@ -51,7 +51,7 @@ const LogoButton = () => {
             </MenubarTrigger>
             <MenubarContent>
                 <MenubarItem onClick={() => pushDialog({content:<INFO_About/>, type: "normal", className:"p-0!"})}>About VXEngine</MenubarItem>
-                <MenubarItem onClick={() => pushDialog({content:<INFO_Settings/> , type:"normal"})}>Settings</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<INFO_Settings/> , type:"base", className: "bg-transparent !p-0"})}>Settings</MenubarItem>
             </MenubarContent>
         </MenubarMenu >
     )
@@ -60,7 +60,7 @@ const LogoButton = () => {
 const FileButton = () => {
     return (
         <MenubarMenu>
-            <MenubarTrigger><p className='font-roboto-mono'>File</p></MenubarTrigger>
+            <MenubarTrigger>File</MenubarTrigger>
             <MenubarContent>
                 <MenubarItem>New</MenubarItem>
                 <MenubarItem>Open</MenubarItem>

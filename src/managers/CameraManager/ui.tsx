@@ -12,7 +12,7 @@ const CameraManagerUI = () => {
             className='top-6 right-6 w-[240px] px-2! py-1! flex-row!'
             style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -2px rgb(0 0 0 / 0.6" }}
         >
-            <p className='font-roboto-mono text-xs my-auto mx-auto h-auto'>Camera</p>
+            <p className='font-roboto-mono text-xs my-auto mx-auto h-auto text-label-primary'>Camera</p>
             <div className='h-auto my-auto'>
                 <Tabs
                     defaultValue={mode}
@@ -22,17 +22,13 @@ const CameraManagerUI = () => {
                             value="attached"
                             onClick={() => setMode("attached")}
                         >
-                            <p className='text-xs font-roboto-mono'>
-                                Attached
-                            </p>
+                            Attached
                         </TabsTrigger>
                         <TabsTrigger
                             value="free"
                             onClick={() => setMode("free")}
                         >
-                            <p className='text-xs font-roboto-mono'>
-                                Free
-                            </p>
+                            Free
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>

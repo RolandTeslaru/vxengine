@@ -10,12 +10,12 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: `border border-transparent hover:border-neutral-700 bg-transparent text-white text-xs font-roboto-mono gap-2
-                  hover:bg-neutral-800 text-neutral-400`,
+        default: `border border-transparent hover:border-primary-thin bg-secondary-thin text-white text-xs font-roboto-mono gap-2
+                  hover:bg-secondary-opaque text-label-secondary`,
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-neutral-700 bg-neutral-800 hover:bg-neutral-950 hover:text-accent-foreground",
+          "border border-secondary-thin bg-neutral-800 hover:bg-neutral-950 hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
@@ -83,6 +83,7 @@ const Button = React.forwardRef<
       asChild = false,
       Icon,
       iconPlacement,
+      style,
       ...props
     },
     ref
@@ -92,6 +93,7 @@ const Button = React.forwardRef<
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        style={{ boxShadow: "1px 1px 5px 1px rgba(1,1,1,0.2)", ...style}}
         {...props}
       >
         <Slottable>{props.children}</Slottable>

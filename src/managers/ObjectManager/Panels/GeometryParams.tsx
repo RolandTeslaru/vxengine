@@ -53,7 +53,7 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
             noPadding={true}
             contentClassName="gap-2"
         >
-            <div className='text-xs px-2 flex flex-row text-neutral-400'>
+            <div className='text-xs px-2 flex flex-row'>
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>

@@ -5,6 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import { ComponentProps } from "react"
 import { cn } from "@vxengine/utils"
+import classNames from "classnames"
 
 const Dialog = DialogPrimitive.Root
 
@@ -30,26 +31,25 @@ interface DialogContentProps
     extends React.ComponentProps<typeof DialogPrimitive.Content> {
     darkenBackground?: boolean;
     blockTransparency?: boolean
+    theme?: "dark" | "light"
 }
 
 function DialogContent({
-    className, children, style, blockTransparency = false, darkenBackground = true, ref, ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & { blockTransparency?: boolean, darkenBackground?: boolean }
-) {
+    className, children, style, blockTransparency = false, darkenBackground = true, theme = "dark", ref, ...props
+}: DialogContentProps) {
     return (
         <DialogPortal>
             {darkenBackground === true &&
                 <DialogOverlay />}
             <DialogPrimitive.Content
                 ref={ref}
-                className={cn(
-                    `fixed top-[50%] left-[50%] ${blockTransparency ? "bg-neutral-800" : " backdrop-blur-md bg-neutral-800/70"} py-6 px-8  z-50 grid w-auto
-                          gap-4 border border-neutral-400/20  duration-200 
-                         overflow-hidden
-                         data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
-                         data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
-                         data-[state=open]:slide-in-from-top-[48%] sm:rounded-3xl
-               `,
+                className={classNames(
+                   `${theme} fixed top-[50%] left-[50%] ${blockTransparency ? "bg-background-opaque" : " backdrop-blur-md bg-background "} py-6 px-8  z-50 grid w-auto
+                    gap-4 border border-border-background  duration-200 
+                    overflow-hidden
+                    data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
+                    data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 
+                    data-[state=open]:slide-in-from-top-[48%] sm:rounded-3xl`,
                     className
                 )}
                 style={{
@@ -104,7 +104,7 @@ const DialogTitle = React.forwardRef<
     <DialogPrimitive.Title
         ref={ref}
         className={cn(
-            "text-lg font-semibold leading-none tracking-tight font-roboto-mono",
+            "text-lg font-semibold leading-none tracking-tight font-roboto-mono text-label-primary ",
             className
         )}
         {...props}
@@ -118,7 +118,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <DialogPrimitive.Description
         ref={ref}
-        className={cn("text-xs text-neutral-400 font-roboto-mono ", className)}
+        className={cn("text-xs text-label-secondary font-roboto-mono ", className)}
         {...props}
     />
 ))

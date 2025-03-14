@@ -75,8 +75,8 @@ const PopoverItem: React.FC<PopoverItemProps> = (props) => {
       <div className="absolute top-1/2 -translate-y-1/2 ">
         {icon}
       </div>
-      <div className={`${icon && "pl-5"} `}>
-        {children}
+      <div className={`${icon && "pl-7"} text-sm`}>
+          {children}
       </div>
     </div>
   )

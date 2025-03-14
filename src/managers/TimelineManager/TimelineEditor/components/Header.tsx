@@ -19,7 +19,7 @@ const MinimizeButton = () => {
                         hover:bg-neutral-800/40 hover:border-neutral-400/10  transition-all  `}
             onClick={() => setOpen(!open)}
         >
-            <ChevronRight className={`${open === true && " rotate-90 "}  scale-[90%] m-auto`} />
+            <ChevronRight className={`${open === true && " rotate-90 "} stroke-label-primary scale-[90%] m-auto`} />
         </button>
     )
 }
@@ -34,7 +34,7 @@ const TimelineEditorHeader = () => {
         >
             <MinimizeButton/>
 
-            <p className='font-roboto-mono font-bold antialiased text-sm my-auto h-auto'>
+            <p className='font-roboto-mono font-bold antialiased text-sm my-auto h-auto text-label-primary'>
                 Timeline Editor
             </p>
 

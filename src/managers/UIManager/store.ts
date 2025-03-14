@@ -5,7 +5,7 @@ import React from 'react';
 import { create, StateCreator } from 'zustand';
 import { persist, PersistOptions } from "zustand/middleware";
 
-export type DialogType = "normal" | "alert" | "danger"
+export type DialogType = "normal" | "alert" | "danger" | "base"
 
 interface DialogEntry {
     id: string;
@@ -28,6 +28,8 @@ interface StoredWindowProps {
 }
 
 interface UIManagerProps {
+    theme: "light" | "dark";
+    setTheme: (theme: "light" | "dark") => void;
     mountCoreUI: boolean;
     setMountCoreUI: (value: boolean) => void,
 
@@ -70,6 +72,10 @@ const checkWindowIsRegistered = (state: UIManagerProps, id, functionName: string
 export const useUIManagerAPI = create<UIManagerProps>()(
     persist(
         (set, get) => ({
+            theme: "dark",
+            setTheme: (theme: "light" | "dark") => {
+                set({ theme });
+            },
             mountCoreUI: false,
             setMountCoreUI: (value: boolean) => set({ mountCoreUI: value }),
 

@@ -6,6 +6,83 @@
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+
+.dark {
+  --primary-opaque: var(--color-neutral-700);
+  --primary-thick: color-mix(in oklab, var(--color-neutral-700) 90%, transparent);
+  --primary-regular: color-mix(in oklab, var(--color-neutral-700) 80%, transparent);
+  --primary-thin: color-mix(in oklab, var(--color-neutral-700) 70%, transparent);
+
+  --secondary-opaque: var(--color-neutral-800);
+  --secondary-thick: color-mix(in oklab, var(--color-neutral-800) 90%, transparent);
+  --secondary-regular: color-mix(in oklab, var(--color-neutral-800) 80%, transparent);
+  --secondary-thin: color-mix(in oklab, var(--color-neutral-800) 70%, transparent);
+
+  --tertiary-opaque: var(--color-neutral-900);
+  --tertiary-thick: color-mix(in oklab, var(--color-neutral-900) 90%, transparent);
+  --tertiary-regular: color-mix(in oklab, var(--color-neutral-900) 80%, transparent);
+  --tertiary-thin: color-mix(in oklab, var(--color-neutral-900) 70%, transparent);
+
+  --quaternary-opaque: var(--color-neutral-950);
+  --quaternary-thick: color-mix(in oklab, var(--color-neutral-950) 90%, transparent);
+  --quaternary-regular: color-mix(in oklab, var(--color-neutral-950) 80%, transparent);
+  --quaternary-thin: color-mix(in oklab, var(--color-neutral-950) 70%, transparent);
+
+  --background: var(--secondary-thin);
+  --background-opaque: var(--secondary-opaque);
+  --border-background: color-mix(in oklab, var(--color-neutral-400) 20%, transparent);
+  
+  --foreground: var(--tertiary-opaque);
+  --border-accent: color-mix(in oklab, var(--color-neutral-400) 15%, transparent);
+
+  --foreground-shadow: var(--tertiary-opaque);
+
+  --label-primary: var(--color-neutral-100);
+  --label-secondary: var(--color-neutral-200);
+  --label-tertiary: var(--color-neutral-300);
+  --label-quaternary: var(--color-neutral-400);
+}
+
+.light{
+  --primary-opaque: var(--color-neutral-100);
+  --primary-thick: color-mix(in oklab, var(--color-neutral-100) 90%, transparent);
+  --primary-regular: color-mix(in oklab, var(--color-neutral-100) 80%, transparent);
+  --primary-thin: color-mix(in oklab, var(--color-neutral-100) 70%, transparent);
+
+  --secondary-opaque: var(--color-neutral-300);
+  --secondary-thick: color-mix(in oklab, var(--color-neutral-300) 90%, transparent);
+  --secondary-regular: color-mix(in oklab, var(--color-neutral-300) 80%, transparent);
+  --secondary-thin: color-mix(in oklab, var(--color-neutral-300) 70%, transparent);
+
+  --tertiary-opaque: var(--color-neutral-300);
+  --tertiary-thick: color-mix(in oklab, var(--color-neutral-300) 90%, transparent);
+  --tertiary-regular: color-mix(in oklab, var(--color-neutral-300) 80%, transparent);
+  --tertiary-thin: color-mix(in oklab, var(--color-neutral-300) 70%, transparent);
+
+  --quaternary-opaque: var(--color-neutral-400);
+  --quaternary-thick: color-mix(in oklab, var(--color-neutral-400) 90%, transparent);
+  --quaternary-regular: color-mix(in oklab, var(--color-neutral-400) 80%, transparent);
+  --quaternary-thin: color-mix(in oklab, var(--color-neutral-400) 70%, transparent);
+
+
+  --background: var(--secondary-thin);
+  --background-opaque: var(--secondary-opaque);
+  --border-background: var(--secondary-thin);
+  
+  --foreground: color-mix(in oklab, var(--color-neutral-200) 90%, transparent);
+  --border-accent: color-mix(in oklab, var(--color-neutral-400) 15%, transparent);
+
+  --foreground-shadow: color-mix(in oklab, var(--color-neutral-900)  20%, transparent);
+
+  --label-primary: var(--color-black);
+  --label-secondary: var(--color-neutral-900);
+  --label-tertiary: var(--color-neutral-800);
+  --label-quaternary: var(--color-neutral-700);
+}
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -36,6 +113,8 @@
   scrollbar-width: none;
   /* Firefox */
 }
+
+
 
 ::-webkit-scrollbar {
   display: none;

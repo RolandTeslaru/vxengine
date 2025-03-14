@@ -56,16 +56,16 @@ const TrackVerticalList = memo(() => {
     return (
         <div 
             className={`antialiased w-[29%] h-full flex flex-col rounded-2xl relative overflow-y-scroll 
-                        border border-neutral-800 bg-neutral-900`}
+                        border dark:border-neutral-800 dark:bg-neutral-900 border-neutral-300 bg-neutral-200`}
             ref={trackListRef}
             onScroll={handleOnScroll}
         >
             <div 
                 className={`sticky top-0 w-full min-h-[28px] z-10 flex flex-row px-2`}
-                style={{background: "linear-gradient(0deg, rgba(23,23,23,0) 0%, rgba(23,23,23,0.9) 71%)"}}
+                // style={{background: "linear-gradient(0deg, rgba(23,23,23,0) 0%, rgba(23,23,23,0.9) 71%)"}}
             >
                 <Search
-                    className="w-36 px-2 bg-neutral-800 ml-auto my-auto "
+                    className="w-36 px-2 ml-auto my-auto "
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
@@ -104,7 +104,7 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
 
     return (
         <>
-            <li className={`flex items-center hover:bg-neutral-800 w-full px-1`}
+            <li className={`flex items-center dark:hover:bg-neutral-800 hover:bg-neutral-300 w-full px-1`}
                 style={{ height: DEFAULT_ROW_HEIGHT }}
             >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
@@ -139,7 +139,7 @@ const RenderPaths = ({ paths, isLinearTrack, trackKey }: { paths: string[], isLi
 const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
-            <p className="antialiased font-medium text-neutral-400" style={{ fontSize: "11px" }}>
+            <p className="antialiased font-medium text-label-quaternary" style={{ fontSize: "11px" }}>
                 {pathKey}
             </p>
             {showArrow &&
@@ -162,7 +162,7 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
         <ContextMenu>
             <ContextMenuTrigger className="h-full w-full flex items-center">
                 <div className="flex ml-auto gap-2">
-                    <p className=" font-semibold text-neutral-500" style={{ fontSize: "10px" }}>
+                    <p className=" font-semibold text-label-quaternary" style={{ fontSize: "10px" }}>
                         {pathKey}
                     </p>
                     <div className="scale-90">
