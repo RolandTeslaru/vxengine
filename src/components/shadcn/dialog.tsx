@@ -44,7 +44,7 @@ function DialogContent({
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(
-                   `${theme} fixed top-[50%] left-[50%] ${blockTransparency ? "bg-background-opaque" : " backdrop-blur-md bg-background "} py-6 px-8  z-50 grid w-auto
+                   `${theme} fixed top-[50%] left-[50%] ${blockTransparency ? "bg-tertiary-opaque" : " backdrop-blur-md bg-tertiary-thin "} py-6 px-8  z-50 grid w-auto
                     gap-4 border border-border-background  duration-200 
                     overflow-hidden
                     data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 

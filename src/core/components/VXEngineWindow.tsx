@@ -37,6 +37,7 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
            detachedClassName, noStyling = false, noPadding = false } = props;
 
     const registerWindow = useUIManagerAPI(state => state.registerWindow);
+    const theme = useUIManagerAPI(state => state.theme)
 
     const isRegistered = useRef(false);
     if (!isRegistered.current) {
@@ -58,7 +59,7 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
         } else {
             return (
                 <StandardWindowStyling
-                    className={className}
+                    className={className + ` ${theme}`}
                     detachedClassName={detachedClassName}
                     isDetached={!vxWindow.isAttached}
                 >

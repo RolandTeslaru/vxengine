@@ -88,9 +88,9 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
             <ContextMenuTrigger className='w-full'>
                 <NodeTemplate className={
                     classNames(
-                        "text-label-tertiary",
+                        "text-label-tertiary ",
                         { "bg-blue-600! !text-neutral-200": isSelected === true },
-                        { "hover:bg-blue-700": node.isSelectable }
+                        { "hover:bg-blue-800": node.isSelectable }
                     )}
                     listClassNames={classNames(
                         {"bg-neutral-800 text-white":isSelected === true}

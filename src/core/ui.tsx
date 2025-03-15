@@ -25,6 +25,7 @@ import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoP
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
 import { Tabs, TabsList, TabsTrigger } from "@vxengine/components/shadcn/tabs"
+import styles from "./clipStyling.module.scss"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
@@ -57,7 +58,7 @@ export const VXStudio = () => {
                 vxWindowId="VXEngineRightPanel"
                 title="VXEngine: RightPanel"
                 windowClasses='width=256,height=702,right=200,top=200,resizable=0'
-                className="w-60 h-[686px] top-32 right-6 pt-3 px-0!"
+                className="w-60 h-[686px] top-32 right-6 pt-3"
                 detachedClassName="top-2! right-2! left-2! w-auto"
                 noPadding={true}
             >
@@ -86,7 +87,7 @@ export const VXStudio = () => {
 
             <CameraManagerUI />
 
-            <VXThemeSwitcher/>
+            {/* <VXThemeSwitcher/> */}
 
             <UIManagerDialogLayer />
 
@@ -100,7 +101,8 @@ const VXRightPanel = () => {
     const vxObject = useVXObjectStore(state => state.objects[vxkey]);
 
     return (
-        <div className="w-full  h-full  rounded-2xl overflow-y-scroll px-2">
+        <div className={ "w-full  h-full  rounded-2xl overflow-y-scroll"}>
+            {/* content */}
             <div className="h-fit flex flex-col gap-2">
                 {vxObject && (
                     <>
