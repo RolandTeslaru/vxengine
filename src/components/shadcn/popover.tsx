@@ -4,6 +4,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@vxengine/utils"
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 
 const Popover = PopoverPrimitive.Root
 
@@ -38,6 +39,7 @@ const PopoverTrigger: FC<PopoverTriggerProps> =
 const PopoverContent: FC<ComponentProps<typeof PopoverPrimitive.Content>> =
   ({ ref, className, align = "center", side = "bottom", sideOffset = 1, ...props }) => {
     const { externalContainer } = useWindowContext();
+    const theme = useUIManagerAPI(state => state.theme)
     return (
       <PopoverPrimitive.Portal container={externalContainer}>
         <PopoverPrimitive.Content
@@ -46,7 +48,7 @@ const PopoverContent: FC<ComponentProps<typeof PopoverPrimitive.Content>> =
           side={side}
           sideOffset={sideOffset}
           className={cn(
-            `backdrop-blur-xs z-50 w-72 rounded-xl border-[1px] border-neutral-600 bg-neutral-700/80
+            `${theme} backdrop-blur-xs z-50 w-72 rounded-xl border-[1px] border-neutral-600 bg-neutral-700/80
            p-2 text-popover-foreground shadow-xl shadow-black/40 outline-hidden 
          data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 
          data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 

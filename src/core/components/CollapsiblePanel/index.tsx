@@ -30,7 +30,7 @@ const  CollapsiblePanel: React.FC<Props> = memo(
                 >
                     <ChevronRight className={`${open === true && " rotate-90 "} stroke-label-primary scale-[60%] m-auto`} />
                 </button>
-                <p className='text-center text-xs font-roboto-mono text-label-secondary font-bold antialiased py-1'>
+                <p className='text-center text-xs font-roboto-mono text-label-secondary font-extrabold antialiased py-1'>
                     {title}
                 </p>
             </div>

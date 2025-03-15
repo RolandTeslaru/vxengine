@@ -9,10 +9,10 @@ import { SourceManagerSubMenu } from '@vxengine/managers/SourceManager/ui'
 import { ObjectManagerSubMenu, ObjectPropertySubMenu, ObjectSettingsSubMenu } from '@vxengine/managers/ObjectManager/ui'
 import { EffectsManagerSubMenu } from '@vxengine/managers/EffectsManager/ui'
 import VXEngineLogo from '@vxengine/components/ui/VXEngineLogo'
-import { INFO_About, INFO_Settings } from '@vxengine/components/ui/DialogInfos'
 import TimelineManagerSubMenu from '@vxengine/managers/TimelineManager/subMenu'
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
 import { StandardWindowStyling } from './VXEngineWindow'
+import { DialogAbout, DialogSettings } from '@vxengine/components/dialogs'
 
 const LOG_MODULE = "VXMenubar"
 
@@ -50,8 +50,8 @@ const LogoButton = () => {
                 <VXEngineLogo />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => pushDialog({content:<INFO_About/>, type: "normal", className:"p-0!"})}>About VXEngine</MenubarItem>
-                <MenubarItem onClick={() => pushDialog({content:<INFO_Settings/> , type:"base", className: "bg-transparent !p-0"})}>Settings</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<DialogAbout/>, type: "normal", className:"p-0!"})}>About VXEngine</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({content:<DialogSettings/> , type:"base", className: "bg-transparent !p-0"})}>Settings</MenubarItem>
             </MenubarContent>
         </MenubarMenu >
     )

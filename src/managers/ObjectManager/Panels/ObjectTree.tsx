@@ -88,7 +88,7 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
             <ContextMenuTrigger className='w-full'>
                 <NodeTemplate className={
                     classNames(
-                        "text-label-secondary",
+                        "text-label-tertiary",
                         { "bg-blue-600! !text-neutral-200": isSelected === true },
                         { "hover:bg-blue-700": node.isSelectable }
                     )}
@@ -100,7 +100,7 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
                 >
                     <div className='flex flex-row w-full gap-2 &:hover:text-neutral-200 '>
                         <span> {iconMapping[node.type]} </span>
-                        <p className={`text-xs font-medium antialiased text-nowrap`}>
+                        <p className={`text-xs font-semibold antialiased text-nowrap`}>
                             {node.name}
                         </p>
                     </div>
