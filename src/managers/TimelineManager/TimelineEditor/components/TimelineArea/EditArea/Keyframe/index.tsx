@@ -134,12 +134,12 @@ const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframeKey: s
         clearSelectedKeyframes,
         setLastKeyframeSelectedIndex,
         lastKeyframeSelectedIndex,
-        setSelectedTrackSegment
+        clearSelectedTrackSegments,
     } = timelineEditorAPI;
 
     const getAllKeyframes = useTimelineManagerAPI.getState().getAllKeyframes
 
-    setSelectedTrackSegment(null, null, null);
+    clearSelectedTrackSegments();
     // Get keyframes and their indices
     const keyframes = getAllKeyframes(); // Retrieve all keyframes for the track
 

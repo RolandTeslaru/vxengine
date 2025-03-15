@@ -62,8 +62,8 @@ const BezierCurveEditor = ({
   value,
   onChange,
 }) => {
-  const selectedTrackSegment = useTimelineEditorAPI(state => state.selectedTrackSegment)
-  const useCurveStore = useMemo(() => createCurveStore(value), [selectedTrackSegment])
+  const selectedTrackSegments = useTimelineEditorAPI(state => state.selectedTrackSegments)
+  const useCurveStore = useMemo(() => createCurveStore(value), [selectedTrackSegments])
 
   const {
     value: bezierValue,

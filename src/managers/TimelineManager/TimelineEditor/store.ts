@@ -77,14 +77,25 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     lastKeyframeSelectedIndex: null,
     setLastKeyframeSelectedIndex: (newIndex: number) => set({ lastKeyframeSelectedIndex: newIndex }),
 
-    selectedTrackSegment: undefined,
-    setSelectedTrackSegment: (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorAPIProps) => {
-        state.selectedTrackSegment = {
+    selectedTrackSegments: {},
+    selectTrackSegment: (firstKeyframeKey, secondKeyframeKey, trackKey) => set(produce((state: TimelineEditorAPIProps) => {
+        const trackSegment = {
             firstKeyframeKey: firstKeyframeKey,
             secondKeyframeKey: secondKeyframeKey,
             trackKey: trackKey
         }
+        const segmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`;
+        state.selectedTrackSegments[segmentKey] = trackSegment
     })),
+    unselectTrackSegment: (firstKeyframeKey, secondKeyframeKey) => {set(produce((state: TimelineEditorAPIProps) => {
+        const segmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`;
+        delete state.selectedTrackSegments[segmentKey]
+    }))
+
+    },
+    clearSelectedTrackSegments: () => {set(produce((state:TimelineEditorAPIProps) => {
+        state.selectedTrackSegments = {};
+    }))},
 
     // Cursor Functions
 

@@ -132,37 +132,19 @@ const VXLeftPanel = () => {
     )
 }
 
-const VXThemeSwitcher = () => {
-    const theme = useUIManagerAPI(state => state.theme)
-    const setTheme = useUIManagerAPI(state => state.setTheme)
-    return (
-        <StandardWindowStyling id="VXEngineThemeSwitcher" className="fixed py-1 top-6 right-[300px] z-50 flex flex-row">
-            <p className="font-roboto-mono text-white text-xs h-auto my-auto">theme</p>
-            <Tabs defaultValue={theme}>
-                <TabsList>
-                    <TabsTrigger value="light" onClick={() => setTheme("light")} className="text-white text-xs font-roboto-mono">
-                        Light
-                    </TabsTrigger>
-                    <TabsTrigger value="dark" onClick={() => setTheme("dark")} className="text-white text-xs font-roboto-mono">
-                        dark
-                    </TabsTrigger>
-                </TabsList>
-            </Tabs>
-        </StandardWindowStyling>
-    )
-}
-
 const VXBottomRightBar = () => {
     const vxWindowId = "VXEngineBottomRightBar"
 
     const timelineEditorOpen = useUIManagerAPI(state => state.timelineEditorOpen)
     const timelineEditorAttached = useUIManagerAPI(state => state.getAttachmentState(vxWindowId));
 
+    const theme = useUIManagerAPI(state => state.theme);
+
     return (
         <>
             <StandardWindowStyling
                 id="VXEngineTimelinePanel"
-                className="fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]"
+                className={`${theme} fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]`}
                 isDetached={!timelineEditorAttached}
                 detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
                 style={{

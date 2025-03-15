@@ -40,7 +40,8 @@ function DialogContent({
     return (
         <DialogPortal>
             {darkenBackground === true &&
-                <DialogOverlay />}
+                <DialogOverlay />
+            }
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(

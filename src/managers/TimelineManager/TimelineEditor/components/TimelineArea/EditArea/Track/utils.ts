@@ -40,15 +40,15 @@ export const handleTrackDrag = (
     firstKeyframeKey: string, 
     secondKeyframeKey: string
 ) => {
-    const { selectedKeyframeKeys, selectKeyframe, clearSelectedKeyframes , setSelectedTrackSegment} = useTimelineEditorAPI.getState();
+    const { selectedKeyframeKeys, selectKeyframe, clearSelectedKeyframes , clearSelectedTrackSegments, selectTrackSegment, selectedTrackSegments} = useTimelineEditorAPI.getState();
+
+    const segmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
 
     if(!selectedKeyframeKeys[trackKey]){
         clearSelectedKeyframes();
 
         selectKeyframe(trackKey, firstKeyframeKey)
         selectKeyframe(trackKey, secondKeyframeKey)
-
-        setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
     }
     else{
         const isFirstKfSelected = firstKeyframeKey in selectedKeyframeKeys[trackKey];
@@ -61,8 +61,20 @@ export const handleTrackDrag = (
             if(!isSecondKfSelected)
                 selectKeyframe(trackKey, secondKeyframeKey)
         }
-        setSelectedTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
     }
+
+    // Ensure only one track is selected while dragging
+    if(!(segmentKey in selectedTrackSegments)){
+        if(Object.keys(selectedTrackSegments).length > 0)
+            clearSelectedTrackSegments();
+        selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+    } else {
+        if(Object.keys(selectedTrackSegments).length > 1){
+            clearSelectedTrackSegments()
+            selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey)
+        }
+    }
+
 
     const staleFirstKfLeft = parseFloat(keyframesRef.get(firstKeyframeKey).dataset.left);
     const deltaPixel = newLeft - prevLeft;

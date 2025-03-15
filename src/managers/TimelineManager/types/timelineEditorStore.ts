@@ -27,12 +27,14 @@ export interface TimelineEditorAPIProps {
     clearSelectedKeyframes: () => void;
     isKeyframeSelected: (trackKey: string, keyframeKey: string) => boolean;
 
-    selectedTrackSegment: {
+    selectedTrackSegments: Record<string,{
         firstKeyframeKey: string,
         secondKeyframeKey: string,
         trackKey: string,
-    };
-    setSelectedTrackSegment: (firstKeyframeKey: string, secondKeyframeKey: string, trackKey) => void;
+    }>
+    selectTrackSegment: (firstKeyframeKey: string, secondKeyframeKey: string, trackKey) => void;
+    unselectTrackSegment: (firstKeyframeKey, secondKeyframeKey) => void
+    clearSelectedTrackSegments: () => void
 
     lastKeyframeSelectedIndex: number | null
     setLastKeyframeSelectedIndex: (newIndex: number) => void
