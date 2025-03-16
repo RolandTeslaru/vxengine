@@ -10,7 +10,7 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
 import { useVXEngine } from '@vxengine/engine';
-import { ArrowDown, ArrowUp, Sun, Video, X } from '@vxengine/components/ui/icons';
+import { ArrowDown, ArrowUp, Info, Sun, Video, X } from '@vxengine/components/ui/icons';
 import VxObjectData from '@vxengine/components/ui/DataContextContext/VxObject';
 
 interface ObjectTreeNode {
@@ -100,7 +100,7 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
                 >
                     <div className='flex flex-row w-full gap-2 &:hover:text-neutral-200 '>
                         <span> {iconMapping[node.type]} </span>
-                        <p className={`text-xs font-semibold antialiased text-nowrap`}>
+                        <p className={`text-xs font-medium antialiased text-nowrap`}>
                             {node.name}
                         </p>
                     </div>
@@ -190,13 +190,17 @@ const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
     return (
         <ContextMenuContent className='font-roboto-mono'>
             <ContextMenuSub>
-                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger icon={<Info size={17} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
             </ContextMenuSub>
-            <ContextMenuItem onClick={handleDeleteSpline} className='text-xs antialiased font-medium gap-2 text-red-600'>
-                <X size={15} className='stroke-2' />
+            <ContextMenuItem 
+                className='text-xs antialiased font-medium gap-2 text-red-600'
+                variant={"destructive"} 
+                onClick={handleDeleteSpline} 
+                icon={<X size={19} className='stroke-2'/>} 
+            >
                 Delete Spline
             </ContextMenuItem>
         </ContextMenuContent>
@@ -256,7 +260,7 @@ const DefaultContextMenu = ({ vxkey }) => {
     return (
         <ContextMenuContent className='text-xs font-roboto-mono'>
             <ContextMenuSub>
-                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger icon={<Info size={17} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>

@@ -103,7 +103,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
                     }
                     style={{ height: DEFAULT_ROW_HEIGHT - 1 }}
                     onClick={(e) => handleOnClick(e, trackKey, keyframeKey)}
-                    onContextMenu={(e) => selectKeyframe(trackKey, keyframeKey)}
+                    onContextMenu={(e) => handleOnContextMenu(e, trackKey, keyframeKey)}
                     ref={elementRef}
                 >
                     <polygon
@@ -122,7 +122,11 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
 export default Keyframe
 
 
-const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframeKey: string) => {
+const handleOnClick = (
+    event: React.MouseEvent, 
+    trackKey: string, 
+    keyframeKey: string
+) => {
     event.preventDefault();
 
     const timelineEditorAPI = useTimelineEditorAPI.getState();
@@ -177,6 +181,22 @@ const handleOnClick = (event: React.MouseEvent, trackKey: string, keyframeKey: s
     }
 
     setLastKeyframeSelectedIndex(keyframeIndex)
+}
+
+const handleOnContextMenu = (
+    event: React.MouseEvent<SVGSVGElement, MouseEvent>, 
+    trackKey: string, 
+    keyframeKey:string
+) => {
+    const timelineEditorAPI = useTimelineEditorAPI.getState();
+    timelineEditorAPI.clearSelectedTrackSegments();
+
+    if(event.metaKey || event.ctrlKey){
+        timelineEditorAPI.selectKeyframe(trackKey, keyframeKey);
+    } else {
+        timelineEditorAPI.clearSelectedKeyframes();
+        timelineEditorAPI.selectKeyframe(trackKey, keyframeKey)
+    }
 }
 
 const rowHeight = DEFAULT_ROW_HEIGHT

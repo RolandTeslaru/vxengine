@@ -58,6 +58,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 ref={inputRef}
                 onChange={handleChange}
                 type='number'
+                step={0.1}
                 className="h-fit text-[10px] bg-secondary-opaque p-0.5 max-w-[40px] border border-primary-thin"
                 {...inputProps}
             />

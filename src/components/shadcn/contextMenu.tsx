@@ -5,6 +5,7 @@ import { cn } from "@vxengine/utils"
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import classNames from "classnames"
+import { cva } from "class-variance-authority"
 
 
 function ContextMenu({
@@ -61,7 +62,7 @@ const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: C
   <ContextMenuPrimitive.SubTrigger
     className={classNames(
       `text-xs font-roboto-mono antialiased font-semibold relative flex text-label-primary
-      hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-1
+      hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-2
         rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",
       className
@@ -131,8 +132,25 @@ type ContextMenuItemProps = typeof ContextMenuPrimitive.Item & {
   preventClose?: boolean;
 }
 
+
+const contextMenuItemVariants = cva(
+  `relative flex data-[highlighted]:shadow-md data-[highlighted]:shadow-black/20 cursor-default rounded-lg select-none items-center px-2 py-1.5 outline-hidden
+    text-xs antialiased font-medium font-roboto-mono border border-transparent gap-2
+    focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-5 `,
+  {
+    variants: {
+      variant: {
+        default: "hover:bg-blue-600 hover:border-blue-500 text-label-primary",
+        destructive: "text-red-600 data-[highlighted]:bg-red-700 data-[highlighted]:border-red-600 data-[highlighted]:text-white "
+      }
+    }
+  }
+)
+
 function ContextMenuItem({
   className,
+  children,
+  icon,
   inset,
   variant = "default",
   preventClose = false,
@@ -141,21 +159,21 @@ function ContextMenuItem({
   inset?: boolean
   variant?: "default" | "destructive"
   preventClose?: boolean
+  icon?: React.ReactNode
 }) {
   return (
     <ContextMenuPrimitive.Item
       className={cn(
-        `relative flex 
-           antialiased font-medium
-          hover:bg-blue-600 hover:border-blue-500 hover:shadow-md hover:shadow-black/20 gap-2 font-roboto-mono text-xs
-            border border-transparent 
-           rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden 
-           focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-5 ${preventClose && "pointer-events-none!"}`,
+        contextMenuItemVariants({variant}) + 
+        `${preventClose && "pointer-events-none!"}`,
         inset && "pl-8",
         className
       )}
       {...props}
-    />
+    >
+      {icon}
+      {children}
+    </ContextMenuPrimitive.Item>
   );
 }
 ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName

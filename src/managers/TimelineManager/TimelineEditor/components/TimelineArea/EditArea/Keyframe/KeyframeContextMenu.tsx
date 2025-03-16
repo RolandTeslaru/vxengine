@@ -4,13 +4,14 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
 import React, { useCallback, useMemo } from 'react'
 import { selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store'
-import { ArrowLeft, ArrowRight, Info, Maximize2 } from '@vxengine/components/ui/icons'
+import { ArrowLeft, ArrowRight, Info, Maximize2, X } from '@vxengine/components/ui/icons'
 import JsonView from 'react18-json-view'
 import { Input } from '@vxengine/components/shadcn/input'
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing'
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
 import { keyframesRef } from '@vxengine/utils/useRefStore'
 import KeyframeData from '@vxengine/components/ui/DataContextContext/Keyframe'
+import { Text } from '@vxengine/components/shadcn/Text'
 
 interface Props {
     trackKey: string,
@@ -23,28 +24,24 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
     return (
         <ContextMenuContent>
             <ContextMenuSub>
-                <ContextMenuSubTrigger icon={<Info size={15} />}>Show Data</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <KeyframeData trackKey={trackKey} keyframeKey={keyframeKey}/>
+                    <KeyframeData trackKey={trackKey} keyframeKey={keyframeKey} />
                 </ContextMenuSubContent>
             </ContextMenuSub>
+
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
-                    <p className='text-xs font-roboto-mono w-full'>
-                        Select...
-                    </p>
+                    Select...
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesAfter(trackKey, keyframeKey)}>
-                        <ArrowRight size={15} />
+                    <ContextMenuItem icon={<ArrowRight size={15} />} onClick={() => selectAllKeyframesAfter(trackKey, keyframeKey)}>
                         <p className='text-xs'>After</p>
                     </ContextMenuItem>
-                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesOnTrack(trackKey)}>
-                        <Maximize2 size={15} className='rotate-45' />
+                    <ContextMenuItem icon={<Maximize2 size={15} className='rotate-45' />} className='gap-2' onClick={() => selectAllKeyframesOnTrack(trackKey)}>
                         <p className='text-xs'>All on Track</p>
                     </ContextMenuItem>
-                    <ContextMenuItem className='gap-2' onClick={() => selectAllKeyframesBefore(trackKey, keyframeKey)}>
-                        <ArrowLeft size={15} />
+                    <ContextMenuItem icon={<ArrowLeft size={15} />} className='gap-2' onClick={() => selectAllKeyframesBefore(trackKey, keyframeKey)}>
                         <p className='text-xs'>Before</p>
                     </ContextMenuItem>
                 </ContextMenuSubContent>
@@ -52,13 +49,12 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
             <ContextMenuItem
                 onClick={handleRemoveSelectedKeyframes}
+                variant='destructive'
             >
-                <p className=' text-xs font-roboto-mono font-medium text-red-500'>
-                    {selectedKeyframesLength < 2
-                        ? <>Delete Keyframe</>
-                        : <>Delete Keyframes</>
-                    }
-                </p>
+                {selectedKeyframesLength < 2
+                    ? <>Delete Keyframe</>
+                    : <>Delete Keyframes</>
+                }
             </ContextMenuItem>
         </ContextMenuContent>
     )

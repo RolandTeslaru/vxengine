@@ -110,12 +110,14 @@ const handleOnContextMenu = (
     firstKeyframeKey: string, 
     secondKeyframeKey:string
 ) => {
-    const state = useTimelineEditorAPI.getState();
+    const timelineEditorAPI = useTimelineEditorAPI.getState();
+    timelineEditorAPI.clearSelectedKeyframes();
+    
     if(event.metaKey || event.ctrlKey){
-        state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+        timelineEditorAPI.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
     } else {
-        state.clearSelectedTrackSegments();
-        state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+        timelineEditorAPI.clearSelectedTrackSegments();
+        timelineEditorAPI.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
     }
 }
 

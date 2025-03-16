@@ -190,7 +190,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                             content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
                             type: "alert"
                         })}
-                        className='text-red-500'
+                        variant="destructive"
                     >
                         Make Property Static
                     </ContextMenuItem>
@@ -200,7 +200,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
                         type: "alert"
                     })}
-                    className='text-red-500'
+                    variant="destructive"
                 >
                     Remove Property
                 </ContextMenuItem>

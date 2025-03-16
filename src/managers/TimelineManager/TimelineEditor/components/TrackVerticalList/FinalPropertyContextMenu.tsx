@@ -15,17 +15,15 @@ const FinalPropertyContextMenu: React.FC<Props> = ({ vxkey, propertyPath }) => {
         <ContextMenuContent className='flex flex-col'>
             <ContextMenuItem 
                 onClick={() => pushDialogStatic({content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
+                variant="destructive"
             >
-                <p className=' text-red-500'>
-                    Make Property Static
-                </p>
+                Make Property Static
             </ContextMenuItem>
             <ContextMenuItem 
                 onClick={() => pushDialogStatic({content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
+                variant="destructive"
             >
-                <p className=' text-red-500'>
-                    Erase Property
-                </p>
+                Erase Property
             </ContextMenuItem>
         </ContextMenuContent>
     )
