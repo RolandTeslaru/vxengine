@@ -13,7 +13,7 @@ import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import TrackSegmentContextMenu from './TrackSegmentContextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
-import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 
 export const segmentStartLeft = 22;
 
@@ -88,7 +88,7 @@ const TrackSegment: React.FC<Props> = (props) => {
             <ContextMenuTrigger>
                 <div className='absolute h-full flex !cursor-ew-resize '
                     onClick={(e) => handleOnClick(e, trackKey, firstKeyframeKey, secondKeyframeKey)}
-                    onContextMenu={() => handleOnContextMenu(trackKey, firstKeyframeKey, secondKeyframeKey)}
+                    onContextMenu={(e) => handleOnContextMenu(e, trackKey, firstKeyframeKey, secondKeyframeKey)}
                     ref={elementRef as any}
                 >
                     <div
@@ -105,12 +105,18 @@ const TrackSegment: React.FC<Props> = (props) => {
 export default TrackSegment
 
 const handleOnContextMenu = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     trackKey: string, 
     firstKeyframeKey: string, 
     secondKeyframeKey:string
 ) => {
     const state = useTimelineEditorAPI.getState();
-    state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+    if(event.metaKey || event.ctrlKey){
+        state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+    } else {
+        state.clearSelectedTrackSegments();
+        state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
+    }
 }
 
 const handleOnClick = (
@@ -120,17 +126,21 @@ const handleOnClick = (
     secondKeyframeKey:string
 ) => {
     const state = useTimelineEditorAPI.getState();
+    const segmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
 
     state.clearSelectedKeyframes();
     state.selectKeyframe(trackKey, firstKeyframeKey);
     state.selectKeyframe(trackKey, secondKeyframeKey);
 
-    event.preventDefault();
     if(event.metaKey || event.ctrlKey){
+        if(segmentKey in state.selectedTrackSegments){
+            state.unselectTrackSegment(firstKeyframeKey, secondKeyframeKey)
+            state.removeSelectedKeyframe(trackKey, firstKeyframeKey)
+            state.removeSelectedKeyframe(trackKey, secondKeyframeKey)
+            return
+        }
         state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
-    } else if (event.shiftKey && ( event.metaKey || event.ctrlKey )) {
-        state.unselectTrackSegment(firstKeyframeKey, secondKeyframeKey)
-    } else {
+    }  else {
         state.clearSelectedTrackSegments();
         state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
     }
@@ -166,7 +176,7 @@ const handleOnMoveEnd = (e: DragEvent) => {
     const selectedKeyframesFlatMap = useTimelineEditorAPI.getState().selectedKeyframesFlatMap
 
     useTimelineManagerAPI.setState(
-        produce((state: TimelineMangerAPIProps) => {
+        produce((state: TimelineManagerAPIProps) => {
             selectedKeyframesFlatMap.forEach(selectKeyframeFlat => {
                 const { trackKey, keyframeKey } = selectKeyframeFlat;
                 const kfElement = keyframesRef.get(keyframeKey);

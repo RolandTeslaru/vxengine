@@ -7,7 +7,7 @@ import { produce } from "immer";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
-import { TimelineMangerAPIProps } from "../types/store";
+import { TimelineManagerAPIProps } from "../types/store";
 
 export type SelectedKeyframe = {
     trackKey: string;
@@ -147,7 +147,6 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     },
 
     addObjectToTrackTree: (vxkey, tracks) => {
-        console.log(`Adding object ${vxkey} to track tree`)
         if (Object.entries(tracks).length === 0)
             return
 
@@ -248,8 +247,6 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
     },
 
     removeObjectFromTrackTree: (vxkey) => {
-        console.log(`Removing object ${vxkey} from trackTree`)
-
         set(produce((state: TimelineEditorAPIProps) => {
             delete state.trackTree[vxkey];
         }))
@@ -334,8 +331,6 @@ function mergeSingleChildNodes(node: EditorTrackTreeNode): EditorTrackTreeNode {
     }
     return node;
 }
-
-
 
 
 

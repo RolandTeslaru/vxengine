@@ -7,7 +7,7 @@ import { cloneDeep } from "lodash";
 import { v4 as uuidv4 } from 'uuid';
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { produce } from "immer";
-import { TimelineMangerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
+import { TimelineManagerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
 
 
 export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjectSettings) => {
@@ -96,7 +96,7 @@ export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjec
         staticPropKeys
     }
 
-    useTimelineManagerAPI.setState(produce((state: TimelineMangerAPIProps) => {
+    useTimelineManagerAPI.setState(produce((state: TimelineManagerAPIProps) => {
         state.tracks = { ...state.tracks, ...tracks }
         state.staticProps = { ...state.staticProps, ...staticProps }
         state.editorObjects[vxkey] = editorObject;
@@ -106,7 +106,7 @@ export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjec
 }
 
 export const cleanupEditorObject = (vxkey: string) => {
-    useTimelineManagerAPI.setState(produce((state: TimelineMangerAPIProps) => {
+    useTimelineManagerAPI.setState(produce((state: TimelineManagerAPIProps) => {
         Object.entries(state.tracks).forEach(([trackKey, _track]) => {
             if (_track.vxkey === vxkey)
                 delete state.tracks[trackKey]

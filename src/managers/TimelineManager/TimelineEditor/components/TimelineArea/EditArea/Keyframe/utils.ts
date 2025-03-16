@@ -7,12 +7,11 @@ import { produce } from 'immer';
 import { segmentStartLeft } from '../Track/TrackSegment';
 import { keyframeStartLeft } from '.';
 import { handleTrackSegmentMutation } from '../Track/utils';
-import { invalidate } from '@react-three/fiber';
-import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
-import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 import animationEngineInstance from '@vxengine/singleton';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
 import { DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
+import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();
@@ -60,7 +59,6 @@ export const selectAllKeyframesOnObject = (trackKey: string) => {
     const vxkey = trackKey.split(".")[0];
     const edObject = state.editorObjects[vxkey];
     if (edObject) {
-        debugger
         edObject.trackKeys.forEach((_trackKey) => {
             selectAllKeyframesOnTrack(_trackKey);
         })
@@ -87,7 +85,6 @@ export const handleKeyframeDrag = (
     mutateUI = true,
     hydrateKeyframeOrder = true
 ) => {
-    const timelineMangerAPI = useTimelineManagerAPI.getState();
     const { selectedKeyframesFlatMap, scale } = useTimelineEditorAPI.getState();
 
     const boundsRight = getRightBounds();
@@ -96,14 +93,25 @@ export const handleKeyframeDrag = (
         selectKeyframe(trackKey, keyframeKey)
     // Single Keyframe Drag
     else if (selectedKeyframesFlatMap.length === 1) {
+        const {vxkey, propertyPath} = extractDataFromTrackKey(trackKey);
         if (newLeft < boundsLeft) {
             newLeft = boundsLeft;
         }
         if (newLeft > boundsRight) {
             newLeft = boundsRight;
         }
-        const newTime = parserPixelToTime(newLeft, keyframeStartLeft, true, scale)
-        timelineMangerAPI.setKeyframeTime(keyframeKey, trackKey, newTime, true, mutateUI);
+        const newSafeTime = truncateToDecimals(parserPixelToTime(newLeft, keyframeStartLeft, true, scale))
+        animationEngineInstance.hydrationService.hydrateKeyframe({
+            vxkey,
+            propertyPath,
+            action: "updateTime",
+            keyframeKey,
+            newTime: newSafeTime
+        })
+        animationEngineInstance.reRender({force: true})
+
+        if(mutateUI)
+            handleKeyframeMutation(keyframeKey, newLeft, newSafeTime, scale, true);
     }
     // Multiple Keyframe Drag
     else if (selectedKeyframesFlatMap.length > 1) {
@@ -151,7 +159,7 @@ export const handleKeyframeDrag = (
             const newKfTime = originalTime + safeDeltaTime;
 
             // Clamp the time to ensure it stays within bounds (optional, for safety)
-            const clampedNewKfTime = Math.max(0, Math.min(newKfTime, currentTimelineLength));
+            const clampedNewKfTime = truncateToDecimals(Math.max(0, Math.min(newKfTime, currentTimelineLength)))
 
             // Calculate the new left position based on the new time
             const newKfLeft = parserTimeToPixel(clampedNewKfTime, boundsLeft, scale); // Adjust this based on your function
@@ -188,7 +196,7 @@ export const handleKeyframeDrag = (
 export const hydrateKeyframeKeysOrder = () => {
     const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
     useTimelineManagerAPI.setState(
-        produce((state: TimelineMangerAPIProps) => {
+        produce((state: TimelineManagerAPIProps) => {
             Object.keys(selectedKeyframeKeys).forEach((_trackKey) => {
                 const track = state.tracks[_trackKey];
                 const staleOrderedKeyframeKeys = track?.orderedKeyframeKeys;

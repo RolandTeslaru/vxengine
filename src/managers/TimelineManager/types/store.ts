@@ -9,7 +9,7 @@ export type SelectedKeyframe = {
     isSelected: boolean;
   };
 
-export interface TimelineMangerAPIProps {
+export interface TimelineManagerAPIProps {
     // Records of data used in the editor
     editorObjects: Record<string, EditorObject>;
     tracks: Record<string, EditorTrack>,

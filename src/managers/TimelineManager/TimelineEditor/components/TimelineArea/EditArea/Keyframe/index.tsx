@@ -13,7 +13,7 @@ import { produce } from 'immer';
 import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
-import { TimelineMangerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 import { startLeft } from '../..';
 
 export type EditKeyframeProps = {
@@ -213,7 +213,7 @@ const handleOnMoveEnd = (e: DragEvent) => {
     const { selectedKeyframesFlatMap } = useTimelineEditorAPI.getState();
 
     useTimelineManagerAPI.setState(
-        produce((state: TimelineMangerAPIProps) => {
+        produce((state: TimelineManagerAPIProps) => {
             selectedKeyframesFlatMap.forEach(selectKeyframeFlat => {
                 const { trackKey, keyframeKey } = selectKeyframeFlat;
                 const kfElement = keyframesRef.get(keyframeKey);

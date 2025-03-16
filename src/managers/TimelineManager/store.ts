@@ -14,9 +14,9 @@ import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { v4 as uuidv4 } from 'uuid';
 import animationEngineInstance from '@vxengine/singleton';
 import { EditorKeyframe, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
-import { TimelineMangerAPIProps } from './types/store';
+import { TimelineManagerAPIProps } from './types/store';
 
-export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps>((set, get) => ({
+export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
     staticProps: {},
@@ -39,7 +39,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     changes: 0,
-    addChange: () => set(produce((state: TimelineMangerAPIProps) => {
+    addChange: () => set(produce((state: TimelineManagerAPIProps) => {
         state.changes += 1;
     })),
 
@@ -91,7 +91,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             propertyPath
         })
 
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             let value: number;
 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
@@ -128,7 +128,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
         useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
 
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
 
             const vxObject = useVXObjectStore.getState().objects[vxkey]
             const value = getNestedProperty(vxObject?.ref?.current, propertyPath) || 0
@@ -157,7 +157,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     createTrack: (trackKey) => {
         const {vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             createTrackLogic(state, vxkey, propertyPath)
         }))
 
@@ -168,7 +168,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     removeTrack: ({ trackKey, reRender }) => {
         const {vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             removeTrackLogic(state, vxkey, propertyPath)
         }))
 
@@ -217,7 +217,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
             ]
         ] as [number, number, number][];
 
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const editorSpline: EditorSpline = {
                 splineKey,
                 vxkey,
@@ -246,7 +246,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     removeSpline: ({ vxkey }) => {
         const splineKey = `${vxkey}.spline`;
 
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             delete state.splines[splineKey];
         }))
         // Remove spline progress track
@@ -268,7 +268,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     insertNode: ({ splineKey, index }) => {
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const spline = state.splines[splineKey]
             if (!spline) {
                 console.error(`useTimelineManagerAPI insertNode(): Spline with vxkey ${splineKey} does not exist`)
@@ -307,7 +307,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     removeNode: ({ splineKey, index }) => {
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const spline = state.splines[splineKey]
             if (!spline) {
                 console.error(`removeNode(): Spline with vxkey "${splineKey}" does not exist`);
@@ -337,7 +337,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     setSplineNodePosition: (splineKey, nodeIndex, newPosition) => {
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const spline = state.splines[splineKey];
             spline.nodes[nodeIndex] = [
                 newPosition.x,
@@ -360,7 +360,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     setSplineNodeAxisValue: (splineKey, nodeIndex, axis, newValue, reRender= true ) => {
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const spline = state.splines[splineKey];
             switch(axis){
                 case "x":
@@ -393,7 +393,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     createKeyframe: ({ trackKey, value, reRender = true }) => {
         const keyframeKey = `keyframe-${uuidv4()}`;
 
-        set(produce((state: TimelineMangerAPIProps) =>
+        set(produce((state: TimelineManagerAPIProps) =>
             createKeyframeLogic(state, trackKey, keyframeKey, value)
         ))
         
@@ -405,7 +405,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     removeKeyframe: ({ keyframeKey, trackKey, reRender = true }) => {
         const {vxkey, propertyPath} = extractDataFromTrackKey(trackKey)
-        set(produce((state: TimelineMangerAPIProps) => removeKeyframeLogic(state, vxkey, propertyPath, keyframeKey)))
+        set(produce((state: TimelineManagerAPIProps) => removeKeyframeLogic(state, vxkey, propertyPath, keyframeKey)))
 
         if(reRender)
             animationEngineInstance.reRender({force: true})
@@ -417,7 +417,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         newTime = truncateToDecimals(newTime)
         // Handle State Update
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const track = state.tracks[trackKey];
             if (!track)
                 return;
@@ -458,7 +458,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
         newValue = truncateToDecimals(newValue);
 
         if (updateStore) {
-            set(produce((state: TimelineMangerAPIProps) => {
+            set(produce((state: TimelineManagerAPIProps) => {
                 const track = state.tracks[trackKey];
                 if (!track) return;
 
@@ -484,7 +484,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     setKeyframeHandles: (keyframeKey, trackKey, inHandle, outHandle, reRender = true) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             const track = state.tracks[trackKey];
             if (!track) return;
 
@@ -515,7 +515,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     createStaticProp: ({ vxkey, propertyPath, value, reRender }) => {
         value = truncateToDecimals(value);
 
-        set(produce((state: TimelineMangerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
+        set(produce((state: TimelineManagerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
 
         if(reRender)
             animationEngineInstance.reRender({force: true})
@@ -523,7 +523,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     removeStaticProp: ({ staticPropKey, reRender }) => {
-        set(produce((state: TimelineMangerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
+        set(produce((state: TimelineManagerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
     
         if(reRender)
             animationEngineInstance.reRender({force: true})
@@ -532,7 +532,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender = true) => {
         newValue = truncateToDecimals(newValue)
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             state.staticProps[staticPropKey].value = newValue;
         }))
 
@@ -551,7 +551,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
     },
 
     removeProperty: (vxkey, propertyPath, reRender) => {
-        set(produce((state: TimelineMangerAPIProps) => {
+        set(produce((state: TimelineManagerAPIProps) => {
             removePropertyLogic(state, vxkey, propertyPath);
         }))
 
@@ -570,7 +570,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineMangerAPIProps
 
 
 function createKeyframeLogic(
-    state: TimelineMangerAPIProps,
+    state: TimelineManagerAPIProps,
     trackKey: string,
     keyframeKey: string,
     value?: number
@@ -621,7 +621,7 @@ function createKeyframeLogic(
     })
 }
 
-function removePropertyLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string){
+function removePropertyLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string){
     const generalKey = `${vxkey}.${propertyPath}`;
     const doesTrackExist = state.tracks[generalKey];
     const doesStaticPropExist = state.staticProps[generalKey];
@@ -635,7 +635,7 @@ function removePropertyLogic(state: TimelineMangerAPIProps, vxkey: string, prope
     }
 } 
 
-function removeStaticPropLogic(state: TimelineMangerAPIProps, staticPropKey: string) {
+function removeStaticPropLogic(state: TimelineManagerAPIProps, staticPropKey: string) {
     const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey)
     delete state.staticProps[staticPropKey] // Delete from record
 
@@ -650,7 +650,7 @@ function removeStaticPropLogic(state: TimelineMangerAPIProps, staticPropKey: str
     })
 }
 
-function removeKeyframeLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, keyframeKey: string) {
+function removeKeyframeLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string, keyframeKey: string) {
     const trackKey = `${vxkey}.${propertyPath}`
     const track = state.tracks[trackKey]
     if (!track) return;
@@ -666,7 +666,7 @@ function removeKeyframeLogic(state: TimelineMangerAPIProps, vxkey: string, prope
     })
 }
 
-function removeTrackLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string) {
+function removeTrackLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string) {
     const trackKey = `${vxkey}.${propertyPath}`;
     const track = state.tracks[trackKey]
 
@@ -686,7 +686,7 @@ function removeTrackLogic(state: TimelineMangerAPIProps, vxkey: string, property
 }
 
 
-function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string, value: number) {
+function createStaticPropLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string, value: number) {
     const staticPropKey = `${vxkey}.${propertyPath}`
     const newStaticProp: EditorStaticProp = {
         vxkey: vxkey,
@@ -705,7 +705,7 @@ function createStaticPropLogic(state: TimelineMangerAPIProps, vxkey: string, pro
 }
 
 
-function createTrackLogic(state: TimelineMangerAPIProps, vxkey: string, propertyPath: string) {
+function createTrackLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string) {
     const trackKey = `${vxkey}.${propertyPath}`
 
     state.editorObjects[vxkey].trackKeys.push(trackKey);
@@ -725,7 +725,7 @@ function createTrackLogic(state: TimelineMangerAPIProps, vxkey: string, property
     })
 }
 
-export function updatedOrderedKeyframeIdsLogic(state: TimelineMangerAPIProps, trackKey: string) {
+export function updatedOrderedKeyframeIdsLogic(state: TimelineManagerAPIProps, trackKey: string) {
     const track = state.tracks[trackKey];
     const sortedKeys = Object.keys(track.keyframes).sort(
         (a, b) => track.keyframes[a].time - track.keyframes[b].time

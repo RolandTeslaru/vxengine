@@ -25,12 +25,12 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
                     <TrackSegmentEditor/>
                 </ContextMenuSubContent>
             </ContextMenuSub>
-            {/* <ContextMenuSub>
+            <ContextMenuSub>
                 <ContextMenuSubTrigger>Show Data...</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <TrackSegmentData {...props}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub> */}
+            </ContextMenuSub>
             <ContextMenuItem onClick={() =>
                 pushDialogStatic({content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert"})}
             >
