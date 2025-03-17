@@ -58,6 +58,7 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
     disabledParams,
     disableClickSelect = false,
     addToNodeTree = true,
+    isVirtual = false,
     settings: initialSettings = {},
     overrideNodeTreeParentKey,
     icon,
@@ -92,7 +93,7 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
             initializeDegreeRotations(internalRef.current)
 
         const newVXObject: vxObjectProps = {
-            type: "entity",
+            type: isVirtual ? "virtualEntity" : "entity",
             ref: internalRef,
             vxkey,
             name,

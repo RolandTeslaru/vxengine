@@ -15,6 +15,7 @@ export type VXPrimitiveProps = {
     overrideNodeTreeParentKey?: string
     params?: VXElementParams
     name?: string
+    isVirtual?: boolean
 }
 
 export type VXElementProps<T> = T & VXPrimitiveProps

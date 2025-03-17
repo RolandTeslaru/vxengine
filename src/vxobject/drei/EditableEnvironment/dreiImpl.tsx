@@ -1,4 +1,4 @@
-import React, { useMemo, useLayoutEffect, useEffect } from "react"
+import React, { useMemo, useLayoutEffect, useState, useRef, useEffect } from "react"
 import { useThree, createPortal, extend, Euler, applyProps, invalidate, ThreeElement } from '@react-three/fiber'
 import { WebGLCubeRenderTarget, Texture, Scene, CubeCamera, HalfFloatType, CubeTexture } from 'three'
 import { GroundProjectedEnv as GroundProjectedEnvImpl } from 'three-stdlib'
@@ -150,8 +150,8 @@ export function VXEnvironmentPortal({
 }: EnvironmentProps) {
   const gl = useThree((state) => state.gl)
   const defaultScene = useThree((state) => state.scene)
-  const camera = React.useRef<CubeCamera>(null!)
-  const [virtualScene] = React.useState(() => new Scene())
+  const camera = useRef<CubeCamera>(null!)
+  const [virtualScene] = useState(() => new Scene())
 
   const fbo = useMemo(() => {
     const fbo = new WebGLCubeRenderTarget(resolution)
@@ -189,6 +189,7 @@ export function VXEnvironmentPortal({
 
   useTransformControlsEvent(
     "virtualEntityChange", () => {
+      console.log("Virtual Entity has changed ",)
       camera.current.update(gl as any, virtualScene)
       count++
     }
@@ -204,6 +205,7 @@ export function VXEnvironmentPortal({
             ref={camera}
             args={[near, far, fbo]}
             overrideNodeTreeParentKey={"environment"}
+            isVirtual={true}
           />
           <vx.group
             vxkey="environment"
@@ -211,10 +213,11 @@ export function VXEnvironmentPortal({
             type="Environment"
             overrideNodeTreeParentKey="global"
             settings={environmentSettings}
+            isVirtual={true}
           >
             {children}
           </vx.group>
-          {/* @ts-ignore */}
+
           {files || preset ? (
             <VXEnvironmentCube background files={files} preset={preset} path={path} extensions={extensions} />
           ) : map ? (

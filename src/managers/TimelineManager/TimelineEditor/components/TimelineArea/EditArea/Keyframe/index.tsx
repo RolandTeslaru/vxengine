@@ -4,7 +4,6 @@ import { parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal
 import React, { memo, useRef, useLayoutEffect } from 'react'
 import KeyframeContextMenu from './KeyframeContextMenu';
 import { DEFAULT_ROW_HEIGHT, DEFAULT_SCALE, DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
-import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import interact from "interactjs";
 import { DragEvent, Interactable } from "@interactjs/types";
 import { useRefStore } from '@vxengine/utils';
@@ -14,7 +13,6 @@ import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
-import { startLeft } from '../..';
 
 export type EditKeyframeProps = {
     keyframeKey: string;
@@ -170,9 +168,8 @@ const handleOnClick = (
         const end = Math.max(lastKeyframeSelectedIndex, keyframeIndex);
 
         // Select all keyframes in the range
-        for (let i = start; i <= end; i++) {
+        for (let i = start; i <= end; i++)
             selectKeyframe(trackKey, selectedKeyframesFlatMap[i]);
-        }
     }
     // Normal Click
     else {

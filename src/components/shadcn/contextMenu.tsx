@@ -62,7 +62,7 @@ const ContextMenuSubTrigger = ({ className, inset, children, icon, ...props }: C
   <ContextMenuPrimitive.SubTrigger
     className={classNames(
       `text-xs font-roboto-mono antialiased font-semibold relative flex text-label-primary
-      hover:bg-blue-600 border border-transparent hover:border-blue-500 gap-2
+      data-[highlighted]:bg-blue-600 border border-transparent data-[highlighted]:border-blue-500 gap-2
         rounded-lg cursor-default select-none items-center px-2 py-1.5 outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground`,
       inset && "pl-8",
       className
@@ -140,7 +140,7 @@ const contextMenuItemVariants = cva(
   {
     variants: {
       variant: {
-        default: "hover:bg-blue-600 hover:border-blue-500 text-label-primary",
+        default: "data-[highlighted]:bg-blue-600 data-[highlighted]:border-blue-500 text-label-primary",
         destructive: "text-red-600 data-[highlighted]:bg-red-700 data-[highlighted]:border-red-600 data-[highlighted]:text-white "
       }
     }

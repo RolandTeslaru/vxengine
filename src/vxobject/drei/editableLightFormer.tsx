@@ -100,6 +100,7 @@ export const EditableLightFormer: React.FC<EditableLightformerProps> = (props) =
             <VXThreeElementWrapper
                 ref={internalRef}
                 settings={mergedSettings}
+                isVirtual={true}
                 {...props}
             >
                 <Lightformer />

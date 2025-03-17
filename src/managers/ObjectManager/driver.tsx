@@ -111,6 +111,7 @@ export const ObjectManagerDriver = () => {
   const handleTransformChange = (e) => {
     if (!vxobject) return
     const type = vxobject.type;
+    console.log("Handling transform change ", type)
     switch (type) {
       case "entity":
         handleEntityChange(e)
@@ -122,6 +123,7 @@ export const ObjectManagerDriver = () => {
       }
       case "splineNode":
         handleSplineNodeChange();
+        break;
     }
   };
 
