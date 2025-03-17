@@ -189,7 +189,6 @@ export function VXEnvironmentPortal({
 
   useTransformControlsEvent(
     "virtualEntityChange", () => {
-      console.log("Virtual Entity has changed ",)
       camera.current.update(gl as any, virtualScene)
       count++
     }

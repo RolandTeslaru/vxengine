@@ -10,6 +10,7 @@ import { ChevronUp } from "lucide-react"
 import { cn } from "@vxengine/utils"
 import { useWindowContext } from "../../core/components/VXEngineWindow"
 import { ComponentProps, FC } from "react"
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 
 
 function Select({
@@ -38,7 +39,7 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        `flex w-full items-center justify-between rounded-xl border border-primary-thick  bg-secondary-regular px-2 text-xs
+        `flex w-full items-center justify-between rounded-xl border border-primary-thin  bg-secondary-regular px-2 text-xs
        ring-offset-background placeholder:text-white disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
         shadow-md shadow-black/20 h-fit
       `,
@@ -48,7 +49,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-50 text-white" />
+        <ChevronDown className="h-4 w-4 opacity-50 text-label-primary" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -97,13 +98,14 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
 
   const { externalContainer } = useWindowContext();
+  const theme = useUIManagerAPI(state => state.theme)
 
   return (
     <SelectPrimitive.Portal container={externalContainer}>
       <SelectPrimitive.Content
         className={cn(
-          `relative z-50 max-h-96 min-w-[8rem] overflow-hidden backdrop-blur-lg rounded-xl dark:border dark:border-neutral-400/20 
-         bg-neutral-800/90 shadow-md shadow-black/20
+          `${theme} relative z-50 max-h-96 min-w-[8rem] overflow-hidden backdrop-blur-lg rounded-xl border border-primary-thin
+         bg-background shadow-md shadow-black/20
           data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 
           data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2`,
           position === "popper" &&
@@ -159,12 +161,12 @@ function SelectItem({
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center text-label-primary">
         <SelectPrimitive.ItemIndicator>
-          <Check className="h-4 w-4 text-white" />
+          <Check className="h-4 w-4 text-label-primary" />
         </SelectPrimitive.ItemIndicator>
       </span>
 
       <SelectPrimitive.ItemText>
-        <span className="text-white group-hover:text-neutral-100">
+        <span className="text-label-primary group-hover:text-neutral-100">
           {children}
         </span>
       </SelectPrimitive.ItemText>

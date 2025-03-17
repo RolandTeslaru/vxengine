@@ -1,28 +1,10 @@
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import React, { useEffect, useMemo, useRef, createContext, useContext, useState, FC, memo, useCallback, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { WindowControlDots } from '../../components/ui/WindowControlDots';
 import classNames from 'classnames';
 import { vxEngineWindowRefs } from '@vxengine/utils/useRefStore';
-
-export interface VXEngineWindowProps {
-    children: React.ReactNode;
-    title?: string;
-    noPadding?: boolean
-    vxWindowId: string;
-    windowClasses: string;
-    className?: string;
-    detachedClassName?: string;
-    noStyling?: boolean
-    isAttached?: boolean
-    isOpen?: boolean
-}
-
-interface WindowContextProps {
-    vxWindowId: string
-    externalContainer: HTMLElement | null
-    setExternalContainer: (element: HTMLElement | null) => void
-}
+import { DetachableWindowProps, StandardWindowStylingProps, VXEngineWindowProps, WindowContextProps } from './types';
+import { WindowControlDots } from '@vxengine/components/ui/WindowControlDots';
 
 const WindowContext = createContext<WindowContextProps>({ 
     vxWindowId: "",
@@ -90,40 +72,28 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     )
 });
 
-interface StandardWindowStylingProps {
-    children: React.ReactNode
-    className?: string
-    isDetached?: boolean
-    detachedClassName?: string
-    onClick?: () => void
-    style?: React.CSSProperties
-    id?: string
-}
-
 
 export const StandardWindowStyling = (props: StandardWindowStylingProps) => {
-    const { children, className, isDetached, style, id, detachedClassName, onClick } = props
+    const { children, className, isDetached, style, detachedStyling, detachedClassName,  ...rest } = props
+    
     return (
         <div
-            className={classNames(className, `p-2 fixed backdrop-blur-lg bg-background  border-border-background border-[1px] 
-                        rounded-3xl flex flex-col gap-2 `, isDetached && detachedClassName)}
-            onClick={onClick}
-            style={{ boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6", ...style}}
-            id={id}
+            className={classNames(
+                isDetached && ['rounded-none', detachedClassName], 
+                'p-2 fixed backdrop-blur-lg bg-background  border-border-background border-[1px] rounded-3xl flex flex-col gap-2',
+                className,
+                {"rounded-none": isDetached},
+            )}
+            style={{ 
+                ...(isDetached ? detachedStyling : {}),
+                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -4px rgb(0 0 0 / 0.6", ...style,}}
+            {...rest}
         >
             {children}
         </div>
     )
 }
 
-
-interface DetachableWindowProps {
-    vxWindowId: string
-    children: React.ReactNode;
-    onClose: () => void;
-    windowClasses: string;
-    title: string;
-}
 
 const DetachableWindow: React.FC<DetachableWindowProps> = (props) => {
     const { children, onClose, vxWindowId, windowClasses, title } = props;

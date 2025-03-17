@@ -111,7 +111,6 @@ export const ObjectManagerDriver = () => {
   const handleTransformChange = (e) => {
     if (!vxobject) return
     const type = vxobject.type;
-    console.log("Handling transform change ", type)
     switch (type) {
       case "entity":
         handleEntityChange(e)
@@ -234,7 +233,7 @@ export const ObjectManagerDriver = () => {
             
             // 4. This unwrappedVal is the actual continuous angle
             if (oldVal !== unwrappedVal) {
-              console.log("Unwrapped val ", unwrappedVal)
+              // console.log("Unwrapped val ", unwrappedVal)
               // dispatch it or store it
               debouncedPropertyValueChangeFunctions[axis.toUpperCase()]?.(
                 vxkey,

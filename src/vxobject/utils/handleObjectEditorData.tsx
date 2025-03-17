@@ -21,9 +21,10 @@ export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjec
     const staticProps: Record<string, EditorStaticProp> = {}
     const staticPropKeys: string[] = []
 
+    const mergedSettingsForObject = cloneDeep(initialSettings);
+
     if (rawObject) {
         // Handle settings
-        const mergedSettingsForObject = cloneDeep(initialSettings);
 
         const rawSettings = rawObject.settings;
         if (rawSettings) {
@@ -31,8 +32,6 @@ export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjec
                 mergedSettingsForObject[settingKey].value = rawSetting;
             })
         }
-
-        objectSettingsAPI.initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
 
         // Handle Track
         rawObject.tracks.forEach(rawTrack => {
@@ -89,6 +88,8 @@ export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjec
         })
 
     }
+
+    objectSettingsAPI.initSettingsForObject(vxkey, mergedSettingsForObject, initialSettings)
 
     const editorObject: EditorObject = {
         vxkey,

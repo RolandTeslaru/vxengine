@@ -24,8 +24,6 @@ import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegm
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
-import { Tabs, TabsList, TabsTrigger } from "@vxengine/components/shadcn/tabs"
-import styles from "./clipStyling.module.scss"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();
@@ -49,7 +47,7 @@ export const VXStudio = () => {
                 title="VXEngine: LeftPanel"
                 windowClasses='width=310,height=702,left=200,top=200,resizable=0'
                 className="w-60 h-[686px] top-32 left-6 pt-3"
-                detachedClassName="top-2! left-2! right-2! w-[calc(100%-8px-8px-44px-8px)]"
+                detachedClassName="!top-0 !left-0 !w-[calc(100%_-_60px)] h-full"
             >
                 <VXLeftPanel />
             </VXEngineWindow>
@@ -59,8 +57,8 @@ export const VXStudio = () => {
                 title="VXEngine: RightPanel"
                 windowClasses='width=256,height=702,right=200,top=200,resizable=0'
                 className="w-60 h-[686px] top-32 right-6 pt-3"
-                detachedClassName="top-2! right-2! left-2! w-auto"
                 noPadding={true}
+                detachedClassName="!top-0 !left-0 w-full h-full"
             >
                 <VXRightPanel />
             </VXEngineWindow>
@@ -70,6 +68,7 @@ export const VXStudio = () => {
                 title="VXEngine: TimelineEditor"
                 windowClasses='width=950,height=516,left=200,top=200'
                 noStyling={true}
+                detachedClassName="!top-0 !left-0"
             >
                 <VXBottomRightBar />
             </VXEngineWindow>
@@ -79,7 +78,7 @@ export const VXStudio = () => {
                 title="VXEngine: State Visualizer"
                 windowClasses='width=717,height=450,left=100,top=200,resizable=0'
                 className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
-                detachedClassName=" top-1 left-1! h-[100%]! min-w-[100%]! "
+                detachedClassName="!top-0 !left-0 h-[100%]! min-w-[100%]! "
             >
                 <StateVisualizer />
             </VXEngineWindow>
@@ -144,7 +143,7 @@ const VXBottomRightBar = () => {
         <>
             <StandardWindowStyling
                 id="VXEngineTimelinePanel"
-                className={`${theme} fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[50vw]`}
+                className={`${theme} fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[calc(100vw_-_48px)] w-[1020px]`}
                 isDetached={!timelineEditorAttached}
                 detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
                 style={{

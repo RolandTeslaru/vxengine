@@ -1,9 +1,8 @@
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService';
-import { VXEngineWindowProps } from '@vxengine/core/components/VXEngineWindow';
 import { produce } from 'immer';
 import React from 'react';
-import { create, StateCreator } from 'zustand';
-import { persist, PersistOptions } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from "zustand/middleware";
 
 export type DialogType = "normal" | "alert" | "danger" | "base"
 
