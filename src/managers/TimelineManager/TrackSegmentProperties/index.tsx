@@ -14,7 +14,7 @@ const TrackSegmentProperties = React.memo(() => {
         <>
             {numSelectedTrackSegments > 0 &&
                 <CollapsiblePanel
-                    title="Track Segment Props."
+                    title="Bezier Curve Editor"
                     contentClassName='gap-2 '
                 >
                     <TrackSegmentEditor />

@@ -28,7 +28,11 @@ const ScrollArea = ({
     <ScrollAreaPrimitive.Viewport onScroll={onScroll} ref={ref} className="h-full w-full rounded-[inherit]">
       {children}
     </ScrollAreaPrimitive.Viewport>
-    <ScrollBar position={scrollbarPosition} className={scrollbarClassName} />
+    <ScrollBar 
+      position={scrollbarPosition} 
+      className={scrollbarClassName}
+      scrollBarThumbClassName={scrollBarThumbClassName} 
+    />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 )
@@ -39,8 +43,9 @@ function ScrollBar({
   className,
   orientation = "vertical",
   position = "right",
+  scrollBarThumbClassName,
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> & {position: "right" | "left"}) {
+}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> & {position: "right" | "left", scrollBarThumbClassName?: string}) {
   return (
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       orientation={orientation}
@@ -55,7 +60,11 @@ function ScrollBar({
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.ScrollAreaThumb className={classNames("relative flex-1 rounded-full bg-neutral-500")} />
+      <ScrollAreaPrimitive.ScrollAreaThumb 
+        className={classNames(
+          "relative flex-1 rounded-full bg-neutral-500",
+          scrollBarThumbClassName
+        )} />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
 
   )

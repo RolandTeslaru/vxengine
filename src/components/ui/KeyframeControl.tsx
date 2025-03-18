@@ -138,7 +138,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                         className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
                         disabled={disabled}
                     >
-                        <Square className={`rotate-45 w-2 h-2 !text-label-primary ${keyframeState.isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-primary-regular stroke-neutral-800"}`} />
+                        <Square className={`rotate-45 w-2 h-2 !text-label-primary ${keyframeState.isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-primary-regular stroke-neutral-600"}`} />
                     </button>
                     {isPropertyTracked  &&
                         <button

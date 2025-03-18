@@ -68,7 +68,6 @@ export const VXStudio = () => {
                 title="VXEngine: TimelineEditor"
                 windowClasses='width=950,height=516,left=200,top=200'
                 noStyling={true}
-                detachedClassName="!top-0 !left-0"
             >
                 <VXBottomRightBar />
             </VXEngineWindow>
@@ -145,7 +144,7 @@ const VXBottomRightBar = () => {
                 id="VXEngineTimelinePanel"
                 className={`${theme} fixed bottom-5 right-6 !px-0 !py-0 !gap-0 overflow-hidden max-w-[calc(100vw_-_48px)] w-[1020px]`}
                 isDetached={!timelineEditorAttached}
-                detachedClassName="bottom-0! right-0! max-w-full h-full! rounded-none!"
+                detachedClassName="bottom-0! right-0! max-w-full w-full h-full! rounded-none!"
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
                     transition: 'height 300ms ease-in-out',
