@@ -13,24 +13,29 @@ import { useUIManagerAPI } from '../UIManager/store'
 import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 import SplineParams from './Panels/SplineParams'
 import SplineNodeParams from './Panels/SplineNodeParams'
+import ParamList from './Panels/ParamList'
 
 const ObjectParamsConfig = {
   entity: [
       TransformParams, 
+      ParamList,
       GeometryParams, 
       MaterialParams,
   ],
   virtualEntity: [
     TransformParams, 
+    ParamList,
     GeometryParams, 
     MaterialParams
   ],
-  spline: [SplineParams],
-  splineNode: [SplineNodeParams],
-  keyframeNode: [NodeTransformParams],
+  spline: [
+      SplineParams, ParamList],
+  splineNode: [SplineNodeParams, ParamList],
+  keyframeNode: [NodeTransformParams, ParamList],
+  effect: [ParamList]
 };
 
-export const ObjectPropertiesPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
+export const ObjectParamsPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
   if (!vxobject) return null;
 
   const refObject = vxobject.ref?.current;

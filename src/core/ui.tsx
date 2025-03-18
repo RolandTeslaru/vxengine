@@ -5,7 +5,7 @@
 "use client"
 
 import React from "react"
-import { ObjectPropertiesPanel } from "../managers/ObjectManager/ui"
+import { ObjectParamsPanel } from "../managers/ObjectManager/ui"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
 import { StandardWindowStyling, VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
@@ -104,8 +104,7 @@ const VXRightPanel = () => {
             <div className="h-fit flex flex-col gap-2">
                 {vxObject && (
                     <>
-                        <ObjectPropertiesPanel vxobject={vxObject} />
-                        <ParamList vxobject={vxObject} />
+                        <ObjectParamsPanel vxobject={vxObject} />
                         <SettingsList vxobject={vxObject} />
                         <ObjectInfoPanel vxobject={vxObject} />
                     </>

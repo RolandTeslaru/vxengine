@@ -7,6 +7,7 @@ import { VXEnvironment, VXEnvironmentMap, VXEnvironmentPortal } from './drei/Edi
 import { EditableLUT } from './effects/EditableLUT';
 import {EditableColor} from './fiber/editableColor';
 import EditableDiv from './html/editableDiv';
+import EditableGrid from './drei/EditableGrid';
 
 
 export const vx = {
@@ -26,12 +27,14 @@ export const vx = {
     bloom: EditableBloom,
     LUT: EditableLUT,
 
+    grid: EditableGrid,
     lightFormer: EditableLightFormer,
 
     environment: VXEnvironment,
     environmentPortal: VXEnvironmentPortal,
     environmentMap: VXEnvironmentMap,
     cubeCamera: EditableCubeCamera,
+
 
 
     div: EditableDiv

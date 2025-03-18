@@ -25,6 +25,7 @@ const pointLightParams: VXElementParams = [
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    showHelper: { title: "show helper", storage: "localStorage", value: false},
 }
 
 export const EditablePointLight: React.FC<VXElementPointLightProps> = (props) => {
@@ -52,7 +53,7 @@ export const EditablePointLight: React.FC<VXElementPointLightProps> = (props) =>
             settings={mergedSettings}
             {...props}
         >
-            <pointLight ref={internalRef} {...props} />
+            <pointLight {...props} />
         </VXThreeElementWrapper>
     )
 }

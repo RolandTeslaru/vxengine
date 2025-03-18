@@ -33,6 +33,7 @@ import VXRendererUtils from '@vxengine/utils/rendererUtils'
 import { VXElementParams } from '@vxengine/vxobject/types'
 import animationEngineInstance from '@vxengine/singleton'
 import { EffectComposerDriver } from '@vxengine/managers/EffectsManager/driver'
+import { vx } from '@vxengine/vxobject'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -79,6 +80,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           {IS_DEVELOPMENT && <>
             <VXRendererUtils />
             <ObjectManagerDriver />
+            <vx.grid vxkey="grid" name="Grid"/>
           </>
           }
           <EffectComposerDriver>
@@ -133,3 +135,11 @@ const SceneDriver = React.memo(() => {
   }, [])
   return null;
 })
+
+
+const VXGrid = () => {
+  return (
+    <>
+    </>
+  )
+}
