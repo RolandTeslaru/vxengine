@@ -31,7 +31,8 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                     </p>
                     {node.param &&
                         <ParamInput
-                            vxObject={vxobject}
+                            vxkey={vxobject.vxkey}
+                            vxRefObj={vxobject.ref}
                             param={node.param}
                             className="ml-auto w-fit"
                         />

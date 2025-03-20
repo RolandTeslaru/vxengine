@@ -19,9 +19,15 @@ export interface KeyframeNodeProps {
     size?: number;
 }
 
+// Colors for each axis
+const axisColors = {
+    X: "rgb(237, 53, 87)",
+    Y: "rgb(81,217, 121)",
+    Z: "rgb(55, 108, 250)"
+};
+
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, index, axis, position, color = "yellow", size = 0.3 }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef<THREE.Mesh>(null);
@@ -47,25 +53,10 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
         return () => removeObject(nodeKey, IS_DEVELOPMENT)
     }, [keyframeKeys])
 
-
-    const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
-        if (!ref.current) return;
-
-        selectObjects([nodeKey]);
-        // selectKeyframe(keyframeKeys)
-    };
-
-    // Colors for each axis
-    const axisColors = {
-        X: "rgb(237, 53, 87)",
-        Y: "rgb(81,217, 121)",
-        Z: "rgb(55, 108, 250)"
-    };
-
     return (
         <>
             {/* Keyframe Node */}
-            <mesh ref={ref} position={position} onClick={handleOnClick}>
+            <mesh ref={ref} position={position} onClick={(e) => handleOnClick(e, ref, nodeKey)}>
                 <sphereGeometry args={[0.2, 24, 24]} />
                 <meshBasicMaterial color={firstObjectSelected?.vxkey === nodeKey ? "yellow" : color} />
             </mesh>
@@ -99,3 +90,11 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
 };
 
 export default KeyframeNode
+
+
+
+const handleOnClick = (e: ThreeEvent<MouseEvent>, ref:React.RefObject<any>, vxkey) => {
+    if (!ref.current) return;
+
+    useObjectManagerAPI.getState().selectObject(vxkey);
+};

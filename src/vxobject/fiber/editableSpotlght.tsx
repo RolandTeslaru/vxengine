@@ -8,7 +8,7 @@ import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { SpotLight } from "three";
 import { useHelper } from "@react-three/drei";
-import { ThreeElement, ThreeElements } from "@react-three/fiber";
+import { invalidate, ThreeElement, ThreeElements } from "@react-three/fiber";
 
 export type VXElementSpotLightProps = VXElementPropsWithoutRef<ThreeElements["spotLight"]> & {
     ref?: React.RefObject<SpotLight>;
@@ -37,6 +37,8 @@ export const EditableSpotLight: React.FC<VXElementSpotLightProps> = (props) => {
 
     const isHelperEnabled = useObjectSettingsAPI(state => state.settings[vxkey]?.showHelper.value)
     useHelper(internalRef, isHelperEnabled && SpotLightHelper)
+
+    invalidate();
 
     const mergedSettings = {
         ...defaultSettings,

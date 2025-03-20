@@ -38,7 +38,8 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
                         {node.key}
                     </p>
                     <ParamInput
-                        vxObject={vxobject}
+                        vxkey={vxobject.vxkey}
+                        vxRefObj={vxobject.ref}
                         param={node.param}
                         className="ml-auto w-fit"
                     />

@@ -5,6 +5,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { cn } from "@vxengine/utils"
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
+import { cva } from "class-variance-authority"
 
 const Popover = PopoverPrimitive.Root
 
@@ -66,12 +67,27 @@ interface PopoverItemProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode
 }
 
-const PopoverItem: React.FC<PopoverItemProps> = (props) => {
-  const { children, className, icon, ...rest } = props
+const popoverItemVaritans = cva(
+  'cursor-pointer font-roboto-mono relative gap-2 px-2 py-[6px] rounded-lg flex text-xs border border-transparent ',
+  {
+    variants: {
+      variant: {
+        default: "hover:bg-blue-600 hover:border-blue-500 text-label-primary",
+        destructive: "hover:bg-red-700 hover:text-white hover:border-red-600"
+      }
+    }
+  }
+)
+
+const PopoverItem: React.FC<PopoverItemProps & { 
+  variant?: "default" | "destructive" 
+}> = (props) => {
+  const { children, className, icon, variant = "default", ...rest } = props
   return (
     <div
-      className={`${className} cursor-pointer font-roboto-mono relative w-full gap-2 hover:bg-blue-600 border border-transparent
-       hover:border-blue-500 px-2 py-[6px] rounded-lg flex flex-row text-xs`}
+      className={
+        popoverItemVaritans({variant}) + " " + className
+      }
       {...rest}
     >
       <div className="absolute top-1/2 -translate-y-1/2 ">

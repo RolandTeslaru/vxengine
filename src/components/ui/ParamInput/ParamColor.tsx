@@ -1,26 +1,24 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import KeyframeControl from '../KeyframeControl';
 import ValueRenderer from '../ValueRenderer';
 import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store';
 import { getNestedProperty } from '@vxengine/utils';
-import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { hslToRgb, rgbToHsl } from './utils';
 import { invalidate } from '@react-three/fiber';
-import { RgbaColorPicker } from "react-colorful";
 import ColorPicker from '../ColorPicker';
 import { hsl } from "../ColorPicker/types"
 
 interface ParamColorProps {
     vxkey: string
+    vxRefObj: React.RefObject<any>
     param: { propertyPath: string }
-    vxObject: vxObjectProps
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey, propertyPath) || getNestedProperty(ref, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string, vxRefObj: any) => getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj, propertyPath) || 0
 
-const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
+const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     const { propertyPath } = param;
     const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
     const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
@@ -37,9 +35,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
 
     // Initialize
     useLayoutEffect(() => {
-        const r = getDefaultValue(vxkey, rPropertyPath, vxObject.ref.current);
-        const g = getDefaultValue(vxkey, gPropertyPath, vxObject.ref.current);
-        const b = getDefaultValue(vxkey, bPropertyPath, vxObject.ref.current);
+        const r = getDefaultValue(vxkey, rPropertyPath, vxRefObj.current);
+        const g = getDefaultValue(vxkey, gPropertyPath, vxRefObj.current);
+        const b = getDefaultValue(vxkey, bPropertyPath, vxRefObj.current);
 
         const hsl = rgbToHsl(r, g, b);
         colorRef.current = hsl
@@ -138,7 +136,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
                                         disabled={false} 
                                     />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{propertyPath: rPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} 
+                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{propertyPath: rPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} 
                                 />
                             </div>
                         </div>
@@ -152,7 +150,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
                                         param={{ propertyPath: gPropertyPath }}
                                     />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{ propertyPath: gPropertyPath }} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{ propertyPath: gPropertyPath }} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                             </div>
                         </div>
                         <div className='flex gap-2 justify-between'>
@@ -165,7 +163,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxObject, vxkey, param }) => {
                                         disabled={false} 
                                     />
                                 </div>
-                                <ValueRenderer vxObject={vxObject} vxkey={vxkey} param={{propertyPath: bPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{propertyPath: bPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                             </div>
                         </div>
                     </div>

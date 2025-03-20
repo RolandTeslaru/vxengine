@@ -5,7 +5,7 @@ import { PerspectiveCamera, PerspectiveCameraProps, useHelper } from "@react-thr
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { useCameraManagerAPI } from "../../managers/CameraManager/store"
 
-import { useFrame } from "@react-three/fiber";
+import { invalidate, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
@@ -74,6 +74,8 @@ export const EditablePerspectiveCamera: React.FC<VXElementPerspectiveCameraProps
     const mode = useCameraManagerAPI(state => state.mode)
     const showHelper = mode === "free" && IS_DEVELOPMENT
     useHelper(cameraRef, showHelper && CameraHelper)
+
+    invalidate();
 
     const mergedSettings = {
         ...defaultSettings,

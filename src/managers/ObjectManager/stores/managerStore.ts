@@ -10,16 +10,6 @@ import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
 import { useVXObjectStore } from './objectStore';
 import { useRefStore } from '@vxengine/utils';
 
-const selectObjects = (
-    state: ObjectManagerStoreProps,
-    vxkeys: string[],
-): ObjectManagerStoreProps => {
-    return {
-        ...state,
-        selectedObjectKeys: vxkeys,
-    };
-};
-
 const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
 const initialTree: Record<string, ObjectTreeNodeProps> = {
@@ -57,13 +47,19 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
     setTransformSpace: (space: "world" | "local") => set({ transformSpace: space }),
 
     selectedObjectKeys: [],
-    selectObjects: (vxkeys) => set({ selectedObjectKeys: vxkeys }),
-    removeSelectedObject: (vxkey) => set((state) => {
-        return ({
-            ...state,
-            selectedObjectKeys: state.selectedObjectKeys.filter(objKey => objKey !== vxkey)
-        })
-    }),
+    selectObject: (vxkey) => set((state) => ({
+        ...state,
+        selectedObjectKeys: [vxkey, ...state.selectedObjectKeys]
+    })),
+    unselectObject: (vxkey) => {
+        if(get().selectedObjectKeys.includes(vxkey))
+            set((state) => ({
+                ...state,
+                selectedObjectKeys: state.selectedObjectKeys.filter(_key => _key !== vxkey)
+            }))
+    },
+    clearSelectedObjects: () => set({ selectedObjectKeys: [] }),
+
     hoveredObject: undefined,
     setHoveredObject: (vxobject: vxObjectProps) => set((state) => ({
         ...state,
@@ -203,10 +199,23 @@ export const getProperty = (vxkey: string, propertyPath: string) => {
     return state.properties[key];
 }
 export const updateProperty = (vxkey: string, propertyPath: string, value: any) => {
-    const key = `${vxkey}.${propertyPath}`;
     useObjectPropertyAPI.setState(
         produce((state: ObjectPropertyStoreProps) => {
+            const key = `${vxkey}.${propertyPath}`;
             state.properties[key] = value;
         })
     )
+}
+
+export type BatchPropertyUpdateType = {
+    vxkey: string, propertyPath:string, value: any
+}[]
+
+export const batchUpdateProperties = (batchedProps: BatchPropertyUpdateType) => {
+    useObjectPropertyAPI.setState(produce((state: ObjectPropertyStoreProps) => {
+        batchedProps.forEach(prop => {
+            const generalKey = `${prop.vxkey}.${prop.propertyPath}`;
+            state.properties[generalKey] = prop.value;
+        })
+    }))
 }

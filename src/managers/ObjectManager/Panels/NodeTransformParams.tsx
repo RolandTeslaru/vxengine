@@ -10,11 +10,6 @@ interface Props {
 }
 
 const NodeTransformParams: React.FC<Props> = ({ vxobject }) => {
-    const vxkey = vxobject.vxkey
-
-    const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const isUsingSplinePath = settings?.useSplinePath
-
     return (
         <CollapsiblePanel
             title="Node Transform"
@@ -37,7 +32,7 @@ const NodeTransformParams: React.FC<Props> = ({ vxobject }) => {
                         {['x', 'y', 'z'].map((axis) => (
                             <>
                                 <ValueRenderer
-                                    vxObject={vxobject}
+                                    vxRefObj={vxobject.ref}
                                     vxkey={vxobject.vxkey}
                                     param={{ propertyPath: `position.${axis}`}}
                                 />

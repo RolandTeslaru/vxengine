@@ -1,33 +1,30 @@
-import React, { useEffect, useMemo, useRef, useState, FC, memo, useCallback, useLayoutEffect } from 'react'
+import React, { useRef, FC, memo, useCallback, useLayoutEffect } from 'react'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { getNestedProperty } from '@vxengine/utils/nestedProperty'
 import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
-import { Input, InputProps } from '@vxengine/components/shadcn/input'
-import { vxKeyframeNodeProps, vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
+import { Input } from '@vxengine/components/shadcn/input'
 import { invalidate } from '@react-three/fiber'
-import { VXElementParam } from '@vxengine/vxobject/types'
 
 interface ValueRendererProps {
-    vxObject: vxObjectProps
     vxkey: string
+    vxRefObj: React.RefObject<any>
     param: { propertyPath: string }
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
     onChange?: (newValue: number) => void;
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string, ref: any) => getProperty(vxkey,propertyPath) || getNestedProperty(ref, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey,propertyPath) || getNestedProperty(obj, propertyPath) || 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxObject, vxkey, param, inputProps, onChange}) => {
+    ({ vxkey, param, inputProps, onChange, vxRefObj}) => {
         const { propertyPath } = param;
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
-        const ref = vxObject.ref.current;
         
         const inputRef = useRef<HTMLInputElement>(null);
         
         useLayoutEffect(() => {
-            inputRef.current.value = getDefaultValue(vxkey, propertyPath, ref);
+            inputRef.current.value = getDefaultValue(vxkey, propertyPath, vxRefObj.current);
             
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = state.properties[trackKey];
@@ -51,7 +48,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 modifyPropertyValue("press", vxkey, propertyPath, newValue);
                 invalidate();
             }
-        }, [vxObject]);
+        }, [vxkey]);
 
         return (
             <Input

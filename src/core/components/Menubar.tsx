@@ -18,9 +18,9 @@ const LOG_MODULE = "VXMenubar"
 
 const VXMenubar = () => {
     return (
-        <StandardWindowStyling 
+        <StandardWindowStyling
             className='top-6 left-6 z-10 px-3! py-0! rounded-3xl text-white'
-            style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6"}}
+            style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 2px 6px -4px rgb(0 0 0 / 0.6" }}
             id="VXEngineMenubar"
         >
             <div className='my-auto-fit text-white! font-roboto-mono flex flex-row text-sm'>
@@ -50,8 +50,8 @@ const LogoButton = () => {
                 <VXEngineLogo />
             </MenubarTrigger>
             <MenubarContent>
-                <MenubarItem onClick={() => pushDialog({content:<DialogAbout/>, type: "normal", className:"p-0!"})}>About VXEngine</MenubarItem>
-                <MenubarItem onClick={() => pushDialog({content:<DialogSettings/> , type:"base", className: "bg-transparent !p-0"})}>Settings</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({ content: <DialogAbout />, type: "normal", className: "p-0!" })}>About VXEngine</MenubarItem>
+                <MenubarItem onClick={() => pushDialog({ content: <DialogSettings />, type: "base", className: "bg-transparent !p-0" })}>Settings</MenubarItem>
             </MenubarContent>
         </MenubarMenu >
     )
@@ -93,23 +93,19 @@ const EditButton = () => {
     )
 }
 
+const handleSelectAll = () => {
+    const objectStore = useVXObjectStore.getState();
+
+    useObjectManagerAPI.setState((state) => ({
+        ...state,
+        selectedObjectKeys: Object.keys(objectStore.objects)
+    }))
+}
+const handleSelectNone = () => {
+    useObjectManagerAPI.getState().clearSelectedObjects()
+}
+
 const SelectButton = React.memo(() => {
-    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
-
-    const handleSelectAll = () => {
-        selectObjects(
-            Object.values(useVXObjectStore.getState().objects).map((object) => object.vxkey),
-            "entity",
-            false
-        )
-    }
-    const handleSelectNone = () => { selectObjects([], "entity", false) }
-    const handleSelectInvert = () => {
-        const selectedObjectKeys = useObjectManagerAPI.getState().selectedObjectKeys
-        const newKeys = selectedObjectKeys.filter((vxkey) => !selectedObjectKeys.includes(vxkey))
-
-        selectObjects(newKeys, "entity", false);
-    }
 
     return (
         <MenubarMenu>
@@ -117,7 +113,6 @@ const SelectButton = React.memo(() => {
             <MenubarContent>
                 <MenubarItem onClick={handleSelectAll}>All</MenubarItem>
                 <MenubarItem onClick={handleSelectNone}>None</MenubarItem>
-                <MenubarItem onClick={handleSelectInvert}>Invert</MenubarItem>
             </MenubarContent>
         </MenubarMenu>
     )
@@ -181,12 +176,12 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
 }
 
 const ViewButton = () => {
-    const vxWindows = useUIManagerAPI(state => state.vxWindows);    
+    const vxWindows = useUIManagerAPI(state => state.vxWindows);
     const openVXWindow = useUIManagerAPI(state => state.openVXWindow);
     const closeVXWindow = useUIManagerAPI(state => state.closeVXWindow);
-    
+
     const handleClick = (id: string) => {
-        if(vxWindows[id].isOpen)
+        if (vxWindows[id].isOpen)
             closeVXWindow(id);
         else
             openVXWindow(id);
@@ -196,12 +191,12 @@ const ViewButton = () => {
         <MenubarMenu>
             <MenubarTrigger><p className='font-roboto-mono'>View</p></MenubarTrigger>
             <MenubarContent>
-                {Object.entries(vxWindows).map(([id, vxwindow]) => 
+                {Object.entries(vxWindows).map(([id, vxwindow]) =>
                     <MenubarItem key={id} onClick={() => handleClick(id)}>
                         {vxwindow.title} <MenubarShortcut><CheckVisualizer show={vxwindow.isOpen} /></MenubarShortcut>
                     </MenubarItem>
                 )}
-              
+
             </MenubarContent>
         </MenubarMenu>
     )
@@ -226,14 +221,14 @@ const SceneButton = () => {
 
 const updateProjectionMatrix = () => {
     const vxobject = useVXObjectStore.getState().objects['perspectiveCamera'];
-    if(!vxobject)
+    if (!vxobject)
         return;
 
     const cameraRef = vxobject.ref.current
-    if(cameraRef)
+    if (cameraRef)
         cameraRef.updateProjectionMatrix();
 
     logReportingService.logInfo(
-        `Updated Projection Matrix`, {module: LOG_MODULE, functionName: "updateProjectionMatrix"}
+        `Updated Projection Matrix`, { module: LOG_MODULE, functionName: "updateProjectionMatrix" }
     )
 }

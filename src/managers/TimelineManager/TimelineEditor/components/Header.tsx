@@ -30,7 +30,7 @@ const TimelineEditorHeader = () => {
 
     return (
         <div className={`flex flex-row gap-2 w-full py-2 px-2
-            ${timelineEditorAttached ? "pr-2" : "px-2"}`}
+            ${timelineEditorAttached ? "pr-4" : "px-2"}`}
         >
             <MinimizeButton/>
 

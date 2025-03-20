@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 
 import { Html } from '@react-three/drei';
 import { vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useVXEngine } from '@vxengine/engine';
+import { handleOnVxObjectClick } from '@vxengine/managers/ObjectManager/utils/handleVxObject';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -14,7 +15,6 @@ export interface SplineNodeProps {
 
 const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, color = "white" }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef(null);
@@ -41,15 +41,9 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
         return () => removeObject(nodeKey, IS_DEVELOPMENT)
     }, [])
 
-
-    const handleOnClick = (e: ThreeEvent<MouseEvent>) => {
-        if (!ref.current) return;
-        selectObjects([nodeKey]);
-    };
-
     return (
         <>
-            <mesh ref={ref} position={position} onClick={handleOnClick}>
+            <mesh ref={ref} position={position} onClick={(e) => handleOnVxObjectClick(e, nodeKey)}>
                 <sphereGeometry args={[0.15, 24, 24]} />
                 <meshBasicMaterial color={firstObjectSelected?.vxkey === nodeKey ? "yellow" : color} />
             </mesh>

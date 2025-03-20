@@ -1,7 +1,6 @@
 import React from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import ParamInput from "@vxengine/components/ui/ParamInput";
-import { Switch } from "@vxengine/components/shadcn/switch";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
 import SettingNode from "../components/SettingNode";
@@ -15,7 +14,6 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
     const disabledParams = vxobject.disabledParams;
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
-    const toggleSetting = useObjectSettingsAPI(state => state.toggleSetting);
     const isUsingSplinePath = useObjectSetting(vxkey, "useSplinePath")
     const isUsingRotationDegrees = useObjectSetting(vxkey, "useRotationDegrees");
 
@@ -32,7 +30,8 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                 const propertyPath = `${property}.${axis}`;
                 if(vxobject.params.find(param => param.propertyPath === propertyPath))
                     return <ParamInput
-                        vxObject={vxobject}
+                        vxkey={vxobject.vxkey}
+                        vxRefObj={vxobject.ref}
                         key={`${property}-${axis}`}
                         param={{ propertyPath: `${property}.${axis}`, type: "number" }}
                         horizontal={true}

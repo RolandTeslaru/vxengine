@@ -9,7 +9,7 @@ import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { PointLight } from "three";
 import { useHelper } from "@react-three/drei";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
-import { ThreeElements } from "@react-three/fiber";
+import { invalidate, ThreeElements } from "@react-three/fiber";
 
 export type VXElementPointLightProps = VXElementPropsWithoutRef<ThreeElements["pointLight"]> & {
     ref?: React.RefObject<PointLight>;
@@ -44,6 +44,7 @@ export const EditablePointLight: React.FC<VXElementPointLightProps> = (props) =>
     const isHelperEnabled = useObjectSetting(vxkey, "showHelper");
     useHelper(internalRef, isHelperEnabled && PointLightHelper)
 
+    invalidate();
     
 
     return (

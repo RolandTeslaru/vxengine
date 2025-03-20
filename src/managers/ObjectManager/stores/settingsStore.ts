@@ -10,6 +10,7 @@ import { ISetting } from '@vxengine/AnimationEngine/types/engine';
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService';
 import { rotationDegreeToggleCallback, splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks';
 import { persist } from 'zustand/middleware';
+import { invalidate } from '@react-three/fiber';
 
 export type IObjectSettings = Record<string, ISetting>
 
@@ -119,7 +120,28 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>()(
                         state.initialValues[vxkey][settingKey] = initialSetting.value;
                     })
 
-                    state.settings[vxkey] = settings
+                    Object.entries(settings).forEach(([_settingKey, _setting]) => {
+                        if(!state.settings[vxkey])
+                            state.settings[vxkey] = {}
+
+                        if(_setting.storage === "localStorage"){
+                            // Case for if its persisted in LS
+                            if(_settingKey in state.settings[vxkey]){
+                                const persistedValue = state.settings[vxkey][_settingKey].value
+                                state.settings[vxkey][_settingKey] = { 
+                                    ..._setting,
+                                    value: persistedValue
+                                }
+                            }
+                            // Case for its NOT persisted in LS
+                            else {
+                                state.settings[vxkey][_settingKey] = _setting;
+                            }
+                        } else {
+                            state.settings[vxkey][_settingKey] = _setting
+                        }
+                    })
+
                 }))
             }
         }),

@@ -41,7 +41,7 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
             const objectManagerAPI = useObjectManagerAPI.getState();
             // remove selected is very important
             // the vxobject is frozen by the objectMangerAPI if its selected so trinyg to remove it would crash the app
-            objectManagerAPI.removeSelectedObject(vxkey)
+            objectManagerAPI.unselectObject(vxkey)
             objectManagerAPI.removeFromTree(vxkey)
         }
         

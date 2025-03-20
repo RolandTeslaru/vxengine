@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import { useVXEngine } from '@vxengine/engine';
 import { ArrowDown, ArrowUp, Info, Sun, Video, X } from '@vxengine/components/ui/icons';
 import VxObjectData from '@vxengine/components/ui/DataContextContext/VxObject';
+import { handleOnVxObjectClick, handleOnVxObjectContextMenu } from '../utils/handleVxObject';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -95,8 +96,8 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
                     listClassNames={classNames(
                         {"bg-neutral-800 text-white":isSelected === true}
                     )}
-                    onClick={(e) => handleNodeObjectClick(e,vxkey)}
-                    onContextMenu={(e) => handleObjectContext(e, vxkey)}
+                    onClick={(e) => handleOnVxObjectClick(e,vxkey)}
+                    onContextMenu={(e) => handleOnVxObjectContextMenu(e, vxkey)}
                 >
                     <div className='flex flex-row w-full gap-2 &:hover:text-neutral-200 '>
                         <span> {iconMapping[node.type]} </span>
@@ -109,31 +110,6 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
             <ContextMenuContentComponent vxkey={vxkey}/>
         </ContextMenu>
     )
-}
-
-
-const handleObjectContext = (e: any, vxkey: string) => {
-    const selectObjects = useObjectManagerAPI.getState().selectObjects
-    selectObjects([vxkey])
-}
-
-const handleNodeObjectClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, vxkey: string) => {
-    const state = useObjectManagerAPI.getState();
-    const {selectObjects, selectedObjectKeys} = state;
-
-    event.preventDefault();
-
-    if(event.metaKey || event.ctrlKey){
-        let newSelectedKeys: string[] = [];
-        if (selectedObjectKeys.includes(vxkey)) {
-            newSelectedKeys = selectedObjectKeys.filter(key => key !== vxkey);
-        } else {
-            newSelectedKeys = [...selectedObjectKeys, vxkey];
-        }
-        selectObjects(newSelectedKeys);
-    }
-    else
-        selectObjects([vxkey]);
 }
 
 const filterTree = (tree: Record<string, ObjectTreeNodeProps>, query: string): Record<string, ObjectTreeNodeProps> => {

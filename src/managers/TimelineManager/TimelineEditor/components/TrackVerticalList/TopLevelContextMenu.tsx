@@ -7,11 +7,10 @@ interface Props {
 }
 
 const TopLevelContextMenu: React.FC<Props> = ({ vxkey }) => {
-    const selectObjects = useObjectManagerAPI(state => state.selectObjects)
     return (
         <ContextMenu>
             <ContextMenuItem
-                onClick={() => selectObjects([vxkey])}
+                onClick={() => useObjectManagerAPI.getState().selectObject(vxkey)}
             >
                 <p>
                     Select

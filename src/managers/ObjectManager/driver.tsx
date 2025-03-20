@@ -3,12 +3,13 @@ import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
 import { modifyPropertyValue, truncateToDecimals, useTimelineManagerAPI } from "../TimelineManager/store";
-import {  vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import { vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
 import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
 import { useVXObjectStore } from "./stores/objectStore";
+import { ThreeEvent } from "@react-three/fiber";
 
 const axisMap = {
   X: 'x',
@@ -29,6 +30,9 @@ const dispatchVirtualEntityChangeEvent = (e: any, vxobject: vxObjectProps) => {
 
   document.dispatchEvent(virtualEntityChangeEvent as any);
 }
+
+const excludedObjectTypes = ["effect"]
+
 
 /**
  * ObjectManagerDriver Component
@@ -67,12 +71,7 @@ export const ObjectManagerDriver = () => {
 
   const setSplineNodePosition = useTimelineManagerAPI(state => state.setSplineNodePosition);
 
-  const isValid =
-    type === "Mesh" ||
-    type === "Group" ||
-    type === "PerspectiveCamera" ||
-    type === "CubeCamera" ||
-    type === "Environment"
+  const isValid = !excludedObjectTypes.includes(vxobject?.type)
 
   const isTransformDisabled =
     isUsingSplinePath ||
@@ -108,8 +107,9 @@ export const ObjectManagerDriver = () => {
     };
   }, [debouncedPropertyValueChangeFunctions]);
 
+
+
   const handleTransformChange = (e) => {
-    if (!vxobject) return
     const type = vxobject.type;
     switch (type) {
       case "entity":
@@ -171,8 +171,6 @@ export const ObjectManagerDriver = () => {
   }, [vxobject])
 
   const handleEntityChange = (e) => {
-    if (!vxObjectRef)
-      return
     const controls = e.target;
     const axis = controls.axis;
     if (!axis) return
@@ -217,20 +215,20 @@ export const ObjectManagerDriver = () => {
             const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
             const oldVal = accumulatedRotation.current[axisLetter];
             const newVal = newEuler[axisLetter];
-          
+
             // 1. Compute difference in the principal range
             let diff = newVal - oldVal;
-          
+
             // 2. If crossing ±π boundary, fix it
             if (diff > Math.PI) diff -= 2 * Math.PI;
             if (diff < -Math.PI) diff += 2 * Math.PI;
-          
+
             // 3. Accumulate
             const unwrappedVal = oldVal + diff;
-          
+
             // 4. Save back into `accumulatedRotation`
             accumulatedRotation.current[axisLetter] = unwrappedVal;
-            
+
             // 4. This unwrappedVal is the actual continuous angle
             if (oldVal !== unwrappedVal) {
               // console.log("Unwrapped val ", unwrappedVal)

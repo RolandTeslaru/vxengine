@@ -59,7 +59,8 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
                     }
                     {node.param && (
                         <ParamInput
-                            vxObject={vxobject}
+                            vxkey={vxobject.vxkey}
+                            vxRefObj={vxobject.ref}
                             param={node.param}
                             className=""
                         />

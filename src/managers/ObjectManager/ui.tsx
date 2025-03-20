@@ -29,10 +29,20 @@ const ObjectParamsConfig = {
     MaterialParams
   ],
   spline: [
-      SplineParams, ParamList],
-  splineNode: [SplineNodeParams, ParamList],
-  keyframeNode: [NodeTransformParams, ParamList],
-  effect: [ParamList]
+      SplineParams, 
+      ParamList
+  ],
+  splineNode: [
+    SplineNodeParams, 
+    ParamList
+  ],
+  keyframeNode: [
+    NodeTransformParams, 
+    ParamList
+  ],
+  effect: [
+    ParamList
+  ]
 };
 
 export const ObjectParamsPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {

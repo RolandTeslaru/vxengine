@@ -61,7 +61,7 @@ const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
                             {['x', 'y', 'z'].map((axis: "x" | "y" | "z") => (
                                 <ValueRenderer
                                     key={axis}
-                                    vxObject={vxSplineNode}
+                                    vxRefObj={vxSplineNode.ref}
                                     vxkey={vxSplineNode.vxkey}
                                     param={{ propertyPath: `position.${axis}`}}
                                     onChange={(newValue) => {

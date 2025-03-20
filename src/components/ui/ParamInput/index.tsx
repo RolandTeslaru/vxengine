@@ -8,9 +8,9 @@ import ParamSlider from './ParamSlider';
 import ParamColor from './ParamColor';
 
 interface Props extends InputProps {
-    vxObject: vxObjectProps
+    vxkey: string;
+    vxRefObj: React.RefObject<any>
     param: VXElementParam
-    vxkey?: string;   // spline has a vxkey with the ".spline" prefix
     horizontal?: boolean
     disableTracking?: boolean
 }
@@ -25,11 +25,7 @@ const COMPONENT_MAP = {
 }
 
 export const ParamInput: FC<Props> = (props) => {
-    const { vxObject, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
-
-    let { vxkey } = props
-    if (!vxkey)
-        vxkey = vxObject.vxkey
+    const { vxkey, vxRefObj, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
 
     const components = COMPONENT_MAP[param.type ?? "number"] || []
 
@@ -39,7 +35,7 @@ export const ParamInput: FC<Props> = (props) => {
                 <Component
                     key={index}
                     vxkey={vxkey}
-                    vxObject={vxObject}
+                    vxRefObj={vxRefObj}
                     param={param}
                     disabled={disabled || disableTracking}
                     horizontal={horizontal}

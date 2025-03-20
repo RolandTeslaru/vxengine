@@ -49,12 +49,12 @@ const SplineParams: React.FC<Props> = ({ vxobject: vxSpline }) => {
                 </div>
                 <ParamInput
                     param={progressParam}
-                    vxObject={vxSpline}
+                    vxRefObj={vxSpline.ref}
                     vxkey={vxSpline.objectVxKey}
                 />
                 <ParamInput
                     param={tensionParam}
-                    vxObject={vxSpline}
+                    vxRefObj={vxSpline.ref}
                     vxkey={vxSpline.objectVxKey}
                 />
             </CollapsiblePanel>
