@@ -11,6 +11,7 @@ import { EditArea } from './EditArea';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import Cursor from './EditorCursor';
 import { useTimelineEditorAPI } from '../../store';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
 
 export const startLeft = 0;
 
@@ -31,50 +32,6 @@ const TimelineArea = (() => {
       scrollLeftRef.current = left
     }
   );
-
-  
-
-  useEffect(() => {
-    const handleCopy = (event: KeyboardEvent) => {
-      const timelineEditorAPI = useTimelineEditorAPI.getState()
-
-      if ((event.ctrlKey || event.metaKey) && event.key === "c") {
-        const selectedKeyframeKeys = timelineEditorAPI.selectedKeyframeKeys
-        const setClipboard = timelineEditorAPI.setClipboard;
-        setClipboard(selectedKeyframeKeys);
-      }
-    }
-
-    window.addEventListener('keydown', handleCopy);
-    return () => window.removeEventListener("keydown", handleCopy);
-  }, [])
-
-  useEffect(() => {
-    const handlePaste = (event: KeyboardEvent) => {
-      const timelineManagerAPI = useTimelineManagerAPI.getState();
-      const timelineEditorAPI = useTimelineEditorAPI.getState();
-
-      const createKeyframe = timelineManagerAPI.createKeyframe;
-
-      if ((event.ctrlKey || event.metaKey) && event.key === "v") {
-        const clipboard = timelineEditorAPI.clipboard;
-        Object.entries(clipboard).forEach(([trackKey, keyframesObj]) => {
-          const keyframeKeys = Object.keys(keyframesObj);
-          keyframeKeys.forEach((keyframeKey) => {
-            const selectedKeyframe = timelineManagerAPI.tracks[trackKey]?.keyframes[keyframeKey]
-
-            createKeyframe({
-              trackKey,
-              value: selectedKeyframe.value
-            })
-          })
-        })
-      }
-    }
-
-    window.addEventListener("keydown", handlePaste);
-    return () => window.removeEventListener("keydown", handlePaste);
-  }, [])
 
   return (
     <div

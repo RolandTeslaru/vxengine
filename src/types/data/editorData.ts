@@ -20,10 +20,7 @@ export interface EditorKeyframe {
     propertyPath: string,
     time: number; 
     value: number;
-    handles: {
-        in: EditorVector2,
-        out: EditorVector2,
-    }
+    handles: EditorKeyframeHandles
 }
 
 export interface EditorStaticProp {
@@ -54,4 +51,9 @@ export interface EditorVector3 {
     x: number;
     y: number;
     z: number;
+}
+
+export interface EditorKeyframeHandles {
+    in: EditorVector2,
+    out: EditorVector2,
 }

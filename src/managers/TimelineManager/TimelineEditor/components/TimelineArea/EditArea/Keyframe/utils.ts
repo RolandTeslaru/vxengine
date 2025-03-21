@@ -12,6 +12,8 @@ import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/util
 import { DEFAULT_SCALE_WIDTH } from '@vxengine/AnimationEngine/interface/const';
 import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
 import { truncateToDecimals } from '@vxengine/managers/TimelineManager/store';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
+import { EditorKeyframe } from '@vxengine/types/data/editorData';
 
 export const selectAllKeyframesAfter = (trackKey: string, keyframeKey: string) => {
     const state = useTimelineManagerAPI.getState();
@@ -290,4 +292,54 @@ export const handleKeyframeMutation = (
             })
         }
     }
+}
+
+
+export const handleCopyKeyframes = () => {
+    const clipboardManagerAPI = useClipboardManagerAPI.getState();
+    const timelineEditorAPI = useTimelineEditorAPI.getState();
+    const timelineManagerAPI = useTimelineManagerAPI.getState();
+
+    const selectedKeyframesFlatMap = timelineEditorAPI.selectedKeyframesFlatMap;
+
+    let clipboardKeyframes = []
+
+    selectedKeyframesFlatMap.forEach((_selectedKf) => {
+        const _kf = timelineManagerAPI.tracks[_selectedKf.trackKey].keyframes[_selectedKf.keyframeKey];
+        const _clipboardKeyframe = {
+            value: _kf.value,
+            handles: _kf.handles,
+            time: _kf.time,
+            trackKey: _selectedKf.trackKey
+        }
+        clipboardKeyframes.push(_clipboardKeyframe)
+    })
+
+    const cursorTime = animationEngineInstance.currentTime;
+
+    clipboardManagerAPI.addItem('keyframes', {
+        cursorTime,
+        keyframes: clipboardKeyframes
+    })
+}
+
+export const handlePasteKeyframes = () => {
+    const clipboardManagerAPI = useClipboardManagerAPI.getState();
+    const timelineManagerAPI = useTimelineManagerAPI.getState();
+    const clipboardData = clipboardManagerAPI.getItemByType("keyframes");
+
+    const oldCursorTime = clipboardData.cursorTime;
+    const newCursorTime = animationEngineInstance.currentTime;
+
+    clipboardData.keyframes.forEach((kf) => {
+        const oldKfTime = kf.time;
+        const deltaCursorKeyframeTime =  oldCursorTime - oldKfTime;
+        const newKfTime = newCursorTime - deltaCursorKeyframeTime;
+        timelineManagerAPI.createKeyframe({
+            trackKey: kf.trackKey,
+            value: kf.value,
+            handles: kf.handles,
+            time: newKfTime
+        })
+    })
 }

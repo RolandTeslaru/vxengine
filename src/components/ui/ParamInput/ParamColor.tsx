@@ -9,6 +9,8 @@ import { hslToRgb, rgbToHsl } from './utils';
 import { invalidate } from '@react-three/fiber';
 import ColorPicker from '../ColorPicker';
 import { hsl } from "../ColorPicker/types"
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
 
 interface ParamColorProps {
     vxkey: string
@@ -19,6 +21,8 @@ interface ParamColorProps {
 const getDefaultValue = (vxkey: string, propertyPath: string, vxRefObj: any) => getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj, propertyPath) || 0
 
 const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
+    const isColorInClipboard = useClipboardManagerAPI(state => state.items.has("color"));
+
     const { propertyPath } = param;
     const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
     const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
@@ -105,15 +109,45 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     }, [])
 
 
+    const handleCopyColor = (e: React.MouseEvent<HTMLDivElement>) => {
+        useClipboardManagerAPI.getState().addItem("color", colorRef.current)
+    }
+
+    const handlePasteColor = () => {
+        const hsl =  useClipboardManagerAPI.getState().getItemByType("color") as hsl;
+        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
+
+        modifyPropertyValue("press", vxkey, rPropertyPath, r, false);
+        modifyPropertyValue("press", vxkey, gPropertyPath, g, false);
+        modifyPropertyValue("press", vxkey, bPropertyPath, b, true);
+
+        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+    }
+
+
     return (
         <>
             <Popover>
-                <PopoverTrigger disableStyling>
-                    <div
-                        ref={colorPreviewRef}
-                        className={`w-10 h-5 rounded-md border shadow-md`}
-                    />
-                </PopoverTrigger>
+                <ContextMenu>
+                    <ContextMenuTrigger>
+                        <PopoverTrigger disableStyling>
+                            <div
+                                ref={colorPreviewRef}
+                                className={`w-10 h-5 rounded-md border shadow-md`}
+                            />
+                        </PopoverTrigger>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                        <ContextMenuItem onClick={handleCopyColor}>
+                            Copy Color
+                        </ContextMenuItem>
+                        {isColorInClipboard &&
+                            <ContextMenuItem onClick={handlePasteColor}>
+                                Paste Color
+                            </ContextMenuItem>
+                        }
+                    </ContextMenuContent>
+                </ContextMenu>
                 <PopoverContent className='w-52'>
                     <ColorPicker
                         ref={colorPickerRef}
@@ -128,15 +162,15 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                             <p className='text-xs my-auto'>red</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl 
-                                        vxkey={vxkey}  
+                                    <KeyframeControl
+                                        vxkey={vxkey}
                                         param={{
                                             propertyPath: rPropertyPath
                                         }}
-                                        disabled={false} 
+                                        disabled={false}
                                     />
                                 </div>
-                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{propertyPath: rPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} 
+                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{ propertyPath: rPropertyPath }} inputProps={{ min: 0, max: 1, step: 0.005 }}
                                 />
                             </div>
                         </div>
@@ -144,9 +178,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                             <p className='text-xs my-auto'>green</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl 
-                                        vxkey={vxkey} 
-                                        disabled={false} 
+                                    <KeyframeControl
+                                        vxkey={vxkey}
+                                        disabled={false}
                                         param={{ propertyPath: gPropertyPath }}
                                     />
                                 </div>
@@ -157,13 +191,13 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                             <p className='text-xs my-auto'>blue</p>
                             <div className='flex flex-row gap-2'>
                                 <div className='my-auto'>
-                                    <KeyframeControl 
-                                        vxkey={vxkey} 
-                                        param={{ propertyPath: bPropertyPath }} 
-                                        disabled={false} 
+                                    <KeyframeControl
+                                        vxkey={vxkey}
+                                        param={{ propertyPath: bPropertyPath }}
+                                        disabled={false}
                                     />
                                 </div>
-                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{propertyPath: bPropertyPath}} inputProps={{ min: 0, max: 1, step: 0.005 }} />
+                                <ValueRenderer vxRefObj={vxRefObj} vxkey={vxkey} param={{ propertyPath: bPropertyPath }} inputProps={{ min: 0, max: 1, step: 0.005 }} />
                             </div>
                         </div>
                     </div>
@@ -174,4 +208,4 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     )
 }
 
-export default ParamColor    
+export default ParamColor

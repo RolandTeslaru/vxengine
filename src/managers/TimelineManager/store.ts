@@ -13,7 +13,7 @@ import { handleKeyframeMutation, handleKeyframeMutationByTime } from './Timeline
 import { useTimelineEditorAPI } from './TimelineEditor/store';
 import { v4 as uuidv4 } from 'uuid';
 import animationEngineInstance from '@vxengine/singleton';
-import { EditorKeyframe, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
+import { EditorKeyframe, EditorKeyframeHandles, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
 import { TimelineManagerAPIProps } from './types/store';
 
 export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProps>((set, get) => ({
@@ -390,11 +390,11 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
     //
 
 
-    createKeyframe: ({ trackKey, value, reRender = true }) => {
+    createKeyframe: ({ trackKey, value, handles, time, reRender = true }) => {
         const keyframeKey = `keyframe-${uuidv4()}`;
 
         set(produce((state: TimelineManagerAPIProps) =>
-            createKeyframeLogic(state, trackKey, keyframeKey, value)
+            createKeyframeLogic(state, trackKey, keyframeKey, value, handles, time)
         ))
 
         if (reRender)
@@ -573,13 +573,16 @@ function createKeyframeLogic(
     state: TimelineManagerAPIProps,
     trackKey: string,
     keyframeKey: string,
-    value?: number
+    value?: number,
+    handles?: EditorKeyframeHandles,
+    time?: number
 ) {
     const track = state.tracks[trackKey]
     if (!track) return;
 
 
-    const time = truncateToDecimals(animationEngineInstance.currentTime)
+    time = time ?? animationEngineInstance.currentTime
+    time = truncateToDecimals(time);
 
     // Check if the cursor is on an exsting keyframe
     // if so, return because we cannot create overlapped keyframes
@@ -599,7 +602,7 @@ function createKeyframeLogic(
         value,
         vxkey,
         propertyPath: propertyPath,
-        handles: {
+        handles: handles ?? {
             in: { x: 0.7, y: 0.7 },
             out: { x: 0.3, y: 0.3 }
         },
@@ -610,6 +613,10 @@ function createKeyframeLogic(
     updatedOrderedKeyframeIdsLogic(state, trackKey)
     state.addChange();
 
+    const rawHandles = handles 
+                        ? [handles.in.x, handles.in.y, handles.out.x, handles.out.y]
+                        : [0.7, 0.7, 0.3, 0.3]
+
     animationEngineInstance.hydrationService.hydrateKeyframe({
         action: "create",
         vxkey,
@@ -617,7 +624,7 @@ function createKeyframeLogic(
         keyframeKey,
         value,
         time,
-        handles: [0.7, 0.7, 0.3, 0.3]
+        handles: rawHandles as [number, number, number, number]
     })
 }
 

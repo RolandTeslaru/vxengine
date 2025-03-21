@@ -17,6 +17,7 @@ import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import { useVXEngine } from "@vxengine/engine";
 import { AlertTriangle } from "./icons";
+import { useClipboardManagerAPI } from "@vxengine/managers/ClipboardManager/store";
 
 // Utility function to remove functions from state objects
 const filterOutFunctions = (state) => {
@@ -46,67 +47,68 @@ const ObjectManagerVisualizer = () => {
   return <StateVisualizerComponent state={state} collapsedDepth={1} />;
 };
 
+
 // Component for ObjectPropertyAPI
 const State_ObjectPropertyAPI = () => {
-    const state = useObjectPropertyAPI();
-    const { IS_PRODUCTION } = useVXEngine();
-    const [searchQuery, setSearchQuery] = useState("");
+  const state = useObjectPropertyAPI();
+  const { IS_PRODUCTION } = useVXEngine();
+  const [searchQuery, setSearchQuery] = useState("");
 
-    // Function to filter the state based on the search query
-    const filterProperties = (properties, query) => {
-        if (!properties || typeof properties !== "object") return {};
-        if (!query) return properties;
+  // Function to filter the state based on the search query
+  const filterProperties = (properties, query) => {
+    if (!properties || typeof properties !== "object") return {};
+    if (!query) return properties;
 
-        const lowerQuery = query.toLowerCase();
+    const lowerQuery = query.toLowerCase();
 
-        return Object.keys(properties)
-            .filter((key) => {
-                const object = properties[key];
-                // Check if the key or any nested property includes the query string
-                return (
-                    key.toLowerCase().includes(lowerQuery) ||
-                    JSON.stringify(object).toLowerCase().includes(lowerQuery)
-                );
-            })
-            .reduce((acc, key) => {
-                acc[key] = properties[key];
-                return acc;
-            }, {});
-    };
+    return Object.keys(properties)
+      .filter((key) => {
+        const object = properties[key];
+        // Check if the key or any nested property includes the query string
+        return (
+          key.toLowerCase().includes(lowerQuery) ||
+          JSON.stringify(object).toLowerCase().includes(lowerQuery)
+        );
+      })
+      .reduce((acc, key) => {
+        acc[key] = properties[key];
+        return acc;
+      }, {});
+  };
 
-    // Ensure filterOutFunctions(state) produces a valid object
-    const sanitizedState = filterOutFunctions(state) || {};
-    const filteredState = {
-        ...sanitizedState,
-        properties: filterProperties(sanitizedState.properties, searchQuery),
-    };
-    return (
-        <>
-            <div className=" absolute right-2 top-9 gap-2 z-10">
-                <div className="flex gap-2 text-yellow-400">
-                    <AlertTriangle size={30} />
-                    <div className="text-xs font-roboto-mono">
-                        <p>Highly volatile state!</p>
-                        <p>Rendering this will cause lag!</p>
-                    </div>
-                </div>
-                {IS_PRODUCTION &&
-                    <div className="text-red-600 flex gap-2">
-                        <AlertTriangle size={30} />
-                        <p className="text-xs my-auto font-roboto-mono">This store is not updated in Production Mode!</p>
-                    </div>
-                }
-            </div>
+  // Ensure filterOutFunctions(state) produces a valid object
+  const sanitizedState = filterOutFunctions(state) || {};
+  const filteredState = {
+    ...sanitizedState,
+    properties: filterProperties(sanitizedState.properties, searchQuery),
+  };
+  return (
+    <>
+      <div className=" absolute right-2 top-9 gap-2 z-10">
+        <div className="flex gap-2 text-yellow-400">
+          <AlertTriangle size={30} />
+          <div className="text-xs font-roboto-mono">
+            <p>Highly volatile state!</p>
+            <p>Rendering this will cause lag!</p>
+          </div>
+        </div>
+        {IS_PRODUCTION &&
+          <div className="text-red-600 flex gap-2">
+            <AlertTriangle size={30} />
+            <p className="text-xs my-auto font-roboto-mono">This store is not updated in Production Mode!</p>
+          </div>
+        }
+      </div>
 
-            <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <Search className="absolute right-4 w-32" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-            <JsonView
-                src={filteredState}
-                collapsed={({ depth }) => depth > 4}
-                dark={true}
-            />
-        </>
-    );
+      <JsonView
+        src={filteredState}
+        collapsed={({ depth }) => depth > 4}
+        dark={true}
+      />
+    </>
+  );
 };
 
 
@@ -191,18 +193,29 @@ const AnimationEngineVisualizer = () => {
   return <StateVisualizerComponent state={state} collapsedDepth={1} />;
 };
 
+
+const ClipboardManagerVisualizer = () => {
+  const state = useClipboardManagerAPI();
+
+  const convertedState = {
+    items: extractDatasetFromMap(state.items)
+  }
+
+  return <JsonView
+    src={convertedState}
+    collapsed={({ depth }) => depth > 3}
+    dark={true}
+  />
+}
+
+
+
 // RefStore Visualizer (using your custom component)
 const RefStoreVisualizer = () => {
   const state = useRefStore();
 
   // Convert Map data to a plain object
-  function extractDatasetFromMap(map) {
-    const obj = {};
-    for (let [key, value] of map) {
-      obj[key] = value?.dataset ? { dataset: { ...value.dataset } } : value;
-    }
-    return obj;
-  }
+
 
   const convertedState = {
     ...state,
@@ -227,6 +240,7 @@ const visualizerMapping = {
   SourceManagerAPI: SourceManagerVisualizer,
   EffectsManagerAPI: EffectsManagerVisualizer,
   CameraManagerAPI: CameraManagerVisualizer,
+  ClipboardManagerAPI: ClipboardManagerVisualizer,
   ObjectPropertyAPI: ObjectPropertyVisualizer,
   ObjectSettingsAPI: ObjectSettingsVisualizer,
   VXObjectStore: VXObjectStoreVisualizer,
@@ -293,3 +307,11 @@ const StateVisualizer = () => {
 };
 
 export default StateVisualizer;
+
+function extractDatasetFromMap(map) {
+  const obj = {};
+  for (let [key, value] of map) {
+    obj[key] = value?.dataset ? { dataset: { ...value.dataset } } : value;
+  }
+  return obj;
+}

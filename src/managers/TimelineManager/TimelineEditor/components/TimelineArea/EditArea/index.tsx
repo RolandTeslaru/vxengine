@@ -14,6 +14,8 @@ import { handleCursorMutation, handleCursorMutationByScale } from '../EditorCurs
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useVXEngine } from '@vxengine/engine';
 import { EditorTrackTreeNode } from '@vxengine/types/data/editorData';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
+import { handleCopyKeyframes, handlePasteKeyframes } from './Keyframe/utils';
 
 const startLeft = 22
 
@@ -74,6 +76,14 @@ export const EditArea = () => {
     return () => unsubscribe()
   }, [])
 
+
+
+  useEffect(() => {
+
+    window.addEventListener('keydown', handleKeyframeDown);
+    return () => window.removeEventListener("keydown", handleKeyframeDown);
+  }, [])
+
   return (
     <>
       {filteredTree && Object.values(filteredTree).map((node, index) =>
@@ -118,4 +128,26 @@ interface TrackNodeProps {
   node: EditorTrackTreeNode
   timelineClientWidth: number
   collapsedTrackNodes: Record<string, boolean>
+}
+
+
+
+
+const handleKeyframeDown = (event: KeyboardEvent) => {
+  const timelineEditorAPI = useTimelineEditorAPI.getState();
+  const timelineManagerAPI = useTimelineManagerAPI.getState();
+  const clipboardManagerAPI = useClipboardManagerAPI.getState();
+  const tracks = timelineManagerAPI.tracks
+
+  // Copy Event
+  if ((event.ctrlKey || event.metaKey) && event.key === "c") {
+    handleCopyKeyframes()
+    event.preventDefault();
+  }
+
+  // Paste Event
+  if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+    handlePasteKeyframes();
+  }
+
 }

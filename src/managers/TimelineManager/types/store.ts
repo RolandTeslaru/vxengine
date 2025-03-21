@@ -1,6 +1,6 @@
 import { AnimationEngine } from "@vxengine/AnimationEngine/engine";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { EditorObject, EditorTrack, EditorStaticProp, EditorSpline, EditorKeyframe, EditorVector2 } from "@vxengine/types/data/editorData";
+import { EditorObject, EditorTrack, EditorStaticProp, EditorSpline, EditorKeyframe, EditorVector2, EditorKeyframeHandles } from "@vxengine/types/data/editorData";
 import { RawObject, RawSpline } from "@vxengine/types/data/rawData";
 
 export type SelectedKeyframe = {
@@ -43,7 +43,7 @@ export interface TimelineManagerAPIProps {
     setSplineNodeAxisValue: (splineKey: string, nodeIndex: number, axis: "x" | "y" | "z",  newValue: number, reRender?: boolean) => void;
     
     // Keyframe functions
-    createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean}) => void;
+    createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean, handles?: EditorKeyframeHandles, time?: number}) => void;
     removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
     setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;

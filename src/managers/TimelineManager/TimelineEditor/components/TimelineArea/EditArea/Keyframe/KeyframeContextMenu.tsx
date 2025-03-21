@@ -2,16 +2,10 @@ import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubCont
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
 
 import React, { useCallback, useMemo } from 'react'
-import { selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
+import { handleCopyKeyframes, selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store'
 import { ArrowLeft, ArrowRight, Info, Maximize2, X } from '@vxengine/components/ui/icons'
-import JsonView from 'react18-json-view'
-import { Input } from '@vxengine/components/shadcn/input'
-import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing'
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
-import { keyframesRef } from '@vxengine/utils/useRefStore'
 import KeyframeData from '@vxengine/components/ui/DataContextContext/Keyframe'
-import { Text } from '@vxengine/components/shadcn/Text'
 
 interface Props {
     trackKey: string,
@@ -46,6 +40,13 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
                     </ContextMenuItem>
                 </ContextMenuSubContent>
             </ContextMenuSub>
+
+            <ContextMenuItem onClick={handleCopyKeyframes}>
+                {selectedKeyframesLength < 2
+                    ? <>Copy Keyframe</>
+                    : <>Copy Keyframes</>
+                }
+            </ContextMenuItem>
 
             <ContextMenuItem
                 onClick={handleRemoveSelectedKeyframes}

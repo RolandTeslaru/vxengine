@@ -11,6 +11,8 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, Conte
 import { ArrowRight, Maximize2, ArrowLeft } from 'lucide-react';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import animationEngineInstance from '@vxengine/singleton';
+import { handlePasteKeyframes } from '../EditArea/Keyframe/utils';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
 
 const EditorCursor = () => {
   const elementRef = useRef<HTMLDivElement>(null)
@@ -123,6 +125,8 @@ export default EditorCursor
 
 
 const CursorContextMenu = () => {
+  const areKeyframesInClipboard = useClipboardManagerAPI(state => state.items.has("keyframes"))
+
   return (
     <ContextMenuContent>
       <ContextMenuSub>
@@ -148,6 +152,11 @@ const CursorContextMenu = () => {
           </ContextMenuItem>
         </ContextMenuSubContent>
       </ContextMenuSub>
+      {areKeyframesInClipboard && 
+        <ContextMenuItem onClick={handlePasteKeyframes}>
+          Paste Keyframes
+        </ContextMenuItem>
+      }
     </ContextMenuContent>
   )
 }

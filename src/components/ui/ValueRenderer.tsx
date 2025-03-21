@@ -4,6 +4,8 @@ import { getNestedProperty } from '@vxengine/utils/nestedProperty'
 import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import { Input } from '@vxengine/components/shadcn/input'
 import { invalidate } from '@react-three/fiber'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu'
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store'
 
 interface ValueRendererProps {
     vxkey: string
@@ -20,6 +22,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const { propertyPath } = param;
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
+        const addItemToClipboard = useClipboardManagerAPI(state => state.addItem);
         
         const inputRef = useRef<HTMLInputElement>(null);
         
@@ -50,17 +53,57 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             }
         }, [vxkey]);
 
+        const handleOnCopy = useCallback(() => {
+            addItemToClipboard('number', {
+                data: parseFloat(inputRef.current.value)
+            })
+        }, [vxkey])
+
         return (
-            <Input
-                ref={inputRef}
-                onChange={handleChange}
-                type='number'
-                step={0.1}
-                className="h-fit text-[10px] bg-secondary-opaque p-0.5 max-w-[40px] border border-primary-thin"
-                {...inputProps}
-            />
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <Input
+                        ref={inputRef}
+                        onChange={handleChange}
+                        type='number'
+                        step={0.1}
+                        className="h-fit text-[10px] bg-secondary-opaque p-0.5 max-w-[40px] border border-primary-thin"
+                        {...inputProps}
+                    />
+                </ContextMenuTrigger>
+                <ValureRendererContextMenu inputRef={inputRef} vxkey={vxkey} propertyPath={propertyPath}/>
+            </ContextMenu>
         );
     }
 );
 
 export default ValueRenderer
+
+
+const ValureRendererContextMenu = ({inputRef, vxkey, propertyPath}: {inputRef: React.RefObject<HTMLInputElement>, vxkey: string, propertyPath: string}) => {
+    const isNumberInClipboard = useClipboardManagerAPI(state => state.items.has("number"))
+
+    const handleOnCopy = () => {
+        useClipboardManagerAPI.getState().addItem("number", parseFloat(inputRef.current.value))
+    }
+
+    const handleOnPaste = () => {
+        const value = useClipboardManagerAPI.getState().getItemByType("number") as number
+        modifyPropertyValue("press", vxkey, propertyPath, value);
+
+        inputRef.current.value = value.toString();
+    }
+    
+    return (
+        <ContextMenuContent>
+            <ContextMenuItem onClick={handleOnCopy}>
+                Copy Value
+            </ContextMenuItem>
+            {isNumberInClipboard &&
+            <ContextMenuItem onClick={handleOnPaste}>
+                Paste Value
+            </ContextMenuItem>
+            }
+        </ContextMenuContent>
+    )
+}

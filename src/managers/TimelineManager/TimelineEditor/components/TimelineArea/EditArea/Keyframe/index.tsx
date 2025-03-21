@@ -188,7 +188,10 @@ const handleOnContextMenu = (
     const timelineEditorAPI = useTimelineEditorAPI.getState();
     timelineEditorAPI.clearSelectedTrackSegments();
 
-    if(event.metaKey || event.ctrlKey){
+    const selectedKeyframesFlatMap = timelineEditorAPI.selectedKeyframesFlatMap;
+    if(selectedKeyframesFlatMap.find(_kf => _kf.keyframeKey === keyframeKey)){
+
+    } else if(event.metaKey || event.ctrlKey){
         timelineEditorAPI.selectKeyframe(trackKey, keyframeKey);
     } else {
         timelineEditorAPI.clearSelectedKeyframes();
