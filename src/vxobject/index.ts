@@ -8,9 +8,11 @@ import { EditableLUT } from './effects/EditableLUT';
 import {EditableColor} from './fiber/editableColor';
 import EditableDiv from './html/editableDiv';
 import EditableGrid from './drei/EditableGrid';
+import editablePrimitive from './fiber/editablePrimitive';
 
 
 export const vx = {
+    primitive: editablePrimitive,
     mesh: EditableMesh,
     spotLight: EditableSpotLight,
     points: EditablePoints,

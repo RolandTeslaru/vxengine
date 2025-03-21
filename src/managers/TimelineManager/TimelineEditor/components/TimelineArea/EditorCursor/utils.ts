@@ -8,7 +8,7 @@ import animationEngineInstance from "@vxengine/singleton";
 
 export const cursorStartLeft = 20;
 
-const boundsLeft = cursorStartLeft;
+export const cursorBoundsLeft = cursorStartLeft;
 
 export const handleOnMove = (e: DragEvent, deltaXRef: { current: number }) => {
   const target = e.target;
@@ -21,8 +21,8 @@ export const handleOnMove = (e: DragEvent, deltaXRef: { current: number }) => {
   let newLeft = prevLeft + e.dx;
 
   // Handle Bounds
-  if (newLeft < boundsLeft)
-    newLeft = boundsLeft
+  if (newLeft < cursorBoundsLeft)
+    newLeft = cursorBoundsLeft
 
   handleCursorDrag(newLeft);
 }

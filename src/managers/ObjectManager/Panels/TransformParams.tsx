@@ -86,7 +86,7 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                         </div>
                     </div>
                 }
-                {"showPositionPath" in settings && (
+                {settings && "showPositionPath" in settings && (
                     <SettingNode 
                         vxkey={vxkey} 
                         settingKey="showPositionPath" 

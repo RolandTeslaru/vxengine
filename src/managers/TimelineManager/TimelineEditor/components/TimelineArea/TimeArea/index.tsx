@@ -6,6 +6,7 @@ import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import { useRefStore } from '@vxengine/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
+import { cursorBoundsLeft } from '../EditorCursor/utils';
 
 const maxScaleCount = 100;
 
@@ -43,7 +44,10 @@ export const TimeArea = () => {
     const targetDocument = externalContainer?.ownerDocument || document;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      const relativeX = moveEvent.clientX - divRect.left;
+      let relativeX = moveEvent.clientX - divRect.left;
+
+      if(relativeX < cursorBoundsLeft)
+        relativeX = cursorBoundsLeft
       setTimeByPixel(relativeX);
     };
 
