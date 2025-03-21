@@ -6,6 +6,7 @@ import { enableMapSet } from "immer";
 import { setAutoFreeze } from "immer";
 
 import "./globals.css"
+import VXThreeElementWrapper from "./vxobject/VXThreeElementWrapper";
 enableMapSet();
 
 export { VXEngineProvider } from "./engine"
@@ -24,3 +25,4 @@ export { useAnimationFrame } from "./AnimationEngine"
 
 export { VXEngineWindow } from "./core/components/VXEngineWindow"
 
+export { VXThreeElementWrapper}
