@@ -6,6 +6,17 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import { VXElementParam } from '@vxengine/vxobject/types';
 import ParamSlider from './ParamSlider';
 import ParamColor from './ParamColor';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
+import { modifyPropertyValue, useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
+import animationEngineInstance from '@vxengine/singleton';
+import SideEffectData from '../DataContextContext/SideEffect';
+import { getProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
+import { TrackData } from '../DataContextContext/Track';
+import StaticPropData from '../DataContextContext/StaticProp';
+import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
+import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert';
+import { getNestedProperty } from '@vxengine/utils';
 
 interface Props extends InputProps {
     vxkey: string;
@@ -30,20 +41,161 @@ export const ParamInput: FC<Props> = (props) => {
     const components = COMPONENT_MAP[param.type ?? "number"] || []
 
     return (
-        <div className={`flex relative ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
-            {components.map((Component, index) =>
-                <Component
-                    key={index}
-                    vxkey={vxkey}
-                    vxRefObj={vxRefObj}
-                    param={param}
-                    disabled={disabled || disableTracking}
-                    horizontal={horizontal}
-                    inputProps={{ ...inputProps, disabled }}
-                />
-            )}
-        </div>
+        <ContextMenu>
+            <ContextMenuTrigger className={`flex relative ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
+                {components.map((Component, index) =>
+                    <Component
+                        key={index}
+                        vxkey={vxkey}
+                        vxRefObj={vxRefObj}
+                        param={param}
+                        disabled={disabled || disableTracking}
+                        horizontal={horizontal}
+                        inputProps={{ ...inputProps, disabled }}
+                    />
+                )}
+            </ContextMenuTrigger>
+            <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
+        </ContextMenu>
     )
 }
 
 export default ParamInput
+
+interface ParamInputContextMenuContentProps {
+    param: VXElementParam
+    vxkey: string
+    vxRefObj:  React.RefObject<any>
+}
+
+
+
+
+const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputContextMenuContentProps) => {
+    const propertyPath = param.propertyPath
+    const trackKey = `${vxkey}.${propertyPath}`
+    const paramType = param.type ?? "number"
+    // @ts-expect-error
+    const isParamInClipboard = useClipboardManagerAPI(state => state.items.has(paramType));
+
+    const hasSideEffect = animationEngineInstance.hasSideEffect(trackKey)
+
+    const isPropertyTracked = !!useTimelineManagerAPI.getState().tracks[trackKey]
+
+    return (
+        <ContextMenuContent>
+            {hasSideEffect && (
+                <ContextMenuSub>
+                    <ContextMenuSubTrigger>
+                        Show SideEffect
+                    </ContextMenuSubTrigger>
+                    <ContextMenuSubContent>
+                        <SideEffectData trackKey={trackKey} />
+                    </ContextMenuSubContent>
+                </ContextMenuSub>
+            )}
+            {paramType !== "color" ? <>
+                <ContextMenuItem onClick={() => handleOnCopyNumber(vxkey, param, vxRefObj)}>
+                    Copy Value
+                </ContextMenuItem>
+                {isParamInClipboard &&
+                    <ContextMenuItem onClick={() => handleOnPasteNumber(vxkey, param, vxRefObj)}>
+                        Paste Value
+                    </ContextMenuItem>
+                }
+                <ContextMenuSub>
+                    {isPropertyTracked ?
+                        <>
+                            <ContextMenuSubTrigger>
+                                Show Track Data
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                                <TrackData trackKey={trackKey} />
+                            </ContextMenuSubContent>
+                        </>
+                        :
+                        <>
+                            <ContextMenuSubTrigger>
+                                <p>Show StaticProp Data</p>
+                            </ContextMenuSubTrigger>
+                            <ContextMenuSubContent>
+                                <StaticPropData staticPropKey={trackKey} />
+                            </ContextMenuSubContent>
+                        </>
+                    }
+                </ContextMenuSub>
+                {isPropertyTracked &&
+                    <ContextMenuItem
+                        onClick={(e) => pushDialogStatic({
+                            content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
+                            type: "alert"
+                        })}
+                        variant="destructive"
+                    >
+                        Make Property Static
+                    </ContextMenuItem>
+                }
+                <ContextMenuItem
+                    onClick={() => pushDialogStatic({
+                        content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
+                        type: "alert"
+                    })}
+                    variant="destructive"
+                >
+                    Remove Property
+                </ContextMenuItem>
+            </>
+                :
+                <>
+                    <ContextMenuItem onClick={() => handleOnCopyColor(vxkey, param, vxRefObj)}>
+                        Copy Color
+                    </ContextMenuItem>
+                    {isParamInClipboard &&
+                        <ContextMenuItem onClick={() => handleOnPasteColor(vxkey, param, vxRefObj)}>
+                            Paste Color
+                        </ContextMenuItem>
+                    }
+                </>
+            }
+        </ContextMenuContent>
+    )
+}
+
+const handleOnCopyNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath
+    const value = getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj.current, propertyPath);
+    useClipboardManagerAPI.getState().addItem("number", value);
+}
+
+const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
+    modifyPropertyValue("press", vxkey, param.propertyPath, value);
+}
+
+const handleOnCopyColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath;
+    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
+    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
+    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
+
+    const redValue = getProperty(vxkey, rPropertyPath) || getNestedProperty(vxRefObj.current, rPropertyPath)
+    const greenValue = getProperty(vxkey, gPropertyPath) || getNestedProperty(vxRefObj.current, gPropertyPath)
+    const blueValue = getProperty(vxkey, bPropertyPath) || getNestedProperty(vxRefObj.current, bPropertyPath)
+
+    useClipboardManagerAPI.getState().addItem("color", {
+        redValue, greenValue, blueValue
+    })
+}
+
+const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath;
+    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
+    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
+    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
+
+    const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
+
+    modifyPropertyValue("press", vxkey, rPropertyPath, redValue, false);
+    modifyPropertyValue("press", vxkey, gPropertyPath, greenValue, false);
+    modifyPropertyValue("press", vxkey, bPropertyPath, blueValue, true);
+}

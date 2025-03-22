@@ -7,6 +7,7 @@ import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { VXElementParam } from '@vxengine/vxobject/types'
 import Tree from '@vxengine/components/ui/Tree'
+import { createParamTreeLevel, ParamTreeNodeDataType } from '../utils/createPropertyTree'
 
 interface Props {
     vxobject: vxObjectProps
@@ -34,13 +35,14 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     const params = vxobject.params ?? []
 
     const tree = useMemo(() => {
-        const tree: Record<string, ParamTreeNode> = {}
+        const tree: Record<string, ParamTreeNodeDataType> = {}
         params.forEach((param) => {
             if (!excludeParamKeys.includes(param.propertyPath))
                 tree[param.propertyPath] = {
                     key: param.title ?? param.propertyPath,
                     children: {},
-                    param
+                    param,
+                    rawObject: refObject
                 }
         })
         return tree;
@@ -48,7 +50,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
     if (Object.entries(tree).length === 0) return
 
-    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
+    const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
@@ -76,7 +78,11 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             noPadding={true}
         >
             <div className='flex flex-col'>
-                <Tree tree={tree} renderNodeContent={renderNodeContent} />
+                <Tree 
+                    tree={tree} 
+                    renderNodeContent={renderNodeContent} 
+                    createBranch={createParamTreeLevel}
+                />
             </div>
 
         </CollapsiblePanel>

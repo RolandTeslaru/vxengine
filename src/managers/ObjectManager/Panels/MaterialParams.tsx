@@ -6,7 +6,7 @@ import Search from '@vxengine/components/ui/Search';
 import { vxElementProps, vxObjectProps } from '../types/objectStore';
 import Tree from '@vxengine/components/ui/Tree';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
-import { createParamTree, ParamTreeNode } from '../utils/createPropertyTree';
+import { createParamTree, createParamTreeLevel, ParamTreeNodeDataType } from '../utils/createPropertyTree';
 import { filterParamTree } from '../utils/filterParamTree';
 
 const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
@@ -14,7 +14,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const material = refObject.material;
 
     const propertiesTree = useMemo(() => {
-        return createParamTree(material, "material")
+        return createParamTreeLevel(material, "material")
     }, [vxobject])
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +22,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const filteredPropertiesTree = useMemo(() =>
         filterParamTree(propertiesTree, searchQuery), [material, searchQuery])
 
-    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
+    const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className='flex flex-row w-full h-[22px]'>
@@ -54,17 +54,14 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             <ScrollArea className='h-96' scrollbarPosition='right'>
-                <Tree tree={filteredPropertiesTree as Record<string, ParamTreeNode>} renderNodeContent={renderNodeContent} />
+                <Tree 
+                    tree={filteredPropertiesTree as Record<string, ParamTreeNodeDataType>} 
+                    renderNodeContent={renderNodeContent} 
+                    createBranch={createParamTreeLevel}
+                />
             </ScrollArea>
         </CollapsiblePanel>
     )
 }
-
-
-// const MaterialPropertyNode = () => {
-//     return (
-
-//     )
-// }
 
 export default MaterialParams

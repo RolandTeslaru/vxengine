@@ -6,7 +6,7 @@ import * as THREE from "three"
 import { vxElementProps, vxObjectProps } from "../types/objectStore";
 import Tree from "@vxengine/components/ui/Tree";
 import Search from "@vxengine/components/ui/Search";
-import { createParamTree, ParamTreeNode } from "../utils/createPropertyTree";
+import { createParamTree, ParamTreeNodeDataType } from "../utils/createPropertyTree";
 import { filterParamTree } from "../utils/filterParamTree";
 
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
@@ -30,7 +30,7 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
         [geometry, searchQuery])
 
 
-    const renderNodeContent = (node: ParamTreeNode, { NodeTemplate }) => {
+    const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className='flex flex-row w-full h-[22px]'>

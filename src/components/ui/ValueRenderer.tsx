@@ -15,25 +15,25 @@ interface ValueRendererProps {
     onChange?: (newValue: number) => void;
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey,propertyPath) || getNestedProperty(obj, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey, propertyPath) || getNestedProperty(obj, propertyPath) || 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxkey, param, inputProps, onChange, vxRefObj}) => {
+    ({ vxkey, param, inputProps, onChange, vxRefObj }) => {
         const { propertyPath } = param;
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
         const addItemToClipboard = useClipboardManagerAPI(state => state.addItem);
-        
+
         const inputRef = useRef<HTMLInputElement>(null);
-        
+
         useLayoutEffect(() => {
             inputRef.current.value = getDefaultValue(vxkey, propertyPath, vxRefObj.current);
-            
+
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = state.properties[trackKey];
 
-                if(inputRef.current && newValue){
-                    if(newValue.toString() !== inputRef.current.value){
+                if (inputRef.current && newValue) {
+                    if (newValue.toString() !== inputRef.current.value) {
                         inputRef.current.value = newValue.toString()
                     }
                 }
@@ -45,9 +45,9 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
 
-            if(onChange){
+            if (onChange) {
                 onChange(newValue);
-            }else {
+            } else {
                 modifyPropertyValue("press", vxkey, propertyPath, newValue);
                 invalidate();
             }
@@ -60,19 +60,14 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         }, [vxkey])
 
         return (
-            <ContextMenu>
-                <ContextMenuTrigger>
-                    <Input
-                        ref={inputRef}
-                        onChange={handleChange}
-                        type='number'
-                        step={0.1}
-                        className="h-fit text-[10px] bg-secondary-opaque p-0.5 max-w-[40px] border border-primary-thin"
-                        {...inputProps}
-                    />
-                </ContextMenuTrigger>
-                <ValureRendererContextMenu inputRef={inputRef} vxkey={vxkey} propertyPath={propertyPath}/>
-            </ContextMenu>
+            <Input
+                ref={inputRef}
+                onChange={handleChange}
+                type='number'
+                step={0.1}
+                className="h-fit text-[10px] bg-secondary-opaque p-0.5 max-w-[40px] border border-primary-thin"
+                {...inputProps}
+            />
         );
     }
 );
@@ -80,7 +75,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 export default ValueRenderer
 
 
-const ValureRendererContextMenu = ({inputRef, vxkey, propertyPath}: {inputRef: React.RefObject<HTMLInputElement>, vxkey: string, propertyPath: string}) => {
+const ValureRendererContextMenu = ({ inputRef, vxkey, propertyPath }: { inputRef: React.RefObject<HTMLInputElement>, vxkey: string, propertyPath: string }) => {
     const isNumberInClipboard = useClipboardManagerAPI(state => state.items.has("number"))
 
     const handleOnCopy = () => {
@@ -93,16 +88,16 @@ const ValureRendererContextMenu = ({inputRef, vxkey, propertyPath}: {inputRef: R
 
         inputRef.current.value = value.toString();
     }
-    
+
     return (
         <ContextMenuContent>
             <ContextMenuItem onClick={handleOnCopy}>
                 Copy Value
             </ContextMenuItem>
             {isNumberInClipboard &&
-            <ContextMenuItem onClick={handleOnPaste}>
-                Paste Value
-            </ContextMenuItem>
+                <ContextMenuItem onClick={handleOnPaste}>
+                    Paste Value
+                </ContextMenuItem>
             }
         </ContextMenuContent>
     )

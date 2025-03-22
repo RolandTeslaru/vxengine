@@ -30,6 +30,9 @@ export type VXBaseInputType = {
 }
 export type VXNumberInputType = VXBaseInputType & {
     type: "number"
+    min?: number
+    max?: number
+    step?: number
 }
 
 export type VXSliderInputType = VXBaseInputType & {

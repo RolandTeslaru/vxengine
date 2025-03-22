@@ -7,12 +7,13 @@ import Search from '@vxengine/components/ui/Search';
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
-import Tree, { RenderNodeContentProps } from '@vxengine/components/ui/Tree';
+import Tree from '@vxengine/components/ui/Tree';
 import classNames from 'classnames';
 import { useVXEngine } from '@vxengine/engine';
 import { ArrowDown, ArrowUp, Info, Sun, Video, X } from '@vxengine/components/ui/icons';
 import VxObjectData from '@vxengine/components/ui/DataContextContext/VxObject';
 import { handleOnVxObjectClick, handleOnVxObjectContextMenu } from '../utils/handleVxObject';
+import { RenderNodeContentProps } from '@vxengine/components/ui/Tree/types';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -37,7 +38,7 @@ const ObjectTree = () => {
 
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredTree = useMemo(() => filterTree(tree, searchQuery), [tree, searchQuery]);
+    // const filteredTree = useMemo(() => filterTree(tree, searchQuery), [tree, searchQuery]);
 
     const renderNodeContent: RenderNodeContentProps = (node, { NodeTemplate }) => <ObjectTreeNode node={node} NodeTemplate={NodeTemplate} />
 
@@ -58,7 +59,7 @@ const ObjectTree = () => {
             <div className='max-h-[550px] rounded-b-xl overflow-y-scroll text-sm'>
                 <Tree 
                     defaultExpandedKeys={defaultExpandedKeys} 
-                    tree={filteredTree as any} 
+                    tree={tree as any} 
                     renderNodeContent={renderNodeContent} 
                     size='md' 
                 />

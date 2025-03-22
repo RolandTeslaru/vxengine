@@ -1,49 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import s from "./s.module.scss"
 import classNames from 'classnames'
+import { TreeNodeDataType, TreeNodeProps, TreeProps } from './types'
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
+import JsonView from 'react18-json-view'
 
-type TreeNodeType = {
-    key: string
-    children: Record<string, TreeNodeType>
-}
-
-interface NodeTemplateProps {
-    NodeTemplate: React.FC<{
-        children: React.ReactNode,
-        className?: string,
-        onClick?: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void,
-        onContextMenu?: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void,
-        listClassNames?: string
-    }>;
-}
-
-export type RenderNodeContentProps = (node: any, NodeTemplate: NodeTemplateProps) => React.ReactNode;
-
-interface TreeProps {
-    tree: Record<string, TreeNodeType>
-    renderNodeContent: RenderNodeContentProps
-    size?: "sm" | "md",
-    defaultExpandedKeys?: Record<string, any>
-    className?: string
-}
-
-interface TreeNodeProps {
-    node: TreeNodeType
-    level: number
-    siblings: number
-    indexToParent: number
-    size?: "sm" | "md"
-    renderNodeContent?: RenderNodeContentProps
-}
-
-const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, className, ...restNodeProps }) => {
+const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, createBranch, className, ...restNodeProps }) => {
     const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>(defaultExpandedKeys)
     const childrenLength = Object.values(tree).length
 
-    const toggleExpand = (key: string) => {
+    const toggleExpand = (nodeKey: string, node: TreeNodeDataType) => {
+        if (!expandedKeys[nodeKey] && node.children === null && node.rawObject) {
+            const loadedChildren = createBranch(node.rawObject, "", nodeKey);
+            node.children = loadedChildren
+        }
         setExpandedKeys((prev) => ({
             ...prev,
-            [key]: !prev[key],
+            [nodeKey]: !prev[nodeKey],
         }));
     }
 
@@ -52,8 +25,8 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, className, 
             const isFinalSibling = siblings - 1 === indexToParent
             const isExpanded = expandedKeys[node.key] || false;
 
-            const childrenLength = Object.keys(node.children).length
-            const hasChildren = childrenLength > 0;
+
+            const canBeExpanded = ("rawObject" in node && node.children === null) || Object.values(node.children).length > 0
 
             return (
                 <>
@@ -73,9 +46,9 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, className, 
                                             `relative w-full flex items-center py-1 gap-2 bg-transparent`)}
                                         {...rest}
                                     >
-                                        {hasChildren ?
+                                        {canBeExpanded ?
                                             <TreeCollapseButton
-                                                onClick={() => toggleExpand(node.key)}
+                                                onClick={() => toggleExpand(node.key, node)}
                                                 isFinalSibling={isFinalSibling}
                                                 isExpanded={isExpanded}
                                                 level={level}
@@ -95,13 +68,13 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, className, 
                                     </div>
 
                                     {/* Render Children */}
-                                    {isExpanded && hasChildren && (
+                                    {isExpanded && canBeExpanded && (
                                         <ul role="group" className='m-0 p-0'>
-                                            {Object.values(node.children).map((child, i) =>
+                                            {node.children && Object.values(node.children).map((child, i) =>
                                                 <TreeNode
                                                     key={`tree-${node.key}-${i}`}
                                                     node={child}
-                                                    siblings={childrenLength}
+                                                    siblings={Object.values(node.children).length}
                                                     indexToParent={i}
                                                     level={level + 1}
                                                     renderNodeContent={renderNodeContent}
@@ -182,4 +155,16 @@ const TreeLineCorner = ({ level, size }) => {
 
 const TreeLineConnect = () => {
     return <div className={`ml-2 w-2 h-[1px] content-[" "] bg-neutral-500`}></div>
+}
+
+
+
+
+
+const TreeNodeContextMenu = ({ node }) => {
+    return (
+        <ContextMenuContent>
+            <JsonView src={node} className='text-xs bg-neutral-800 rounded-md' />
+        </ContextMenuContent>
+    )
 }

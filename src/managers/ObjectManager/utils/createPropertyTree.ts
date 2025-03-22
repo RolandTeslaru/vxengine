@@ -1,13 +1,14 @@
 import * as THREE from "three"
 import { VXElementParam } from "@vxengine/vxobject/types";
 
-export interface ParamTreeNode {
+export type ParamTreeNodeDataType = {
     key: string; // The name of the property
-    children: Record<string, ParamTreeNode>; // Nested children
-    param: VXElementParam
+    children: Record<string, ParamTreeNodeDataType>; // Nested children
+    param?: VXElementParam;
+    rawObject: Record<string, any>
 }
 
-export type ParamTree = Record<string, ParamTreeNode>
+export type ParamTree = Record<string, ParamTreeNodeDataType>
 
 const isValidValue = (value: any) =>
     typeof value === "number" || (value instanceof THREE.Color && value.isColor);
@@ -17,6 +18,40 @@ const getValueType = (value: any) => {
         return "number"
     else if (value instanceof THREE.Color || value.isColor)
         return "color"
+}
+
+export function createParamTreeLevel(
+    obj: Record<string, any>,
+    prefix = "",
+    parentKey = ""
+): Record<string, ParamTreeNodeDataType> {
+    const tree: Record<string, ParamTreeNodeDataType> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+        if (isValidValue(value)) {
+            const propertyPath = prefix ? `${prefix}.${fullKey}` : `${fullKey}`
+            tree[key] = {
+                key,
+                param: {
+                    propertyPath,
+                    type: getValueType(value),
+                },
+                rawObject: null,
+                children: {} // Leaf nodes – no children to load
+            };
+        } else if (typeof value === "object" && value !== null) {
+            // Instead of traversing further, mark as expandable
+            tree[key] = {
+                key,
+                children: null, // Indicates children are not loaded yet
+                rawObject: value, // Save the reference to load later
+            };
+        }
+    }
+
+    return tree;
 }
 
 export function createParamTree(
