@@ -81,6 +81,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
     const hasSideEffect = animationEngineInstance.hasSideEffect(trackKey)
 
     const isPropertyTracked = !!useTimelineManagerAPI.getState().tracks[trackKey]
+    const isPropertyStatic = !!useTimelineManagerAPI.getState().staticProps[trackKey]
 
     return (
         <ContextMenuContent>
@@ -135,15 +136,17 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                         Make Property Static
                     </ContextMenuItem>
                 }
-                <ContextMenuItem
-                    onClick={() => pushDialogStatic({
-                        content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
-                        type: "alert"
-                    })}
-                    variant="destructive"
-                >
-                    Remove Property
-                </ContextMenuItem>
+                {(isPropertyTracked || isPropertyStatic) &&
+                    <ContextMenuItem
+                        onClick={() => pushDialogStatic({
+                            content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
+                            type: "alert"
+                        })}
+                        variant="destructive"
+                    >
+                        Remove Property
+                    </ContextMenuItem>
+                }
             </>
                 :
                 <>

@@ -8,6 +8,8 @@ import Tree from '@vxengine/components/ui/Tree';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
 import { createParamTree, createParamTreeLevel, ParamTreeNodeDataType } from '../utils/createPropertyTree';
 import { filterParamTree } from '../utils/filterParamTree';
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import JsonView from 'react18-json-view';
 
 const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const refObject = (vxobject.ref.current as THREE.Mesh)
@@ -24,21 +26,26 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
     const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
         return (
-            <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-                <div className='flex flex-row w-full h-[22px]'>
-                    <p className={`text-xs my-auto font-light text-neutral-400`}>
-                        {node.key}
-                    </p>
-                    {node.param &&
-                        <ParamInput
-                            vxkey={vxobject.vxkey}
-                            vxRefObj={vxobject.ref}
-                            param={node.param}
-                            className="ml-auto w-fit"
-                        />
-                    }
-                </div>
-            </NodeTemplate>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <NodeTemplate className="hover:bg-neutral-950/40 px-2">
+                        <div className='flex flex-row w-full h-[22px]'>
+                            <p className={`text-xs my-auto font-light text-neutral-400`}>
+                                {node.key}
+                            </p>
+                            {node.param &&
+                                <ParamInput
+                                    vxkey={vxobject.vxkey}
+                                    vxRefObj={vxobject.ref}
+                                    param={node.param}
+                                    className="ml-auto w-fit"
+                                />
+                            }
+                        </div>
+                    </NodeTemplate>
+                </ContextMenuTrigger>
+                <ParamNodeContextMenu node={node} vxobject={vxobject} />
+            </ContextMenu>
         )
     }
 
@@ -54,9 +61,9 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             <ScrollArea className='h-96' scrollbarPosition='right'>
-                <Tree 
-                    tree={filteredPropertiesTree as Record<string, ParamTreeNodeDataType>} 
-                    renderNodeContent={renderNodeContent} 
+                <Tree
+                    tree={filteredPropertiesTree as Record<string, ParamTreeNodeDataType>}
+                    renderNodeContent={renderNodeContent}
                     createBranch={createParamTreeLevel}
                 />
             </ScrollArea>
@@ -65,3 +72,20 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 }
 
 export default MaterialParams
+
+
+
+
+const ParamNodeContextMenu = ({ node, vxobject }) => {
+    return (
+        <ContextMenuContent className='gap-1 text-xs'>
+            <p className='font-roboto-mono'>Node Object</p>
+            <JsonView className='bg-neutral-900' src={node} collapsed={({ depth }) => depth > 1} />
+
+            <p className='font-roboto-mono'>Vxobject Object</p>
+            <JsonView className='bg-neutral-900' src={vxobject} collapsed={({ depth }) => depth > 1} />
+
+
+        </ContextMenuContent>
+    )
+}

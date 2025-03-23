@@ -812,6 +812,8 @@ const processKey = (
       }
     }
   
+    console.log(`modifyng key ${key}.${propertyPath} with value ${newValue}`)
+
     // Instead of directly calling updateProperty here, return an update object.
     return { vxkey: key, propertyPath, value: newValue };
   };

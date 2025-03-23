@@ -8,6 +8,8 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import { VXElementParam } from '@vxengine/vxobject/types'
 import Tree from '@vxengine/components/ui/Tree'
 import { createParamTreeLevel, ParamTreeNodeDataType } from '../utils/createPropertyTree'
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
+import JsonView from 'react18-json-view'
 
 interface Props {
     vxobject: vxObjectProps
@@ -78,9 +80,9 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             noPadding={true}
         >
             <div className='flex flex-col'>
-                <Tree 
-                    tree={tree} 
-                    renderNodeContent={renderNodeContent} 
+                <Tree
+                    tree={tree}
+                    renderNodeContent={renderNodeContent}
                     createBranch={createParamTreeLevel}
                 />
             </div>
@@ -90,3 +92,19 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 }
 
 export default ParamList
+
+
+
+const ParamNodeContextMenu = ({ node, vxobject }) => {
+    return (
+        <ContextMenuContent className='gap-1 text-xs'>
+            <p className='font-roboto-mono'>Node Object</p>
+            <JsonView className='bg-neutral-900' src={node} />
+
+            <p className='text-xs font-roboto-mono'>Vxobject Object</p>
+            <JsonView className='bg-neutral-900' src={vxobject} />
+
+
+        </ContextMenuContent>
+    )
+}

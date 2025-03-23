@@ -33,6 +33,7 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, createBranc
                     {renderNodeContent &&
                         renderNodeContent(node, {
                             NodeTemplate: ({ children, className, listClassNames, ...rest }) => (
+
                                 <li
                                     role="treeitem"
                                     aria-selected="false"
@@ -83,7 +84,7 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, createBranc
                                             )}
                                         </ul>
                                     )}
-                                </li>
+                                </li >
                             )
                         })}
                 </>
@@ -161,10 +162,11 @@ const TreeLineConnect = () => {
 
 
 
-const TreeNodeContextMenu = ({ node }) => {
+const TreeNodeContextMenu = ({ vxkey, node }) => {
     return (
         <ContextMenuContent>
-            <JsonView src={node} className='text-xs bg-neutral-800 rounded-md' />
+            <p className='text-xs font-roboto-mono'>generalKey {`${vxkey}.${node.param.propertyPath}`}</p>
+            <JsonView src={node} className='text-xs bg-neutral-900 rounded-md' />
         </ContextMenuContent>
     )
 }
