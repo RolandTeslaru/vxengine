@@ -20,6 +20,11 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, createBranc
         }));
     }
 
+    // Reset expaneded keys when tree changes (usually when the object is changed )
+    useEffect(() => {
+        setExpandedKeys(defaultExpandedKeys)
+    }, [tree])
+
     const TreeNode: React.FC<TreeNodeProps> =
         ({ node, level, siblings, indexToParent, renderNodeContent, size = "sm" }) => {
             const isFinalSibling = siblings - 1 === indexToParent

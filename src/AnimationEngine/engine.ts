@@ -386,6 +386,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this._applyTracksOnObject(this._currentTime, rawObject)
     this._applyStaticPropsOnObject(rawObject, object3DRef);
+
+    this._propertyControlService.flushUpdates();
   }
 
 
