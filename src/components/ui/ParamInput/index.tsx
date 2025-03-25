@@ -8,7 +8,7 @@ import ParamSlider from './ParamSlider';
 import ParamColor from './ParamColor';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
-import { modifyPropertyValue, useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
+import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import animationEngineInstance from '@vxengine/singleton';
 import SideEffectData from '../DataContextContext/SideEffect';
 import { getProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
@@ -78,10 +78,10 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
     // @ts-expect-error
     const isParamInClipboard = useClipboardManagerAPI(state => state.items.has(paramType));
 
-    const hasSideEffect = animationEngineInstance.hasSideEffect(trackKey)
+    const hasSideEffect = animationEngineInstance.propertyControlService.hasSideEffect(trackKey)
 
-    const isPropertyTracked = !!useTimelineManagerAPI.getState().tracks[trackKey]
-    const isPropertyStatic = !!useTimelineManagerAPI.getState().staticProps[trackKey]
+    const isPropertyTracked = useTimelineManagerAPI(state => !!state.tracks[trackKey])
+    const isPropertyStatic = useTimelineManagerAPI(state => !!state.staticProps[trackKey])
 
     return (
         <ContextMenuContent>
@@ -172,7 +172,7 @@ const handleOnCopyNumber = (vxkey: string, param: VXElementParam, vxRefObj:  Rea
 
 const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
     const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
-    modifyPropertyValue("press", vxkey, param.propertyPath, value);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, param.propertyPath, value)
 }
 
 const handleOnCopyColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
@@ -198,7 +198,7 @@ const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefObj:  Rea
 
     const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
 
-    modifyPropertyValue("press", vxkey, rPropertyPath, redValue, false);
-    modifyPropertyValue("press", vxkey, gPropertyPath, greenValue, false);
-    modifyPropertyValue("press", vxkey, bPropertyPath, blueValue, true);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, rPropertyPath, redValue, false);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, gPropertyPath, greenValue, false);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, bPropertyPath, blueValue, true);
 }

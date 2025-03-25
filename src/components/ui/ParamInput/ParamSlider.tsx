@@ -3,12 +3,12 @@ import { Slider } from '@vxengine/components/shadcn/slider'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { VXSliderInputType } from '@vxengine/vxobject/types'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import * as SliderPrimitive from "@radix-ui/react-slider"
 import { cn } from '@vxengine/utils'
 import s from "./styles.module.scss"
 import classNames from 'classnames'
 import KeyframeControl from '../KeyframeControl'
+import animationEngineInstance from '@vxengine/singleton'
 
 interface Props {
     vxkey: string
@@ -40,8 +40,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
     }, [vxkey, propertyPath])
 
     const handleChange = useCallback((newValue: number) => {
-        modifyPropertyValue("changing", vxkey, propertyPath, newValue);
-        invalidate();
+        animationEngineInstance.modifyParam("changing", vxkey, propertyPath, newValue);
     }, [vxkey, propertyPath]);
 
     useLayoutEffect(() => {
@@ -64,7 +63,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
                 //     console.log("Starting Drag");
                 //     modifyPropertyValue("start", vxkey, propertyPath, value)}}
                 onValueCommit={() => {
-                    modifyPropertyValue("end", vxkey, propertyPath, value)}}
+                    animationEngineInstance.modifyParam("end", vxkey, propertyPath, value)}}
                 
                 max={param.max}
                 min={param.min}

@@ -11,7 +11,7 @@ const Tree: React.FC<TreeProps> = ({ tree, defaultExpandedKeys = {}, createBranc
 
     const toggleExpand = (nodeKey: string, node: TreeNodeDataType) => {
         if (!expandedKeys[nodeKey] && node.children === null && node.rawObject) {
-            const loadedChildren = createBranch(node.rawObject, "", nodeKey);
+            const loadedChildren = createBranch(node.rawObject, node.currentPath, nodeKey);
             node.children = loadedChildren
         }
         setExpandedKeys((prev) => ({

@@ -1,4 +1,4 @@
-import { TrackSideEffectCallback } from "../../AnimationEngine/types/engine";
+import { PropertySideEffectType } from "@vxengine/AnimationEngine/types/PropertyControlService";
 
 export interface EditorObject {
     vxkey: string;
@@ -11,7 +11,7 @@ export interface EditorTrack {
     propertyPath: string;
     keyframes: Record<string, EditorKeyframe>;
     orderedKeyframeKeys: string[];
-    sideEffect?: TrackSideEffectCallback
+    sideEffect?: PropertySideEffectType
 }
 
 export interface EditorKeyframe {

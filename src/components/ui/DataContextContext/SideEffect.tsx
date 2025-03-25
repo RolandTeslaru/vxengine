@@ -2,7 +2,7 @@ import animationEngineInstance from '@vxengine/singleton';
 import React from 'react'
 
 const SideEffectData = ({ trackKey }: { trackKey: string }) => {
-    const sideEffect = animationEngineInstance.getSideEffect(trackKey);
+    const sideEffect = animationEngineInstance.propertyControlService.getSideEffect(trackKey);
 
     const data = {
         callback: sideEffect.toString()

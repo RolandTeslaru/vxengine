@@ -1,11 +1,11 @@
 import React, { useRef, FC, memo, useCallback, useLayoutEffect } from 'react'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { getNestedProperty } from '@vxengine/utils/nestedProperty'
-import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store'
 import { Input } from '@vxengine/components/shadcn/input'
 import { invalidate } from '@react-three/fiber'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu'
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store'
+import animationEngineInstance from '@vxengine/singleton'
 
 interface ValueRendererProps {
     vxkey: string
@@ -47,10 +47,8 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
             if (onChange) {
                 onChange(newValue);
-            } else {
-                modifyPropertyValue("press", vxkey, propertyPath, newValue);
-                invalidate();
-            }
+            } else
+                animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue,true);
         }, [vxkey]);
 
         const handleOnCopy = useCallback(() => {
@@ -84,7 +82,7 @@ const ValureRendererContextMenu = ({ inputRef, vxkey, propertyPath }: { inputRef
 
     const handleOnPaste = () => {
         const value = useClipboardManagerAPI.getState().getItemByType("number") as number
-        modifyPropertyValue("press", vxkey, propertyPath, value);
+        animationEngineInstance.modifyParam("press", vxkey, propertyPath, value);
 
         inputRef.current.value = value.toString();
     }

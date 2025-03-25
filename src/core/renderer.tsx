@@ -130,7 +130,7 @@ const SceneDriver = React.memo(() => {
       parentKey: "global"
     }
     addObject(newSceneEntity, IS_DEVELOPMENT);
-    animationEngineInstance.registerObject(newSceneEntity);
+    animationEngineInstance.handleObjectMount(newSceneEntity);
 
   }, [])
   return null;

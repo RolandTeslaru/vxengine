@@ -1,4 +1,5 @@
 import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu';
+import { TrackData } from '@vxengine/components/ui/DataContextContext/Track';
 import TrackSegmentData from '@vxengine/components/ui/DataContextContext/TrackSegment';
 import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
 import { TrackSegmentEditor } from '@vxengine/managers/TimelineManager/TrackSegmentProperties';
@@ -26,7 +27,13 @@ const TrackSegmentContextMenu: React.FC<Props> = React.memo((props) => {
                 </ContextMenuSubContent>
             </ContextMenuSub>
             <ContextMenuSub>
-                <ContextMenuSubTrigger>Show Data...</ContextMenuSubTrigger>
+                <ContextMenuSubTrigger>Show Track Data</ContextMenuSubTrigger>
+                <ContextMenuContent>
+                    <TrackData trackKey={trackKey}/>
+                </ContextMenuContent>
+            </ContextMenuSub>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>Show Segment Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <TrackSegmentData {...props}/>
                 </ContextMenuSubContent>

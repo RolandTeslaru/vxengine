@@ -118,11 +118,11 @@ const VXHtmlElementWrapper: React.FC<VXHtmlElementWrapperProps> =
 
             addObject(newVXElement, IS_DEVELOPMENT, { icon });
             if(!declarative)
-                animationEngineInstance.registerObject(newVXElement);
+                animationEngineInstance.handleObjectMount(newVXElement);
 
             return () => {
                 if(!declarative)
-                    animationEngineInstance.unregisterObject(vxkey);
+                    animationEngineInstance.handleObjectUnMount(vxkey);
                 removeObject(vxkey, IS_DEVELOPMENT)
             }
         }, []);

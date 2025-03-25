@@ -9,9 +9,7 @@ import { ObjectParamsPanel } from "../managers/ObjectManager/ui"
 import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
 import { StandardWindowStyling, VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
-import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
-import ParamList from "@vxengine/managers/ObjectManager/Panels/ParamList"
 import SettingsList from "@vxengine/managers/ObjectManager/Panels/SettingsList"
 import { useObjectManagerAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager"
 import { WindowControlDots } from "@vxengine/components/ui/WindowControlDots"
@@ -24,6 +22,7 @@ import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegm
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
+import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 
 export const VXStudio = () => {
     const { IS_PRODUCTION } = useVXEngine();

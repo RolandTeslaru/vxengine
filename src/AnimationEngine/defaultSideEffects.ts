@@ -2,34 +2,53 @@ import * as THREE from "three";
 import { TrackSideEffectCallback } from "./types/engine";
 import { logReportingService } from "./services/LogReportingService";
 
-export const defaultSideEffects: Record<string, TrackSideEffectCallback> = {
-  "splineProgress": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
-    const splineKey = `${vxkey}.spline`;
-    const spline = animationEngine.splineService.getSpline(splineKey);
 
-    if(!spline)
-      logReportingService.logError(`Could not get spline "${splineKey}" from cache`, {module: "DefaultSideEffects", additionalData: animationEngine.splineService})
+export const defaultSideEffectsMap = new Map<string, TrackSideEffectCallback>([
+  [
+    "splineProgress",
+    (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+      const splineKey = `${vxkey}.spline`;
+      const spline = animationEngine.splineService.getSpline(splineKey);
 
-    const interpolatedPosition = spline.get_point(newValue / 100);
-    object3DRef.position.set(
-      interpolatedPosition.x,
-      interpolatedPosition.y,
-      interpolatedPosition.z
-    )
-  },
-  "splineTension": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
-    const splineKey = `${vxkey}.spline`;
-    const wasm_spline = animationEngine.splineService.getSpline(splineKey);
+      if (!spline) {
+        logReportingService.logError(
+          `Could not get spline "${splineKey}" from cache`,
+          { module: "DefaultSideEffects", additionalData: animationEngine.splineService }
+        );
+      }
 
-    wasm_spline.change_tension(newValue);
-  },
-  "rotationDegrees.x": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
-    object3DRef.rotation.x = THREE.MathUtils.degToRad(newValue);
-  },
-  "rotationDegrees.y": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
-    object3DRef.rotation.y = THREE.MathUtils.degToRad(newValue);
-  },
-  "rotationDegrees.z": (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
-    object3DRef.rotation.z = THREE.MathUtils.degToRad(newValue);
-  },
-}
+      const interpolatedPosition = spline.get_point(newValue / 100);
+      object3DRef.position.set(
+        interpolatedPosition.x,
+        interpolatedPosition.y,
+        interpolatedPosition.z
+      );
+    },
+  ],
+  [
+    "splineTension",
+    (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+      const splineKey = `${vxkey}.spline`;
+      const wasm_spline = animationEngine.splineService.getSpline(splineKey);
+      wasm_spline.change_tension(newValue);
+    },
+  ],
+  [
+    "rotationDegrees.x",
+    (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+      object3DRef.rotation.x = THREE.MathUtils.degToRad(newValue);
+    },
+  ],
+  [
+    "rotationDegrees.y",
+    (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+      object3DRef.rotation.y = THREE.MathUtils.degToRad(newValue);
+    },
+  ],
+  [
+    "rotationDegrees.z",
+    (animationEngine, vxkey, propertyPath, object3DRef: THREE.Object3D, newValue) => {
+      object3DRef.rotation.z = THREE.MathUtils.degToRad(newValue);
+    },
+  ],
+]);

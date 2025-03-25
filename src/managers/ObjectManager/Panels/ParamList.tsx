@@ -40,11 +40,13 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
         const tree: Record<string, ParamTreeNodeDataType> = {}
         params.forEach((param) => {
             if (!excludeParamKeys.includes(param.propertyPath))
+                
                 tree[param.propertyPath] = {
                     key: param.title ?? param.propertyPath,
                     children: {},
                     param,
-                    rawObject: refObject
+                    rawObject: refObject,
+                    currentPath: param.propertyPath
                 }
         })
         return tree;

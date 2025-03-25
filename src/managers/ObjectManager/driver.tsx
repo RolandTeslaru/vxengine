@@ -2,7 +2,7 @@ import { TransformControls, useCamera } from "@react-three/drei";
 import React, { useMemo } from "react";
 import { useEffect, useRef, useState } from "react";
 import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
-import { modifyPropertyValue, truncateToDecimals, useTimelineManagerAPI } from "../TimelineManager/store";
+import { useTimelineManagerAPI } from "../TimelineManager/store";
 import { vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useRefStore } from "@vxengine/utils";
 import { debounce, throttle } from "lodash";
@@ -10,6 +10,7 @@ import * as THREE from "three";
 import { useObjectSettingsAPI } from "./stores/settingsStore";
 import { useVXObjectStore } from "./stores/objectStore";
 import { ThreeEvent } from "@react-three/fiber";
+import animationEngineInstance from "@vxengine/singleton";
 
 const axisMap = {
   X: 'x',
@@ -93,9 +94,9 @@ export const ObjectManagerDriver = () => {
 
   // Create debounced functions for each axis using useMemo
   const debouncedPropertyValueChangeFunctions = useMemo(() => ({
-    X: debounce((vxkey, propertyPath, newValue) => modifyPropertyValue("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-    Y: debounce((vxkey, propertyPath, newValue) => modifyPropertyValue("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-    Z: debounce((vxkey, propertyPath, newValue) => modifyPropertyValue("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
+    X: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
+    Y: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
+    Z: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
   }), []);
 
   // Cleanup debounced functions on unmount

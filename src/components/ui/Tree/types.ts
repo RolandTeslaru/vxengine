@@ -3,6 +3,7 @@ export type TreeNodeDataType = {
     key: string
     children: Record<string, TreeNodeDataType>
     rawObject: Record<string, any>
+    currentPath: string
 }
 
 export interface TreeNodeElementTemplateProps {

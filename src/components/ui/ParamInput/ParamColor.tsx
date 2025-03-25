@@ -1,9 +1,6 @@
 import React, { useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import KeyframeControl from '../KeyframeControl';
-import ValueRenderer from '../ValueRenderer';
-import { modifyPropertyValue } from '@vxengine/managers/TimelineManager/store';
 import { getNestedProperty } from '@vxengine/utils';
 import { hslToRgb, rgbToHsl } from './utils';
 import { invalidate } from '@react-three/fiber';
@@ -12,6 +9,7 @@ import { hsl } from "../ColorPicker/types"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
 import ParamInput from '.';
+import animationEngineInstance from '@vxengine/singleton';
 
 interface ParamColorProps {
     vxkey: string
@@ -76,9 +74,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("changing", vxkey, rPropertyPath, r, false);
-        modifyPropertyValue("changing", vxkey, gPropertyPath, g, false);
-        modifyPropertyValue("changing", vxkey, bPropertyPath, b, true);
+        animationEngineInstance.modifyParam("changing", vxkey, rPropertyPath, r, false);
+        animationEngineInstance.modifyParam("changing", vxkey, gPropertyPath, g, false);
+        animationEngineInstance.modifyParam("changing", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -88,9 +86,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("start", vxkey, rPropertyPath, r, false);
-        modifyPropertyValue("start", vxkey, gPropertyPath, g, false);
-        modifyPropertyValue("start", vxkey, bPropertyPath, b, true);
+        animationEngineInstance.modifyParam("start", vxkey, rPropertyPath, r, false);
+        animationEngineInstance.modifyParam("start", vxkey, gPropertyPath, g, false);
+        animationEngineInstance.modifyParam("start", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -100,31 +98,14 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        modifyPropertyValue("end", vxkey, rPropertyPath, r, false);
-        modifyPropertyValue("end", vxkey, gPropertyPath, g, false);
-        modifyPropertyValue("end", vxkey, bPropertyPath, b, true);
+        animationEngineInstance.modifyParam("end", vxkey, rPropertyPath, r, false);
+        animationEngineInstance.modifyParam("end", vxkey, gPropertyPath, g, false);
+        animationEngineInstance.modifyParam("end", vxkey, bPropertyPath, b, true);
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
         invalidate();
     }, [])
-
-
-    const handleCopyColor = (e: React.MouseEvent<HTMLDivElement>) => {
-        useClipboardManagerAPI.getState().addItem("color", colorRef.current)
-    }
-
-    const handlePasteColor = () => {
-        const hsl = useClipboardManagerAPI.getState().getItemByType("color") as hsl;
-        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
-
-        modifyPropertyValue("press", vxkey, rPropertyPath, r, false);
-        modifyPropertyValue("press", vxkey, gPropertyPath, g, false);
-        modifyPropertyValue("press", vxkey, bPropertyPath, b, true);
-
-        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-    }
-
 
     return (
         <>

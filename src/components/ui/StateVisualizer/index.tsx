@@ -1,23 +1,25 @@
 import React, { useState } from "react";
-import { useWindowContext, VXEngineWindow } from "../../core/components/VXEngineWindow";
 import { useObjectSettingsAPI, useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import { useObjectManagerAPI, useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../shadcn/select";
-import { useUIManagerAPI } from "../../managers/UIManager/store";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
 import { useSourceManagerAPI } from "@vxengine/managers/SourceManager";
 import { useEffectsManagerAPI } from "@vxengine/managers/EffectsManager";
 import { useCameraManagerAPI } from "@vxengine/managers/CameraManager";
-import Search from "./Search";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { useRefStore } from "@vxengine/utils";
-import { refStoreProps, trackSegmentsRef } from "@vxengine/utils/useRefStore";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import { useVXEngine } from "@vxengine/engine";
-import { AlertTriangle } from "./icons";
 import { useClipboardManagerAPI } from "@vxengine/managers/ClipboardManager/store";
+import animationEngineInstance from "@vxengine/singleton";
+import { AlertTriangle } from "../icons";
+import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
+import { useWindowContext } from "@vxengine/core/components/VXEngineWindow";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@vxengine/components/shadcn/select";
+import { processState } from "./utils";
+import Search from "../Search";
+
 
 // Utility function to remove functions from state objects
 const filterOutFunctions = (state) => {
@@ -28,13 +30,14 @@ const filterOutFunctions = (state) => {
 };
 
 // Generic component to display state using JsonView
-const StateVisualizerComponent = ({ state, collapsedDepth = 1 }) => {
-  const filteredState = filterOutFunctions(state);
+const StateVisualizerComponent = ({ state, collapsedDepth = 1, customizeNode = null }) => {
+  const sanitizedState = processState(state);
   return (
     <JsonView
-      src={filteredState}
+      src={sanitizedState}
       collapsed={({ depth }) => depth > collapsedDepth}
       dark={true}
+      customizeNode={customizeNode}
     />
   );
 };
@@ -193,19 +196,15 @@ const AnimationEngineVisualizer = () => {
   return <StateVisualizerComponent state={state} collapsedDepth={1} />;
 };
 
+const AnimationEngineInstanceVisualizer = () => {
+  const state = animationEngineInstance;
+  return <StateVisualizerComponent state={state} collapsedDepth={1}/>
+};
+
 
 const ClipboardManagerVisualizer = () => {
   const state = useClipboardManagerAPI();
-
-  const convertedState = {
-    items: extractDatasetFromMap(state.items)
-  }
-
-  return <JsonView
-    src={convertedState}
-    collapsed={({ depth }) => depth > 3}
-    dark={true}
-  />
+  return <StateVisualizerComponent state={state} collapsedDepth={1}/>
 }
 
 
@@ -213,23 +212,7 @@ const ClipboardManagerVisualizer = () => {
 // RefStore Visualizer (using your custom component)
 const RefStoreVisualizer = () => {
   const state = useRefStore();
-
-  // Convert Map data to a plain object
-
-
-  const convertedState = {
-    ...state,
-    keyframesRef: extractDatasetFromMap(state.keyframesRef),
-    trackSegmentsRef: extractDatasetFromMap(state.trackSegmentsRef),
-  };
-
-  return (
-    <JsonView
-      src={convertedState}
-      collapsed={({ depth }) => depth > 3}
-      dark={true}
-    />
-  );
+  return <StateVisualizerComponent  state={state} collapsedDepth={1}/>
 };
 
 /** Mapping of API names to their respective visualizer components **/
@@ -245,6 +228,7 @@ const visualizerMapping = {
   ObjectSettingsAPI: ObjectSettingsVisualizer,
   VXObjectStore: VXObjectStoreVisualizer,
   UIManagerAPI: UIManagerVisualizer,
+  animationEngineInstance: AnimationEngineInstanceVisualizer,
   AnimationEngineAPI: AnimationEngineVisualizer,
   RefStore: RefStoreVisualizer,
 };
@@ -307,11 +291,3 @@ const StateVisualizer = () => {
 };
 
 export default StateVisualizer;
-
-function extractDatasetFromMap(map) {
-  const obj = {};
-  for (let [key, value] of map) {
-    obj[key] = value?.dataset ? { dataset: { ...value.dataset } } : value;
-  }
-  return obj;
-}

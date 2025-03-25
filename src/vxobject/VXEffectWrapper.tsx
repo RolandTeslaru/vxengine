@@ -101,10 +101,10 @@ const VXEffectWrapper = <T extends keyof ThreeElements>({
 
         vxObjectStoreAPI.addObject(newVXEntity, IS_DEVELOPMENT, { icon });
 
-        animationEngineInstance.registerObject(newVXEntity);
+        animationEngineInstance.handleObjectMount(newVXEntity);
 
         return () => {
-            animationEngineInstance.unregisterObject(vxkey);
+            animationEngineInstance.handleObjectUnMount(vxkey);
             vxObjectStoreAPI.removeObject(vxkey, IS_DEVELOPMENT)
         }
     }, []);

@@ -6,6 +6,7 @@ export type ParamTreeNodeDataType = {
     children: Record<string, ParamTreeNodeDataType>; // Nested children
     param?: VXElementParam;
     rawObject: Record<string, any>
+    currentPath: string
 }
 
 export type ParamTree = Record<string, ParamTreeNodeDataType>
@@ -28,12 +29,13 @@ export function createParamTreeLevel(
     const tree: Record<string, ParamTreeNodeDataType> = {};
 
     for (const [key, value] of Object.entries(obj)) {
-        const fullKey = parentKey ? `${parentKey}.${key}` : key;
+        const currentPath = prefix ? `${prefix}.${key}` : key;
 
         if (isValidValue(value)) {
-            const propertyPath = prefix ? `${prefix}.${fullKey}` : `${fullKey}`
+            const propertyPath = currentPath
             tree[key] = {
                 key,
+                currentPath: currentPath,
                 param: {
                     propertyPath,
                     type: getValueType(value),
@@ -47,6 +49,7 @@ export function createParamTreeLevel(
                 key,
                 children: null, // Indicates children are not loaded yet
                 rawObject: value, // Save the reference to load later
+                currentPath: currentPath
             };
         }
     }
