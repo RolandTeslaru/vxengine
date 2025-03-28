@@ -17,7 +17,7 @@ interface ParamColorProps {
     param: { propertyPath: string }
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string, vxRefObj: any) => getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string, vxRefObj: any) => getProperty(vxkey, propertyPath) ?? getNestedProperty(vxRefObj, propertyPath) ?? 0
 
 const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     const isColorInClipboard = useClipboardManagerAPI(state => state.items.has("color"));

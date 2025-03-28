@@ -242,7 +242,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     } else {
       this._applyTracksOnTimeline(time)
       this._updateCameraIfNeeded();
-      this._propertyControlService.flushUpdates();
+      this._propertyControlService.flushUiUpdates();
       this.trigger('timeUpdatedByEditor', { time, engine: this });
 
       invalidate();
@@ -278,7 +278,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyAllStaticProps();
     this._applyTracksOnTimeline(targetTime)
     this._updateCameraIfNeeded();
-    this.propertyControlService.flushUpdates()
+    this.propertyControlService.flushUiUpdates()
 
     invalidate();
   }
@@ -387,7 +387,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyTracksOnObject(this._currentTime, rawObject)
     this._applyStaticPropsOnObject(rawObject, object3DRef);
 
-    this._propertyControlService.flushUpdates();
+    this._propertyControlService.flushUiUpdates();
   }
 
 
@@ -439,7 +439,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyTracksOnTimeline(newCurrentTime);
     this._updateCameraIfNeeded();
 
-    this._propertyControlService.flushUpdates();
+    this._propertyControlService.flushUiUpdates();
 
     invalidate();
 

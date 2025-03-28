@@ -15,7 +15,7 @@ interface ValueRendererProps {
     onChange?: (newValue: number) => void;
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey, propertyPath) || getNestedProperty(obj, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey, propertyPath) ?? getNestedProperty(obj, propertyPath) ?? 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
     ({ vxkey, param, inputProps, onChange, vxRefObj }) => {

@@ -17,7 +17,7 @@ interface Props {
     param: VXSliderInputType
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string) => getProperty(vxkey, propertyPath) || 0
+const getDefaultValue = (vxkey: string, propertyPath: string) => getProperty(vxkey, propertyPath) ?? 0
 
 const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
     const { propertyPath } = param;

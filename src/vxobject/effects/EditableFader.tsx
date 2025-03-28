@@ -42,7 +42,6 @@ export const EditableFadeEffect: React.FC<VXElementFadeEffect> = ({
     vxkey = "fadeEffect", name= "Fade Effect", fadeIntensity = 1.0, ...rest
 }) => {
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
-
     return (
         <VXEffectWrapper 
             vxkey={vxkey}

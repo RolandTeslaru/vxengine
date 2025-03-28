@@ -24,7 +24,7 @@ export class PropertyControlService {
     private _propertySetterCache: Map<string, PropertySetterType> = new Map()
     private _sideEffects: Map<string, PropertySideEffectType> = new Map()
 
-    private _pendingUpdates: Map<string, number> = new Map()
+    private _pendingUiUpdates: Map<string, number> = new Map()
 
     public static defaultSideEffects: Map<string, PropertySideEffectType> = defaultSideEffectsMap;
 
@@ -65,10 +65,10 @@ export class PropertyControlService {
      * @param propertyPath - The path to the property being updated
      * @param value - The new value to set
      */
-    public queuePropertyStoreUpdate(vxkey: string, propertyPath: string, value: number) {
+    public queueUiUpdate(vxkey: string, propertyPath: string, value: number) {
         if (this._IS_DEVELOPMENT) {
             const trackKey = `${vxkey}.${propertyPath}`
-            this._pendingUpdates.set(trackKey, value)
+            this._pendingUiUpdates.set(trackKey, value)
         }
     }
 
@@ -79,14 +79,14 @@ export class PropertyControlService {
      * Flushes all pending property updates to the property store.
      * Only works in development mode and when there are pending updates.
      */
-    public flushUpdates() {
-        if (this._IS_DEVELOPMENT && this._pendingUpdates.size > 0) {
+    public flushUiUpdates() {
+        if (this._IS_DEVELOPMENT && this._pendingUiUpdates.size > 0) {
             useObjectPropertyAPI.setState(produce((state: ObjectPropertyStoreProps) => {
-                this._pendingUpdates.forEach((_newValue, _trackKey) => {
+                this._pendingUiUpdates.forEach((_newValue, _trackKey) => {
                     state.properties[_trackKey] = _newValue
                 })
             }))
-            this._pendingUpdates.clear();
+            this._pendingUiUpdates.clear();
         }
     }
 
@@ -123,7 +123,7 @@ export class PropertyControlService {
         if (!!sideEffect)
             sideEffect(this._animationEngine, vxkey, propertyPath, objectRef, newValue)
 
-        this.queuePropertyStoreUpdate(vxkey, propertyPath, newValue)
+        this.queueUiUpdate(vxkey, propertyPath, newValue)
     }
 
 
@@ -219,8 +219,18 @@ export class PropertyControlService {
         }
 
         const finalKey = propertyKeys[propertyKeys.length - 1]
-        return (newValue) => {
-            target[finalKey] = newValue;
+        if(target instanceof Map){
+            const entry = target.get(finalKey);
+            if(entry && typeof entry === 'object' && 'value' in entry){
+                console.log("Found entry in map for vxkey", vxkey, "propertyPath", propertyPath, "entry", entry, "target", target)
+                return (newValue: number) => {
+                    entry.value = newValue;
+                }
+            }
+        }else {
+            return (newValue: number) => {
+                target[finalKey] = newValue;
+            }
         }
     }
 
@@ -288,7 +298,7 @@ export class PropertyControlService {
         // Hydrates or creates the staticProp or keyframe
         this._processParamModification(mode, vxkey, propertPath, state, time, newValue);
 
-        this.queuePropertyStoreUpdate(vxkey, propertPath, newValue);
+        this.queueUiUpdate(vxkey, propertPath, newValue);
 
         if (reRender)
             this._animationEngine.reRender({ force: true })
