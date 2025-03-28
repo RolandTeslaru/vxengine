@@ -104,7 +104,7 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
 
     return (
         <>
-            <li className={`flex items-center dark:hover:bg-neutral-800 hover:bg-neutral-300 w-full px-1`}
+            <li className={`flex items-center dark:hover:bg-neutral-800 hover:bg-neutral-300 px-1`}
                 style={{ height: DEFAULT_ROW_HEIGHT }}
             >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>

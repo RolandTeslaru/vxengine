@@ -26,26 +26,23 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
     const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
         return (
-            <ContextMenu>
-                <ContextMenuTrigger>
-                    <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-                        <div className='flex flex-row w-full h-[22px]'>
-                            <p className={`text-xs my-auto font-light text-neutral-400`}>
-                                {node.key}
-                            </p>
-                            {node.param &&
-                                <ParamInput
-                                    vxkey={vxobject.vxkey}
-                                    vxRefObj={vxobject.ref}
-                                    param={node.param}
-                                    className="ml-auto w-fit"
-                                />
-                            }
-                        </div>
-                    </NodeTemplate>
-                </ContextMenuTrigger>
-                <ParamNodeContextMenu node={node} vxobject={vxobject} />
-            </ContextMenu>
+
+            <NodeTemplate className="hover:bg-neutral-950/40 px-2">
+                <div className='flex flex-row w-full h-[22px]'>
+                    <p className={`text-xs my-auto font-light text-neutral-400`}>
+                        {node.key}
+                    </p>
+                    {node.param &&
+                        <ParamInput
+                            vxkey={vxobject.vxkey}
+                            vxRefObj={vxobject.ref}
+                            param={node.param}
+                            className="ml-auto w-fit"
+                        />
+                    }
+                </div>
+            </NodeTemplate>
+
         )
     }
 
