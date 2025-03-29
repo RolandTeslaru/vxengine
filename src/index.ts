@@ -26,3 +26,4 @@ export { useAnimationFrame } from "./AnimationEngine"
 export { VXEngineWindow } from "./core/components/VXEngineWindow"
 
 export { VXThreeElementWrapper}
+export type { VXElementParams, VXElementParam } from "./vxobject/types"

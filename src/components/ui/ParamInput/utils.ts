@@ -1,4 +1,50 @@
+import { VXElementParam } from "@vxengine/vxobject/types";
 import { hsl } from "../ColorPicker/types";
+import { useClipboardManagerAPI } from "@vxengine/managers/ClipboardManager/store";
+import { getProperty } from "@vxengine/managers/ObjectManager/stores/managerStore";
+import { getNestedProperty } from "@vxengine/utils";
+import animationEngineInstance from "@vxengine/singleton";
+
+
+
+export const handleOnCopyNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath
+    const value = getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj.current, propertyPath);
+    useClipboardManagerAPI.getState().addItem("number", value);
+}
+
+export const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, param.propertyPath, value)
+}
+
+export const handleOnCopyColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath;
+    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
+    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
+    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
+
+    const redValue = getProperty(vxkey, rPropertyPath) || getNestedProperty(vxRefObj.current, rPropertyPath)
+    const greenValue = getProperty(vxkey, gPropertyPath) || getNestedProperty(vxRefObj.current, gPropertyPath)
+    const blueValue = getProperty(vxkey, bPropertyPath) || getNestedProperty(vxRefObj.current, bPropertyPath)
+
+    useClipboardManagerAPI.getState().addItem("color", {
+        redValue, greenValue, blueValue
+    })
+}
+
+export const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
+    const propertyPath = param.propertyPath;
+    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
+    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
+    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
+
+    const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
+
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, rPropertyPath, redValue, false);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, gPropertyPath, greenValue, false);
+    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, bPropertyPath, blueValue, true);
+}
 
 export const hslToRgb = (h: number, s: number, l: number) => {
     s /= 100;
@@ -42,3 +88,8 @@ export const rgbToHsl = (r: number, g: number, b: number): hsl => {
     }
     return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
 };
+
+
+export const getDefaultParamValue = (vxkey: string, propertyPath: string,  vxRefObj: any) => {
+    return getProperty(vxkey, propertyPath) ?? getNestedProperty(vxRefObj, propertyPath) ?? 0
+}

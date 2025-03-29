@@ -9,25 +9,25 @@ import s from "./styles.module.scss"
 import classNames from 'classnames'
 import KeyframeControl from '../KeyframeControl'
 import animationEngineInstance from '@vxengine/singleton'
+import { getDefaultParamValue } from './utils'
 
 interface Props {
     vxkey: string
     propertyPath: string
     className?: string
     param: VXSliderInputType
+    vxRefObj: React.RefObject<any>
 }
 
-const getDefaultValue = (vxkey: string, propertyPath: string) => getProperty(vxkey, propertyPath) ?? 0
-
-const ParamSlider: React.FC<Props> = ({ param, vxkey, className }) => {
+const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => {
     const { propertyPath } = param;
     const trackKey = `${vxkey}.${propertyPath}`
 
-    const [value, setValue] = useState(getDefaultValue(vxkey, propertyPath))
+    const [value, setValue] = useState(getDefaultParamValue(vxkey, propertyPath, vxRefObj.current))
     const [isDragging, setIsDragging] = useState(false);
 
     useLayoutEffect(() => {
-        setValue(getDefaultValue(vxkey, propertyPath))
+        setValue(getDefaultParamValue(vxkey, propertyPath, vxRefObj.current))
         const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
             const newValue = state.properties[trackKey]
 

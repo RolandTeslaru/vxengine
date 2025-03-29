@@ -1,8 +1,7 @@
 import React, { useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
-import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
+import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
-import { getNestedProperty } from '@vxengine/utils';
-import { hslToRgb, rgbToHsl } from './utils';
+import { hslToRgb, rgbToHsl, getDefaultParamValue } from './utils';
 import { invalidate } from '@react-three/fiber';
 import ColorPicker from '../ColorPicker';
 import { hsl } from "../ColorPicker/types"
@@ -16,8 +15,6 @@ interface ParamColorProps {
     vxRefObj: React.RefObject<any>
     param: { propertyPath: string }
 }
-
-const getDefaultValue = (vxkey: string, propertyPath: string, vxRefObj: any) => getProperty(vxkey, propertyPath) ?? getNestedProperty(vxRefObj, propertyPath) ?? 0
 
 const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     const isColorInClipboard = useClipboardManagerAPI(state => state.items.has("color"));
@@ -38,9 +35,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
 
     // Initialize
     useLayoutEffect(() => {
-        const r = getDefaultValue(vxkey, rPropertyPath, vxRefObj.current);
-        const g = getDefaultValue(vxkey, gPropertyPath, vxRefObj.current);
-        const b = getDefaultValue(vxkey, bPropertyPath, vxRefObj.current);
+        const r = getDefaultParamValue(vxkey, rPropertyPath, vxRefObj.current);
+        const g = getDefaultParamValue(vxkey, gPropertyPath, vxRefObj.current);
+        const b = getDefaultParamValue(vxkey, bPropertyPath, vxRefObj.current);
 
         const hsl = rgbToHsl(r, g, b);
         colorRef.current = hsl

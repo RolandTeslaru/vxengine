@@ -1,5 +1,6 @@
 // Utility function to get a nested property value, supporting Map structures
 export const getNestedProperty = (obj: any, path: string) => {
+    if(!obj) return null
     return path.split('.').reduce((acc, part) => {
         if (!acc) return undefined;
 

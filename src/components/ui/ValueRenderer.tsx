@@ -1,11 +1,10 @@
 import React, { useRef, FC, memo, useCallback, useLayoutEffect } from 'react'
-import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
-import { getNestedProperty } from '@vxengine/utils/nestedProperty'
+import { useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { Input } from '@vxengine/components/shadcn/input'
-import { invalidate } from '@react-three/fiber'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../shadcn/contextMenu'
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store'
 import animationEngineInstance from '@vxengine/singleton'
+import { getDefaultParamValue } from '@vxengine/components/ui/ParamInput/utils'
 
 interface ValueRendererProps {
     vxkey: string
@@ -14,8 +13,6 @@ interface ValueRendererProps {
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
     onChange?: (newValue: number) => void;
 }
-
-const getDefaultValue = (vxkey: string, propertyPath: string, obj: any) => getProperty(vxkey, propertyPath) ?? getNestedProperty(obj, propertyPath) ?? 0
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
     ({ vxkey, param, inputProps, onChange, vxRefObj }) => {
@@ -27,7 +24,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const inputRef = useRef<HTMLInputElement>(null);
 
         useLayoutEffect(() => {
-            inputRef.current.value = getDefaultValue(vxkey, propertyPath, vxRefObj.current);
+            inputRef.current.value = getDefaultParamValue(vxkey, propertyPath, vxRefObj.current);
 
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = state.properties[trackKey];

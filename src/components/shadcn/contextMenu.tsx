@@ -141,7 +141,8 @@ const contextMenuItemVariants = cva(
     variants: {
       variant: {
         default: "data-[highlighted]:bg-blue-600 data-[highlighted]:border-blue-500 text-label-primary",
-        destructive: "text-red-600 data-[highlighted]:bg-red-700 data-[highlighted]:border-red-600 data-[highlighted]:text-white "
+        destructive: "text-red-600 data-[highlighted]:bg-red-700 data-[highlighted]:border-red-600 data-[highlighted]:text-white ",
+        warning: "text-yellow-400 data-[highlighted]:bg-yellow-600 data-[highlighted]:border-yellow-500 data-[highlighted]:text-white "
       }
     }
   }
@@ -157,7 +158,7 @@ function ContextMenuItem({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Item> & {
   inset?: boolean
-  variant?: "default" | "destructive"
+  variant?: "default" | "destructive" | "warning"
   preventClose?: boolean
   icon?: React.ReactNode
 }) {

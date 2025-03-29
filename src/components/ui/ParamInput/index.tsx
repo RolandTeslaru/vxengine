@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import ValueRenderer from '../ValueRenderer'
@@ -17,6 +17,7 @@ import StaticPropData from '../DataContextContext/StaticProp';
 import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert';
 import { getNestedProperty } from '@vxengine/utils';
+import { handleOnCopyColor, handleOnCopyNumber, handleOnPasteColor, handleOnPasteNumber } from './utils';
 
 interface Props extends InputProps {
     vxkey: string;
@@ -82,6 +83,10 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
 
     const isPropertyTracked = useTimelineManagerAPI(state => !!state.tracks[trackKey])
     const isPropertyStatic = useTimelineManagerAPI(state => !!state.staticProps[trackKey])
+    const removeKeyframe = useTimelineManagerAPI(state => state.removeKeyframe)
+
+    const orderedKeyframeKeys = useTimelineManagerAPI(state => state.tracks[trackKey]?.orderedKeyframeKeys)
+    const onKeyframeKey = useMemo(() => isOverKeyframe(trackKey, orderedKeyframeKeys), [orderedKeyframeKeys])
 
     return (
         <ContextMenuContent>
@@ -117,7 +122,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                         :
                         <>
                             <ContextMenuSubTrigger>
-                                <p>Show StaticProp Data</p>
+                                Show StaticProp Data
                             </ContextMenuSubTrigger>
                             <ContextMenuSubContent>
                                 <StaticPropData staticPropKey={trackKey} />
@@ -126,15 +131,25 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                     }
                 </ContextMenuSub>
                 {isPropertyTracked &&
-                    <ContextMenuItem
-                        onClick={(e) => pushDialogStatic({
-                            content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
-                            type: "alert"
-                        })}
-                        variant="destructive"
-                    >
-                        Make Property Static
-                    </ContextMenuItem>
+                    <>
+                        {onKeyframeKey &&
+                            <ContextMenuItem
+                                onClick={() => removeKeyframe({ keyframeKey: onKeyframeKey, trackKey, reRender: true })}
+                                variant="warning"
+                            >
+                                Delete Keyframe
+                            </ContextMenuItem>
+                        }
+                            <ContextMenuItem
+                                onClick={(e) => pushDialogStatic({
+                                    content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
+                                type: "alert"
+                            })}
+                            variant="destructive"
+                        >
+                            Make Property Static
+                        </ContextMenuItem>
+                    </>
                 }
                 {(isPropertyTracked || isPropertyStatic) &&
                     <ContextMenuItem
@@ -164,41 +179,30 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
     )
 }
 
-const handleOnCopyNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
-    const propertyPath = param.propertyPath
-    const value = getProperty(vxkey, propertyPath) || getNestedProperty(vxRefObj.current, propertyPath);
-    useClipboardManagerAPI.getState().addItem("number", value);
-}
+// return the keyframeKey if found, else return null
+const isOverKeyframe = (trackKey: string, orderedKeyframeKeys: string[]) => {
+    const currentTime = animationEngineInstance.currentTime
+    const track = useTimelineManagerAPI.getState().tracks[trackKey]
+    if(!track) return false
+    
+    let leftIndex = 0;
+    let rightIndex = orderedKeyframeKeys.length - 1
+    let foundIndex = -1;
 
-const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
-    const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, param.propertyPath, value)
-}
+    while (leftIndex <= rightIndex) {
+        const mid = Math.floor((leftIndex + rightIndex) / 2)
+        const midKey = orderedKeyframeKeys[mid];
+        const midTime = track.keyframes[midKey].time;
 
-const handleOnCopyColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
-    const propertyPath = param.propertyPath;
-    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
-    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
-    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
+        if (midTime === currentTime) {
+            foundIndex = mid;
+            break
+        } else if (midTime < currentTime) {
+            leftIndex = mid + 1;
+        } else {
+            rightIndex = mid - 1;
+        }
+    }
 
-    const redValue = getProperty(vxkey, rPropertyPath) || getNestedProperty(vxRefObj.current, rPropertyPath)
-    const greenValue = getProperty(vxkey, gPropertyPath) || getNestedProperty(vxRefObj.current, gPropertyPath)
-    const blueValue = getProperty(vxkey, bPropertyPath) || getNestedProperty(vxRefObj.current, bPropertyPath)
-
-    useClipboardManagerAPI.getState().addItem("color", {
-        redValue, greenValue, blueValue
-    })
-}
-
-const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
-    const propertyPath = param.propertyPath;
-    const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
-    const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
-    const bPropertyPath = propertyPath !== "" ? `${propertyPath}.b` : "b"
-
-    const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
-
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, rPropertyPath, redValue, false);
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, gPropertyPath, greenValue, false);
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, bPropertyPath, blueValue, true);
+    return foundIndex !== -1 ? orderedKeyframeKeys[foundIndex] : null
 }
