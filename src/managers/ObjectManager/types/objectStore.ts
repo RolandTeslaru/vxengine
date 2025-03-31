@@ -5,6 +5,8 @@ export type vxObjectTypes = "entity"
     | "splineNode" 
     | "keyframeNode" 
     | "virtualEntity"
+    | "htmlElement"
+    | "custom"
 
 export interface BaseVxProps {
     ref: React.RefObject<any>

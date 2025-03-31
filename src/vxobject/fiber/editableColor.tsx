@@ -1,8 +1,8 @@
 import React, { memo, useRef, useImperativeHandle } from "react";
 import { VXElementPropsWithoutRef, VXElementParams } from "../types"
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { ThreeElements } from "@react-three/fiber";
 import { Color } from "three";
+import { withVX } from "../withVX";
 
 type ColorRepresentation =
     | string
@@ -25,17 +25,13 @@ const colorDisabledParams = [
     "scale"
 ]
 
-export const EditableColor: React.FC<VXElementColorProps> = (props) => {
-    const { ...rest } = props
-
-    return (
-        <VXThreeElementWrapper
-            params={colorParams}
-            disabledParams={colorDisabledParams}
-            icon="Color"
-            {...rest}
-        >
-            <color />
-        </VXThreeElementWrapper>
-    )
+const BaseColor = (props) => {
+    return <color {...props} />;
 }
+
+export const EditableColor = withVX<ThreeElements["color"]>(BaseColor, {
+    type: "entity",
+    params: colorParams,
+    icon: "Color",
+    disabledParams: colorDisabledParams,
+})

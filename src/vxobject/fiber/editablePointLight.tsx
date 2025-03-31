@@ -1,15 +1,11 @@
-import React, { useImperativeHandle, useRef } from "react";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import React from "react";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
-
 import { PointLightHelper } from "three";
-
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
-
 import { PointLight } from "three";
 import { useHelper } from "@react-three/drei";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { invalidate, ThreeElements } from "@react-three/fiber";
+import { withVX } from "../withVX";
 
 export type VXElementPointLightProps = VXElementPropsWithoutRef<ThreeElements["pointLight"]> & {
     ref?: React.RefObject<PointLight>;
@@ -28,33 +24,20 @@ export const defaultSettings: VXObjectSettings = {
     showHelper: { title: "show helper", storage: "localStorage", value: false},
 }
 
-export const EditablePointLight: React.FC<VXElementPointLightProps> = (props) => {
-    const {settings = {}, ref, ...rest} = props;
-    const vxkey = rest.vxkey;
-
-    const internalRef = useRef<PointLight>(null); 
-    useImperativeHandle(ref, () => internalRef.current);
-
-    // INITIALIZE Settings
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings
-    }
+const BasePointLight = ({ref, ...props}) => {
+    const vxkey= props.vxkey;
 
     const isHelperEnabled = useObjectSetting(vxkey, "showHelper");
-    useHelper(internalRef, isHelperEnabled && PointLightHelper)
+    useHelper(ref, isHelperEnabled && PointLightHelper)
 
     invalidate();
-    
 
-    return (
-        <VXThreeElementWrapper 
-            ref={internalRef} 
-            params={pointLightParams}
-            settings={mergedSettings}
-            {...props}
-        >
-            <pointLight {...props} />
-        </VXThreeElementWrapper>
-    )
+    return <pointLight ref={ref} {...props} />;
 }
+
+export const EditablePointLight = withVX<ThreeElements["pointLight"]>(BasePointLight, {
+    type: "entity",
+    params: pointLightParams,
+    settings: defaultSettings,
+    icon: "PointLight",
+});

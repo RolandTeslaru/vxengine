@@ -1,32 +1,23 @@
 import React from 'react'
-import { VXElementPropsWithoutRef, VXObjectSettings } from '../types'
-import VXHtmlElementWrapper from '../VXHtmlElementWrapper';
-
+import { VXElementParams, VXElementPropsWithoutRef, VXObjectSettings } from '../types'
+import { withVX } from '../withVX';
 export type VXElementDivProps = VXElementPropsWithoutRef<React.HTMLAttributes<HTMLDivElement>> & {
   ref?: React.RefObject<HTMLDivElement>;
 };
 
 export const defaultSettings: VXObjectSettings = {}
 
-export const EditableDiv: React.FC<VXElementDivProps> = (props) => {
-    const { children: meshChildren, settings = {}, ...rest } = props;
+const BaseEditableDiv = (props) => <div {...props} />
 
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings
-    }
+const params: VXElementParams = [
+    { type: "color", propertyPath: "color" },
+]
 
-    return (
-        <VXHtmlElementWrapper 
-            settings={mergedSettings}
-            icon="div"
-            {...rest}
-        >
-            <div>
-                {meshChildren}
-            </div>
-        </VXHtmlElementWrapper>
-    );
-}
+export const EditableDiv = withVX<VXElementDivProps>(BaseEditableDiv, {
+    type: "htmlElement",
+    params,
+    icon: "div",
+    settings: defaultSettings,
+})
 
 export default EditableDiv

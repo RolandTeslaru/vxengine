@@ -52,7 +52,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
   effectsNode,
   className
 }) => {
-  const { gl: glProps,  ...restCanvasProps } = canvasProps
+  const { gl: glProps, ...restCanvasProps } = canvasProps
 
   const { IS_DEVELOPMENT } = useVXEngine();
 
@@ -66,7 +66,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           precision: 'highp',
           ...glProps
         }}
-        dpr={canvasProps.dpr ?? [1,2]}
+        dpr={canvasProps.dpr ?? [1, 2]}
         frameloop={canvasProps.frameloop ?? "demand"}
         performance={canvasProps.performance ?? {
           min: 0.1,
@@ -75,21 +75,21 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
         }}
         {...restCanvasProps}
       >
-        <SceneDriver/>
-          {/* <color attach="background" args={['gray']} /> */}
-          {IS_DEVELOPMENT && <>
-            <VXRendererUtils />
-            <ObjectManagerDriver />
-            <vx.grid vxkey="grid" name="Grid"/>
-          </>
-          }
-          <EffectComposerDriver>
-            {effectsNode}
-          </EffectComposerDriver>
+        <SceneDriver />
+        {/* <color attach="background" args={['gray']} /> */}
+        {IS_DEVELOPMENT && <>
+          <VXRendererUtils />
+          <ObjectManagerDriver />
+          <vx.grid vxkey="grid" name="Grid" />
+        </>
+        }
+        <EffectComposerDriver>
+          {effectsNode}
+        </EffectComposerDriver>
 
 
-          <CameraManagerDriver />
-          {children}
+        <CameraManagerDriver />
+        {children}
       </Canvas>
     </div>
   )
@@ -97,15 +97,15 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
 
 
 const sceneParams: VXElementParams = [
-  {type: "number", propertyPath: "environmentIntensity", title: "envIntensity"},
-  {type: "number", propertyPath: "backgroundBlurriness", title: "bgBlurriness"},
-  {type: "number", propertyPath: "backgroundIntensity", title: "bgIntensity"},
+  { type: "number", propertyPath: "environmentIntensity", title: "envIntensity" },
+  { type: "number", propertyPath: "backgroundBlurriness", title: "bgBlurriness" },
+  { type: "number", propertyPath: "backgroundIntensity", title: "bgIntensity" },
 ]
 
 const SceneDriver = React.memo(() => {
   const scene = useThree(state => state.scene);
   const { IS_DEVELOPMENT } = useVXEngine();
-  
+
   useLayoutEffect(() => {
     const addObject = useVXObjectStore.getState().addObject;
 

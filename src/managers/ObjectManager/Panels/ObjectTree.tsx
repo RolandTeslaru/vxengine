@@ -14,6 +14,8 @@ import { ArrowDown, ArrowUp, Info, Sun, Video, X } from '@vxengine/components/ui
 import VxObjectData from '@vxengine/components/ui/DataContextContext/VxObject';
 import { handleOnVxObjectClick, handleOnVxObjectContextMenu } from '../utils/handleVxObject';
 import { RenderNodeContentProps } from '@vxengine/components/ui/Tree/types';
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
+import animationEngineInstance from '@vxengine/singleton';
 
 interface ObjectTreeNode {
     vxkey: string
@@ -153,6 +155,7 @@ const iconMapping = {
     Keyframe: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="12" height="12" className='ml-[3px]'><polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="currentColor" strokeWidth="1.8" /> </svg>,
     SplineNode: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="19" cy="5" r="2" /><circle cx="5" cy="19" r="2" /><path d="M5 17A12 12 0 0 1 17 5" /></svg>,
     Grid: <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 1.5C11 1.22386 10.7761 1 10.5 1C10.2239 1 10 1.22386 10 1.5V4H5V1.5C5 1.22386 4.77614 1 4.5 1C4.22386 1 4 1.22386 4 1.5V4H1.5C1.22386 4 1 4.22386 1 4.5C1 4.77614 1.22386 5 1.5 5H4V10H1.5C1.22386 10 1 10.2239 1 10.5C1 10.7761 1.22386 11 1.5 11H4V13.5C4 13.7761 4.22386 14 4.5 14C4.77614 14 5 13.7761 5 13.5V11H10V13.5C10 13.7761 10.2239 14 10.5 14C10.7761 14 11 13.7761 11 13.5V11H13.5C13.7761 11 14 10.7761 14 10.5C14 10.2239 13.7761 10 13.5 10H11V5H13.5C13.7761 5 14 4.77614 14 4.5C14 4.22386 13.7761 4 13.5 4H11V1.5ZM10 10V5H5V10H10Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>,
+    Fog: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 17H7"/><path d="M17 21H9"/></svg>,
     HTML: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.325 3.05011L8.66741 20.4323L10.5993 20.9499L15.2568 3.56775L13.325 3.05011Z" fill="currentColor" /> <path d="M7.61197 18.3608L8.97136 16.9124L8.97086 16.8933L3.87657 12.1121L8.66699 7.00798L7.20868 5.63928L1.04956 12.2017L7.61197 18.3608Z" fill="currentColor" /> <path d="M16.388 18.3608L15.0286 16.9124L15.0291 16.8933L20.1234 12.1121L15.333 7.00798L16.7913 5.63928L22.9504 12.2017L16.388 18.3608Z" fill="currentColor" /> </svg>,
     div: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ><path d="M9.95263 16.9123L8.59323 18.3608L2.03082 12.2016L8.18994 5.63922L9.64826 7.00791L4.85783 12.112L9.95212 16.8932L9.95263 16.9123Z" fill="currentColor" /> <path d="M14.0474 16.9123L15.4068 18.3608L21.9692 12.2016L15.8101 5.63922L14.3517 7.00791L19.1422 12.112L14.0479 16.8932L14.0474 16.9123Z" fill="currentColor" /> </svg>,
 }
@@ -243,6 +246,15 @@ const DefaultContextMenu = ({ vxkey }) => {
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
             </ContextMenuSub>
+            <ContextMenuSub>
+                <ContextMenuSubTrigger>Debug</ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                    <ContextMenuItem onClick={() => regeneratePropertySetters(vxkey)}>
+                        Regenerate Property Setters
+                    </ContextMenuItem>
+                </ContextMenuSubContent>
+            </ContextMenuSub>
+               
         </ContextMenuContent>
     )
 }
@@ -252,4 +264,12 @@ const contextMenuMapping = {
     "SplineNode": SplineNodeContextMenuContent,
     "Spline": SplineContextMenu,
     default: DefaultContextMenu
+}
+
+
+const regeneratePropertySetters = (vxkey: string) => {
+    const rawTimeline = useAnimationEngineAPI.getState().currentTimeline
+    const rawObject = rawTimeline.objects.find(obj => obj.vxkey === vxkey)
+    const vxObject = useVXObjectStore.getState().objects[vxkey]
+    animationEngineInstance.propertyControlService.rebuildObjectPropertySetters(vxObject, rawObject)
 }

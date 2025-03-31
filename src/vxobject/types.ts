@@ -16,6 +16,8 @@ export type VXPrimitiveProps = {
     params?: VXElementParams
     name?: string
     isVirtual?: boolean
+    disabledParams?: string[]
+    type?: "entity" | "effect" | "htmlElement" | "virtualEntity"
 }
 
 export type VXElementProps<T> = T & VXPrimitiveProps

@@ -162,6 +162,11 @@ export class PropertyControlService {
 
 
 
+    public rebuildObjectPropertySetters(vxobject: vxObjectProps, rawObject: RawObject) {
+        this.removePropertySettersForObject(vxobject.vxkey)
+        this.generateObjectPropertySetters(vxobject, rawObject)
+    }
+
 
     /**
      * Removes all property setters associated with a specific object.

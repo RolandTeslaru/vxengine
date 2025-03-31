@@ -6,7 +6,7 @@ import * as THREE from "three"
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { Lightformer } from "./lightFormerImpl";
 import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
+import { withVX } from "../withVX";
 
 export type EditableLightformerProps = VXElementProps<LightProps> & {
     ref?: React.RefObject<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>;
@@ -28,83 +28,64 @@ const outlineMaterial = new THREE.MeshBasicMaterial({
     wireframe: true
 })
 
-export const EditableLightFormer: React.FC<EditableLightformerProps> = (props) => {
-    const { settings = {}, ref, ...rest } = props
-    const vxkey = rest.vxkey;
-    const internalRef = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>(null);
-    useImperativeHandle(ref, () => internalRef.current);
+const BaseLightFormer = ({ref, ...props}) => {
+    const vxkey = props.vxkey;
+    const setting_isShown = useObjectSetting(vxkey, "show");
+    const setting_isShowingAll = useObjectSetting("environment", "showAll");
+
+    const isVisibleInScene = setting_isShown || setting_isShowingAll;
 
     const vxSceneEntity = useVXObjectStore(state => state.objects["scene"]);
-    const isShowingAll = useObjectSetting("environment", "showAll");
-    const viz = useObjectSetting(vxkey, "showInScene");
-    const isVisibleInScene = viz || isShowingAll
 
-    const realMeshRef = useRef<THREE.Mesh>(null);
-
+    const meshRepresentationRef = useRef<THREE.Mesh>(null);
     const tempPos = useRef(new THREE.Vector3());
     const tempQuat = useRef(new THREE.Quaternion());
     const tempScale = useRef(new THREE.Vector3());
 
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings
-    }
-
     useEffect(() => {
-        if (vxSceneEntity && isVisibleInScene) {
+        if(vxSceneEntity && isVisibleInScene) {
             const refScene = vxSceneEntity.ref.current as THREE.Scene;
 
-            if (!realMeshRef.current) {
-                realMeshRef.current = (internalRef.current as THREE.Mesh).clone();
-                realMeshRef.current.material = outlineMaterial;
-                realMeshRef.current.material.side = THREE.FrontSide;
-                realMeshRef.current.scale.multiplyScalar(1.05)
-                refScene.add(realMeshRef.current);
+            if(!meshRepresentationRef.current) {
+                meshRepresentationRef.current = (ref.current as THREE.Mesh).clone();
+                meshRepresentationRef.current.material = outlineMaterial;
+                meshRepresentationRef.current.material.side = THREE.FrontSide;
+                meshRepresentationRef.current.scale.multiplyScalar(1.05)
+                refScene.add(meshRepresentationRef.current);
             }
-            realMeshRef.current.visible = isVisibleInScene;
-
-            refScene.add(realMeshRef.current);
+            meshRepresentationRef.current.visible = isVisibleInScene;
 
             invalidate();
         }
-
         return () => {
             if (vxSceneEntity) {
                 const refScene = vxSceneEntity.ref.current as THREE.Scene;
-                refScene.remove(realMeshRef.current);
-                // realMeshRef.current = null;
-
+                refScene.remove(meshRepresentationRef.current);
                 invalidate();
             }
         }
     }, [vxSceneEntity, isVisibleInScene])
 
     useFrame(() => {
-        if (isVisibleInScene && internalRef.current && realMeshRef.current) {
-            internalRef.current.updateWorldMatrix(true, false);
+        if(isVisibleInScene && ref.current && meshRepresentationRef.current) {
+            ref.current.updateWorldMatrix(true, false);
 
-            (internalRef.current as THREE.Object3D).matrixWorld.decompose(
+            (ref.current as THREE.Object3D).matrixWorld.decompose(
                 tempPos.current,
                 tempQuat.current,
                 tempScale.current
-            );
+            )
 
-            realMeshRef.current.position.copy(tempPos.current);
-            realMeshRef.current.quaternion.copy(tempQuat.current);
-            realMeshRef.current.scale.copy(tempScale.current);
+            meshRepresentationRef.current.position.copy(tempPos.current);
+            meshRepresentationRef.current.quaternion.copy(tempQuat.current);
+            meshRepresentationRef.current.scale.copy(tempScale.current);
         }
-    });
+    })
 
-    return (
-        <>
-            <VXThreeElementWrapper
-                ref={internalRef}
-                settings={mergedSettings}
-                isVirtual={true}
-                {...props}
-            >
-                <Lightformer />
-            </VXThreeElementWrapper>
-        </>
-    )
+    return <Lightformer ref={ref} {...props} />
 }
+
+export const EditableLightFormer = withVX(BaseLightFormer, {
+    type: "virtualEntity",
+    settings: defaultSettings
+})

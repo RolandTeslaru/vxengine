@@ -1,19 +1,17 @@
 import React from "react";
 import { VXElementPropsWithoutRef } from "../types"
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
 import { LineLoop } from "three";
 import { ThreeElements } from "@react-three/fiber";
+import { withVX } from "../withVX";
 
 export type VXElementLineLoopProps = VXElementPropsWithoutRef<ThreeElements["lineLoop"]> & {
     ref?: React.RefObject<LineLoop>;
 };
 
-export const EditableLineLoop: React.FC<VXElementLineLoopProps> = (props) => {
-    return (
-        <VXThreeElementWrapper 
-            {...props}
-        >
-            <lineLoop/>
-        </VXThreeElementWrapper>
-    );
-}
+const BaseLineLoop = (props) => <lineLoop {...props} />
+
+export const EditableLineLoop = withVX<ThreeElements["lineLoop"]>(BaseLineLoop, {
+    type: "entity",
+    params: [],
+    settings: {},
+})

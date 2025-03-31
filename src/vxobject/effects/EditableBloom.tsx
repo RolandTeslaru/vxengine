@@ -1,9 +1,8 @@
-import React, { useRef } from "react";
+import React, { useMemo } from "react";
 import { VXElementPropsWithoutRef, VXElementParams } from "../types";
-import { BloomEffect } from "postprocessing";
 import { BloomEffectOptions } from "postprocessing";
-import { Bloom } from "./impl/BloomFiber";
-import VXEffectWrapper from "../VXEffectWrapper";
+import { withVX } from "../withVX";
+import { BloomEffect } from "postprocessing";
 
 export type EditableBloomProps = Omit<VXElementPropsWithoutRef<BloomEffectOptions>, "vxkey"> & {
   ref?: React.RefObject<typeof BloomEffect>
@@ -17,24 +16,21 @@ const bloomParams: VXElementParams = [
   {type: "number", propertyPath: "luminanceSmoothing"},
 ];
 
-export const EditableBloom: React.FC<EditableBloomProps> = (
-    (props) => {
-      const vxkey = "bloom"
-      const ref = useRef<BloomEffect>(null)
-      return (
-        <VXEffectWrapper
-          vxkey={vxkey}
-          name="Bloom"
-          ref={ref}
-          params={bloomParams}
-          icon="BloomEffect"
-          {...props}
-        >
-          {/* 
-          // @ts-ignore
-          */}<Bloom/>
-        </VXEffectWrapper>
-      ) 
+const BaseBloom = ({ref, ...props}) => {
+  const effect = useMemo(() => {
+    const impl = new BloomEffect(props);
+    ref.current = impl;
+    return impl;
+  },
+  [props]);
+  return <primitive object={effect} {...props} />
+}
 
-    }
-  )
+// @ts-ignore
+export const EditableBloom = withVX<BloomEffectOptions>(BaseBloom, {
+  type: "effect",
+  vxkey: "bloom",
+  params: bloomParams,
+  icon: "BloomEffect",
+  name: "Bloom",
+});

@@ -1,9 +1,10 @@
 import React, { FC } from 'react'
-import VXThreeElementWrapper from '../VXThreeElementWrapper'
 import { VXElementParams, VXElementProps, VXObjectSettings } from '../types'
 import { Mesh, BufferGeometry, MeshBasicMaterial } from 'three'
 import { Grid, GridProps } from '@react-three/drei'
 import { useObjectSetting } from '@vxengine/managers/ObjectManager/stores/settingsStore'
+import { withVX } from '../withVX'
+import { ThreeElements } from '@react-three/fiber'
 
 export type EditableGridProps = VXElementProps<Omit<GridProps, "infiniteGrid" | "followCamera">> & {
     ref?: React.RefObject<Mesh<BufferGeometry, MeshBasicMaterial>>;
@@ -36,33 +37,22 @@ const gridConfig = {
     infiniteGrid: true
 }
 
-const EditableGrid: FC<EditableGridProps> = (props) => {
-    const { settings = {}, ref, vxkey, ...rest } = props;
 
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings,
-    }
-
-    
-
-    return (
-        <VXThreeElementWrapper vxkey={vxkey} icon='Grid' params={gridParams} settings={mergedSettings} {...rest}>
-            <GridImpl vxkey={vxkey}/>
-        </VXThreeElementWrapper>
-    )
-}
-
-export default EditableGrid
-
-const GridImpl = ({vxkey}) => {
+const BaseGrid = (props) => {
+    const vxkey = props.vxkey;
     const isShown = useObjectSetting(vxkey, "show");
 
-    return (
-        <>
-            {isShown && 
-                <Grid position={[0, -0.01, 0]} args={[10.5, 10.5]} {...gridConfig} />
-            }
-        </>
-    )
+    if(isShown)
+        return <Grid position={[0, -0.01, 0]} args={[10.5, 10.5]} {...gridConfig} />
+    else
+        return null;
 }
+
+const EditableGrid = withVX<EditableGridProps>(BaseGrid, {
+    type: "entity",
+    icon: "Grid",
+    params: gridParams,
+    settings: defaultSettings,
+})
+
+export default EditableGrid;

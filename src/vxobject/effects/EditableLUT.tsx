@@ -1,13 +1,9 @@
-import { ThreeElements, useThree } from '@react-three/fiber'
-import { useVXEngine } from '@vxengine/engine'
-import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/ObjectManager'
-import { vxEffectProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import animationEngineInstance from '@vxengine/singleton'
+import { invalidate, ThreeElements } from '@react-three/fiber'
 import { LUT3DEffect, BlendFunction } from 'postprocessing'
-import React, { forwardRef, Ref, useLayoutEffect, useMemo } from 'react'
+import React, { useLayoutEffect, useMemo } from 'react'
 import type { Texture } from 'three'
 import { VXElementPropsWithoutRef } from '../types'
-import VXEffectWrapper from '../VXEffectWrapper'
+import { withVX } from '../withVX'
 
 declare module 'postprocessing' {
     interface LUT3DEffect {
@@ -23,26 +19,29 @@ export type VXElementLUT = Omit<VXElementPropsWithoutRef<ThreeElements["primitiv
     vxkey?: string
 }
 
-export const EditableLUT: React.FC<VXElementLUT> = ({ 
-    ref, lut, tetrahedralInterpolation, vxkey = "lut", params, ...props 
-}) => {
-    const effect = useMemo(() => new LUT3DEffect(lut, props), [lut, props])
-    const invalidate = useThree((state) => state.invalidate)
+
+const BaseLUT = ({ref, lut, tetrahedralInterpolation, ...props}) => {
+
+    const effect = useMemo(() => {
+        const instance = new LUT3DEffect(lut, props)
+        ref.current = instance;
+        return instance;
+    }, [lut, props])
 
     useLayoutEffect(() => {
-        if (tetrahedralInterpolation) effect.tetrahedralInterpolation = tetrahedralInterpolation
-        if (lut) effect.lut = lut
+        if(tetrahedralInterpolation)
+            effect.tetrahedralInterpolation = tetrahedralInterpolation
+        if(lut)
+            effect.lut = lut
         invalidate()
-    }, [effect, invalidate, lut, tetrahedralInterpolation])
+    }, [effect, lut])
 
-    return (
-        <VXEffectWrapper
-            ref={ref}
-            vxkey={vxkey}
-            name="LUT"
-            icon="LUTEffect"
-        >
-            <primitive object={effect} dispose={null} />
-        </VXEffectWrapper>
-    )
+    return <primitive object={effect} dispose={null} />
 }
+
+export const EditableLUT = withVX(BaseLUT, {
+    type: "effect",
+    vxkey: "lut",
+    name: "LUT",
+    icon: "LUTEffect",
+})

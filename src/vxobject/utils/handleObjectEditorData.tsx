@@ -10,7 +10,7 @@ import { produce } from "immer";
 import { TimelineManagerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
 
 
-export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjectSettings) => {
+export const initTimelineEditorObject = (vxkey: string, initialSettings: VXObjectSettings = {}) => {
     const rawObject = animationEngineInstance.rawObjectCache.get(vxkey)
     const objectSettingsAPI = useObjectSettingsAPI.getState();
     const timelineEditorAPI = useTimelineEditorAPI.getState();

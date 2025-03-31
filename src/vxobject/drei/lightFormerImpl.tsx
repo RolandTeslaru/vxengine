@@ -55,7 +55,7 @@ export const Lightformer: React.FC<LightFormerProps> = ({
         ) : (
           <Form args={args} />
         )}
-        {children ? children : <meshBasicMaterial wireframe={true} toneMapped={toneMapped} map={map} side={THREE.DoubleSide} />}
+        {children ? children : <meshBasicMaterial toneMapped={toneMapped} map={map} side={THREE.DoubleSide} />}
         {light && <pointLight castShadow {...light} />}
       </mesh>
     )

@@ -1,9 +1,9 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
 
 import { AmbientLight } from "three";
 import { ThreeElements } from "@react-three/fiber";
+import { withVX } from "../withVX";
 
 export type VXElementAmbientLightProps = VXElementPropsWithoutRef<ThreeElements["ambientLight"]> & {
     ref?: React.RefObject<AmbientLight>;
@@ -17,24 +17,14 @@ export const defaultSettings: VXObjectSettings = {
 const ambientLightParams: VXElementParams = [
     {propertyPath: 'intensity', type: "number"},
     {propertyPath: "color", type: "color"}
-]
+];
 
-export const EditableAmbientLight: React.FC<VXElementAmbientLightProps> = (props) => {
-    const {settings = {}, ...rest} = props;
-
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings
-    }
-    
-    return (
-        <VXThreeElementWrapper 
-            params={ambientLightParams}
-            settings={mergedSettings}
-            {...rest}
-        >
-            <ambientLight/>
-
-        </VXThreeElementWrapper>
-    )
+const BaseAmbientLight = (props) => {
+  return <ambientLight {...props} />;
 }
+
+export const EditableAmbientLight = withVX<ThreeElements["ambientLight"]>(BaseAmbientLight, {
+    type: "entity",
+    params: ambientLightParams,
+    icon: "AmbientLight",
+});

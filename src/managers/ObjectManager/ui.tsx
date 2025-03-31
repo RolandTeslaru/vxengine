@@ -41,6 +41,9 @@ const ObjectParamsConfig = {
     ParamList
   ],
   effect: [
+    ParamList,
+  ],
+  custom: [
     ParamList
   ]
 };

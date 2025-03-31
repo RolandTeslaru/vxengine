@@ -110,7 +110,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>()(
                 useTimelineManagerAPI.getState().addChange();
             },
 
-            initSettingsForObject: (vxkey, settings, initialSettings) => {
+            initSettingsForObject: (vxkey, settings = {}, initialSettings = {}) => {
                 set(produce((state: ObjectSettingsStoreProps) => {
                     // Initialize the initialValues states;
                     Object.entries(initialSettings).forEach(([settingKey, initialSetting]) => {

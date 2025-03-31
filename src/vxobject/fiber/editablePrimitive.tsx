@@ -1,18 +1,16 @@
 import React from 'react'
-import VXThreeElementWrapper from '../VXThreeElementWrapper'
-import { VXElementProps, VXElementPropsWithoutRef, VXPrimitiveProps } from '../types'
+import { VXElementProps } from '../types'
 import { ThreeElements } from '@react-three/fiber'
+import { withVX } from '../withVX'
 
 export type VXElementPrimitiveProps = VXElementProps<ThreeElements["primitive"]> & {
     ref?: React.RefObject<any>
 }
 
-const editablePrimitive: React.FC<VXElementPrimitiveProps> = ({object, ...rest}) => {
-  return (
-    <VXThreeElementWrapper {...rest}>
-        <primitive object={object}/>
-    </VXThreeElementWrapper>
-  )
-}
+const BasePrimitive = ({object, ...rest}) => <primitive object={object} {...rest} />
 
-export default editablePrimitive
+export const EditablePrimitive = withVX<ThreeElements["primitive"]>(BasePrimitive, {
+    type: "entity",
+})
+
+export default EditablePrimitive

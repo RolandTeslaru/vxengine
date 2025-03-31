@@ -19,7 +19,6 @@ export type VXThreeElementWrapperProps<T extends keyof ThreeElements> =
     {
         ref?: React.RefObject<any>; // Ref has the " | Readonly<>" which breaks typing idk
         children: React.ReactElement<ReactThreeFiber.ThreeElement<any>>;
-        disabledParams?: string[];
         disableClickSelect?: boolean;
         overrideNodeType?: string;
     };
@@ -110,7 +109,7 @@ const VXThreeElementWrapper = <T extends keyof ThreeElements>({
             animationEngineInstance.handleObjectUnMount(vxkey);
             vxObjectStoreAPI.removeObject(vxkey, IS_DEVELOPMENT)
         }
-    }, []);
+    }, [internalRef.current]);
 
 
     const modifiedChildren = React.cloneElement(children, {

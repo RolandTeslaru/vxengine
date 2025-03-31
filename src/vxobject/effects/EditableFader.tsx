@@ -3,7 +3,7 @@ import { Uniform } from 'three'
 import { Effect } from 'postprocessing'
 import { VXElementPropsWithoutRef, VXElementParams } from '../types'
 import {  ThreeElements } from '@react-three/fiber'
-import VXEffectWrapper from '../VXEffectWrapper'
+import { withVX } from '../withVX'
 
 const fragmentShader = /* glsl */`
     precision mediump float;
@@ -38,19 +38,14 @@ export type VXElementFadeEffect = Omit<VXElementPropsWithoutRef<ThreeElements["p
     name?: string
 }
 
-export const EditableFadeEffect: React.FC<VXElementFadeEffect> = ({
-    vxkey = "fadeEffect", name= "Fade Effect", fadeIntensity = 1.0, ...rest
-}) => {
+const BaseFadeEffect = ({fadeIntensity = 1.0, ...props}) => {
     const effect = useMemo(() => new FadeShaderEffectImpl({ fadeIntensity }), [fadeIntensity])
-    return (
-        <VXEffectWrapper 
-            vxkey={vxkey}
-            name={name} 
-            params={fadeProps} 
-            icon="FadeEffect" 
-            {...rest}
-        >
-            <primitive object={effect} dispose={null} />
-        </VXEffectWrapper>
-    )
+    return <primitive object={effect} dispose={null} {...props} />
 }
+
+export const EditableFadeEffect =  withVX<ThreeElements["primitive"]>(BaseFadeEffect, {
+    type: "effect",
+    params: fadeProps,
+    vxkey: "fadeEffect",
+    icon: "FadeEffect"
+})

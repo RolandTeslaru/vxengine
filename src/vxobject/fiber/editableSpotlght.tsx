@@ -1,14 +1,11 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { useObjectSettingsAPI } from "@vxengine/managers/ObjectManager";
+import React from "react";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
-
 import { SpotLightHelper } from "three";
-
-import VXThreeElementWrapper from "../VXThreeElementWrapper";
-
 import { SpotLight } from "three";
 import { useHelper } from "@react-three/drei";
-import { invalidate, ThreeElement, ThreeElements } from "@react-three/fiber";
+import { invalidate, ThreeElements } from "@react-three/fiber";
+import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
+import { withVX } from "../withVX";
 
 export type VXElementSpotLightProps = VXElementPropsWithoutRef<ThreeElements["spotLight"]> & {
     ref?: React.RefObject<SpotLight>;
@@ -28,31 +25,18 @@ export const defaultSettings: VXObjectSettings = {
     useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
 }
 
-export const EditableSpotLight: React.FC<VXElementSpotLightProps> = (props) => {
-    const {settings = {}, ref, ...rest} = props;
-    const vxkey = rest.vxkey;
+const BaseSpotLight = ({ref, ...props}) => {
+    const vxkey = props.vxkey;
+    const isHelperEnabled = useObjectSetting(vxkey, "showHelper");
+    useHelper(ref, isHelperEnabled && SpotLightHelper)
     
-    const internalRef = useRef<any>(null); 
-    useImperativeHandle(ref, () => internalRef.current);
-
-    const isHelperEnabled = useObjectSettingsAPI(state => state.settings[vxkey]?.showHelper.value)
-    useHelper(internalRef, isHelperEnabled && SpotLightHelper)
-
     invalidate();
-
-    const mergedSettings = {
-        ...defaultSettings,
-        ...settings
-    }
-
-    return (
-        <VXThreeElementWrapper 
-            ref={internalRef} 
-            params={spotLightParams}
-            settings={mergedSettings}
-            {...props}
-        >
-            <spotLight/>
-        </VXThreeElementWrapper>
-    );
+    
+    return <spotLight ref={ref} {...props} />
 }
+
+export const EditableSpotLight = withVX<ThreeElements["spotLight"]>(BaseSpotLight, {
+    type: "entity",
+    params: spotLightParams,
+    settings: defaultSettings,
+})

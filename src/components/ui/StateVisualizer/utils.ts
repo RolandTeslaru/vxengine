@@ -27,7 +27,7 @@ export function convertDeepMaps(data) {
 
 
 
-export function processState(data, depth = 0, maxDepth = 3, ancestry = []) {
+export function processState(data, depth = 0, maxDepth = 6, ancestry = []) {
     // Handle primitive values and functions.
     if (typeof data !== "object" || data === null) {
         return typeof data === "function" ? "[function]" : data;

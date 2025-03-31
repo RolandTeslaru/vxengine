@@ -150,7 +150,7 @@ export function VXEnvironmentPortal({
 }: EnvironmentProps) {
   const gl = useThree((state) => state.gl)
   const defaultScene = useThree((state) => state.scene)
-  const camera = useRef<CubeCamera>(null!)
+  const cameraRef = useRef<CubeCamera>(null!)
   const [virtualScene] = useState(() => new Scene())
 
   const fbo = useMemo(() => {
@@ -165,7 +165,7 @@ export function VXEnvironmentPortal({
   //   });
   // }, []);
   useLayoutEffect(() => {
-    camera.current.update(gl as any, virtualScene)
+    cameraRef.current.update(gl as any, virtualScene)
     invalidate();
     return setEnvProps(background, scene, defaultScene as any, fbo.texture, {
       blur,
@@ -182,17 +182,19 @@ export function VXEnvironmentPortal({
   useAnimationEngineEvent(
     'timeUpdated',
     ({ time }) => {
-      camera.current.update(gl as any, virtualScene)
+      cameraRef.current.update(gl as any, virtualScene)
       count++
     }
   );
 
   useTransformControlsEvent(
     "virtualEntityChange", () => {
-      camera.current.update(gl as any, virtualScene)
+      cameraRef.current.update(gl as any, virtualScene)
       count++
     }
   )
+
+  const groupRef = useRef<any>(null!)
 
   return (
     <>
@@ -201,7 +203,7 @@ export function VXEnvironmentPortal({
           <vx.cubeCamera
             vxkey="environmentCamera"
             name="EnvCamera"
-            ref={camera}
+            ref={cameraRef}
             args={[near, far, fbo]}
             overrideNodeTreeParentKey={"environment"}
             isVirtual={true}
@@ -209,7 +211,8 @@ export function VXEnvironmentPortal({
           <vx.group
             vxkey="environment"
             name="Environment"
-            type="Environment"
+            icon="Environment"
+            ref={groupRef}
             overrideNodeTreeParentKey="global"
             settings={environmentSettings}
             isVirtual={true}
