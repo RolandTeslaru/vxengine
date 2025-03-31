@@ -13,8 +13,8 @@ import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
 
 // Make this type more generic - it takes the component's props type and extends it
-export type WithVXProps<P> = P & VXPrimitiveProps & {
-    ref?: React.RefObject<any>;
+export type WithVXProps<P, R = any> = P & VXPrimitiveProps & {
+    ref?: React.RefObject<R>;
 }
 
 // this type is enforces the tpye to be passed

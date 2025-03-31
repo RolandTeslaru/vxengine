@@ -85,7 +85,7 @@ const BaseLightFormer = ({ref, ...props}) => {
     return <Lightformer ref={ref} {...props} />
 }
 
-export const EditableLightFormer = withVX(BaseLightFormer, {
+export const EditableLightFormer = withVX<LightProps & { ref?: React.RefObject<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>> }>(BaseLightFormer, {
     type: "virtualEntity",
     settings: defaultSettings
 })
