@@ -9,25 +9,11 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 
 interface ObjectUtils {
     vxkey: string
-    children: React.ReactElement<ReactThreeFiber.ThreeElement<any>, string | React.JSXElementConstructor<any>>
 }
 
 const supportedGeometries = ["boxGeometry", "sphereGeometry", "planeGeometry"]
 
-const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey, children }) => {
-    const object3DInnerChildren = children.props.children;
-
-    const containsSupportedGeometries = useMemo(() => {
-        if (Array.isArray(object3DInnerChildren)) {
-            return object3DInnerChildren.some((element) =>
-                isValidElement(element) && supportedGeometries.includes(element.type as string)
-            );
-        } else if (isValidElement(object3DInnerChildren)) {
-            return supportedGeometries.includes(object3DInnerChildren.type as string);
-        }
-        return false;
-    }, [object3DInnerChildren]);
-
+const ObjectUtils: React.FC<ObjectUtils> = React.memo(({ vxkey }) => {
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
 
     const showPositionPath = useObjectSetting(vxkey, "showPositionPath");

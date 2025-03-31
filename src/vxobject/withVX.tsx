@@ -12,6 +12,13 @@ import React from "react";
 import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
 
+declare module 'three' {
+    interface Object3D {
+        vxkey: string;
+        rotationDegrees: THREE.Vector3
+    }
+}
+
 // Make this type more generic - it takes the component's props type and extends it
 export type WithVXProps<P, R = any> = P & VXPrimitiveProps & {
     ref?: React.RefObject<R>;
@@ -104,12 +111,10 @@ export function withVX<P extends object>(
                     vxkey={finalProps.vxkey}
                     ref={internalRef}
                 />
-                {/* 
+                
                 {IS_DEVELOPMENT && finalProps.type !== "htmlElement" && (
-                    <ObjectUtils vxkey={vxkey}>
-                        {props.children}
-                    </ObjectUtils>
-                )} */}
+                    <ObjectUtils vxkey={finalProps.vxkey}/>
+                )}
             </>
         )
     }
