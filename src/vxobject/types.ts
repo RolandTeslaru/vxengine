@@ -9,13 +9,12 @@ export interface VXThreeElementWrapperProps {
 
 export type VXPrimitiveProps = {
     vxkey: string;
-    addToNodeTree?: boolean
+    modifyObjectTree?: boolean
     icon?: string
     settings?: VXObjectSettings
     overrideNodeTreeParentKey?: string
     params?: VXElementParams
     name?: string
-    isVirtual?: boolean
     disabledParams?: string[]
     type?: "entity" | "effect" | "htmlElement" | "virtualEntity"
 }

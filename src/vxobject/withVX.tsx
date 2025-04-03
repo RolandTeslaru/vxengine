@@ -93,13 +93,13 @@ export function withVX<P extends object>(
                 usingHOC: true
             }
 
-            addObjectToStore(newVXEntity, IS_DEVELOPMENT, { icon: finalProps.icon })
+            addObjectToStore(newVXEntity, IS_DEVELOPMENT, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
 
             animationEngineInstance.handleObjectMount(newVXEntity);
 
             return () => {
                 animationEngineInstance.handleObjectUnMount(finalProps.vxkey);
-                removeObjectFromStore(finalProps.vxkey, IS_DEVELOPMENT)
+                removeObjectFromStore(finalProps.vxkey, IS_DEVELOPMENT, finalProps.modifyObjectTree)
             }
         }, [internalRef.current, finalProps.type, finalProps.vxkey, finalProps.name, finalProps.params, finalProps.disabledParams, finalProps.overrideNodeTreeParentKey, IS_DEVELOPMENT])
 

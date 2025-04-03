@@ -1,5 +1,5 @@
 // VXEngine - VEXR Labs' proprietary toolset for React Three Fiber
-// (c) 2024 VEXR Labs. All Rights Reserved.
+// (c) 2024 VEXR Labs. All Rights Reserqved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import { create } from 'zustand';
@@ -13,11 +13,11 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
         IS_DEVELOPMENT,
         props = {}, 
     ) => set((state) => {
-        const { addToTree, icon} = props
+        const { icon, modifyObjectTree} = props
         
         // Generate Object Tree 
         if(IS_DEVELOPMENT){
-            if(addToTree === undefined || addToTree === true){
+            if(modifyObjectTree === undefined || modifyObjectTree === true){
                 const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
                 addToTreeFunc(vxobject, icon)
             }
@@ -31,7 +31,7 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
             },
         })
     }),
-    removeObject: (vxkey, IS_DEVELOPMENT) => set((state) => {
+    removeObject: (vxkey, IS_DEVELOPMENT, modifyObjectTree = true) => set((state) => {
         if (!state.objects[vxkey]) {
             console.warn("ObjectStore: trying to remove a non-existent object",vxkey);
             return state;
@@ -42,7 +42,9 @@ export const useVXObjectStore = create<ObjectStoreStateProps>((set, get) => ({
             // remove selected is very important
             // the vxobject is frozen by the objectMangerAPI if its selected so trinyg to remove it would crash the app
             objectManagerAPI.unselectObject(vxkey)
-            objectManagerAPI.removeFromTree(vxkey)
+            if(modifyObjectTree){
+                objectManagerAPI.removeFromTree(vxkey)
+            }
         }
         
         const newObjects = { ...state.objects };

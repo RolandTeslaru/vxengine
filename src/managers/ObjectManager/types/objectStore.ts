@@ -64,7 +64,7 @@ export interface ObjectStoreStateProps {
     addObject: (
         object: vxObjectProps,
         IS_DEVELOPMENT: boolean,
-         props?: { icon?: string, addToTree?: boolean},
+         props?: { icon?: string, modifyObjectTree?: boolean},
     ) => void;
-    removeObject: (vxkey: string, IS_DEVELOPMENT: boolean) => void;
+    removeObject: (vxkey: string, IS_DEVELOPMENT: boolean, modifyObjectTree?: boolean) => void;
 }

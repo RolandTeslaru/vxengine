@@ -34,6 +34,7 @@ import { VXElementParams } from '@vxengine/vxobject/types'
 import animationEngineInstance from '@vxengine/singleton'
 import { EffectComposerDriver } from '@vxengine/managers/EffectsManager/driver'
 import { vx } from '@vxengine/vxobject'
+import SplineManagerDriver from '@vxengine/managers/SplineManager/driver'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -75,7 +76,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
         }}
         {...restCanvasProps}
       >
-        <SceneDriver />
+        <vx.scene vxkey="scene"/>
         {/* <color attach="background" args={['gray']} /> */}
         {IS_DEVELOPMENT && <>
           <VXRendererUtils />
@@ -92,54 +93,5 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
         {children}
       </Canvas>
     </div>
-  )
-}
-
-
-const sceneParams: VXElementParams = [
-  { type: "number", propertyPath: "environmentIntensity", title: "envIntensity" },
-  { type: "number", propertyPath: "backgroundBlurriness", title: "bgBlurriness" },
-  { type: "number", propertyPath: "backgroundIntensity", title: "bgIntensity" },
-]
-
-const SceneDriver = React.memo(() => {
-  const scene = useThree(state => state.scene);
-  const { IS_DEVELOPMENT } = useVXEngine();
-
-  useLayoutEffect(() => {
-    const addObject = useVXObjectStore.getState().addObject;
-
-    const sceneRef = {
-      current: scene
-    }
-
-    const vxkey = "scene"
-    const disabledParams = [
-      "position",
-      "rotation",
-      "scale"
-    ]
-
-    const newSceneEntity: vxObjectProps = {
-      type: "entity",
-      ref: sceneRef,
-      vxkey,
-      name: "Scene",
-      params: sceneParams,
-      disabledParams,
-      parentKey: "global"
-    }
-    addObject(newSceneEntity, IS_DEVELOPMENT);
-    animationEngineInstance.handleObjectMount(newSceneEntity);
-
-  }, [])
-  return null;
-})
-
-
-const VXGrid = () => {
-  return (
-    <>
-    </>
   )
 }

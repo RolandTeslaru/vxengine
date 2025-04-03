@@ -206,7 +206,7 @@ export function VXEnvironmentPortal({
             ref={cameraRef}
             args={[near, far, fbo]}
             overrideNodeTreeParentKey={"environment"}
-            isVirtual={true}
+            type="virtualEntity"
           />
           <vx.group
             vxkey="environment"
@@ -215,7 +215,7 @@ export function VXEnvironmentPortal({
             ref={groupRef}
             overrideNodeTreeParentKey="global"
             settings={environmentSettings}
-            isVirtual={true}
+            type="virtualEntity"
           >
             {children}
           </vx.group>

@@ -9,6 +9,7 @@ import {EditableColor} from './fiber/editableColor';
 import EditableDiv from './html/editableDiv';
 import EditableGrid from './drei/EditableGrid';
 import editablePrimitive from './fiber/editablePrimitive';
+import { EditableScene } from './fiber/EditableScene';
 
 
 export const vx = {
@@ -37,6 +38,7 @@ export const vx = {
     environmentMap: VXEnvironmentMap,
     cubeCamera: EditableCubeCamera,
 
+    scene: EditableScene,
 
 
     div: EditableDiv
