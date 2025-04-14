@@ -67,6 +67,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _currentTimeline: RawTimeline = null;
   private _currentTime: number = 0;
   private _prevTime: number;
+  private _playPromiseResolve: ((value: void | PromiseLike<void>) => void) | null = null;
+  private _playPromiseReject: ((reason?: any) => void) | null = null;
   /**
    * Interpolation function used for keyframe interpolation.
    * Defaults to a JS implementation, then replaced by the WASM version.
@@ -195,7 +197,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     if (isMounting === false) {
       this._propertyControlService.recomputeAllPropertySetters(
-        this._currentTimeline, 
+        this._currentTimeline,
         this._object3DCache
       )
       this._applyTracksOnTimeline(this.currentTime, true)
@@ -207,7 +209,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     })
 
 
-    
+
     const { objects: rawObjects, splines: rawSplines } = selectedTimeline;
     // Cache the splines asynchronously
     this._splineService.cacheSplines(rawSplines)
@@ -294,28 +296,30 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    *   - autoEnd: Whether to automatically end the animation when `toTime` is reached.
    * @returns True if the animation starts playing, false otherwise.
    */
-  public play(param: { toTime?: number; autoEnd?: boolean; } = {}) {
+  public play(param: { toTime?: number; autoEnd?: boolean; } = {}): Promise<void> {
     let { toTime, autoEnd = true } = param;
     if (toTime === undefined) {
       toTime = this._currentTimeline.length;
     }
 
-    // Check if is already playing or the current time has exceeded the toTime
-    if (this.isPlaying
-      || (toTime !== undefined && toTime <= this._currentTime)
-    )
-      return;
+    if (this._playPromiseReject) {
+      this._playPromiseResolve = null;
+    }
 
-    useAnimationEngineAPI.setState({ isPlaying: true })
+    return new Promise((resolve, reject) => {
+      this._playPromiseResolve = resolve;
 
-    logReportingService.logInfo(
-      `Started Playing`, { module: "AnimationEngine", functionName: "play" })
+      useAnimationEngineAPI.setState({ isPlaying: true })
 
-    this._timerId = requestAnimationFrame((time: number) => {
-      this._prevTime = time;
-      this._tick(time, toTime, autoEnd);
-    });
+      logReportingService.logInfo(
+        `Started Playing`, { module: "AnimationEngine", functionName: "play" })
 
+      this._timerId = requestAnimationFrame((time: number) => {
+        this._prevTime = time;
+        this._tick(time, toTime, autoEnd);
+      });
+
+    })
   }
 
 
@@ -324,14 +328,17 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   /**
    * Pauses the animation playback and triggers a 'paused' event.
+   * Rejects the pending play promise if one exists.
    */
   public pause() {
     logReportingService.logInfo("Pause triggered", { module: LOG_MODULE, functionName: "pause" })
-    if (this.isPlaying) {
+    if (this.isPlaying) { // Only act if it was playing
       useAnimationEngineAPI.setState({ isPlaying: false })
+      cancelAnimationFrame(this._timerId); // Stop the animation loop
+
       this.trigger('paused', { engine: this });
     }
-    cancelAnimationFrame(this._timerId);
+    // If not playing, do nothing - don't cancelAnimationFrame again or reject a resolved/non-existent promise
   }
 
 
@@ -431,21 +438,27 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     let newCurrentTime = this._currentTime + deltaTime * this.playRate;
     this._prevTime = now;
 
-    if (to !== undefined && to <= newCurrentTime) {
+    let isFinished = false;
+    if(newCurrentTime >= to){
       newCurrentTime = to;
+      isFinished = true;
     }
 
     this.setCurrentTime(newCurrentTime, true);
     this._applyTracksOnTimeline(newCurrentTime);
     this._updateCameraIfNeeded();
-
     this._propertyControlService.flushUiUpdates();
-
     invalidate();
 
-    // Determine whether to stop or continue the animation
-    if (to !== undefined && to <= newCurrentTime) {
+    if(isFinished){
+      // Resolve Promise
+      if (this._playPromiseResolve){
+        this._playPromiseResolve();
+        this._playPromiseResolve = null;
+      }
+
       this._end();
+      return;
     }
 
     this._timerId = requestAnimationFrame((time) => {
@@ -526,7 +539,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean
   ) {
     const objectRef = this._object3DCache.get(rawObject.vxkey)
-    if(!objectRef){
+    if (!objectRef) {
       return;
     }
     rawObject.tracks.forEach(rawTrack => {
@@ -568,7 +581,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     const cacheKey = `${vxkey}.${propertyPath}`;
     const lastValue = this._lastInterpolatedValues.get(cacheKey);
-    
+
     // Only update the property if its under the threshold
     // or its undefined ( in the initial state )
     if (lastValue === undefined || Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
@@ -763,7 +776,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       const vxkey = obj.vxkey;
       const object3DRef = this._object3DCache.get(vxkey);
 
-      if (!object3DRef){
+      if (!object3DRef) {
         return
       }
 

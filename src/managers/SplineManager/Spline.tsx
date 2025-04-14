@@ -100,7 +100,6 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
                 color="rgb(237, 53, 87)"
                 frustumCulled={true}
                 tension={tension}
-                // @ts-expect-error
                 segments={segments}
             />
             <CatmullRomLine
@@ -109,7 +108,6 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
                 color="rgb(81,217, 121)"
                 frustumCulled={true}
                 tension={tension}
-                // @ts-expect-error
                 segments={segments}
             />
             <CatmullRomLine
@@ -118,7 +116,6 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
                 color="rgb(55, 108, 250)"
                 frustumCulled={true}
                 tension={tension}
-                // @ts-expect-error
                 segments={segments}
             />
         </group>

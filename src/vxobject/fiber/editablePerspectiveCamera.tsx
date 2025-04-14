@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, useRef } from "react";
+import React, { useCallback, useImperativeHandle, useRef } from "react";
 import { VXElementPropsWithoutRef, VXElementParams, VXObjectSettings } from "../types"
 import { PerspectiveCamera, PerspectiveCameraProps, useHelper } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
@@ -47,7 +47,8 @@ const BasePerspectiveCamera = ({ref, ...props}) => {
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref)
 
     const { IS_DEVELOPMENT } = useVXEngine();
-    const cameraUpdate = () => {
+
+    const cameraUpdate = useCallback(() => {
         if (!ref.current || !cameraTargetRef) 
             return
 
@@ -58,8 +59,8 @@ const BasePerspectiveCamera = ({ref, ...props}) => {
         camera.lookAt(targetPosition);
         const localRotationZ = camera?.localRotationZ || 0;
         // Rotate the camera around its local Z-axis (forward axis)
-        camera.rotateZ(localRotationZ);
-    }
+        camera.rotateZ(localRotationZ); 
+    }, [ref, cameraTargetRef])
 
     useFrame(cameraUpdate)
 

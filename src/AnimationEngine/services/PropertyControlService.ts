@@ -227,7 +227,6 @@ export class PropertyControlService {
         if(target instanceof Map){
             const entry = target.get(finalKey);
             if(entry && typeof entry === 'object' && 'value' in entry){
-                console.log("Found entry in map for vxkey", vxkey, "propertyPath", propertyPath, "entry", entry, "target", target)
                 return (newValue: number) => {
                     entry.value = newValue;
                 }

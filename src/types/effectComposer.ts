@@ -3,7 +3,7 @@ import * as THREE from "three"
 
 export type EffectComposerProps = {
     enabled?: boolean
-    children: JSX.Element | JSX.Element[]
+    children: React.JSX.Element | React.JSX.Element[]
     depthBuffer?: boolean
     disableNormalPass?: boolean
     disableSSRPass?: boolean

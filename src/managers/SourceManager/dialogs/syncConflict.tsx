@@ -127,7 +127,6 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                     {/* Data Difs */}
                     <div className="max-h-[500px] bg-neutral-950 overflow-y-scroll! text-xs">
                         {
-                        // @ts-expect-error
                         (<ReactDiffViewer
                                 styles={defaultStyles}
                                 oldValue={diskTimelinesString}

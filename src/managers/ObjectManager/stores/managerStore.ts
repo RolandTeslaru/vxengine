@@ -4,11 +4,9 @@
 
 import { ObjectManagerStoreProps, ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore';
 import { vxEffectProps, vxElementProps, vxObjectProps, vxObjectTypes, vxVirtualEntityProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { createWithEqualityFn } from 'zustand/traditional';
+import { create } from 'zustand';
 import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
-import { useVXObjectStore } from './objectStore';
-import { useRefStore } from '@vxengine/utils';
 
 const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
@@ -36,7 +34,7 @@ const initialTree: Record<string, ObjectTreeNodeProps> = {
     }
 }
 
-export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>((set, get) => ({
+export const useObjectManagerAPI = create<ObjectManagerStoreProps>((set, get) => ({
     transformMode: "translate",
     setTransformMode: (mode: "translate" | "rotate" | "scale") => set((state) => ({
         ...state,
@@ -183,7 +181,7 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
 
 }))
 
-export const useObjectPropertyAPI = createWithEqualityFn<ObjectPropertyStoreProps>((set, get) => ({
+export const useObjectPropertyAPI = create<ObjectPropertyStoreProps>((set, get) => ({
     properties: {},
     deleteProperty: (vxkey, propertyPath) => {
         const key = `${vxkey}.${propertyPath}`;

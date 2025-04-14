@@ -46,14 +46,16 @@ const BaseLightFormer = ({ref, ...props}) => {
         if(vxSceneEntity && isVisibleInScene) {
             const refScene = vxSceneEntity.ref.current as THREE.Scene;
 
-            if(!meshRepresentationRef.current) {
+            if(!meshRepresentationRef.current && ref.current) {
                 meshRepresentationRef.current = (ref.current as THREE.Mesh).clone();
                 meshRepresentationRef.current.material = outlineMaterial;
                 meshRepresentationRef.current.material.side = THREE.FrontSide;
                 meshRepresentationRef.current.scale.multiplyScalar(1.05)
                 refScene.add(meshRepresentationRef.current);
             }
-            meshRepresentationRef.current.visible = isVisibleInScene;
+            if(meshRepresentationRef.current) {
+                meshRepresentationRef.current.visible = isVisibleInScene;
+            }
 
             invalidate();
         }

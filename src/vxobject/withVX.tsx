@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, useEffect, useLayoutEffect } from "react";
+import { useRef, useImperativeHandle, useEffect, useLayoutEffect, useCallback } from "react";
 import { VXElementParams, VXObjectSettings, VXPrimitiveProps } from "./types";
 import { useVXEngine } from "@vxengine/engine";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
@@ -41,6 +41,7 @@ export function withVX<P extends object>(
             throw new Error("withVX: vxkey was not passed to the component")
 
         const internalRef = useRef(null)
+
         useImperativeHandle(ref, () => internalRef.current, [])
 
         const { IS_DEVELOPMENT } = useVXEngine()
@@ -86,7 +87,10 @@ export function withVX<P extends object>(
                 type: finalProps.type,
                 vxkey: finalProps.vxkey,
                 name: finalProps.name || finalProps.vxkey,
-                params: finalProps.params ? [...DEFAULT_PARAMS[finalProps.type], ...finalProps.params] : DEFAULT_PARAMS[finalProps.type] ?? [],
+                params: finalProps.params ? [
+                    ...DEFAULT_PARAMS[finalProps.type], 
+                    ...finalProps.params] 
+                    : DEFAULT_PARAMS[finalProps.type] ?? [],
                 disabledParams: finalProps.disabledParams || [],
                 parentKey: finalProps.overrideNodeTreeParentKey ?? parentKey,
                 ref: internalRef,
@@ -107,7 +111,7 @@ export function withVX<P extends object>(
         return (
             <>
                 <WrappedComponent
-                    {...props as P}
+                    {...props as P }
                     vxkey={finalProps.vxkey}
                     ref={internalRef}
                 />

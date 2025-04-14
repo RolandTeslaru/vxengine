@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "motion/react";
 import { useObjectManagerAPI } from "../stores/managerStore";
 import React from "react";
 import { useVXObjectStore } from "../stores/objectStore";

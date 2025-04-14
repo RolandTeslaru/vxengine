@@ -1,4 +1,4 @@
-import { createWithEqualityFn } from 'zustand/traditional';
+import { create } from 'zustand';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
 import { batchUpdateProperties, updateProperty, useObjectManagerAPI } from '../ObjectManager/stores/managerStore';
@@ -16,7 +16,7 @@ import animationEngineInstance from '@vxengine/singleton';
 import { EditorKeyframe, EditorKeyframeHandles, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
 import { TimelineManagerAPIProps } from './types/store';
 
-export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProps>((set, get) => ({
+export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
     staticProps: {},

@@ -40,7 +40,7 @@ export const EffectComposerContext = createContext<{
 
 export type EffectComposerProps = {
   enabled?: boolean
-  children: JSX.Element | JSX.Element[]
+  children: React.JSX.Element | React.JSX.Element[]
   depthBuffer?: boolean
   /** Only used for SSGI currently, leave it disabled for everything else unless it's needed */
   enableNormalPass?: boolean

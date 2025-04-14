@@ -2,7 +2,6 @@ import React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three"
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
-import { shallow } from "zustand/shallow";
 import KeyframeNode from "./keyframeNode";
 import { EditorKeyframe } from "@vxengine/types/data/editorData";
 
