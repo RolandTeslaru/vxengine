@@ -175,8 +175,8 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>()(
         }
     ))
 
-export const useObjectSetting = (vxkey: string, settingKey: string) => {
-    return useObjectSettingsAPI(state => state.settings[vxkey]?.[settingKey]?.value);
+export const useObjectSetting = (vxkey: string, settingKey: string, fallbackValue?: boolean) => {
+    return useObjectSettingsAPI(state => state.settings[vxkey]?.[settingKey]?.value ?? fallbackValue);
 };
 
 export const toggleSettingSTATIC = (vxkey:string, settingKey:string) => {

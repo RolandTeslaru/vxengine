@@ -1,8 +1,9 @@
+import { CreateNodeDataFnType } from "@vxengine/managers/ObjectManager/utils/createPropertyTree"
 
 export type TreeNodeDataType = {
     key: string
     children: Record<string, TreeNodeDataType>
-    rawObject: Record<string, any>
+    refObject: Record<string, any>
     currentPath: string
 }
 
@@ -18,13 +19,21 @@ export interface TreeNodeElementTemplateProps {
 
 export type RenderNodeContentProps = (node: any, NodeTemplate: TreeNodeElementTemplateProps) => React.ReactNode;
 
+export type CreateBranchFnType = (
+    object: Record<string, any>,
+    sufix: string,
+    parentKey: string
+) => Record<string, any>
+
 export interface TreeNodeProps {
     node: TreeNodeDataType,
     level: number,
     siblings: number,
     indexToParent: number,
     size?: "sm" | "md",
-    renderNodeContent?: RenderNodeContentProps
+    renderNodeContent?: RenderNodeContentProps,
+    createNodeDataFn?: CreateNodeDataFnType
+    defaultExpandedKeys?: Record<string, any>
 }
 
 export interface TreeProps {
@@ -33,9 +42,5 @@ export interface TreeProps {
     size?: "sm" | "md",
     defaultExpandedKeys?: Record<string, any>
     className?: string
-    createBranch?: (
-        object: Record<string, any>, 
-        sufix: string, 
-        parentKey: string
-    ) => Record<string, any>
+    createNodeDataFn?: CreateNodeDataFnType
 }

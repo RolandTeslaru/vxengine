@@ -1,24 +1,24 @@
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import ParamInput from '@vxengine/components/ui/ParamInput'
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useObjectManagerAPI } from '..'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { VXElementParam } from '@vxengine/vxobject/types'
 import Tree from '@vxengine/components/ui/Tree'
-import { createParamTreeLevel, ParamTreeNodeDataType } from '../utils/createPropertyTree'
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
+import { TreeNodeType } from '../utils/createPropertyTree'
 import JsonView from 'react18-json-view'
 
 interface Props {
     vxobject: vxObjectProps
 }
 
-interface ParamTreeNode {
-    key: string; // The name of the property
-    children: Record<string, ParamTreeNode>; // Nested children
-    param: VXElementParam
+interface ParamNodeProps extends TreeNodeType {
+    data: {
+        param: VXElementParam
+        vxobject: vxObjectProps
+    },
 }
 
 const excludeParamKeys = [
@@ -28,53 +28,37 @@ const excludeParamKeys = [
     "scale.x", "scale.y", "scale.z",
 ]
 
+
 const ParamList: React.FC<Props> = ({ vxobject }) => {
     const refObject = vxobject?.ref?.current as THREE.Object3D;
-    if (!refObject) return;
 
-    const threeObjectType = refObject.type
+    const threeObjectType = refObject?.type
 
-    const params = vxobject.params ?? []
+    const params = vxobject?.params ?? []
 
     const tree = useMemo(() => {
-        const tree: Record<string, ParamTreeNodeDataType> = {}
+        const tree: Record<string, ParamNodeProps> = {}
         params.forEach((param) => {
             if (!excludeParamKeys.includes(param.propertyPath))
                 
                 tree[param.propertyPath] = {
                     key: param.title ?? param.propertyPath,
                     children: {},
-                    param,
-                    rawObject: refObject,
+                    data: {
+                        param, 
+                        vxobject
+                    },
+                    refObject,
                     currentPath: param.propertyPath
                 }
         })
         return tree;
-    }, [vxobject])
+    // Only depend on params and necessary vxobject properties, not the entire vxobject
+    }, [params, vxobject.vxkey, refObject])
 
-    if (Object.entries(tree).length === 0) return
+    if (Object.entries(tree).length === 0) return null
+    if(!refObject) return null
 
-    const renderNodeContent = (node: ParamTreeNodeDataType, { NodeTemplate }) => {
-        return (
-            <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-                <div className={`flex ${node?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
-                    {node.param.type !== "slider" &&
-                        <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
-                            {node.key}
-                        </p>
-                    }
-                    {node.param && (
-                        <ParamInput
-                            vxkey={vxobject.vxkey}
-                            vxRefObj={vxobject.ref}
-                            param={node.param}
-                            className=""
-                        />
-                    )}
-                </div>
-            </NodeTemplate>
-        )
-    }
 
     return (
         <CollapsiblePanel
@@ -85,7 +69,6 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
                 <Tree
                     tree={tree}
                     renderNodeContent={renderNodeContent}
-                    createBranch={createParamTreeLevel}
                 />
             </div>
 
@@ -93,20 +76,29 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
     )
 }
 
-export default ParamList
+// Export a memoized version of ParamList
+export default React.memo(ParamList)
 
 
 
-const ParamNodeContextMenu = ({ node, vxobject }) => {
+const renderNodeContent = (node: ParamNodeProps, { NodeTemplate }) => {
     return (
-        <ContextMenuContent className='gap-1 text-xs'>
-            <p className='font-roboto-mono'>Node Object</p>
-            <JsonView className='bg-neutral-900' src={node} />
-
-            <p className='text-xs font-roboto-mono'>Vxobject Object</p>
-            <JsonView className='bg-neutral-900' src={vxobject} />
-
-
-        </ContextMenuContent>
+        <NodeTemplate className="hover:bg-neutral-950/40 px-2">
+            <div className={`flex ${node?.data?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
+                {node?.data?.param?.type !== "slider" &&
+                    <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
+                        {node.key}
+                    </p>
+                }
+                {node?.data?.param && (
+                    <ParamInput
+                        vxkey={node.data.vxobject.vxkey}
+                        vxRefObj={node.data.vxobject.ref}
+                        param={node.data.param}
+                        className=""
+                    />
+                )}
+            </div>
+        </NodeTemplate>
     )
 }

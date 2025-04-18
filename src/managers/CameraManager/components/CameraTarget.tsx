@@ -26,9 +26,9 @@ const CameraTarget = () => {
     
 
     const camera = useVXObjectStore(state => state.objects["perspectiveCamera"])
-    const showHelpers = useObjectSetting(vxkey, "showHelpers");
+    const showHelpers = useObjectSetting(vxkey, "showHelpers", false) && IS_DEVELOPMENT;
 
-    const isVisible = showHelpers && IS_DEVELOPMENT
+    console.log("Camera Target helpers ", showHelpers)
 
     const verticalPlaneRef = useRef<THREE.Mesh>(null);
     const FloorProjectionRef = useRef<THREE.Mesh>(null)
@@ -52,7 +52,7 @@ const CameraTarget = () => {
     }), []);
 
     useFrame(() => {
-        if (isVisible)
+        if (showHelpers)
             if (verticalPlaneRef.current && FloorProjectionRef.current && camera?.ref.current) {
                 const cameraPosition = camera.ref.current.position;
                 const currentQuaternion = verticalPlaneRef.current.quaternion;
@@ -92,7 +92,7 @@ const CameraTarget = () => {
     return (
         <>        
             {/* Camera Target  */}
-            <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={isVisible} icon="CameraTarget">
+            <vx.group vxkey={vxkey} name="Camera Target" settings={settings} visible={showHelpers} icon="CameraTarget">
                 <mesh ref={verticalPlaneRef}>
                     <planeGeometry args={[10, 10]} />
                     <meshBasicMaterial
@@ -106,7 +106,7 @@ const CameraTarget = () => {
             </vx.group>
 
             {/* Floor Projection */}
-            <mesh ref={FloorProjectionRef} visible={isVisible}>
+            <mesh ref={FloorProjectionRef} visible={showHelpers}>
                 <planeGeometry args={[10, 10]} />
                 <meshBasicMaterial
                     map={floorProjectionTexture}
@@ -118,7 +118,7 @@ const CameraTarget = () => {
             </mesh>
 
             {/* Camera Representation */}
-            <mesh ref={cameraPointerRef} visible={isVisible}>
+            <mesh ref={cameraPointerRef} visible={showHelpers}>
                 <planeGeometry args={[10, 10]} />
                 <meshBasicMaterial
                     map={floorProjectionTexture}

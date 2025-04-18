@@ -15,15 +15,18 @@ import { pushDialogStatic } from './managers/UIManager/store'
 import { DANGER_ProjectNameUnSync } from './components/ui/DialogAlerts/Danger'
 import animationEngineInstance from './singleton'
 import { vxEngineWindowRefs } from './utils/useRefStore'
+import { AnimationEngine } from './AnimationEngine/engine'
 
 interface VXEngineContextProps {
   composer: React.RefObject<EffectComposer | null>
+  animationEngine: AnimationEngine
   IS_PRODUCTION: boolean
   IS_DEVELOPMENT: boolean
 }
 
 const VXEngineContext = createContext<VXEngineContextProps>({
   composer: { current: null },
+  animationEngine: null,
   IS_PRODUCTION: false,
   IS_DEVELOPMENT: false
 })
@@ -80,6 +83,7 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   return (
     <VXEngineContext.Provider value={{
       composer,
+      animationEngine: animationEngineInstance,
       IS_PRODUCTION,
       IS_DEVELOPMENT
     }}>

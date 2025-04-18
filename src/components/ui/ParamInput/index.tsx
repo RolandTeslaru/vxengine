@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, memo, useMemo } from 'react'
 import { InputProps } from '@vxengine/components/shadcn/input'
 import KeyframeControl from '../KeyframeControl'
 import ValueRenderer from '../ValueRenderer'
@@ -36,7 +36,7 @@ const COMPONENT_MAP = {
     color: [ParamColor]
 }
 
-export const ParamInput: FC<Props> = (props) => {
+export const ParamInput: FC<Props> = memo((props) => {
     const { vxkey, vxRefObj, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
 
     const components = COMPONENT_MAP[param.type ?? "number"] || []
@@ -59,8 +59,7 @@ export const ParamInput: FC<Props> = (props) => {
             <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
         </ContextMenu>
     )
-}
-
+})
 export default ParamInput
 
 interface ParamInputContextMenuContentProps {

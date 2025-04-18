@@ -5,7 +5,7 @@ export type ParamTreeNodeDataType = {
     key: string; // The name of the property
     children: Record<string, ParamTreeNodeDataType>; // Nested children
     param?: VXElementParam;
-    rawObject: Record<string, any>
+    refObject: Record<string, any>
     currentPath: string
 }
 
@@ -14,7 +14,7 @@ export type ParamTree = Record<string, ParamTreeNodeDataType>
 const isValidValue = (value: any) =>
     typeof value === "number" || (value instanceof THREE.Color && value.isColor);
 
-const getValueType = (value: any) => {
+export const getValueType = (value: any) => {
     if (typeof value === "number")
         return "number"
     else if (value instanceof THREE.Color || value.isColor)
@@ -24,7 +24,7 @@ const getValueType = (value: any) => {
 export function createParamTreeLevel(
     obj: Record<string, any>,
     prefix = "",
-    parentKey = ""
+    parentKey = "",
 ): Record<string, ParamTreeNodeDataType> {
     const tree: Record<string, ParamTreeNodeDataType> = {};
 
@@ -40,7 +40,7 @@ export function createParamTreeLevel(
                     propertyPath,
                     type: getValueType(value),
                 },
-                rawObject: null,
+                refObject: null,
                 children: {} // Leaf nodes – no children to load
             };
         } else if (typeof value === "object" && value !== null) {
@@ -48,7 +48,7 @@ export function createParamTreeLevel(
             tree[key] = {
                 key,
                 children: null, // Indicates children are not loaded yet
-                rawObject: value, // Save the reference to load later
+                refObject: value, // Save the reference to load later
                 currentPath: currentPath
             };
         }
@@ -56,6 +56,58 @@ export function createParamTreeLevel(
 
     return tree;
 }
+
+export type CreateNodeDataFnType = (key: string, currentPath: string, value: any) => Object
+
+
+
+
+
+export interface TreeNodeType {
+    key: string;
+    currentPath: string;
+    children: Record<string, TreeNodeType>;
+    refObject: any
+    data: null | any
+}
+
+export function createParamTreeLevelWithFunction(
+    obj: Record<string, any>,
+    prefix = "",
+    parentKey = "",
+    createNodeDataFn: CreateNodeDataFnType = null,
+): Record<string, TreeNodeType> {
+    const tree: Record<string, TreeNodeType> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        const currentPath = prefix ? `${prefix}.${key}` : key;
+
+        if (isValidValue(value)) {
+            const propertyPath = currentPath
+            const data = createNodeDataFn(key, currentPath, value)
+            tree[key] = {
+                key,
+                currentPath,
+                children: {}, // Leaf nodes – no children to load,
+                refObject: value,
+                data
+            };
+        } else if (typeof value === "object" && value !== null) {
+            // Instead of traversing further, mark as expandable
+            tree[key] = {
+                key,
+                children: null, // Indicates children are not loaded yet
+                currentPath: currentPath,
+                refObject: value,
+                data: null
+            };
+        }
+    }
+
+    return tree;
+}
+
+
 
 export function createParamTree(
     obj: Record<string, any>,
