@@ -1,6 +1,6 @@
 import { invalidate } from '@react-three/fiber'
 import { Slider } from '@vxengine/components/shadcn/slider'
-import { getProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
+import { getProperty, updateProperty, useObjectPropertyAPI } from '@vxengine/managers/ObjectManager/stores/managerStore'
 import { VXSliderInputType } from '@vxengine/vxobject/types'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import * as SliderPrimitive from "@radix-ui/react-slider"
@@ -24,7 +24,6 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
     const trackKey = `${vxkey}.${propertyPath}`
 
     const [value, setValue] = useState(getDefaultParamValue(vxkey, propertyPath, vxRefObj.current))
-    const [isDragging, setIsDragging] = useState(false);
 
     useLayoutEffect(() => {
         setValue(getDefaultParamValue(vxkey, propertyPath, vxRefObj.current))
@@ -40,12 +39,16 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
     }, [vxkey, propertyPath])
 
     const handleChange = useCallback((newValue: number) => {
-        animationEngineInstance.modifyParam("changing", vxkey, propertyPath, newValue);
+        animationEngineInstance
+            .paramControlService
+            .modifyParamValue(vxkey, propertyPath, newValue, true)
     }, [vxkey, propertyPath]);
 
     useLayoutEffect(() => {
 
     }, [vxkey, propertyPath]);
+
+    const valueRef = useRef(value);
 
     return (
         <div className='w-full h-[17px] my-auto rounded-full overflow-hidden'>
@@ -56,15 +59,16 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
                 )}
                 value={[value]}
                 onValueChange={(newValue) => {
+                    valueRef.current = newValue[0]
                     handleChange(newValue[0])
                 }}
-                // onMouseDown={() => {
-                //     setIsDragging(true);
-                //     console.log("Starting Drag");
-                //     modifyPropertyValue("start", vxkey, propertyPath, value)}}
                 onValueCommit={() => {
-                    animationEngineInstance.modifyParam("end", vxkey, propertyPath, value)}}
-                
+                    updateProperty(vxkey, propertyPath, valueRef.current)
+
+                    animationEngineInstance
+                        .paramControlService
+                        .flushTimelineStateUpdates()
+                }}
                 max={param.max}
                 min={param.min}
                 step={param.step ?? 0.1}

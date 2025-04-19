@@ -390,11 +390,11 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
     //
 
 
-    createKeyframe: ({ trackKey, value, handles, time, reRender = true }) => {
+    createKeyframe: ({ trackKey, value, handles, time, reRender = true, overlapKeyframeCheck = false }) => {
         const keyframeKey = `keyframe-${uuidv4()}`;
 
         set(produce((state: TimelineManagerAPIProps) =>
-            createKeyframeLogic(state, trackKey, keyframeKey, value, handles, time)
+            createKeyframeLogic(state, trackKey, keyframeKey, value, handles, time, overlapKeyframeCheck)
         ))
 
         if (reRender)
@@ -466,15 +466,15 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
             }))
         }
 
-        // Refresh Keyframe
-
-        animationEngineInstance.hydrationService.hydrateKeyframe({
-            action: "updateValue",
-            vxkey,
-            propertyPath,
-            keyframeKey,
-            newValue
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateKeyframe({
+                action: "updateValue",
+                vxkey,
+                propertyPath,
+                keyframeKey,
+                newValue
+            })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -575,7 +575,8 @@ function createKeyframeLogic(
     keyframeKey: string,
     value?: number,
     handles?: EditorKeyframeHandles,
-    time?: number
+    time?: number,
+    overlapKeyframeCheck?: boolean
 ) {
     const track = state.tracks[trackKey]
     if (!track) return;
@@ -586,9 +587,11 @@ function createKeyframeLogic(
 
     // Check if the cursor is on an exsting keyframe
     // if so, return because we cannot create overlapped keyframes
-    const keyframesOnTrackArray = Object.values(track.keyframes)
-    const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
-    if (isCursorOnExistingKeyframe) return
+    if(overlapKeyframeCheck){
+        const keyframesOnTrackArray = Object.values(track.keyframes)
+        const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
+        if (isCursorOnExistingKeyframe) return
+    }
 
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
     if (value === undefined || value === null) {

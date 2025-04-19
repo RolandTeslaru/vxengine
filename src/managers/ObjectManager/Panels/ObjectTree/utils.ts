@@ -25,5 +25,5 @@ export const regeneratePropertySetters = (vxkey: string) => {
     const rawTimeline = useAnimationEngineAPI.getState().currentTimeline
     const rawObject = rawTimeline.objects.find(obj => obj.vxkey === vxkey)
     const vxObject = useVXObjectStore.getState().objects[vxkey]
-    animationEngineInstance.propertyControlService.rebuildObjectPropertySetters(vxObject, rawObject)
+    animationEngineInstance.paramControlService.rebuildObjectPropertySetters(vxObject, rawObject)
 }

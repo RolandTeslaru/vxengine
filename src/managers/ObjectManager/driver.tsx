@@ -1,380 +1,308 @@
-import { TransformControls, useCamera } from "@react-three/drei";
-import React, { useMemo } from "react";
-import { useEffect, useRef, useState } from "react";
-import { updateProperty, useObjectManagerAPI, useObjectPropertyAPI } from "./stores/managerStore";
-import { useTimelineManagerAPI } from "../TimelineManager/store";
-import { vxObjectProps, vxSplineNodeProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useRefStore } from "@vxengine/utils";
-import { debounce, throttle } from "lodash";
-import * as THREE from "three";
-import { useObjectSettingsAPI } from "./stores/settingsStore";
+import React, { useEffect, useRef } from "react";
+import { batchUpdateProperties, useObjectManagerAPI } from "./stores/managerStore";
+import { useRefStore } from "@vxengine/utils/useRefStore";
 import { useVXObjectStore } from "./stores/objectStore";
-import { ThreeEvent } from "@react-three/fiber";
+
+import * as THREE from "three";
+import { useObjectSetting, useObjectSettingsAPI } from "./stores/settingsStore";
+import { TransformControls } from "@react-three/drei";
+import { AmmoPhysics, TransformControls as TransformControlsImpl } from "three-stdlib";
+
 import animationEngineInstance from "@vxengine/singleton";
-
-const axisMap = {
-  X: 'x',
-  Y: 'y',
-  Z: 'z',
-};
-
-const transformMap = {
-  translate: "position",
-  rotate: "rotation",
-  scale: "scale"
-}
-
-const dispatchVirtualEntityChangeEvent = (e: any, vxobject: vxObjectProps) => {
-  const virtualEntityChangeEvent = new CustomEvent('virtualEntityChange', {
-    detail: { transformation: e, object: vxobject }
-  });
-
-  document.dispatchEvent(virtualEntityChangeEvent as any);
-}
+import { vxObjectProps, vxSplineNodeProps } from "./types/objectStore";
+import { useTimelineManagerAPI } from "../TimelineManager";
+import { dispatchVirtualEntityChangeEvent } from "./utils/driver";
 
 const excludedObjectTypes = ["effect"]
 
-
-/**
- * ObjectManagerDriver Component
- *
- * Description:
- * This component manages transformations (translate, rotate, scale) for objects in a R3F scene
- * using `TransformControls` from drei. It handles updates to the selected object's properties, supports debounced
- * updates for performance, and manages specific logic for different types of objects, such as 
- * entities, keyframe nodes, and spline nodes.
- *
- * How it works:
- * 1. **State Initialization**: Access relevant state and APIs from Zustand stores (object manager, timeline editor, etc.).
- * 2. **Debounced Updates**: Use `lodash.debounce` to batch property updates for smoother performance.
- * 3. **Transform Change Handling**: Listen for changes via `TransformControls` and update object properties accordingly.
- * 4. **Type-Specific Logic**:
- *    - **Entities**: Update position, rotation, or scale properties.
- *    - **Virtual Entities**: Same as entities, but also dispatch a custom DOM event.
- *    - **Keyframe Nodes**: Update keyframe values and synchronize them with the timeline store.
- *    - **Spline Nodes**: Update node positions in the spline manager.
- * 5. **Axis Configuration**: Dynamically configure which transformation axes (X, Y, Z) are visible based on the object type.
- * 6. **TransformControls Integration**: Attach `TransformControls` to the selected object and bind event handlers.
- * 7. **Lifecycle Management**: Clean up debounced functions on component unmount and ensure proper state cleanup.
- */
-
 export const ObjectManagerDriver = () => {
-  const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
-  const vxobject = useVXObjectStore(state => state.objects[vxkey]);
-  const transformSpace = useObjectManagerAPI(state => state.transformSpace)
-  const transformMode = useObjectManagerAPI(state => state.transformMode);
-  const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
-  const transformControlsRef = useRefStore(state => state.transformControlsRef)
+    const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
+    const vxobject = useVXObjectStore(state => state.objects[vxkey]);
 
-  const vxObjectRef: THREE.Object3D = vxobject?.ref?.current;
-  const type = vxObjectRef?.type
-  const isUsingSplinePath = useObjectSettingsAPI(state => state.settings[vxkey]?.useSplinePath?.value ?? false);
+    const transformSpace = useObjectManagerAPI(state => state.transformSpace)
+    const transformMode = useObjectManagerAPI(state => state.transformMode);
+    const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
 
-  const setSplineNodePosition = useTimelineManagerAPI(state => state.setSplineNodePosition);
+    const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
-  const isValid = !excludedObjectTypes.includes(vxobject?.type)
+    const isUsingSplinePath = useObjectSetting(vxkey, "useSplinePath", false)
+    const isValid = !excludedObjectTypes.includes(vxobject?.type)
 
-  const isTransformDisabled =
-    isUsingSplinePath ||
-    vxobject?.disabledParams?.includes("position") ||
-    !isValid;
+    const isTransformDisabled =
+        isUsingSplinePath ||
+        vxobject?.disabledParams?.includes("position") ||
+        !isValid;
 
-  const oldProps = useRef({
-    position: new THREE.Vector3,
-    rotation: new THREE.Quaternion,
-    scale: new THREE.Vector3
-  })
+    useEffect(() => {
+        const controlsImpl = transformControlsRef.current
+        if (!controlsImpl) return
 
-  const newProps = useRef({
-    position: new THREE.Vector3,
-    rotation: new THREE.Quaternion,
-    scale: new THREE.Vector3
-  })
+        const handleDraggingChanged = (event: any) => {
+            if(!event.value) {
+                animationEngineInstance
+                    .paramControlService
+                    .flushTimelineStateUpdates()
+            }
+        }
+
+        // @ts-expect-error
+        controlsImpl.addEventListener('dragging-changed', handleDraggingChanged)
+
+        return () => {
+            // @ts-expect-error
+            controlsImpl.removeEventListener('dragging-changed', handleDraggingChanged)
+        }
+    }, [vxobject])
+
+    useEffect(() => {
+        if (!vxobject) return
+
+        const controls = transformControlsRef?.current as any;
+        if (!controls) return
+
+        setTransformMode("translate");
+        const vxobjectRef = vxobject.ref.current as THREE.Object3D
+        if (transformSpace === "local") {
+            vxobjectRef.getWorldPosition(oldProps.position)
+            vxobjectRef.getWorldQuaternion(oldProps.rotation)
+            vxobjectRef.getWorldScale(oldProps.scale)
+        }
+
+    }, [vxobject])
+
+    return (
+        <>
+            {(!!vxobject?.ref?.current && !isTransformDisabled) &&
+                <TransformControls
+                    ref={transformControlsRef}
+                    object={vxobject.ref.current}
+                    mode={transformMode}
+                    onObjectChange={(e) => handleOnVxObjectChange(e, vxobject, transformSpace, transformMode)}
+                    space={transformSpace}
+                />
+            }
+        </>
+    )
+}
 
 
-  // Create debounced functions for each axis using useMemo
-  const debouncedPropertyValueChangeFunctions = useMemo(() => ({
-    X: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-    Y: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-    Z: debounce((vxkey, propertyPath, newValue) => animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue, false), 300, { leading: false, trailing: true }),
-  }), []);
-
-  // Cleanup debounced functions on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(debouncedPropertyValueChangeFunctions).forEach(
-        (debouncedFn) => debouncedFn.cancel()
-      );
-    };
-  }, [debouncedPropertyValueChangeFunctions]);
 
 
 
-  const handleTransformChange = (e) => {
-    const type = vxobject.type;
-    switch (type) {
-      case "entity":
-        handleEntityChange(e)
-        break;
-      case "virtualEntity": {
-        handleEntityChange(e)
-        dispatchVirtualEntityChangeEvent(e, vxobject);
-        break;
-      }
-      case "splineNode":
-        handleSplineNodeChange();
-        break;
-    }
-  };
 
-  const handleSpaceTransform = (axes: string[], vxkey: string,) => {
-    axes.forEach((axisLetter: string) => {
-      const propertyAxis = axisMap[axisLetter];
-      if (!propertyAxis) return;
-
-      const propertyPath = `${transformMap[transformMode]}.${propertyAxis}`;
-      let newValue;
-
-      switch (transformMode) {
-        case 'translate':
-          newValue = vxObjectRef.position[propertyAxis];
-          break;
-        case 'rotate':
-          newValue = vxObjectRef.rotation[propertyAxis]
-          break;
-        case 'scale':
-          newValue = vxObjectRef.scale[propertyAxis]
-          break;
-      }
-      // Call the appropriate debounced function
-      debouncedPropertyValueChangeFunctions[axisLetter]?.(
-        vxkey,
-        propertyPath,
-        newValue,
-      );
-
-      updateProperty(vxkey, propertyPath, newValue)
-    });
-  }
-
-  // 
-  //  Handle ENTITIES
-  // 
-
-  const accumulatedRotation = useRef({ x: 0, y: 0, z: 0 });
-
-  useEffect(() => {
-    const initialEuler = new THREE.Euler().setFromQuaternion(oldProps.current.rotation, 'XYZ');
-
-    accumulatedRotation.current.x = initialEuler.x;
-    accumulatedRotation.current.y = initialEuler.y;
-    accumulatedRotation.current.z = initialEuler.z;
-  }, [vxobject])
-
-  const handleEntityChange = (e) => {
+const handleOnVxObjectChange = (e: any, vxobject: vxObjectProps, transformSpace: "world" | "local", transformMode: TransformModeType) => {
     const controls = e.target;
     const axis = controls.axis;
-    if (!axis) return
+    if (!axis) return;
 
     const axes = axis.split('');
 
-    if (transformSpace === "world") {
-      handleSpaceTransform(axes, vxkey)
+    // Additional logic can be added here if needed
+
+    VXOBJECT_TYPE_CALLBACKS[vxobject.type](e, vxobject, axes, transformMode, transformSpace, "changing")
+
+    animationEngineInstance.paramControlService.flushUiUpdates();
+}
+
+const handleOnEntityChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    TRANSFORM_TYPE_CALLBACKS[transformMode](e, vxobject, axes, transformMode, transformSpace, mode)
+}
+
+const handleOnVirtualEntityChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    TRANSFORM_TYPE_CALLBACKS[transformMode](e, vxobject, axes, transformMode, transformSpace, mode)
+    dispatchVirtualEntityChangeEvent(e, vxobject)
+}
+
+const handleOnSplineNodeChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    const { index, splineKey, ref } = vxobject as vxSplineNodeProps;
+    const newPosition = ref.current.position as THREE.Vector3;
+
+    useTimelineManagerAPI.getState().setSplineNodePosition(splineKey, index, newPosition)
+
+    const vxNodeKey = `${splineKey}.node${index}`
+
+    batchUpdateProperties([
+        { vxkey: vxNodeKey, propertyPath: 'position.x', value: newPosition.x },
+        { vxkey: vxNodeKey, propertyPath: 'position.y', value: newPosition.y },
+        { vxkey: vxNodeKey, propertyPath: 'position.z', value: newPosition.z }
+    ])
+}
+
+const handleOnKeyframeNodeChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+
+}
+
+const VXOBJECT_TYPE_CALLBACKS: Record<string, ChangeFnType> = {
+    entity: handleOnEntityChange,
+    virtualEntity: handleOnVirtualEntityChange,
+    splineNode: handleOnSplineNodeChange,
+    keyframeNode: handleOnKeyframeNodeChange
+}
+
+
+
+const oldProps = {
+    position: new THREE.Vector3(),
+    rotation: new THREE.Quaternion(),
+    scale: new THREE.Vector3()
+}
+
+const currentProps = {
+    position: new THREE.Vector3(),
+    rotation: new THREE.Quaternion(),
+    scale: new THREE.Vector3()
+}
+
+const accumulatedRotation = {
+    current: {
+        x: 0,
+        y: 0,
+        z: 0
     }
+}
+
+const handleOnTranslateChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    const objectRef = vxobject.ref.current as THREE.Object3D
+    // axes only contains only the axis that changed
+    if (transformSpace === "world") {
+        axes.forEach((axis: string, index) => {
+            axis = axis.toLowerCase()
+
+            const propertyPath = `position.${axis}`
+            const newValue = objectRef.position[axis];
+
+            // dont rerender beause TransformControls moves the object itself
+            animationEngineInstance
+                .paramControlService
+                .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
+        })
+    }
+    // For local when need to change all axes if they have changed
     else if (transformSpace === "local") {
-      switch (transformMode) {
-        case 'translate': {
-          newProps.current.position = vxObjectRef.position.clone()
-          Array('x', 'y', 'z').forEach(axisLetter => {
-            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const oldValue = oldProps.current.position[axisLetter];
-            const newValue = newProps.current.position[axisLetter]
+        currentProps.position = objectRef.position.clone()
+        Array('x', 'y', 'z').forEach(axis => {
+            const propertyPath = `position.${axis}`
+            const oldValue = oldProps.position[axis]
+            const newValue = currentProps.position[axis]
 
             if (oldValue !== newValue) {
-              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
-                vxkey,
-                propertyPath,
-                newValue
-              );
-              oldProps.current.position[axisLetter] = newValue
+                animationEngineInstance
+                    .paramControlService
+                    .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
+
+                oldProps.position[axis] = newValue;
             }
-          })
+        })
+    }
 
-          break;
-        }
-        case 'rotate': {
-          // Get the current world quaternion
-          vxObjectRef.getWorldQuaternion(newProps.current.rotation);
+}
 
-          // Convert both initial and current quaternions to Euler angles for comparison
-          // Old
-          // const oldEuler = new THREE.Euler().setFromQuaternion(oldProps.current.rotation, 'XYZ');
-          // New
-          const newEuler = new THREE.Euler().setFromQuaternion(newProps.current.rotation, 'XYZ');
+const handleOnRotationChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    const objectRef = vxobject.ref.current as THREE.Object3D
 
-          ['x', 'y', 'z'].forEach(axisLetter => {
-            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const oldVal = accumulatedRotation.current[axisLetter];
-            const newVal = newEuler[axisLetter];
+    if (transformSpace === "world") {
+        axes.forEach(axis => {
+            axis = axis.toLowerCase();
+
+            const propertyPath = `rotation.${axis}`
+            const newValue = objectRef.rotation[axis];
+
+            animationEngineInstance
+                .paramControlService
+                .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
+        })
+    }
+    else if (transformSpace === "local") {
+        objectRef.getWorldQuaternion(currentProps.rotation);
+
+        const newEuler = new THREE.Euler().setFromQuaternion(currentProps.rotation)
+
+        Array('x', 'y', 'z').forEach(axis => {
+            const propertyPath = `rotation.${axis}`
+            const oldValue = accumulatedRotation.current[axis]
+            const newValue = newEuler[axis]
 
             // 1. Compute difference in the principal range
-            let diff = newVal - oldVal;
+            let diff = newValue - oldValue;
 
             // 2. If crossing ±π boundary, fix it
             if (diff > Math.PI) diff -= 2 * Math.PI;
             if (diff < -Math.PI) diff += 2 * Math.PI;
 
             // 3. Accumulate
-            const unwrappedVal = oldVal + diff;
+            const unwrappedValue = oldValue + diff;
 
             // 4. Save back into `accumulatedRotation`
-            accumulatedRotation.current[axisLetter] = unwrappedVal;
+            accumulatedRotation.current[axis] = unwrappedValue;
 
             // 4. This unwrappedVal is the actual continuous angle
-            if (oldVal !== unwrappedVal) {
-              // console.log("Unwrapped val ", unwrappedVal)
-              // dispatch it or store it
-              debouncedPropertyValueChangeFunctions[axis.toUpperCase()]?.(
-                vxkey,
-                propertyPath,
-                unwrappedVal
-              );
-
-              updateProperty(vxkey, propertyPath, unwrappedVal);
-              // update the initial for next pass
-              // oldEuler[axis] = unwrappedVal;
-            }
-          });
-
-          // After updating, convert `initialEuler` back into a quaternion and store it as the new baseline
-          // oldProps.current.rotation.setFromEuler(newEuler);
-          break;
-        }
-
-        case 'scale': {
-          // Get the current world scale
-          vxObjectRef.getWorldScale(newProps.current.scale);
-
-          ['x', 'y', 'z'].forEach(axisLetter => {
-            const propertyPath = `${transformMap[transformMode]}.${axisLetter}`;
-            const oldValue = oldProps.current.scale[axisLetter];
-            const newValue = newProps.current.scale[axisLetter];
-
-            if (oldValue !== newValue) {
-              // Call debounced function with new scale value
-              debouncedPropertyValueChangeFunctions[axisLetter.toUpperCase()]?.(
-                vxkey,
-                propertyPath,
-                newValue
-              );
-              // Update the initial scale to the new value so future comparisons are accurate
-              oldProps.current.scale[axisLetter] = newValue;
-            }
-          });
-          break;
-        }
-      }
-
+            if (oldValue !== unwrappedValue)
+                animationEngineInstance
+                    .paramControlService
+                    .modifyParamValue(vxobject.vxkey, propertyPath, unwrappedValue, false)
+        })
     }
-  }
-
-  // 
-  //  Handle SPLINE Nodes 
-  // 
-  const handleSplineNodeChange = () => {
-    const { index, splineKey, ref } = vxobject as vxSplineNodeProps;
-    const newPosition = ref.current.position;
-    setSplineNodePosition(splineKey, index, newPosition)
-
-    const vxNodeKey = `${splineKey}.node${index}`
-
-    updateProperty(vxNodeKey, 'position.x', newPosition.x)
-    updateProperty(vxNodeKey, 'position.y', newPosition.y)
-    updateProperty(vxNodeKey, 'position.z', newPosition.z)
-  }
-
-
-
-  // Set the Axis of the controls when a node is selected
-  useEffect(() => {
-    if (!vxobject) return
-
-    const controls = transformControlsRef?.current as any;
-    if (!controls) return
-
-    setTransformMode("translate");
-
-    // We need to store initial values when dealing with local space, 
-    // because we need to compare them when the entity is changed
-    if (transformSpace === "local") {
-      vxObjectRef.getWorldPosition(oldProps.current.position);
-      vxObjectRef.getWorldQuaternion(oldProps.current.rotation);
-      vxObjectRef.getWorldScale(oldProps.current.scale);
-    }
-
-    if (vxobject.type === "splineNode") {
-      controls.showX = true;
-      controls.showY = true;
-      controls.showZ = true;
-    }
-    else if (vxobject.type === "keyframeNode") {
-      const axis = vxobject.axis
-      controls.showX = axis.includes('X')
-      controls.showY = axis.includes('Y')
-      controls.showZ = axis.includes('Z')
-    }
-  }, [vxobject])
-
-
-  useEffect(() => {
-    const controlsImpl = transformControlsRef?.current
-    if (!controlsImpl) return
-
-    const handleDraggingChanged = (event: any) => {
-      if (event.value) {
-        console.log('Transform started')
-      } else {
-        console.log('Transform ended')
-      }
-    }
-
-    // @ts-expect-error
-    controlsImpl.addEventListener('dragging-changed', handleDraggingChanged)
-
-    return () => {
-      // @ts-expect-error
-      controlsImpl.removeEventListener('dragging-changed', handleDraggingChanged)
-    }
-  }, [!isTransformDisabled])
-
-  return (
-    <>
-      {/* Object Transform Controls */}
-      {vxObjectRef && !isTransformDisabled && (
-        <TransformControls
-          ref={transformControlsRef}
-          object={vxObjectRef}
-          mode={transformMode}
-          onObjectChange={handleTransformChange}
-          space={transformSpace}
-        />
-      )}
-    </>
-  );
-};
-
-const handleSplineNodeChange = (
-  vxSplineNode: vxSplineNodeProps
-) => {
-  const { index, splineKey, ref } = vxSplineNode;
-  const vxNodeKey = `${splineKey}.node${index}`;
-  const newPosition = ref.current.position;
-
-  updateProperty(vxNodeKey, 'position.x', newPosition.x)
-  updateProperty(vxNodeKey, 'position.y', newPosition.y)
-  updateProperty(vxNodeKey, 'position.z', newPosition.z)
-
-  const setSplineNodePosition = useTimelineManagerAPI.getState().setSplineNodePosition;
-  setSplineNodePosition(splineKey, index, newPosition)
 }
 
+const handleOnScaleChange: ChangeFnType = (
+    e, vxobject, axes, transformMode, transformSpace, mode
+) => {
+    const objectRef = vxobject.ref.current as THREE.Object3D
+
+    if (transformSpace === "world") {
+        axes.forEach(axis => {
+            axis = axis.toLowerCase();
+            const propertyPath = `scale.${axis}`
+            const newValue = objectRef.scale[axis]
+
+            animationEngineInstance
+                .paramControlService
+                .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
+        })
+    }
+    else if (transformSpace === "local") {
+        objectRef.getWorldScale(currentProps.scale)
+
+        Array('x', 'y', 'z').forEach(axis => {
+            const propertyPath = `scale.${axis}`
+            const oldValue = oldProps.scale[axis]
+            const newValue = currentProps.scale[axis]
+
+            if (oldValue !== newValue)
+                animationEngineInstance
+                    .paramControlService
+                    .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
+        })
+    }
+}
+
+
+const TRANSFORM_TYPE_CALLBACKS = {
+    translate: handleOnTranslateChange,
+    rotate: handleOnRotationChange,
+    scale: handleOnScaleChange
+}
+
+
+type DragModeType = "start" | "changing" | "end"
+type TransformModeType = "translate" | "rotate" | "scale"
+
+
+type ChangeFnType = (e: any,
+    vxobject: vxObjectProps,
+    axes: string[],
+    transformMode: TransformModeType,
+    transformSpace: string,
+    mode: DragModeType) => void

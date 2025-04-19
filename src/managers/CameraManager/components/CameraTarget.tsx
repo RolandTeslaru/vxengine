@@ -23,12 +23,8 @@ const CameraTarget = () => {
     const pointerTexture = useMemo(() => new TextureLoader().load(base64Pointer), [])
     const floorProjectionTexture = useMemo(() => new TextureLoader().load(base64FloorProjection), [])
 
-    
-
     const camera = useVXObjectStore(state => state.objects["perspectiveCamera"])
     const showHelpers = useObjectSetting(vxkey, "showHelpers", false) && IS_DEVELOPMENT;
-
-    console.log("Camera Target helpers ", showHelpers)
 
     const verticalPlaneRef = useRef<THREE.Mesh>(null);
     const FloorProjectionRef = useRef<THREE.Mesh>(null)

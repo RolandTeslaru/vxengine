@@ -119,9 +119,9 @@ type ColorPickerProps = {
     }
     default_value?: string;
 
-    handleColorChangeStart: (hsl: hsl) => void
-    handleColorChange: (hsl: hsl) => void
-    handleColorChangeEnd: (hsl: hsl) => void
+    handleColorChangeStart?: (hsl: hsl) => void
+    handleColorChange?: (hsl: hsl) => void
+    handleColorChangeEnd?: (hsl: hsl) => void
 };
 
 interface ColorPickerHandle {

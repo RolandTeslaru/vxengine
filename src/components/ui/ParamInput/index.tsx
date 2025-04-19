@@ -78,7 +78,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
     // @ts-expect-error
     const isParamInClipboard = useClipboardManagerAPI(state => state.items.has(paramType));
 
-    const hasSideEffect = animationEngineInstance.propertyControlService.hasSideEffect(trackKey)
+    const hasSideEffect = animationEngineInstance.paramControlService.hasSideEffect(trackKey)
 
     const isPropertyTracked = useTimelineManagerAPI(state => !!state.tracks[trackKey])
     const isPropertyStatic = useTimelineManagerAPI(state => !!state.staticProps[trackKey])

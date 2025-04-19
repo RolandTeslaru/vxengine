@@ -15,7 +15,14 @@ export const handleOnCopyNumber = (vxkey: string, param: VXElementParam, vxRefOb
 
 export const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
     const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, param.propertyPath, value)
+
+    animationEngineInstance
+        .paramControlService
+        .modifyParamValue(vxkey, param.propertyPath, value, true)
+    
+    animationEngineInstance
+        .paramControlService
+        .flushTimelineStateUpdates()
 }
 
 export const handleOnCopyColor = (vxkey: string, param: VXElementParam, vxRefObj:  React.RefObject<any>) => {
@@ -41,9 +48,13 @@ export const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefOb
 
     const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
 
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, rPropertyPath, redValue, false);
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, gPropertyPath, greenValue, false);
-    animationEngineInstance.propertyControlService.modifyParam("press", vxkey, bPropertyPath, blueValue, true);
+    animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, redValue, false)
+    animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, greenValue, false)
+    animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, blueValue, true)
+
+    animationEngineInstance
+        .paramControlService
+        .flushTimelineStateUpdates()
 }
 
 export const hslToRgb = (h: number, s: number, l: number) => {

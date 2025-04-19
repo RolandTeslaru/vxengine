@@ -21,7 +21,7 @@ import { logReportingService } from './services/LogReportingService';
 import { WasmService } from './services/WasmService';
 import { SplineService } from './services/SplineService';
 import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
-import { PropertyControlService } from './services/PropertyControlService';
+import { ParamControlService } from './services/ParamControlService';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
@@ -51,7 +51,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
   public get splineService(): SplineService { return this._splineService }
   public get hydrationService(): HydrationService { return this._hydrationService }
-  public get propertyControlService(): PropertyControlService { return this._propertyControlService }
+  public get paramControlService(): ParamControlService { return this._paramControlService }
 
   // ====================================================
   // Private Instance Properties
@@ -89,7 +89,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _hydrationService: HydrationService;
   private _splineService: SplineService
   private _wasmService: WasmService;
-  private _propertyControlService: PropertyControlService
+  private _paramControlService: ParamControlService
 
   private _IS_DEVELOPMENT: boolean = false;
   private _IS_PRODUCTION: boolean = false;
@@ -114,7 +114,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     );
     this._splineService = new SplineService(this._wasmService);
     this._hydrationService = new HydrationService(this.splineService);
-    this._propertyControlService = new PropertyControlService(this, this._hydrationService);
+    this._paramControlService = new ParamControlService(this, this._hydrationService);
   }
 
 
@@ -134,7 +134,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       this._IS_DEVELOPMENT = true;
 
     this._hydrationService.setMode(nodeEnv);
-    this._propertyControlService.setMode(nodeEnv)
+    this._paramControlService.setMode(nodeEnv)
 
     const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
 
@@ -196,7 +196,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._currentTimeline = selectedTimeline;
 
     if (isMounting === false) {
-      this._propertyControlService.recomputeAllPropertySetters(
+      this._paramControlService.recomputeAllPropertySetters(
         this._currentTimeline,
         this._object3DCache
       )
@@ -244,7 +244,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     } else {
       this._applyTracksOnTimeline(time)
       this._updateCameraIfNeeded();
-      this._propertyControlService.flushUiUpdates();
+      this._paramControlService.flushUiUpdates();
       this.trigger('timeUpdatedByEditor', { time, engine: this });
 
       invalidate();
@@ -280,7 +280,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._applyAllStaticProps();
     this._applyTracksOnTimeline(targetTime)
     this._updateCameraIfNeeded();
-    this.propertyControlService.flushUiUpdates()
+    this.paramControlService.flushUiUpdates()
 
     invalidate();
   }
@@ -342,19 +342,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   }
 
 
-
-  public modifyParam(
-    mode: "start" | "changing" | "end" | "press",
-    vxkey: string,
-    propertPath: string,
-    newValue: number,
-    reRender: boolean = true
-  ) {
-    this._propertyControlService.modifyParam(mode, vxkey, propertPath, newValue, reRender);
-  }
-
-
-
   // ====================================================
   // Public Object Lifecycle
   // ====================================================
@@ -375,7 +362,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       const sideEffect = param.sideEffect;
       const trackKey = `${vxkey}.${param.propertyPath}`
       if (!!sideEffect) {
-        this.propertyControlService.registerSideEffect(trackKey, sideEffect)
+        this.paramControlService.registerSideEffect(trackKey, sideEffect)
       }
     })
 
@@ -389,12 +376,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (!rawObject)
       return
 
-    this.propertyControlService.generateObjectPropertySetters(vxObject, rawObject)
+    this.paramControlService.generateObjectPropertySetters(vxObject, rawObject)
 
     this._applyTracksOnObject(this._currentTime, rawObject)
     this._applyStaticPropsOnObject(rawObject, object3DRef);
 
-    this._propertyControlService.flushUiUpdates();
+    this._paramControlService.flushUiUpdates();
   }
 
 
@@ -410,7 +397,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
 
     this._object3DCache.delete(vxkey);
-    this._propertyControlService.removePropertySettersForObject(vxkey);
+    this._paramControlService.removePropertySettersForObject(vxkey);
   }
 
 
@@ -447,7 +434,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this.setCurrentTime(newCurrentTime, true);
     this._applyTracksOnTimeline(newCurrentTime);
     this._updateCameraIfNeeded();
-    this._propertyControlService.flushUiUpdates();
+    this._paramControlService.flushUiUpdates();
     invalidate();
 
     if(isFinished){
@@ -500,7 +487,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       return;
     }
     rawObject.staticProps.forEach(staticProp => {
-      this._propertyControlService.updateProperty(
+      this._paramControlService.updateProperty(
         rawObject.vxkey,
         staticProp.propertyPath,
         staticProp.value,
@@ -585,7 +572,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Only update the property if its under the threshold
     // or its undefined ( in the initial state )
     if (lastValue === undefined || Math.abs(newValue - lastValue) > AnimationEngine.VALUE_CHANGE_THRESHOLD) {
-      this._propertyControlService.updateProperty(vxkey, propertyPath, newValue, objectRef);
+      this._paramControlService.updateProperty(vxkey, propertyPath, newValue, objectRef);
       // this._updateObjectProperty(vxkey, propertyPath, newValue);
       this._lastInterpolatedValues.set(cacheKey, newValue);
     }
@@ -781,7 +768,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
 
       obj.staticProps.forEach(staticProp => {
-        this.propertyControlService.updateProperty(
+        this.paramControlService.updateProperty(
           vxkey,
           staticProp.propertyPath,
           staticProp.value,

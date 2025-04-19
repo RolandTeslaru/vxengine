@@ -1,8 +1,8 @@
 import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { defaultSideEffectsMap } from "../defaultSideEffects";
 import { AnimationEngine } from "../engine";
-import { PropertySetterType, PropertySideEffectType, PropertyUpdateType } from "../types/PropertyControlService";
-import { ObjectPropertyStoreProps } from "@vxengine/types/objectPropertyStore";
+import { ParamSetterType, ParamSideEffectType, PropertyUpdateType } from "../types/ParamControlService";
+import { ObjectPropertyStoreProps } from "@vxengine/types/objectPropertyStore"; 
 import { produce } from "immer";
 import { logReportingService } from "./LogReportingService";
 import { RawObject, RawTimeline } from "@vxengine/types/data/rawData";
@@ -17,19 +17,21 @@ import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStor
  * Service responsible for managing property updates and side effects in the animation engine.
  * Handles property setters, side effects, and property store updates in both development and production modes.
  */
-export class PropertyControlService {
+export class ParamControlService {
     private _IS_PRODUCTION: boolean = true;
     private _IS_DEVELOPMENT: boolean = false;
 
-    private _propertySetterCache: Map<string, PropertySetterType> = new Map()
-    private _sideEffects: Map<string, PropertySideEffectType> = new Map()
+    private _paramSetterCache: Map<string, ParamSetterType> = new Map()
+    private _sideEffects: Map<string, ParamSideEffectType> = new Map()
 
     private _pendingUiUpdates: Map<string, number> = new Map()
+    private _pendingTrackStateUpdates: Map<string, { keyframeKey: string, lastValue: number }> = new Map()
+    private _pendingStaticPropStateUpdates: Map<string, { lastValue: number }> = new Map()
 
-    public static defaultSideEffects: Map<string, PropertySideEffectType> = defaultSideEffectsMap;
+    public static defaultSideEffects: Map<string, ParamSideEffectType> = defaultSideEffectsMap;
 
     /**
-     * Creates a new PropertyControlService instance.
+     * Creates a new ParamControlService instance.
      * @param _animationEngine - Reference to the animation engine instance
      * @param _hydrationService - Service for hydrating properties and keyframes
      */
@@ -108,18 +110,19 @@ export class PropertyControlService {
     ) {
         const trackKey = `${vxkey}.${propertyPath}`
 
-        let setter = this._propertySetterCache.get(trackKey);
+        let setter = this._paramSetterCache.get(trackKey);
         if (!setter) {
             setter = this._generatePropertySetter(
                 objectRef,
                 vxkey,
                 propertyPath
             )
-            this._propertySetterCache.set(trackKey, setter);
+            this._paramSetterCache.set(trackKey, setter);
+            console.warn("Setter nof found in cahce for trackKey:", trackKey, ", generating one", setter)
         }
         setter(newValue);
 
-        const sideEffect = this._sideEffects.get(trackKey) || PropertyControlService.defaultSideEffects.get(propertyPath)
+        const sideEffect = this._sideEffects.get(trackKey) || ParamControlService.defaultSideEffects.get(propertyPath)
         if (!!sideEffect)
             sideEffect(this._animationEngine, vxkey, propertyPath, objectRef, newValue)
 
@@ -137,24 +140,24 @@ export class PropertyControlService {
     public generateObjectPropertySetters(vxobject: vxObjectProps, rawObject: RawObject) {
         rawObject.tracks.forEach(_track => {
             const trackKey = `${vxobject.vxkey}.${_track.propertyPath}`
-            if (!this._propertySetterCache.has(trackKey)) {
+            if (!this._paramSetterCache.has(trackKey)) {
                 const setter = this._generatePropertySetter(
                     vxobject.ref.current,
                     vxobject.vxkey,
                     _track.propertyPath
                 )
-                this._propertySetterCache.set(trackKey, setter);
+                this._paramSetterCache.set(trackKey, setter);
             }
         })
         rawObject.staticProps.forEach(_staticProp => {
             const staticPropKey = `${vxobject.vxkey}.${_staticProp.propertyPath}`
-            if (!this._propertySetterCache.has(staticPropKey)) {
+            if (!this._paramSetterCache.has(staticPropKey)) {
                 const setter = this._generatePropertySetter(
                     vxobject.ref.current,
                     vxobject.vxkey,
                     _staticProp.propertyPath
                 )
-                this._propertySetterCache.set(staticPropKey, setter);
+                this._paramSetterCache.set(staticPropKey, setter);
             }
         })
 
@@ -174,9 +177,9 @@ export class PropertyControlService {
      */
     public removePropertySettersForObject(vxkey: string) {
         const prefix = `${vxkey}.`;
-        for (const key of this._propertySetterCache.keys()) {
+        for (const key of this._paramSetterCache.keys()) {
             if (key.startsWith(prefix)) {
-                this._propertySetterCache.delete(key);
+                this._paramSetterCache.delete(key);
             }
         }
     }
@@ -224,14 +227,14 @@ export class PropertyControlService {
         }
 
         const finalKey = propertyKeys[propertyKeys.length - 1]
-        if(target instanceof Map){
+        if (target instanceof Map) {
             const entry = target.get(finalKey);
-            if(entry && typeof entry === 'object' && 'value' in entry){
+            if (entry && typeof entry === 'object' && 'value' in entry) {
                 return (newValue: number) => {
                     entry.value = newValue;
                 }
             }
-        }else {
+        } else {
             return (newValue: number) => {
                 target[finalKey] = newValue;
             }
@@ -246,7 +249,7 @@ export class PropertyControlService {
      * @param trackKey - The unique identifier for the track
      * @param callback - The side effect callback function
      */
-    public registerSideEffect(trackKey: string, callback: PropertySideEffectType): void {
+    public registerSideEffect(trackKey: string, callback: ParamSideEffectType): void {
         this._sideEffects.set(trackKey, callback);
     }
 
@@ -258,9 +261,9 @@ export class PropertyControlService {
      * @param trackKey - The unique identifier for the track
      * @returns The side effect callback function or undefined if none exists
      */
-    public getSideEffect(trackKey: string): PropertySideEffectType {
+    public getSideEffect(trackKey: string): ParamSideEffectType {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-        return this._sideEffects.get(trackKey) ?? PropertyControlService.defaultSideEffects.get(propertyPath)
+        return this._sideEffects.get(trackKey) ?? ParamControlService.defaultSideEffects.get(propertyPath)
     }
 
 
@@ -274,22 +277,12 @@ export class PropertyControlService {
     public hasSideEffect(trackKey: string): boolean {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
-        return this._sideEffects.has(trackKey) ?? !!PropertyControlService.defaultSideEffects.get(propertyPath)
+        return this._sideEffects.has(trackKey) ?? !!ParamControlService.defaultSideEffects.get(propertyPath)
     }
 
 
 
-
-    /**
-     * Modifies a parameter value and handles the update based on the specified mode.
-     * @param mode - The modification mode (start, changing, end, or press)
-     * @param vxkey - The unique identifier for the object
-     * @param propertPath - The path to the property being modified
-     * @param newValue - The new value to set
-     * @param reRender - Whether to trigger a re-render after the update
-     */
-    public modifyParam(
-        mode: "start" | "changing" | "end" | "press",
+    public modifyParamValue(
         vxkey: string,
         propertPath: string,
         newValue: number,
@@ -300,7 +293,7 @@ export class PropertyControlService {
         const time = this._animationEngine.currentTime;
 
         // Hydrates or creates the staticProp or keyframe
-        this._processParamModification(mode, vxkey, propertPath, state, time, newValue);
+        this._processParamModification(vxkey, propertPath, state, time, newValue);
 
         this.queueUiUpdate(vxkey, propertPath, newValue);
 
@@ -309,19 +302,7 @@ export class PropertyControlService {
     }
 
 
-
-    
-    /**
-     * Processes a parameter modification based on the specified mode.
-     * @param mode - The modification mode
-     * @param vxkey - The unique identifier for the object
-     * @param propertyPath - The path to the property being modified
-     * @param state - The current timeline manager state
-     * @param time - The current time in the timeline
-     * @param newValue - The new value to set
-     */
     private _processParamModification(
-        mode: "start" | "changing" | "end" | "press",
         vxkey: string,
         propertyPath: string,
         state: TimelineManagerAPIProps,
@@ -333,10 +314,10 @@ export class PropertyControlService {
         const isPropertyTracked = !!track;
 
         if (isPropertyTracked) {
-            const keyframesOnTrack = Object.values(track.keyframes)
+            const keyframesOnTracks = Object.values(track.keyframes);
             let targetKeyframe: EditorKeyframe | undefined;
 
-            keyframesOnTrack.some(_kf => {
+            keyframesOnTracks.some(_kf => {
                 if (_kf.time === time) {
                     targetKeyframe = _kf;
                     return true;
@@ -344,28 +325,27 @@ export class PropertyControlService {
                 return false;
             })
 
-            if (!targetKeyframe) {
+            if (!targetKeyframe)
                 state.createKeyframe({
                     trackKey,
                     value: newValue,
-                    reRender: false
+                    reRender: false,
+                    overlapKeyframeCheck: false
                 })
-            } else {
+            else {
                 const targetKeyframeKey = targetKeyframe.id;
-                if (mode === "start" || mode === "changing")
-                    this._hydrationService.hydrateKeyframe({
-                        action: "updateValue",
-                        vxkey,
-                        propertyPath,
-                        keyframeKey: targetKeyframeKey,
-                        newValue
-                    })
-                else
-                    state.setKeyframeValue(targetKeyframeKey, trackKey, newValue)
+                this._hydrationService.hydrateKeyframe({
+                    action: "updateValue",
+                    vxkey,
+                    propertyPath,
+                    keyframeKey: targetKeyframeKey,
+                    newValue
+                })
+                this._queueTrackStateUpdate(trackKey, targetKeyframeKey, newValue)
             }
         }
         else {
-            const staticPropKey = trackKey;
+            const staticPropKey = trackKey
             const staticProp = state.staticProps[staticPropKey]
 
             if (!staticProp)
@@ -376,16 +356,43 @@ export class PropertyControlService {
                     reRender: false
                 })
             else {
-                if (mode === "start" || mode === "changing")
-                    this._hydrationService.hydrateStaticProp({
-                        action: "update",
-                        vxkey,
-                        propertyPath,
-                        newValue
-                    })
-                else
-                    state.setStaticPropValue(staticPropKey, newValue, false)
+                this._hydrationService.hydrateStaticProp({
+                    action: "update",
+                    vxkey,
+                    propertyPath,
+                    newValue
+                })
+                this._queueStaticPropStateUpdate(staticPropKey, newValue)
             }
+        }
+    }
+
+    private _queueTrackStateUpdate(trackKey: string, keyframeKey: string, lastValue: number){
+        this._pendingTrackStateUpdates.set(trackKey, { keyframeKey, lastValue })
+    }
+
+    private _queueStaticPropStateUpdate(staticPropKey: string, lastValue: number){
+        this._pendingStaticPropStateUpdates.set(staticPropKey, { lastValue })
+    }
+
+    public flushTimelineStateUpdates() {
+        if (this._IS_DEVELOPMENT) {
+            useTimelineManagerAPI.setState(produce((state: TimelineManagerAPIProps) => {
+                this._pendingStaticPropStateUpdates.forEach(({ lastValue: _newValue }, _staticPropKey) => {
+                    state.staticProps[_staticPropKey].value = _newValue;
+                })
+
+                this._pendingTrackStateUpdates.forEach(({ 
+                    keyframeKey: _keyframeKey, 
+                    lastValue: _newValue
+                }, _trackKey) => {
+                    state.tracks[_trackKey].keyframes[_keyframeKey].value = _newValue
+                })
+                state.changes += 1
+            }))
+
+            this._pendingTrackStateUpdates.clear();
+            this._pendingStaticPropStateUpdates.clear();
         }
     }
 }

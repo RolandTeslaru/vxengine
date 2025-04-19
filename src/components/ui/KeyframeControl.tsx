@@ -103,7 +103,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
     const isPropertyTracked = !!track;
 
     const hasSideEffect = useMemo(() => {
-        return animationEngineInstance.propertyControlService.hasSideEffect(trackKey)
+        return animationEngineInstance.paramControlService.hasSideEffect(trackKey)
     }, [vxkey, propertyPath])
     // Initialize
     useLayoutEffect(() => {

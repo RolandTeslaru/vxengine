@@ -44,8 +44,15 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
             if (onChange) {
                 onChange(newValue);
-            } else
-                animationEngineInstance.modifyParam("press", vxkey, propertyPath, newValue,true);
+            } else{
+                animationEngineInstance
+                    .paramControlService
+                    .modifyParamValue(vxkey, propertyPath, newValue, true);
+
+                animationEngineInstance
+                    .paramControlService
+                    .flushTimelineStateUpdates()
+            }
         }, [vxkey]);
 
         const handleOnCopy = useCallback(() => {
@@ -68,32 +75,3 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 );
 
 export default ValueRenderer
-
-
-const ValureRendererContextMenu = ({ inputRef, vxkey, propertyPath }: { inputRef: React.RefObject<HTMLInputElement>, vxkey: string, propertyPath: string }) => {
-    const isNumberInClipboard = useClipboardManagerAPI(state => state.items.has("number"))
-
-    const handleOnCopy = () => {
-        useClipboardManagerAPI.getState().addItem("number", parseFloat(inputRef.current.value))
-    }
-
-    const handleOnPaste = () => {
-        const value = useClipboardManagerAPI.getState().getItemByType("number") as number
-        animationEngineInstance.modifyParam("press", vxkey, propertyPath, value);
-
-        inputRef.current.value = value.toString();
-    }
-
-    return (
-        <ContextMenuContent>
-            <ContextMenuItem onClick={handleOnCopy}>
-                Copy Value
-            </ContextMenuItem>
-            {isNumberInClipboard &&
-                <ContextMenuItem onClick={handleOnPaste}>
-                    Paste Value
-                </ContextMenuItem>
-            }
-        </ContextMenuContent>
-    )
-}

@@ -71,21 +71,9 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        animationEngineInstance.modifyParam("changing", vxkey, rPropertyPath, r, false);
-        animationEngineInstance.modifyParam("changing", vxkey, gPropertyPath, g, false);
-        animationEngineInstance.modifyParam("changing", vxkey, bPropertyPath, b, true);
-
-        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-
-        invalidate();
-    }, [])
-    const handleColorChangeStart = useCallback((hsl: hsl) => {
-        colorRef.current = hsl
-        const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
-
-        animationEngineInstance.modifyParam("start", vxkey, rPropertyPath, r, false);
-        animationEngineInstance.modifyParam("start", vxkey, gPropertyPath, g, false);
-        animationEngineInstance.modifyParam("start", vxkey, bPropertyPath, b, true);
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, r, false)
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, g, false)
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, b, true)
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -95,9 +83,13 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        animationEngineInstance.modifyParam("end", vxkey, rPropertyPath, r, false);
-        animationEngineInstance.modifyParam("end", vxkey, gPropertyPath, g, false);
-        animationEngineInstance.modifyParam("end", vxkey, bPropertyPath, b, true);
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, r, false)
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, g, false)
+        animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, b, true)
+
+        animationEngineInstance
+            .paramControlService
+            .flushTimelineStateUpdates()
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -119,7 +111,6 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                     <ColorPicker
                         ref={colorPickerRef}
                         colorRef={colorRef}
-                        handleColorChangeStart={handleColorChangeStart}
                         handleColorChange={handleColorChange}
                         handleColorChangeEnd={handleColorChangeEnd}
                     />

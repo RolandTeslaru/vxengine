@@ -1,8 +1,8 @@
 import { AnimationEngine } from "../engine"
 
-export type PropertySetterType = (newValue: number) => void
+export type ParamSetterType = (newValue: number) => void
 
-export type PropertySideEffectType =(
+export type ParamSideEffectType =(
   animationEngine: AnimationEngine, 
   vxkey: string,
   propertyPath: string,

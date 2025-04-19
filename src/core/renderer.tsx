@@ -80,7 +80,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
         {/* <color attach="background" args={['gray']} /> */}
         {IS_DEVELOPMENT && <>
           <VXRendererUtils />
-          <ObjectManagerDriver />
+          <ObjectManagerDriver/>
           <vx.grid vxkey="grid" name="Grid" />
         </>
         }

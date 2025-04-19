@@ -1,4 +1,4 @@
-import { PropertySideEffectType } from "@vxengine/AnimationEngine/types/PropertyControlService";
+import { ParamSideEffectType } from "@vxengine/AnimationEngine/types/ParamControlService";
 
 export interface EditorObject {
     vxkey: string;
@@ -11,7 +11,7 @@ export interface EditorTrack {
     propertyPath: string;
     keyframes: Record<string, EditorKeyframe>;
     orderedKeyframeKeys: string[];
-    sideEffect?: PropertySideEffectType
+    sideEffect?: ParamSideEffectType
 }
 
 export interface EditorKeyframe {
