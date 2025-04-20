@@ -5,21 +5,24 @@ import { Label } from "@vxengine/components/shadcn/label";
 import React from "react";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
+import { extractDataFromTrackKey } from "../utils/trackDataProcessing";
 
 export const DIALOG_removeStaticProp = () => {
-    const removeStaticProp = useTimelineManagerAPI((state) => state.removeStaticProp);
     const staticProps = useTimelineManagerAPI((state) => state.staticProps);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const staticPropKey = e.target.staticPropKey.value;
+        const {vxkey, propertyPath} = extractDataFromTrackKey(staticPropKey)
 
         if (!staticProps[staticPropKey]) {
             alert("Invalid StaticProp key!");
             return;
         }
 
-        removeStaticProp({ staticPropKey, reRender: true });
+        useTimelineManagerAPI
+            .getState()
+            .removeStaticProp({ vxkey, propertyPath, reRender: true });
     };
 
     return (

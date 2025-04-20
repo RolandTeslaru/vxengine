@@ -5,32 +5,9 @@ import { Label } from "@vxengine/components/shadcn/label";
 import React from "react";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
-
+import { extractDataFromTrackKey } from "../utils/trackDataProcessing";
 
 export const DIALOG_removeKeyframe = () => {
-    const removeKeyframe = useTimelineManagerAPI((state) => state.removeKeyframe);
-
-    const handleSubmit = (e: any) => {
-        e.preventDefault();
-        const trackKey = e.target.trackKey.value;
-        const keyframeKey = e.target.keyframeKey.value;
-
-        const track = useTimelineManagerAPI.getState().tracks[trackKey]
-        if (!track) {
-            alert("Invalid Track!");
-            return;
-        }
-
-        const keyframe = track.keyframes[keyframeKey];
-
-        if (!keyframe) {
-            alert("Invalid keyframe!");
-            return;
-        }
-
-        removeKeyframe({ keyframeKey, trackKey, reRender: true });
-    };
-
     return (
         <form onSubmit={handleSubmit}>
             <DialogHeader>
@@ -55,4 +32,29 @@ export const DIALOG_removeKeyframe = () => {
             </DialogHeader>
         </form>
     );
+};
+
+
+const handleSubmit = (e: any) => {
+    e.preventDefault();
+    const trackKey = e.target.trackKey.value;
+    const {vxkey, propertyPath} = extractDataFromTrackKey(trackKey)
+    const keyframeKey = e.target.keyframeKey.value;
+
+    const track = useTimelineManagerAPI.getState().tracks[trackKey]
+    if (!track) {
+        alert("Invalid Track!");
+        return;
+    }
+
+    const keyframe = track.keyframes[keyframeKey];
+
+    if (!keyframe) {
+        alert("Invalid keyframe!");
+        return;
+    }
+
+    useTimelineManagerAPI
+        .getState()
+        .removeKeyframe({ keyframeKey, vxkey, propertyPath, reRender: true})
 };

@@ -29,11 +29,11 @@ export interface TimelineManagerAPIProps {
     getTracksForObject: (vxkey: string) => EditorTrack[] | [],
     getStaticPropsForObject: (vxkey: string) => EditorStaticProp[] | [],
     
-    makePropertyTracked: (staticPropKey: string, reRender?: boolean) => void
+    makePropertyTracked: (vxkey: string, propertyPath: string, reRender?: boolean) => void
     makePropertyStatic: (trackKey: string, reRender?: boolean) => void
 
-    createTrack: (trackKey: string) => void
-    removeTrack: (props: {trackKey: string, reRender: boolean}) => void
+    createTrack: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string}) => void
+    removeTrack: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string, reRender: boolean}) => void
 
     createSpline: (props: {vxkey: string}) => void
     removeSpline: (props: {vxkey: string}) => void
@@ -43,14 +43,14 @@ export interface TimelineManagerAPIProps {
     setSplineNodeAxisValue: (splineKey: string, nodeIndex: number, axis: "x" | "y" | "z",  newValue: number, reRender?: boolean) => void;
     
     // Keyframe functions
-    createKeyframe: (props: {trackKey: string, value?: number, reRender?: boolean, handles?: EditorKeyframeHandles, time?: number, overlapKeyframeCheck?: boolean}) => void;
-    removeKeyframe: (props: {keyframeKey: string, trackKey: string, reRender: boolean}) => void;
+    createKeyframe: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string, value?: number, reRender?: boolean, handles?: EditorKeyframeHandles, time?: number, overlapKeyframeCheck?: boolean}) => void;
+    removeKeyframe: (props: {state?: TimelineManagerAPIProps, keyframeKey: string, vxkey: string, propertyPath: string, reRender: boolean}) => void;
     setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: EditorVector2, outHandle: EditorVector2, reRender?: boolean) => void;
     // StaticProp function
-    createStaticProp: (props: {vxkey: string, propertyPath: string, value: number,reRender: boolean }) => void;
-    removeStaticProp: (props: {staticPropKey: string, reRender?: boolean,}) => void
+    createStaticProp: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string, value: number,reRender: boolean }) => void;
+    removeStaticProp: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string, reRender?: boolean,}) => void
     setStaticPropValue: (staticPropKey: string, newValue: number, reRender?: boolean) => void;
 
     removeProperty: (vxkey: string, propertyPath: string, reRender?: boolean) => void;

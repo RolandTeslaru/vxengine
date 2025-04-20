@@ -9,7 +9,7 @@ export const TimelineManagerSubMenu = () => {
 
     return (
         <MenubarSub>
-            <MenubarSubTrigger>Timeline Editor API</MenubarSubTrigger>
+            <MenubarSubTrigger>Timeline Manager API</MenubarSubTrigger>
             <MenubarSubContent>
                 {/* Keyframe sub menu */}
                 <MenubarSub>

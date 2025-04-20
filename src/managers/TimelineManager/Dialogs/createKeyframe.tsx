@@ -7,6 +7,7 @@ import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
 import { pushDialogStatic, useUIManagerAPI } from "@vxengine/managers/UIManager/store";
 import { ALERT_ResetProperty } from "@vxengine/components/ui/DialogAlerts/Alert";
+import { extractDataFromTrackKey } from "../utils/trackDataProcessing";
 
 export const DIALOG_createKeyframe = () => {
     const tracks = useTimelineManagerAPI((state) => state.tracks);
@@ -15,13 +16,12 @@ export const DIALOG_createKeyframe = () => {
     const trackKeyRef = useRef<HTMLInputElement>(null);
     const valueRef = useRef<HTMLInputElement>(null);
 
-    const createKeyframe = useTimelineManagerAPI((state) => state.createKeyframe);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         // Retrieve input values directly from refs
         const trackKey = trackKeyRef.current?.value || "";
+        const {vxkey, propertyPath} = extractDataFromTrackKey(trackKey)
         const value = valueRef.current?.value ? parseFloat(valueRef.current.value) : undefined;
 
         // Validate the track key
@@ -35,8 +35,9 @@ export const DIALOG_createKeyframe = () => {
             return;
         }
 
-        // Call the createKeyframe function
-        createKeyframe({ trackKey, value });
+        useTimelineManagerAPI
+            .getState()
+            .createKeyframe({ vxkey, propertyPath, value });
     };
 
     return (

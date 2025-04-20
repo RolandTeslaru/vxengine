@@ -40,12 +40,8 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
 
     const handleChange = useCallback((newValue: number) => {
         animationEngineInstance
-            .paramControlService
+            .paramModifierService
             .modifyParamValue(vxkey, propertyPath, newValue, true)
-    }, [vxkey, propertyPath]);
-
-    useLayoutEffect(() => {
-
     }, [vxkey, propertyPath]);
 
     const valueRef = useRef(value);
@@ -66,7 +62,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
                     updateProperty(vxkey, propertyPath, valueRef.current)
 
                     animationEngineInstance
-                        .paramControlService
+                        .paramModifierService
                         .flushTimelineStateUpdates()
                 }}
                 max={param.max}

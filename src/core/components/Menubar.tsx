@@ -13,6 +13,7 @@ import TimelineManagerSubMenu from '@vxengine/managers/TimelineManager/subMenu'
 import { logReportingService } from '@vxengine/AnimationEngine/services/LogReportingService'
 import { StandardWindowStyling } from './VXEngineWindow'
 import { DialogAbout, DialogSettings } from '@vxengine/components/dialogs'
+import TimelineEditorSubMenu from '@vxengine/managers/TimelineManager/TimelineEditor/debugSubMenu'
 
 const LOG_MODULE = "VXMenubar"
 
@@ -133,6 +134,7 @@ const ManagersButton = () => {
                 <SourceManagerSubMenu />
                 <EffectsManagerSubMenu />
                 <TimelineManagerSubMenu />
+                <TimelineEditorSubMenu/>
             </MenubarContent>
         </MenubarMenu>
     )

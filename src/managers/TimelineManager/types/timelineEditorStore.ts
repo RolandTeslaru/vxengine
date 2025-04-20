@@ -1,5 +1,5 @@
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
-import { SelectedKeyframe } from "./store";
+import { SelectedKeyframe, TimelineManagerAPIProps } from "./store";
 
 export interface TimelineEditorAPIProps {
     trackTree: Record<string, EditorTrackTreeNode>,
@@ -50,7 +50,7 @@ export interface TimelineEditorAPIProps {
     setCollapsedTrackNodes: (groupKey: string) => void;
 
     addObjectToTrackTree: (vxkey: string, tracks: Record<string, EditorTrack>) => void
-    addTrackToTrackTree: (vxkey: string, propertyPath: string) => void
+    addTrackToTrackTree: (props: { timelineManagerState?: TimelineManagerAPIProps, vxkey: string, propertyPath: string}) => void
     removeTrackFromTrackTree: (vxkey: string, propertyPath: string) => void
     removeObjectFromTrackTree: (vxkey: string) => void
 }

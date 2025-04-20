@@ -3,6 +3,7 @@ import { AlertDialogAction, AlertDialogCancel, AlertDialogDescription, AlertDial
 import React, { useMemo, useState } from "react"
 import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
 import { ISetting } from "@vxengine/AnimationEngine/types/engine";
+import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 
 interface DialogProps {
     vxkey: string
@@ -50,8 +51,9 @@ export const DIALOG_UseSplinePath: React.FC<DialogProps> = (props) => {
     }
 
     const handleOnConfirm = () => {
-        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
-        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
+        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ vxkey, propertyPath, reRender: false }))
+        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ vxkey, propertyPath }))
+                
         // Add Spline Action
         if (!isUsingSplinePath) {
             createSpline({ vxkey })
@@ -165,8 +167,8 @@ export const DIALOG_rotationDegrees: React.FC<DialogProps> = (props) => {
     }
 
     const handleOnConfirm = () => {
-        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ trackKey: `${vxkey}.${propertyPath}`, reRender: false }))
-        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ staticPropKey: `${vxkey}.${propertyPath}` }))
+        tracks.forEach(({ vxkey, propertyPath }) => removeTrack({ vxkey, propertyPath, reRender: false }))
+        staticProps.forEach(({ vxkey, propertyPath }) => removeStaticProp({ vxkey, propertyPath }))
 
         onConfirm();
     }

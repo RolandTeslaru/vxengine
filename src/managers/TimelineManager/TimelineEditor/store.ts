@@ -179,16 +179,16 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
         }))
     },
 
-    addTrackToTrackTree: (vxkey, propertyPath) => {
-        const timelineMangerAPI = useTimelineManagerAPI.getState();
+    addTrackToTrackTree: ({ timelineManagerState, vxkey, propertyPath}) => {
+        timelineManagerState = timelineManagerState ?? useTimelineManagerAPI.getState();
         const trackKey = `${vxkey}.${propertyPath}`
 
-        const track = timelineMangerAPI.tracks[trackKey]
+        const track = timelineManagerState.tracks[trackKey]
         if (!track) return
 
         set(produce((state: TimelineEditorAPIProps) => {
             // Collect all tracks for this vxkey, including the new one
-            const tracksForObject = Object.keys(timelineMangerAPI.tracks)
+            const tracksForObject = Object.keys(timelineManagerState.tracks)
                 .filter(key => key.startsWith(`${vxkey}.`));
     
             // Rebuild and set the track tree for vxkey
@@ -203,45 +203,79 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
             const root = state.trackTree[vxkey];
             if(!root) return;
 
-            // Step 1: remove node with the matching track
-            function removeNode(node: EditorTrackTreeNode){
-                if(node.children){
-                    for (const key in node.children){
-                        const child = node.children[key];
-                        if(child.track === trackKeyToRemove){
-                            delete node.children[key];
-                            return true;
-                        } else if (removeNode(child)) {
-                            return true
+            let trackFoundAndRemoved = false
+            // Step 1a: Check if the root node itself has the track
+            if (root.track === trackKeyToRemove) {
+                root.track = undefined; // Remove track from root
+                trackFoundAndRemoved = true;
+                // Don't delete the root node yet, just remove its track reference.
+                // Cleanup logic below will handle pruning if necessary.
+            } else {
+                // Step 1b: If not on root, search and remove the descendant node with the matching track
+                function removeNode(node: EditorTrackTreeNode): boolean { // Returns true if track was found and removed in this subtree
+                    if(node.children){
+                        for (const key in node.children){
+                            const child = node.children[key];
+                            if(child.track === trackKeyToRemove){
+                                // Found the node holding the track, delete this child node entirely
+                                delete node.children[key];
+                                return true; // Found and removed
+                            } else if (removeNode(child)) { // Recurse into children
+                                // If the recursive call removed the track, this branch is handled
+                                return true; // Found and removed in grandchild/descendant
+                            }
                         }
                     }
+                    return false; // Track not found in this subtree
                 }
+                trackFoundAndRemoved = removeNode(root);
             }
-            removeNode(root);
 
-            // Step 2: Cleanup up nodes with no children and no track
-            function cleanupEmptyNodes(node: EditorTrackTreeNode){
+            // If track wasn't found anywhere in this tree, just return
+            if (!trackFoundAndRemoved) return;
+
+
+            // Step 2: Cleanup up nodes with no children and no track (bottom-up)
+            // This function determines if a node itself should be removed by its parent
+            function cleanupEmptyNodes(node: EditorTrackTreeNode): boolean { // Returns true if this node is now empty and should be deleted
                 if(node.children){
-                    for (const key in node.children)
-                        if(cleanupEmptyNodes(node.children[key]))
-                            delete node.children[key]
-
-                    if(Object.keys(node.children).length === 0 && !node.track)
-                        return true;
-                    
+                    // Recursively clean children first
+                    for (const key in node.children) {
+                        if(cleanupEmptyNodes(node.children[key])) { // If child should be deleted
+                            delete node.children[key];
+                        }
+                    }
+                    // Check if this node should now be deleted (empty children AND no track)
+                    if(Object.keys(node.children).length === 0 && !node.track) {
+                        return true; // Signal to parent that this node is empty
+                    }
+                } else {
+                    // Leaf node (or node that became a leaf after children cleanup):
+                    // Check if it should be deleted (it has no track)
+                    if (!node.track) {
+                        return true; // Signal to parent that this node is empty
+                    }
                 }
-                return false;
+                return false; // Keep this node
             }
 
-            cleanupEmptyNodes(root);
+            // Run cleanup. Check if the root node itself should be deleted based on the cleanup result.
+            const shouldDeleteRoot = cleanupEmptyNodes(root);
 
-            // Step 3: Remove the root if it becomes empty and has no track
-            if(Object.keys(root.children).length === 0 && !root.track)
-                delete state.trackTree[vxkey]
+            // Step 3: Remove the root from the state if cleanup indicated it's now empty
+            if(shouldDeleteRoot) {
+                delete state.trackTree[vxkey];
+            }
 
-            // Step 4: Re-merge all roots to maintain optimization
+            // Step 4: Re-merge single child nodes for all remaining roots to maintain optimization.
+            // This needs to happen regardless of whether the current root was deleted,
+            // as the cleanup might have affected the structure.
+            // The original code did this, so we preserve the behavior.
             for (const key in state.trackTree){
-                state.trackTree[key] = mergeSingleChildNodes(state.trackTree[key])
+                // Ensure we don't try to merge a potentially deleted root (though the loop shouldn't include it)
+                if (state.trackTree[key]) {
+                   state.trackTree[key] = mergeSingleChildNodes(state.trackTree[key])
+                }
             }
         }))
     },

@@ -71,9 +71,11 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, r, false)
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, g, false)
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, b, true)
+        animationEngineInstance
+            .paramModifierService
+            .modifyParamValue(vxkey, rPropertyPath, r, false)
+            .modifyParamValue(vxkey, gPropertyPath, g, false)
+            .modifyParamValue(vxkey, bPropertyPath, b, true)
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
@@ -83,12 +85,11 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
 
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, r, false)
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, g, false)
-        animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, b, true)
-
         animationEngineInstance
-            .paramControlService
+            .paramModifierService
+            .modifyParamValue(vxkey, rPropertyPath, r, false)
+            .modifyParamValue(vxkey, gPropertyPath, g, false)
+            .modifyParamValue(vxkey, bPropertyPath, b, true)
             .flushTimelineStateUpdates()
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;

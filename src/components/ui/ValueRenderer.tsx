@@ -46,11 +46,8 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
                 onChange(newValue);
             } else{
                 animationEngineInstance
-                    .paramControlService
-                    .modifyParamValue(vxkey, propertyPath, newValue, true);
-
-                animationEngineInstance
-                    .paramControlService
+                    .paramModifierService
+                    .modifyParamValue(vxkey, propertyPath, newValue, true)
                     .flushTimelineStateUpdates()
             }
         }, [vxkey]);

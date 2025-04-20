@@ -17,11 +17,8 @@ export const handleOnPasteNumber = (vxkey: string, param: VXElementParam, vxRefO
     const value = useClipboardManagerAPI.getState().getItemByType("number") as number;
 
     animationEngineInstance
-        .paramControlService
+        .paramModifierService
         .modifyParamValue(vxkey, param.propertyPath, value, true)
-    
-    animationEngineInstance
-        .paramControlService
         .flushTimelineStateUpdates()
 }
 
@@ -48,13 +45,13 @@ export const handleOnPasteColor = (vxkey: string, param: VXElementParam, vxRefOb
 
     const { redValue, greenValue, blueValue } = useClipboardManagerAPI.getState().getItemByType("color")
 
-    animationEngineInstance.paramControlService.modifyParamValue(vxkey, rPropertyPath, redValue, false)
-    animationEngineInstance.paramControlService.modifyParamValue(vxkey, gPropertyPath, greenValue, false)
-    animationEngineInstance.paramControlService.modifyParamValue(vxkey, bPropertyPath, blueValue, true)
-
     animationEngineInstance
-        .paramControlService
+        .paramModifierService
+        .modifyParamValue(vxkey, rPropertyPath, redValue, false)
+        .modifyParamValue(vxkey, gPropertyPath, greenValue, false)
+        .modifyParamValue(vxkey, bPropertyPath, blueValue, true)
         .flushTimelineStateUpdates()
+
 }
 
 export const hslToRgb = (h: number, s: number, l: number) => {

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
 import { buildTrackTree, extractDataFromTrackKey } from './utils/trackDataProcessing';
-import { batchUpdateProperties, updateProperty, useObjectManagerAPI } from '../ObjectManager/stores/managerStore';
 import { getNestedProperty } from '@vxengine/utils/nestedProperty';
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useVXObjectStore } from '../ObjectManager';
@@ -71,11 +70,17 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
 
     // Writer Functions
 
-    makePropertyTracked: (staticPropKey, reRender) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(staticPropKey);
-        const vxObjects = useVXObjectStore.getState().objects;
+    makePropertyTracked: (vxkey, propertyPath, reRender) => {
+        const vxobject = useVXObjectStore.getState().objects[vxkey];
+        if (!vxobject) {
+            console.error(`Error making property tracked. Vxobject with vxkey ${vxkey} does not exist`)
+            return
+        }
+
+        const objectRef = vxobject.ref.current
         let doesPropertyExist = false
-        const trackKey = staticPropKey;
+
+        const trackKey = `${vxkey}.${propertyPath}`;
 
         const track = get().tracks[trackKey]
         if (track) {
@@ -85,11 +90,9 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
 
         // Default Keyframe that will be added when creating a new track
         const keyframeKey = `keyframe-${uuidv4()}`
-        animationEngineInstance.hydrationService.hydrateStaticProp({
-            action: "remove",
-            vxkey,
-            propertyPath
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateStaticProp({ action: "remove", vxkey, propertyPath })
 
         set(produce((state: TimelineManagerAPIProps) => {
             let value: number;
@@ -97,24 +100,29 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
             const staticPropsForObject = state.getStaticPropsForObject(vxkey); // this will be filtered
 
             if (staticPropsForObject) {
+                // Check if the property is already a staticProp
                 const staticProp = staticPropsForObject.find((prop: EditorStaticProp) => prop.propertyPath === propertyPath)
                 if (staticProp) {
                     value = staticProp.value;
-                    removeStaticPropLogic(state, staticPropKey)
+                    state.removeStaticProp({ state, vxkey, propertyPath, reRender: false })
                     doesPropertyExist = true;
                 }
-                else
-                    value = getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
+                else {
+                    // Generate the property setter if the property is neither a staticProp or a track
+                    animationEngineInstance
+                        .propertyControlService
+                        .generatePropertySetter(objectRef, vxkey, propertyPath)
+
+                    value = getNestedProperty(objectRef, propertyPath);
+                }
             }
             else
-                value = getNestedProperty(vxObjects[vxkey].ref.current, propertyPath);
+                value = getNestedProperty(objectRef, propertyPath);
 
             // Handle Track 
-            createTrackLogic(state, vxkey, propertyPath)
-            createKeyframeLogic(state, trackKey, keyframeKey, value,)
+            state.createTrack({ state, vxkey, propertyPath })
+            state.createKeyframe({ state, vxkey, propertyPath, value, reRender: false, overlapKeyframeCheck: true })
         }))
-
-        useTimelineEditorAPI.getState().addTrackToTrackTree(vxkey, propertyPath);
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -124,22 +132,30 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
 
     makePropertyStatic: (trackKey, reRender = true) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-        let doesTrackExist = false;
+        const vxobject = useVXObjectStore.getState().objects[vxkey]
+        if (!vxobject) {
+            console.error(`Error making property static. Vxobject with vxkey ${vxkey} does not exist`)
+            return
+        }
 
-        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
+        const objectRef = vxobject.ref.current
+        let doesTrackExist = false;
 
         set(produce((state: TimelineManagerAPIProps) => {
 
-            const vxObject = useVXObjectStore.getState().objects[vxkey]
-            const value = getNestedProperty(vxObject?.ref?.current, propertyPath) || 0
+            const value = getNestedProperty(objectRef, propertyPath) || 0
             const edObject = useTimelineManagerAPI.getState().editorObjects[vxkey];
 
             doesTrackExist = !!edObject.trackKeys.find(key => key === trackKey)
 
             if (doesTrackExist)
-                removeTrackLogic(state, vxkey, propertyPath)
+                state.removeTrack({ state, vxkey, propertyPath, reRender: false })
+            else
+                animationEngineInstance
+                    .propertyControlService
+                    .generatePropertySetter(objectRef, vxkey, propertyPath)
 
-            createStaticPropLogic(state, vxkey, propertyPath, value)
+            state.createStaticProp({ state, vxkey, propertyPath, value, reRender: false })
         }))
 
         if (reRender)
@@ -154,25 +170,50 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
     //
 
 
-    createTrack: (trackKey) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    createTrack: ({ state, vxkey, propertyPath }) => {
 
-        set(produce((state: TimelineManagerAPIProps) => {
+        if (state) {
             createTrackLogic(state, vxkey, propertyPath)
-        }))
+            useTimelineEditorAPI
+                .getState()
+                .addTrackToTrackTree({ timelineManagerState: state, vxkey, propertyPath })
+        }
+        else
+            set(produce((state: TimelineManagerAPIProps) => {
+                createTrackLogic(state, vxkey, propertyPath)
+                useTimelineEditorAPI
+                    .getState()
+                    .addTrackToTrackTree({ timelineManagerState: state, vxkey, propertyPath })
+            }))
 
-        useTimelineEditorAPI.getState().addTrackToTrackTree(vxkey, propertyPath)
+        animationEngineInstance.hydrationService.hydrateTrack({
+            action: "create",
+            vxkey,
+            propertyPath
+        })
 
         get().addChange()
     },
 
-    removeTrack: ({ trackKey, reRender }) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
-        set(produce((state: TimelineManagerAPIProps) => {
+    removeTrack: ({ state, vxkey, propertyPath, reRender }) => {
+        if (state) {
             removeTrackLogic(state, vxkey, propertyPath)
-        }))
+        }
+        else
+            set(produce((state: TimelineManagerAPIProps) => {
+                removeTrackLogic(state, vxkey, propertyPath)
+            }))
 
-        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
+        animationEngineInstance.hydrationService.hydrateTrack({
+            action: "remove",
+            vxkey,
+            propertyPath
+        });
+
+        // Removing a track doesnt need the whole timelineManager state
+        useTimelineEditorAPI
+            .getState()
+            .removeTrackFromTrackTree(vxkey, propertyPath)
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -225,8 +266,8 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
             }
             state.splines[splineKey] = editorSpline;
 
-            createStaticPropLogic(state, vxkey, "splineProgress", progress)
-            createStaticPropLogic(state, vxkey, "splineTension", tension)
+            state.createStaticProp({ state, vxkey, propertyPath: "splineProgress", value: progress, reRender: false })
+            state.createStaticProp({ state, vxkey, propertyPath: "splineTension", value: tension, reRender: false })
         }))
 
         // Handle engine spline creation (wasm)
@@ -260,9 +301,6 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
         })
 
         animationEngineInstance.reRender({ force: true })
-
-        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, "splineProgress");
-        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, "splineTension");
 
         get().addChange();
     },
@@ -390,12 +428,47 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
     //
 
 
-    createKeyframe: ({ trackKey, value, handles, time, reRender = true, overlapKeyframeCheck = false }) => {
+    createKeyframe: ({ state, vxkey, propertyPath, value, handles, time, reRender = true, overlapKeyframeCheck = true }) => {
+        time = time ?? animationEngineInstance.currentTime;
+        // Check if the cursor is on an exsting keyframe
+        // if so, return because we cannot create overlapped keyframes
+        if (overlapKeyframeCheck) {
+            let isCursorOnExistingKeyframe = false
+            if (state)
+                isCursorOnExistingKeyframe = checkIfOnKeyframe(state, vxkey, propertyPath, time)
+            else
+                isCursorOnExistingKeyframe = checkIfOnKeyframe(get(), vxkey, propertyPath, time)
+
+            if (isCursorOnExistingKeyframe) return;
+        }
+
         const keyframeKey = `keyframe-${uuidv4()}`;
 
-        set(produce((state: TimelineManagerAPIProps) =>
-            createKeyframeLogic(state, trackKey, keyframeKey, value, handles, time, overlapKeyframeCheck)
-        ))
+
+        if (value === undefined || value == null) {
+            const vxobject = useVXObjectStore.getState().objects[vxkey]
+            value = getNestedProperty(vxobject.ref.current, propertyPath)
+        }
+
+        if (state)
+            createKeyframeLogic(state, vxkey, propertyPath, keyframeKey, value, handles, time)
+        else
+            set(produce((state: TimelineManagerAPIProps) =>
+                createKeyframeLogic(state, vxkey, propertyPath, keyframeKey, value, handles, time)))
+
+        const rawHandles = handles
+            ? [handles.in.x, handles.in.y, handles.out.x, handles.out.y]
+            : [0.7, 0.7, 0.3, 0.3]
+
+        animationEngineInstance.hydrationService.hydrateKeyframe({
+            action: "create",
+            vxkey,
+            propertyPath,
+            keyframeKey,
+            value,
+            time,
+            handles: rawHandles as [number, number, number, number]
+        })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -403,9 +476,27 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
         get().addChange()
     },
 
-    removeKeyframe: ({ keyframeKey, trackKey, reRender = true }) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-        set(produce((state: TimelineManagerAPIProps) => removeKeyframeLogic(state, vxkey, propertyPath, keyframeKey)))
+    removeKeyframe: ({ state, keyframeKey, vxkey, propertyPath, reRender = true }) => {
+        const trackKey = `${vxkey}.${propertyPath}`
+        if (state) {
+            removeKeyframeLogic(state, vxkey, propertyPath, keyframeKey)
+            if (state.tracks[trackKey].orderedKeyframeKeys.length === 0)
+                state.removeTrack({ state, vxkey, propertyPath, reRender: false })
+        }
+        else {
+            set(produce((state: TimelineManagerAPIProps) => {
+                removeKeyframeLogic(state, vxkey, propertyPath, keyframeKey)
+                if (state.tracks[trackKey].orderedKeyframeKeys.length === 0)
+                    state.removeTrack({ state, vxkey, propertyPath, reRender: false })
+            }))
+        }
+
+        animationEngineInstance.hydrationService.hydrateKeyframe({
+            action: "remove",
+            vxkey,
+            propertyPath,
+            keyframeKey
+        })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -512,18 +603,39 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
     //      S T A T I C     P R O P 
     //
 
-    createStaticProp: ({ vxkey, propertyPath, value, reRender }) => {
+    createStaticProp: ({ state, vxkey, propertyPath, value, reRender }) => {
         value = truncateToDecimals(value);
 
-        set(produce((state: TimelineManagerAPIProps) => createStaticPropLogic(state, vxkey, propertyPath, value)))
+        if (state)
+            createStaticPropLogic(state, vxkey, propertyPath, value)
+        else
+            set(produce((state: TimelineManagerAPIProps) =>
+                createStaticPropLogic(state, vxkey, propertyPath, value)))
+
+        animationEngineInstance.hydrationService.hydrateStaticProp({
+            action: "create",
+            vxkey,
+            propertyPath,
+            value
+        })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
         get().addChange()
     },
 
-    removeStaticProp: ({ staticPropKey, reRender }) => {
-        set(produce((state: TimelineManagerAPIProps) => removeStaticPropLogic(state, staticPropKey)))
+    removeStaticProp: ({ state, vxkey, propertyPath, reRender }) => {
+        if (state)
+            removeStaticPropLogic(state, `${vxkey}.${propertyPath}`)
+        else
+            set(produce((state: TimelineManagerAPIProps) =>
+                removeStaticPropLogic(state, `${vxkey}.${propertyPath}`)))
+
+        animationEngineInstance.hydrationService.hydrateStaticProp({
+            action: "remove",
+            vxkey,
+            propertyPath
+        })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -555,49 +667,65 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
             removePropertyLogic(state, vxkey, propertyPath);
         }))
 
-        useTimelineEditorAPI.getState().removeTrackFromTrackTree(vxkey, propertyPath)
-
         if (reRender)
             animationEngineInstance.reRender({ force: true });
 
         get().addChange()
-    }
+    },
 }))
 
 
 
 
 
+function checkIfOnKeyframe(state: TimelineManagerAPIProps, vxkey: string, propertPath: string, time: number) {
+    const trackKey = `${vxkey}.${propertPath}`
+    const track = state.tracks[trackKey]
+    if (!track) {
+        console.warn(`Could not check if over keyframe becuase the track with trackKey ${trackKey} does not exist`)
+        return true
+    }
+
+    const orderedKeyframeKeys = track.orderedKeyframeKeys;
+    let leftIndex = 0;
+    let rightIndex = orderedKeyframeKeys.length - 1
+    let foundIndex = -1;
+
+    while (leftIndex <= rightIndex) {
+        const mid = Math.floor((leftIndex + rightIndex) / 2)
+        const midKey = orderedKeyframeKeys[mid];
+        const midTime = track.keyframes[midKey].time;
+
+        if (midTime === time) {
+            foundIndex = mid;
+            break
+        } else if (midTime < time) {
+            leftIndex = mid + 1;
+        } else {
+            rightIndex = mid - 1;
+        }
+    }
+
+    if (foundIndex !== -1 ? orderedKeyframeKeys[foundIndex] : null) {
+        return true
+    } else {
+        return false
+    }
+}
+
 
 function createKeyframeLogic(
     state: TimelineManagerAPIProps,
-    trackKey: string,
+    vxkey: string,
+    propertyPath: string,
     keyframeKey: string,
     value?: number,
     handles?: EditorKeyframeHandles,
     time?: number,
-    overlapKeyframeCheck?: boolean
 ) {
+    const trackKey = `${vxkey}.${propertyPath}`
     const track = state.tracks[trackKey]
     if (!track) return;
-
-
-    time = time ?? animationEngineInstance.currentTime
-    time = truncateToDecimals(time);
-
-    // Check if the cursor is on an exsting keyframe
-    // if so, return because we cannot create overlapped keyframes
-    if(overlapKeyframeCheck){
-        const keyframesOnTrackArray = Object.values(track.keyframes)
-        const isCursorOnExistingKeyframe = keyframesOnTrackArray.some(kf => kf.time === time);
-        if (isCursorOnExistingKeyframe) return
-    }
-
-    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
-    if (value === undefined || value === null) {
-        const vxobject = useVXObjectStore.getState().objects[vxkey]
-        value = getNestedProperty(vxobject.ref.current, propertyPath)
-    }
 
     const newKeyframe: EditorKeyframe = {
         id: keyframeKey,
@@ -615,20 +743,6 @@ function createKeyframeLogic(
 
     updatedOrderedKeyframeIdsLogic(state, trackKey)
     state.addChange();
-
-    const rawHandles = handles 
-                        ? [handles.in.x, handles.in.y, handles.out.x, handles.out.y]
-                        : [0.7, 0.7, 0.3, 0.3]
-
-    animationEngineInstance.hydrationService.hydrateKeyframe({
-        action: "create",
-        vxkey,
-        propertyPath,
-        keyframeKey,
-        value,
-        time,
-        handles: rawHandles as [number, number, number, number]
-    })
 }
 
 function removePropertyLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string) {
@@ -637,12 +751,11 @@ function removePropertyLogic(state: TimelineManagerAPIProps, vxkey: string, prop
     const doesStaticPropExist = state.staticProps[generalKey];
 
     if (!!doesStaticPropExist) {
-        removeStaticPropLogic(state, generalKey);
+        state.removeStaticProp({ state, vxkey, propertyPath, reRender: false });
 
     }
-    if (!!doesTrackExist) {
-        removeTrackLogic(state, vxkey, propertyPath);
-    }
+    if (!!doesTrackExist)
+        state.removeTrack({ state, vxkey, propertyPath, reRender: false })
 }
 
 function removeStaticPropLogic(state: TimelineManagerAPIProps, staticPropKey: string) {
@@ -652,12 +765,6 @@ function removeStaticPropLogic(state: TimelineManagerAPIProps, staticPropKey: st
     // Delete from editorObjects vxobject
     const edObject = state.editorObjects[vxkey];
     edObject.staticPropKeys = edObject.staticPropKeys.filter((propKey) => propKey !== staticPropKey);
-
-    animationEngineInstance.hydrationService.hydrateStaticProp({
-        action: "remove",
-        vxkey,
-        propertyPath
-    })
 }
 
 function removeKeyframeLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string, keyframeKey: string) {
@@ -667,13 +774,6 @@ function removeKeyframeLogic(state: TimelineManagerAPIProps, vxkey: string, prop
 
     delete track.keyframes[keyframeKey];
     updatedOrderedKeyframeIdsLogic(state, trackKey)
-
-    animationEngineInstance.hydrationService.hydrateKeyframe({
-        action: "remove",
-        vxkey,
-        propertyPath,
-        keyframeKey
-    })
 }
 
 function removeTrackLogic(state: TimelineManagerAPIProps, vxkey: string, propertyPath: string) {
@@ -687,12 +787,6 @@ function removeTrackLogic(state: TimelineManagerAPIProps, vxkey: string, propert
     // Remove the track key from the editor object
     const trackKeys = state.editorObjects[vxkey].trackKeys.filter(key => key !== trackKey)
     state.editorObjects[vxkey].trackKeys = trackKeys;
-
-    animationEngineInstance.hydrationService.hydrateTrack({
-        action: "remove",
-        vxkey,
-        propertyPath
-    });
 }
 
 
@@ -705,13 +799,6 @@ function createStaticPropLogic(state: TimelineManagerAPIProps, vxkey: string, pr
     }
     state.staticProps[staticPropKey] = newStaticProp;              // Add to Record
     state.editorObjects[vxkey].staticPropKeys.push(staticPropKey)  // Add to editorObjects
-
-    animationEngineInstance.hydrationService.hydrateStaticProp({
-        action: "create",
-        vxkey,
-        propertyPath,
-        value
-    })
 }
 
 
@@ -727,12 +814,6 @@ function createTrackLogic(state: TimelineManagerAPIProps, vxkey: string, propert
         orderedKeyframeKeys: []
     }
     state.tracks[trackKey] = newTrack;
-
-    animationEngineInstance.hydrationService.hydrateTrack({
-        action: "create",
-        vxkey,
-        propertyPath
-    })
 }
 
 export function updatedOrderedKeyframeIdsLogic(state: TimelineManagerAPIProps, trackKey: string) {

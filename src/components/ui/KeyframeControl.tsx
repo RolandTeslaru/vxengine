@@ -13,18 +13,16 @@ interface TimelineKeyframeControlProps {
     horizontal?: boolean
 }
 
-const handleMiddleButton = (generalKey: string, isPropertyTracked: boolean) => {
-    const makePropertyTracked = useTimelineManagerAPI.getState().makePropertyTracked;
-    const createKeyframe = useTimelineManagerAPI.getState().createKeyframe
-    if (isPropertyTracked === true) {
-        const trackKey = generalKey;
-        createKeyframe({ trackKey }) // auto sets the value to the ref property path of the object
-    }
-    else if (isPropertyTracked === false) {
-        // This is a singular static prop
-        const staticPropKey = generalKey;
-        makePropertyTracked(staticPropKey)
-    }
+const handleMiddleButton = (vxkey: string, propertyPath: string, isPropertyTracked: boolean) => {
+
+    if (isPropertyTracked === true)
+        useTimelineManagerAPI
+            .getState()
+            .createKeyframe({ vxkey, propertyPath, overlapKeyframeCheck: true })
+    else if (isPropertyTracked === false)
+        useTimelineManagerAPI
+            .getState()
+            .makePropertyTracked(vxkey, propertyPath)
 }
 
 interface KeyrameState {
@@ -103,7 +101,9 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
     const isPropertyTracked = !!track;
 
     const hasSideEffect = useMemo(() => {
-        return animationEngineInstance.paramControlService.hasSideEffect(trackKey)
+        return animationEngineInstance
+                .propertyControlService
+                .hasSideEffect(trackKey)
     }, [vxkey, propertyPath])
     // Initialize
     useLayoutEffect(() => {
@@ -127,7 +127,7 @@ const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: 
                     </button>
                 }
                 <button
-                    onClick={() => handleMiddleButton(trackKey, isPropertyTracked)}
+                    onClick={() => handleMiddleButton(vxkey, propertyPath, isPropertyTracked)}
                     className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
                     disabled={disabled}
                 >

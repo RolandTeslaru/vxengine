@@ -78,7 +78,9 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
     // @ts-expect-error
     const isParamInClipboard = useClipboardManagerAPI(state => state.items.has(paramType));
 
-    const hasSideEffect = animationEngineInstance.paramControlService.hasSideEffect(trackKey)
+    const hasSideEffect = animationEngineInstance
+                            .propertyControlService
+                            .hasSideEffect(trackKey)
 
     const isPropertyTracked = useTimelineManagerAPI(state => !!state.tracks[trackKey])
     const isPropertyStatic = useTimelineManagerAPI(state => !!state.staticProps[trackKey])
@@ -108,7 +110,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                         Paste Value
                     </ContextMenuItem>
                 }
-                <ContextMenuSub>
+                {/* <ContextMenuSub>
                     {isPropertyTracked ?
                         <>
                             <ContextMenuSubTrigger>
@@ -128,12 +130,12 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                             </ContextMenuSubContent>
                         </>
                     }
-                </ContextMenuSub>
+                </ContextMenuSub> */}
                 {isPropertyTracked &&
                     <>
                         {onKeyframeKey &&
                             <ContextMenuItem
-                                onClick={() => removeKeyframe({ keyframeKey: onKeyframeKey, trackKey, reRender: true })}
+                                onClick={() => removeKeyframe({ keyframeKey: onKeyframeKey, vxkey, propertyPath, reRender: true })}
                                 variant="warning"
                             >
                                 Delete Keyframe

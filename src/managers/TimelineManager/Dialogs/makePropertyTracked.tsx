@@ -5,20 +5,22 @@ import { Label } from "@vxengine/components/shadcn/label";
 import React from "react";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
+import { extractDataFromTrackKey } from "../utils/trackDataProcessing";
 
 export const DIALOG_makePropertyTracked = () => {
-    const makePropertyTracked = useTimelineManagerAPI((state) => state.makePropertyTracked);
-
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const staticPropKey = e.target.staticPropKey.value;
+        const {vxkey, propertyPath} = extractDataFromTrackKey(staticPropKey)
 
         if (!staticPropKey) {
             alert("Please provide a valid StaticProp key!");
             return;
         }
 
-        makePropertyTracked(staticPropKey, true);
+        useTimelineManagerAPI
+            .getState()
+            .makePropertyTracked(vxkey, propertyPath, true)
     };
 
     return (

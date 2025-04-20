@@ -29,7 +29,7 @@ export const ObjectManagerDriver = () => {
     const isValid = !excludedObjectTypes.includes(vxobject?.type)
 
     const isTransformDisabled =
-        isUsingSplinePath ||
+        (isUsingSplinePath && transformMode === "translate") ||
         vxobject?.disabledParams?.includes("position") ||
         !isValid;
 
@@ -40,7 +40,7 @@ export const ObjectManagerDriver = () => {
         const handleDraggingChanged = (event: any) => {
             if(!event.value) {
                 animationEngineInstance
-                    .paramControlService
+                    .paramModifierService
                     .flushTimelineStateUpdates()
             }
         }
@@ -101,7 +101,7 @@ const handleOnVxObjectChange = (e: any, vxobject: vxObjectProps, transformSpace:
 
     VXOBJECT_TYPE_CALLBACKS[vxobject.type](e, vxobject, axes, transformMode, transformSpace, "changing")
 
-    animationEngineInstance.paramControlService.flushUiUpdates();
+    animationEngineInstance.paramModifierService.flushUiUpdates();
 }
 
 const handleOnEntityChange: ChangeFnType = (
@@ -183,7 +183,7 @@ const handleOnTranslateChange: ChangeFnType = (
 
             // dont rerender beause TransformControls moves the object itself
             animationEngineInstance
-                .paramControlService
+                .paramModifierService
                 .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
         })
     }
@@ -197,7 +197,7 @@ const handleOnTranslateChange: ChangeFnType = (
 
             if (oldValue !== newValue) {
                 animationEngineInstance
-                    .paramControlService
+                    .paramModifierService
                     .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
 
                 oldProps.position[axis] = newValue;
@@ -220,7 +220,7 @@ const handleOnRotationChange: ChangeFnType = (
             const newValue = objectRef.rotation[axis];
 
             animationEngineInstance
-                .paramControlService
+                .paramModifierService
                 .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
         })
     }
@@ -250,7 +250,7 @@ const handleOnRotationChange: ChangeFnType = (
             // 4. This unwrappedVal is the actual continuous angle
             if (oldValue !== unwrappedValue)
                 animationEngineInstance
-                    .paramControlService
+                    .paramModifierService
                     .modifyParamValue(vxobject.vxkey, propertyPath, unwrappedValue, false)
         })
     }
@@ -268,7 +268,7 @@ const handleOnScaleChange: ChangeFnType = (
             const newValue = objectRef.scale[axis]
 
             animationEngineInstance
-                .paramControlService
+                .paramModifierService
                 .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
         })
     }
@@ -282,7 +282,7 @@ const handleOnScaleChange: ChangeFnType = (
 
             if (oldValue !== newValue)
                 animationEngineInstance
-                    .paramControlService
+                    .paramModifierService
                     .modifyParamValue(vxobject.vxkey, propertyPath, newValue, false)
         })
     }

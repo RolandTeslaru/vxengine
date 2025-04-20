@@ -332,11 +332,13 @@ export const handlePasteKeyframes = () => {
     const newCursorTime = animationEngineInstance.currentTime;
 
     clipboardData.keyframes.forEach((kf) => {
+        const {vxkey, propertyPath} = extractDataFromTrackKey(kf.trackKey)
         const oldKfTime = kf.time;
         const deltaCursorKeyframeTime =  oldCursorTime - oldKfTime;
         const newKfTime = newCursorTime - deltaCursorKeyframeTime;
         timelineManagerAPI.createKeyframe({
-            trackKey: kf.trackKey,
+            vxkey,
+            propertyPath,
             value: kf.value,
             handles: kf.handles,
             time: newKfTime

@@ -6,6 +6,7 @@ import { handleCopyKeyframes, selectAllKeyframesAfter, selectAllKeyframesBefore,
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store'
 import { ArrowLeft, ArrowRight, Info, Maximize2, X } from '@vxengine/components/ui/icons'
 import KeyframeData from '@vxengine/components/ui/DataContextContext/Keyframe'
+import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing'
 
 interface Props {
     trackKey: string,
@@ -66,9 +67,11 @@ const handleRemoveSelectedKeyframes = () => {
     const removeKeyframe = useTimelineManagerAPI.getState().removeKeyframe
 
     selectedKeyframesFlatMap.forEach(kf => {
+        const {vxkey, propertyPath} = extractDataFromTrackKey(kf.trackKey)
         removeKeyframe({
             keyframeKey: kf.keyframeKey,
-            trackKey: kf.trackKey,
+            vxkey,
+            propertyPath,
             reRender: true
         })
     })
