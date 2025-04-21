@@ -8,6 +8,8 @@ import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { TimelineManagerAPIProps } from "../types/store";
+import { useRefStore } from "@vxengine/utils";
+import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 
 export type SelectedKeyframe = {
     trackKey: string;
@@ -99,13 +101,25 @@ export const useTimelineEditorAPI = create<TimelineEditorAPIProps>((set, get) =>
 
     // Cursor Functions
 
-    setTime: (time) => {
+    setTime: (time, cursorLockOn = true) => {
         time = truncateToDecimals(time);
 
         animationEngineInstance.setCurrentTime(time, false);
 
         const cursorLeft = parserTimeToPixel(time, cursorStartLeft, get().scale);
         handleCursorMutation(cursorLeft);
+
+        if(cursorLockOn){
+            const refStoreState = useRefStore.getState()
+            const timelineAreaRef = refStoreState.timelineAreaRef;
+            const scrollLeftRef = refStoreState.scrollLeftRef;
+            const clientWidth = timelineAreaRef.current.offsetWidth
+            const autoScrollFrom = clientWidth * 70 / 100;
+            const left = time * (ONE_SECOND_UNIT_WIDTH / get().scale) - autoScrollFrom;
+            timelineAreaRef.current.scrollLeft = left;
+            scrollLeftRef.current = left
+
+        }
     },
     setTimeByPixel: (left) => {
         let time = parserPixelToTime(left, cursorStartLeft)

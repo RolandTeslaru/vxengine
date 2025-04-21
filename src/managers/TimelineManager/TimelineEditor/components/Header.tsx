@@ -1,9 +1,13 @@
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import ProgressionControls from './ProgressionControls'
 import TimelineSelect from './TimelineSelect'
 import { ChevronRight } from '@vxengine/components/ui/icons'
+import { Slider } from '@vxengine/components/shadcn/slider'
+import animationEngineInstance from '@vxengine/singleton'
+import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
+import { useTimelineEditorAPI } from '../store'
 
 const MinimizeButton = () => {
     const { vxWindowId } = useWindowContext();
@@ -32,15 +36,18 @@ const TimelineEditorHeader = () => {
         <div className={`flex flex-row gap-2 w-full py-2 px-2
             ${timelineEditorAttached ? "pr-4" : "px-2"}`}
         >
-            <MinimizeButton/>
+            <div className='flex w-[390px] gap-2'>
+                <MinimizeButton/>
 
-            <p className='font-roboto-mono font-bold antialiased text-sm my-auto h-auto text-label-primary'>
-                Timeline Editor
-            </p>
+                <p className='font-roboto-mono text-nowrap font-bold antialiased text-sm my-auto h-auto text-label-primary'>
+                    Timeline Editor
+                </p>
 
-            <TimelineSelect />
+                <TimelineSelect />
+            </div>
             <ProgressionControls />
         </div>
     )
 }
 export default TimelineEditorHeader
+

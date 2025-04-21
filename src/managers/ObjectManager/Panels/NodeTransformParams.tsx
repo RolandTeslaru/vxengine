@@ -30,13 +30,12 @@ const NodeTransformParams: React.FC<Props> = ({ vxobject }) => {
                     <p className="text-xs font-light text-neutral-400">position</p>
                     <div className='flex flex-row gap-1 max-w-36 ml-auto'>
                         {['x', 'y', 'z'].map((axis) => (
-                            <>
-                                <ValueRenderer
-                                    vxRefObj={vxobject.ref}
-                                    vxkey={vxobject.vxkey}
-                                    param={{ propertyPath: `position.${axis}`}}
-                                />
-                            </>
+                            <ValueRenderer
+                                key={axis}
+                                vxRefObj={vxobject.ref}
+                                vxkey={vxobject.vxkey}
+                                param={{ propertyPath: `position.${axis}`}}
+                            />
                         ))}
                     </div>
                 </div>

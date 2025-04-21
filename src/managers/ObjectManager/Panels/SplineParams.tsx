@@ -7,6 +7,7 @@ import { useObjectSettingsAPI } from '../stores/settingsStore'
 import { VXElementParam } from '@vxengine/vxobject/types'
 import { useVXObjectStore } from '../stores/objectStore'
 import SettingsList from './SettingsList'
+import { invalidate } from '@react-three/fiber'
 
 interface Props {
     vxobject: vxSplineProps
@@ -15,6 +16,7 @@ interface Props {
 const handleShowSpline = (objectVxKey: string ) => {
     const toggleSetting = useObjectSettingsAPI.getState().toggleSetting;
     toggleSetting(objectVxKey, "showPositionPath")
+    invalidate()
 }
 
 const progressParam: VXElementParam = {

@@ -1,4 +1,5 @@
-import { useRef, useImperativeHandle, useEffect, useLayoutEffect, useCallback } from "react";
+import React from "react";
+import { memo, useRef, useImperativeHandle, useEffect, useLayoutEffect, useCallback } from "react";
 import { VXElementParams, VXObjectSettings, VXPrimitiveProps } from "./types";
 import { useVXEngine } from "@vxengine/engine";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
@@ -8,7 +9,6 @@ import { useVXObjectStore } from "@vxengine/managers/ObjectManager";
 import * as THREE from "three";
 import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/types/objectStore";
 import animationEngineInstance from "@vxengine/singleton";
-import React from "react";
 import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
 
@@ -34,7 +34,7 @@ export function withVX<P extends object>(
     WrappedComponent: React.ComponentType<P>,
     defaultProps: WithVXDefaultProps
 ) {
-    const WithVX = ({ ref, ...props }: WithVXProps<P>) => {
+    const WithVX = memo(({ ref, ...props }: WithVXProps<P>) => {
         const finalProps = { ...defaultProps, ...props }
 
         if (finalProps.vxkey === undefined)
@@ -121,7 +121,7 @@ export function withVX<P extends object>(
                 )}
             </>
         )
-    }
+    })
 
     WithVX.displayName = `withVX(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`
 

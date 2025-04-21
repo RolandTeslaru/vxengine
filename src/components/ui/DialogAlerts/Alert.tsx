@@ -1,6 +1,6 @@
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 
 interface Props {
     vxkey: string,
@@ -9,10 +9,12 @@ interface Props {
 
 export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const trackKey = vxkey + "." + propertyPath
-    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
-    const keyframesLengthForTrack = Object.entries(track?.keyframes || {}).length;
 
-    const makePropertyStatic = useTimelineManagerAPI(state => state.makePropertyStatic)
+    const initTrackState = useMemo(() => {
+        return useTimelineManagerAPI.getState().tracks[trackKey]
+    }, [vxkey, propertyPath])
+    
+    const keyframesLengthForTrack = Object.entries(initTrackState?.keyframes || {}).length;
 
     return (
         <>
@@ -29,7 +31,7 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
                     <AlertDialogAction
                         //@ts-expect-error
                         type="warning"
-                        onClick={() => makePropertyStatic(trackKey)}
+                        onClick={() => handleMakePropertyStatic(vxkey, propertyPath)}
                     >Continue</AlertDialogAction>
                 </AlertDialogFooter>
             </div>
@@ -37,13 +39,20 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
     )
 }
 
+const handleMakePropertyStatic = (vxkey: string, propertyPath: string) => {
+    useTimelineManagerAPI.getState().makePropertyStatic(vxkey, propertyPath, true)
+}
+
+
 export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) => {
-    const key = vxkey + "." + propertyPath
-    const trackKey = vxkey + "." + propertyPath
-    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
-    const keyframes = track?.keyframes;
-    const staticProp = useTimelineManagerAPI(state => state.staticProps[key])
-    const removeProperty = useTimelineManagerAPI(state => state.removeProperty)
+    const generalKey = `${vxkey}.${propertyPath}`
+    
+    const [initTrackState, initStaticPropState] = useMemo(() => {
+        const initState = useTimelineManagerAPI.getState()
+        return [initState.tracks[generalKey], initState.staticProps[generalKey]]
+    }, [vxkey, propertyPath])
+    
+    const keyframes = initTrackState?.keyframes;
 
     return (
 
@@ -51,21 +60,21 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
             <AlertDialogHeader className='flex flex-col'>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    {track && (
+                    {initTrackState && (
                         <>
-                            Track <span className='text-yellow-500'>{key}</span> with <span className='text-yellow-500'>{Object.values(keyframes).length}</span> keyframes will be erased!
+                            Track <span className='text-yellow-500'>{generalKey}</span> with <span className='text-yellow-500'>{Object.values(keyframes).length}</span> keyframes will be erased!
                             This function returns the property to its default value defined in code.
                         </>
                     )}
-                    {staticProp && (
+                    {initStaticPropState && (
                         <>
-                            StaticProp <span className='text-yellow-500'>{key}</span> will be erased!
+                            StaticProp <span className='text-yellow-500'>{generalKey}</span> will be erased!
                             This function returns the property to its default value defined in code.
                         </>
                     )}
-                    {!track && !staticProp && (
+                    {!initTrackState && !initStaticPropState && (
                         <>
-                            Property path <span className='text-yellow-500'>{key}</span> isn't a track nor a staticProp. Nothing to reset!
+                            Property path <span className='text-yellow-500'>{generalKey}</span> isn't a track nor a staticProp. Nothing to reset!
                         </>
                     )}
                 </AlertDialogDescription>
@@ -76,9 +85,13 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
                 <AlertDialogAction
                     //@ts-expect-error
                     type="warning"
-                    onClick={() => removeProperty(vxkey, propertyPath)}
+                    onClick={() => handleRemoveProperty(vxkey, propertyPath)}
                 >Continue</AlertDialogAction>
             </AlertDialogFooter>
         </div>
     )
+}
+
+const handleRemoveProperty = (vxkey:string, propertyPath: string) => {
+    useTimelineManagerAPI.getState().removeProperty(vxkey, propertyPath, true)
 }

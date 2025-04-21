@@ -130,8 +130,8 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
         get().addChange()
     },
 
-    makePropertyStatic: (trackKey, reRender = true) => {
-        const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
+    makePropertyStatic: (vxkey, propertyPath, reRender = true) => {
+        const trackKey = `${vxkey}.${propertyPath}`
         const vxobject = useVXObjectStore.getState().objects[vxkey]
         if (!vxobject) {
             console.error(`Error making property static. Vxobject with vxkey ${vxkey} does not exist`)

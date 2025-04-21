@@ -24,7 +24,7 @@ const ProgressionControls = React.memo(() => {
     }
 
     return (
-        <div className='flex flex-row gap-2 w-auto ml-auto'>
+        <div className='flex flex-row gap-2 w-full h-auto my-auto '>
             <TimeRender />
             
             <button className={"bg-secondary-opaque border h-7 w-7 flex hover:bg-quaternary-opaque dark:border-neutral-600 border-neutral-400 rounded-lg cursor-pointer "}

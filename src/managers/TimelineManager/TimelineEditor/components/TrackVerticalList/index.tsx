@@ -15,6 +15,8 @@ import { useTimelineEditorAPI } from "../../store";
 import { EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
 import JsonView from "react18-json-view";
+import { pushDialogStatic } from "@vxengine/managers/UIManager/store";
+import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from "@vxengine/components/ui/DialogAlerts/Alert";
 
 const TRACK_HEIGHT = 34;
 
@@ -54,15 +56,15 @@ const TrackVerticalList = memo(() => {
     const { IS_PRODUCTION } = useVXEngine()
 
     return (
-        <div 
+        <div
             className={`antialiased w-[29%] h-full flex flex-col rounded-2xl relative overflow-y-scroll 
                         border dark:border-neutral-800 dark:bg-neutral-900 border-neutral-300 bg-neutral-200`}
             ref={trackListRef}
             onScroll={handleOnScroll}
         >
-            <div 
+            <div
                 className={`sticky top-0 w-full min-h-[28px] z-10 flex flex-row px-2`}
-                // style={{background: "linear-gradient(0deg, rgba(23,23,23,0) 0%, rgba(23,23,23,0.9) 71%)"}}
+            // style={{background: "linear-gradient(0deg, rgba(23,23,23,0) 0%, rgba(23,23,23,0.9) 71%)"}}
             >
                 <Search
                     className="w-36 px-2 ml-auto my-auto "
@@ -80,7 +82,7 @@ const TrackVerticalList = memo(() => {
             {filteredTree && (
                 <div
                     className="h-fit text-xs"
-                    
+
                 >
                     {Object.values(filteredTree).map((node, index) =>
                         <TreeNode node={node} level={1} key={index} />
@@ -104,7 +106,7 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
 
     return (
         <>
-            <li className={`flex items-center dark:hover:bg-neutral-800 hover:bg-neutral-300 px-1`}
+            <li className={`flex items-center ${isLinearTrack ? "bg-neutral-800/40 hover:bg-neutral-800/10" : " "} x-1`}
                 style={{ height: DEFAULT_ROW_HEIGHT }}
             >
                 <div className={`flex flex-row w-full`} style={{ marginLeft: `${(level - 1) * NODE_PADDING_INDENT + (!hasChildren && 20)}px` }}>
@@ -174,17 +176,24 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
         </ContextMenu>
     )
 }
-const FinalPathContextMenu: React.FC<FinaNodeProps> = (props) => {
-    const { pathKey, trackKey } = props;
+const FinalPathContextMenu: React.FC<{trackKey: string}> = (props) => {
+    const { trackKey } = props;
+    const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
 
     return (
         <ContextMenuContent>
-            {/* <ContextMenuSub>
-                <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                    <TrackData trackKey={trackKey}/>
-                </ContextMenuSubContent>
-            </ContextMenuSub> */}
+            <ContextMenuItem
+                onClick={() => pushDialogStatic({ content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />, type: "alert" })}
+                variant="destructive"
+            >
+                Make Property Static
+            </ContextMenuItem>
+            <ContextMenuItem
+                onClick={() => pushDialogStatic({ content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />, type: "alert" })}
+                variant="destructive"
+            >
+                Erase Property
+            </ContextMenuItem>
             <ContextMenuSub>
                 <ContextMenuSubTrigger>
                     Select...
@@ -233,7 +242,7 @@ const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string,
 
 export default TrackVerticalList;
 
-const TrackData = ({trackKey}: {trackKey: string}) => {
+const TrackData = ({ trackKey }: { trackKey: string }) => {
     const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
 
     return (

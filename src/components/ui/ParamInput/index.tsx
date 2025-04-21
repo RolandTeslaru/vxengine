@@ -110,7 +110,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                         Paste Value
                     </ContextMenuItem>
                 }
-                {/* <ContextMenuSub>
+                <ContextMenuSub>
                     {isPropertyTracked ?
                         <>
                             <ContextMenuSubTrigger>
@@ -130,7 +130,7 @@ const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputCont
                             </ContextMenuSubContent>
                         </>
                     }
-                </ContextMenuSub> */}
+                </ContextMenuSub>
                 {isPropertyTracked &&
                     <>
                         {onKeyframeKey &&

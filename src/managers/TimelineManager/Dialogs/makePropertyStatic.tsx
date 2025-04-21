@@ -11,14 +11,19 @@ export const DIALOG_makePropertyStatic = () => {
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        const trackKey = e.target.trackKey.value;
+        const vxkey = e.target.vxkey.value;
+        const propertyPath = e.target.propertyPath.value
 
-        if (!trackKey) {
-            alert("Please provide a valid Track key!");
+        if (!vxkey) {
+            alert("Please provide a valid vxkey!");
+            return;
+        }
+        if (!propertyPath) {
+            alert("Please provide a valid propertyPath!");
             return;
         }
 
-        makePropertyStatic(trackKey, true);
+        makePropertyStatic(vxkey, propertyPath, true);
     };
 
     return (
@@ -28,9 +33,13 @@ export const DIALOG_makePropertyStatic = () => {
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="trackKey" className="text-right">
-                            Track Key
+                            vxkey
                         </Label>
-                        <Input id="trackKey" name="trackKey" className="col-span-3" />
+                        <Input id="vxkey" name="vxkey" className="col-span-3" />
+                        <Label htmlFor="propertyPath" className="text-right">
+                            propertyPath
+                        </Label>
+                        <Input id="propertyPath" name="propertyPath" className="col-span-3" />
                     </div>
                 </div>
                 <DialogFooter>

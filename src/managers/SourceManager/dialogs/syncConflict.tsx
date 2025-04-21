@@ -112,7 +112,7 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
             </div>
             {/* Content */}
             <div className="p-4 pt-0 ">
-                <div className="w-full flex flex-col border border-neutral-800  rounded-2xl">
+                <div className="w-fit flex flex-col border border-neutral-800  rounded-2xl">
                     {/* Titles */}
                     <div className="flex flex-row w-full py-3 text-neutral-300 text-sm">
                         <div className="flex flex-row gap-2 w-1/2 justify-center">
@@ -125,9 +125,10 @@ export const DANGER_SyncConflict = ({ dialogId }: { dialogId: string }) => {
                         </div>
                     </div>
                     {/* Data Difs */}
-                    <div className="max-h-[500px] bg-neutral-950 overflow-y-scroll! text-xs">
+                    <div className="max-h-[500px] max-w-full bg-neutral-950 overflow-y-scroll! text-xs">
                         {
                         (<ReactDiffViewer
+                            
                                 styles={defaultStyles}
                                 oldValue={diskTimelinesString}
                                 newValue={lsTimelinesString}

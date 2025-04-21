@@ -129,7 +129,13 @@ interface ColorPickerHandle {
 }
 
 const ColorPicker = forwardRef<ColorPickerHandle, ColorPickerProps>((props, ref) => {
-    const { handleColorChange, handleColorChangeStart, handleColorChangeEnd, colorRef, default_value = "#1C9488" } = props;
+    const { 
+        handleColorChange = () => {}, 
+        handleColorChangeStart = () => {}, 
+        handleColorChangeEnd = () => {}, 
+        colorRef, 
+        default_value = "#1C9488" 
+    } = props;
 
     const hueSliderRef = useRef<HTMLInputElement>(null)
     // const colorPreviewRef = useRef<HTMLDivElement>()
