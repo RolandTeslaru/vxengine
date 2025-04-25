@@ -5,7 +5,7 @@ import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/man
 import { selectKeyframeSTATIC as selectKeyframe } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import * as THREE from "three"
 import { Html } from "@react-three/drei";
-import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
+import { addObjectToStoreSTATIC, removeObjectFromStoreSTATIC, useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { vxKeyframeNodeProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useVXEngine } from "@vxengine/engine";
 
@@ -35,28 +35,32 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
     const nodeKey = useMemo(() => keyframeKeys.join('-'), [keyframeKeys])
 
     useEffect(() => {
-        const addObject = useVXObjectStore.getState().addObject
-        const removeObject = useVXObjectStore.getState().removeObject
         const keyframeNode: vxKeyframeNodeProps = {
             type: "keyframeNode",
             ref,
             vxkey: nodeKey,
-            axis: axis,
             name: `Keyframe Node ${index}`,
             data: {
+                axis,
                 keyframeKeys
             },
             parentKey: parentVxKey
         }
-        addObject(keyframeNode, IS_DEVELOPMENT, { icon: "Keyframe"});
+        addObjectToStoreSTATIC(keyframeNode, IS_DEVELOPMENT, { icon: "Keyframe"});
 
-        return () => removeObject(nodeKey, IS_DEVELOPMENT)
+        return () => removeObjectFromStoreSTATIC(nodeKey, IS_DEVELOPMENT)
     }, [keyframeKeys])
+
+    const handleOnClick = useCallback((e) => {
+        if (!ref.current) return;
+
+        useObjectManagerAPI.getState().selectObject(nodeKey);
+    }, [ref, nodeKey])
 
     return (
         <>
             {/* Keyframe Node */}
-            <mesh ref={ref} position={position} onClick={(e) => handleOnClick(e, ref, nodeKey)}>
+            <mesh ref={ref} position={position} onClick={handleOnClick}>
                 <sphereGeometry args={[0.2, 24, 24]} />
                 <meshBasicMaterial color={firstObjectSelected?.vxkey === nodeKey ? "yellow" : color} />
             </mesh>
@@ -91,10 +95,3 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
 
 export default KeyframeNode
 
-
-
-const handleOnClick = (e: ThreeEvent<MouseEvent>, ref:React.RefObject<any>, vxkey) => {
-    if (!ref.current) return;
-
-    useObjectManagerAPI.getState().selectObject(vxkey);
-};

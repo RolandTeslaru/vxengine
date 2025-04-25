@@ -39,8 +39,8 @@ export interface vxSplineNodeProps extends BaseVxProps {
 }
 export interface vxKeyframeNodeProps extends BaseVxProps {
     type: "keyframeNode",
-    axis: string[]
     data: {
+        axis: string[]
         keyframeKeys: string[] | string
     }
 }

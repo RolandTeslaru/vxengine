@@ -43,7 +43,7 @@ const BaseFadeEffect = ({fadeIntensity = 1.0, ...props}) => {
     return <primitive object={effect} dispose={null} {...props} />
 }
 
-export const EditableFadeEffect =  withVX<ThreeElements["primitive"]>(BaseFadeEffect, {
+export const EditableFadeEffect =  withVX(BaseFadeEffect, {
     type: "effect",
     params: fadeProps,
     vxkey: "fadeEffect",

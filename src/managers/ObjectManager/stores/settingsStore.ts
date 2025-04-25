@@ -11,6 +11,8 @@ import { logReportingService } from '@vxengine/AnimationEngine/services/LogRepor
 import { rotationDegreeToggleCallback, splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks';
 import { persist } from 'zustand/middleware';
 import { invalidate } from '@react-three/fiber';
+import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from 'zustand/shallow';
 
 export type IObjectSettings = Record<string, ISetting>
 
@@ -35,7 +37,7 @@ function setSettingLogic(state: ObjectSettingsStoreProps, vxkey: string, setting
     state.settings[vxkey][settingKey].value = settingValue;
 }
 
-export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>()(
+export const useObjectSettingsAPI = createWithEqualityFn<ObjectSettingsStoreProps>()(
     persist(
         (set, get) => ({
             initialValues: {},
@@ -173,7 +175,7 @@ export const useObjectSettingsAPI = create<ObjectSettingsStoreProps>()(
                 },
             },
         }
-    ))
+    ),shallow)
 
 export const useObjectSetting = (vxkey: string, settingKey: string, fallbackValue?: boolean) => {
     return useObjectSettingsAPI(state => state.settings[vxkey]?.[settingKey]?.value ?? fallbackValue);

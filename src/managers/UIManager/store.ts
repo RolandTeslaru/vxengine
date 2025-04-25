@@ -3,7 +3,8 @@ import { produce } from 'immer';
 import React from 'react';
 import { create } from 'zustand';
 import { persist } from "zustand/middleware";
-
+import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from 'zustand/shallow';
 export type DialogType = "normal" | "alert" | "danger" | "base"
 
 interface DialogEntry {
@@ -34,6 +35,7 @@ interface UIManagerProps {
 
     vxWindows: Record<string, StoredWindowProps>;
     registerWindow: (id: string, title: string, isAttached?:boolean, isOpen?:boolean) => void;
+    unregisterWindow: (id: string) => void
 
     getAttachmentState: (id: string, defaultValue?: boolean) => boolean
 
@@ -68,7 +70,7 @@ const checkWindowIsRegistered = (state: UIManagerProps, id, functionName: string
     return true;
 }
 
-export const useUIManagerAPI = create<UIManagerProps>()(
+export const useUIManagerAPI = createWithEqualityFn<UIManagerProps>()(
     persist(
         (set, get) => ({
             theme: "dark",
@@ -89,6 +91,14 @@ export const useUIManagerAPI = create<UIManagerProps>()(
                         isAttached: isAttached ?? true,
                         isOpen: isOpen ?? true
                     };
+                }))
+            },
+
+            unregisterWindow: (id) => {
+                set(produce((state: UIManagerProps) => {
+                    if(state.vxWindows[id]){
+                        delete state.vxWindows[id]
+                    }
                 }))
             },
 
@@ -196,7 +206,7 @@ export const useUIManagerAPI = create<UIManagerProps>()(
                 state?.setHydrated(true); // Set the hydrated flag after state is restored
             },
         }
-    )
+    ), shallow
 );
 
 

@@ -46,7 +46,7 @@ export interface RendererCoreProps {
 }
 
 // VXEngineCoreRenderer
-export const VXRenderer: React.FC<RendererCoreProps> = ({
+export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
   canvasProps = {},
   children,
   powerPreferences = 'high-performance',
@@ -64,7 +64,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.0,
-          precision: 'highp',
+          precision: 'lowp',
           ...glProps
         }}
         dpr={canvasProps.dpr ?? [1, 2]}
@@ -94,4 +94,4 @@ export const VXRenderer: React.FC<RendererCoreProps> = ({
       </Canvas>
     </div>
   )
-}
+})

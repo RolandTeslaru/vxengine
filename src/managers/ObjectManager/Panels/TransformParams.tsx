@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
 import ParamInput from "@vxengine/components/ui/ParamInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
@@ -9,7 +9,7 @@ interface Props {
     vxobject: vxObjectProps
 }
 
-export const TransformParams: React.FC<Props> = ({ vxobject }) => {
+export const TransformParams: React.FC<Props> = memo(({ vxobject }) => {
     const vxkey = vxobject.vxkey
     const disabledParams = vxobject.disabledParams;
 
@@ -25,19 +25,20 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
 
     if (isPanelDisabled) return;
 
+
     const renderInputs = (property, disabled = false) => {
         return ['x', 'y', 'z'].map((axis) => {
-                const propertyPath = `${property}.${axis}`;
-                if(vxobject.params.find(param => param.propertyPath === propertyPath))
-                    return <ParamInput
-                        vxkey={vxobject.vxkey}
-                        vxRefObj={vxobject.ref}
-                        key={`${property}-${axis}`}
-                        param={{ propertyPath: `${property}.${axis}`, type: "number" }}
-                        horizontal={true}
-                        disabled={disabled}
-                    />
-            
+            const propertyPath = `${property}.${axis}`;
+            if (vxobject.params.find(param => param.propertyPath === propertyPath))
+                return <ParamInput
+                    vxkey={vxobject.vxkey}
+                    vxRefObj={vxobject.ref}
+                    key={`${property}-${axis}`}
+                    param={{ propertyPath: `${property}.${axis}`, type: "number" }}
+                    horizontal={true}
+                    disabled={disabled}
+                />
+
         })
     };
 
@@ -71,7 +72,7 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                     </div>
                 </div>
 
-                {isUsingRotationDegrees ? 
+                {isUsingRotationDegrees ?
                     <div className='flex flex-row gap-2'>
                         <p className="text-xs font-light text-label-quaternary">rotation deg.</p>
                         <div className='flex flex-row gap-1 max-w-36 ml-auto'>
@@ -87,14 +88,14 @@ export const TransformParams: React.FC<Props> = ({ vxobject }) => {
                     </div>
                 }
                 {settings && "showPositionPath" in settings && (
-                    <SettingNode 
-                        vxkey={vxkey} 
-                        settingKey="showPositionPath" 
-                        setting={settings["showPositionPath"]} 
+                    <SettingNode
+                        vxkey={vxkey}
+                        settingKey="showPositionPath"
+                        setting={settings["showPositionPath"]}
                         title={isUsingSplinePath ? "show spline path" : "show position path"}
                     />
                 )}
             </div>
         </CollapsiblePanel>
     );
-}
+})

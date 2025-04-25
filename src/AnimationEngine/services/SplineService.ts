@@ -51,6 +51,7 @@ export class SplineService {
         )
 
         this._splinesCache.set(rawSpline.splineKey, new_wasm_spline);
+        return this
     }
 
     removeSpline(splineKey: string){
@@ -59,6 +60,7 @@ export class SplineService {
             spline.free();
             this._splinesCache.delete(splineKey);
         }
+        return this
     }
 
     /**

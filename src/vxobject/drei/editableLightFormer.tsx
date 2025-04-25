@@ -5,7 +5,7 @@ import { VXElementProps, VXElementPropsWithoutRef, VXObjectSettings } from "../t
 import * as THREE from "three"
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { Lightformer } from "./lightFormerImpl";
-import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
+import { useObjectSetting, useObjectSettingsAPI } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { withVX } from "../withVX";
 import { useVXEngine } from "@vxengine/engine";
 
@@ -31,8 +31,11 @@ const outlineMaterial = new THREE.MeshBasicMaterial({
 
 const BaseLightFormer = ({ref, ...props}) => {
     const vxkey = props.vxkey;
-    const setting_isShown = useObjectSetting(vxkey, "show");
-    const setting_isShowingAll = useObjectSetting("environment", "showAll", false);
+
+    const {setting_isShown, setting_isShowingAll} = useObjectSettingsAPI(state => { return {
+        setting_isShown: state.settings[vxkey]?.show ?? false,
+        setting_isShowingAll: state.settings[vxkey]?.showAll ?? false
+    }})
 
     const { IS_DEVELOPMENT } = useVXEngine();
 

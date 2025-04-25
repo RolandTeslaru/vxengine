@@ -38,3 +38,4 @@ export const useClipboardManagerAPI = create<ClipboardManagerState>((set, get) =
       return get().items.get(type)
     },
   }));
+

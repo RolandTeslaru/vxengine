@@ -7,6 +7,8 @@ import { vxEffectProps, vxElementProps, vxObjectProps, vxObjectTypes, vxVirtualE
 import { create } from 'zustand';
 import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
+import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from 'zustand/shallow';
 
 const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
@@ -34,7 +36,7 @@ const initialTree: Record<string, ObjectTreeNodeProps> = {
     }
 }
 
-export const useObjectManagerAPI = create<ObjectManagerStoreProps>((set, get) => ({
+export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>((set, get) => ({
     transformMode: "translate",
     setTransformMode: (mode: "translate" | "rotate" | "scale") => set((state) => ({
         ...state,
@@ -179,7 +181,7 @@ export const useObjectManagerAPI = create<ObjectManagerStoreProps>((set, get) =>
         );
     }
 
-}))
+}), shallow)
 
 export const useObjectPropertyAPI = create<ObjectPropertyStoreProps>((set, get) => ({
     properties: {},

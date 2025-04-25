@@ -115,10 +115,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         this._interpolateNumberFunction = wasm_interpolator;
       }
     );
+    this._propertyControlService = new PropertyControlService(this, this._object3DCache)
     this._splineService = new SplineService(this._wasmService);
-    this._hydrationService = new HydrationService(this.splineService);
+    this._hydrationService = new HydrationService(this._rawObjectCache, this._splineService, this._propertyControlService);
     this._paramModifierService = new ParamModifierService(this, this._hydrationService)
-    this._propertyControlService = new PropertyControlService(this)
   }
 
 

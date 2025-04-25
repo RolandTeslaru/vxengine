@@ -4,15 +4,9 @@ import { AnimationEngine } from "../engine";
 import { ParamSetterType, ParamSideEffectType, PropertyUpdateType } from "../types/ParamControlService";
 import { ObjectPropertyStoreProps } from "@vxengine/types/objectPropertyStore";
 import { produce } from "immer";
-import { logReportingService } from "./LogReportingService";
 import { RawObject, RawTimeline } from "@vxengine/types/data/rawData";
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
-import { TimelineManagerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
-import { HydrationService } from "./HydrationService";
-import { EditorKeyframe } from "@vxengine/types/data/editorData";
-import { truncateToDecimals, useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { ParamModifierService } from "./ParamModifierService";
 
 /**
  * Service responsible for managing property updates and side effects in the animation engine.
@@ -36,6 +30,7 @@ export class PropertyControlService {
      */
     constructor(
         private _animationEngine: AnimationEngine,
+        private _object3DCache: Map<string, any>
     ) { }
 
 
@@ -65,7 +60,7 @@ export class PropertyControlService {
      * @param propertyPath - The path to the property being updated
      * @param value - The new value to set
      */
-    private _queueEngineUIUpdate(vxkey: string, propertyPath: string, value: number) {
+    private _queueEngineUIUpdate(vxkey, propertyPath, value) {
         if (this._IS_DEVELOPMENT) {
             const trackKey = `${vxkey}.${propertyPath}`
             this._pendingEngineUiUpdates.set(trackKey, value)
@@ -105,7 +100,6 @@ export class PropertyControlService {
                 vxkey,
                 propertyPath
             )
-            this._propertySetterCache.set(trackKey, setter);
             console.warn("Setter nof found in cahce for trackKey:", trackKey, ", generating one", setter)
         }
         setter(newValue);
@@ -128,25 +122,21 @@ export class PropertyControlService {
     public generateObjectPropertySetters(vxobject: vxObjectProps, rawObject: RawObject) {
         rawObject.tracks.forEach(_track => {
             const trackKey = `${vxobject.vxkey}.${_track.propertyPath}`
-            if (!this._propertySetterCache.has(trackKey)) {
-                const setter = this.generatePropertySetter(
+            if (!this._propertySetterCache.has(trackKey))
+                this.generatePropertySetter(
                     vxobject.ref.current,
                     vxobject.vxkey,
                     _track.propertyPath
                 )
-                this._propertySetterCache.set(trackKey, setter);
-            }
         })
         rawObject.staticProps.forEach(_staticProp => {
             const staticPropKey = `${vxobject.vxkey}.${_staticProp.propertyPath}`
-            if (!this._propertySetterCache.has(staticPropKey)) {
-                const setter = this.generatePropertySetter(
+            if (!this._propertySetterCache.has(staticPropKey))
+                this.generatePropertySetter(
                     vxobject.ref.current,
                     vxobject.vxkey,
                     _staticProp.propertyPath
                 )
-                this._propertySetterCache.set(staticPropKey, setter);
-            }
         })
 
     }
@@ -208,16 +198,29 @@ export class PropertyControlService {
      * @param propertyPath - Dot-separated path to the property
      * @returns A setter function that updates the specified property
      */
-    public generatePropertySetter(object3DRef: any, vxkey: string, propertyPath: string): (newValue: any) => void {
+    public generatePropertySetter(
+        object3DRef: Record<string, any> | null, 
+        vxkey: string, 
+        propertyPath: string
+    ): (newValue: number) => void {
         const propertyKeys = propertyPath.split('.');
-        let target = object3DRef;
+        let target;
+        let setter: (newValue: number) => void;
+
+        if(object3DRef){
+            target = object3DRef;
+        } else {
+            target = this._object3DCache.get(vxkey);
+        }
 
         // Traverse the object
         for (let i = 0; i < propertyKeys.length - 1; i++) {
             target = target[propertyKeys[i]];
             if (target === undefined) {
                 console.warn(`Property '${propertyKeys[i]}' undefined in '${propertyPath}' for '${vxkey}'`);
-                return (newValue) => { };
+                setter = (newValue) => { };
+                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+                return setter
             }
         }
 
@@ -225,14 +228,18 @@ export class PropertyControlService {
         if (target instanceof Map) {
             const entry = target.get(finalKey);
             if (entry && typeof entry === 'object' && 'value' in entry) {
-                return (newValue: number) => {
+                setter = (newValue: number) => {
                     entry.value = newValue;
                 }
+                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+                return setter
             }
         } else {
-            return (newValue: number) => {
+            setter = (newValue: number) => {
                 target[finalKey] = newValue;
             }
+            this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+            return setter
         }
     }
 
@@ -273,5 +280,10 @@ export class PropertyControlService {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
         return this._sideEffects.has(trackKey) ?? !!PropertyControlService.defaultSideEffects.get(propertyPath)
+    }
+    
+
+    public hasSetter(vxkey: string, propertyPath: string): boolean {
+        return this._propertySetterCache.has(`${vxkey}.${propertyPath}`)
     }
 }

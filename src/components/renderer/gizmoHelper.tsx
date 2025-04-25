@@ -3,6 +3,7 @@ import { ThreeElements, useFrame, useThree } from '@react-three/fiber'
 import { Group, Matrix4, Object3D, OrthographicCamera as OrthographicCameraImpl, Quaternion, Vector3 } from 'three'
 import { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import { OrthographicCamera, Hud } from '@react-three/drei'
+import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
 
 type GizmoHelperContext = {
     tweenCamera: (direction: Vector3) => void
@@ -47,6 +48,8 @@ const isOrbitControls = (controls: ControlsProto): controls is OrbitControlsType
     return 'minPolarAngle' in (controls as OrbitControlsType)
 }
 
+const vxWindowId = "gizmo"
+
 export const GizmoHelper = ({
     alignment = 'bottom-right',
     margin = [80, 80],
@@ -67,6 +70,18 @@ export const GizmoHelper = ({
     const radius = React.useRef(0)
     const focusPoint = React.useRef(new Vector3(0, 0, 0))
     const defaultUp = React.useRef(new Vector3(0, 0, 0))
+
+    const isRegistered = React.useRef(false);
+    if(!isRegistered.current){
+        useUIManagerAPI
+            .getState()
+            .registerWindow(vxWindowId, "VXRenderer: Gizmo")
+        
+        isRegistered.current = true
+    }
+
+    const vxWindow = useUIManagerAPI(state => state.vxWindows[vxWindowId])
+
 
     React.useEffect(() => {
         defaultUp.current.copy(mainCamera.up)
@@ -145,7 +160,7 @@ export const GizmoHelper = ({
         <Hud renderPriority={renderPriority} >
             <Context.Provider value={gizmoHelperContext}>
                 <OrthographicCamera makeDefault ref={virtualCam} position={[0, 0, 200]} />
-                <group ref={gizmoRef} position={[x, y, 0]}>
+                <group visible={vxWindow.isOpen} ref={gizmoRef} position={[x, y, 0]}>
                     {children}
                 </group>
             </Context.Provider>

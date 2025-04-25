@@ -6,18 +6,8 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import { VXElementParam } from '@vxengine/vxobject/types';
 import ParamSlider from './ParamSlider';
 import ParamColor from './ParamColor';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
-import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
-import animationEngineInstance from '@vxengine/singleton';
-import SideEffectData from '../DataContextContext/SideEffect';
-import { getProperty } from '@vxengine/managers/ObjectManager/stores/managerStore';
-import { TrackData } from '../DataContextContext/Track';
-import StaticPropData from '../DataContextContext/StaticProp';
-import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
-import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from '../DialogAlerts/Alert';
-import { getNestedProperty } from '@vxengine/utils';
-import { handleOnCopyColor, handleOnCopyNumber, handleOnPasteColor, handleOnPasteNumber } from './utils';
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
+import ParamInputContextMenuContent from './contextMenu';
 
 interface Props extends InputProps {
     vxkey: string;
@@ -43,7 +33,7 @@ export const ParamInput: FC<Props> = memo((props) => {
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger className={`flex relative ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
+            <ContextMenuTrigger style={props.style} className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
                 {components.map((Component, index) =>
                     <Component
                         key={index}
@@ -56,154 +46,10 @@ export const ParamInput: FC<Props> = memo((props) => {
                     />
                 )}
             </ContextMenuTrigger>
-            <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
+            <ContextMenuContent forceMount={false as true}>
+                <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
+            </ContextMenuContent>
         </ContextMenu>
     )
 })
 export default ParamInput
-
-interface ParamInputContextMenuContentProps {
-    param: VXElementParam
-    vxkey: string
-    vxRefObj:  React.RefObject<any>
-}
-
-
-
-
-const ParamInputContextMenuContent = ({ param, vxkey, vxRefObj }: ParamInputContextMenuContentProps) => {
-    const propertyPath = param.propertyPath
-    const trackKey = `${vxkey}.${propertyPath}`
-    const paramType = param.type ?? "number"
-    // @ts-expect-error
-    const isParamInClipboard = useClipboardManagerAPI(state => state.items.has(paramType));
-
-    const hasSideEffect = animationEngineInstance
-                            .propertyControlService
-                            .hasSideEffect(trackKey)
-
-    const isPropertyTracked = useTimelineManagerAPI(state => !!state.tracks[trackKey])
-    const isPropertyStatic = useTimelineManagerAPI(state => !!state.staticProps[trackKey])
-    const removeKeyframe = useTimelineManagerAPI(state => state.removeKeyframe)
-
-    const orderedKeyframeKeys = useTimelineManagerAPI(state => state.tracks[trackKey]?.orderedKeyframeKeys)
-    const onKeyframeKey = useMemo(() => isOverKeyframe(trackKey, orderedKeyframeKeys), [orderedKeyframeKeys])
-
-    return (
-        <ContextMenuContent>
-            {hasSideEffect && (
-                <ContextMenuSub>
-                    <ContextMenuSubTrigger>
-                        Show SideEffect
-                    </ContextMenuSubTrigger>
-                    <ContextMenuSubContent>
-                        <SideEffectData trackKey={trackKey} />
-                    </ContextMenuSubContent>
-                </ContextMenuSub>
-            )}
-            {paramType !== "color" ? <>
-                <ContextMenuItem onClick={() => handleOnCopyNumber(vxkey, param, vxRefObj)}>
-                    Copy Value
-                </ContextMenuItem>
-                {isParamInClipboard &&
-                    <ContextMenuItem onClick={() => handleOnPasteNumber(vxkey, param, vxRefObj)}>
-                        Paste Value
-                    </ContextMenuItem>
-                }
-                <ContextMenuSub>
-                    {isPropertyTracked ?
-                        <>
-                            <ContextMenuSubTrigger>
-                                Show Track Data
-                            </ContextMenuSubTrigger>
-                            <ContextMenuSubContent>
-                                <TrackData trackKey={trackKey} />
-                            </ContextMenuSubContent>
-                        </>
-                        :
-                        <>
-                            <ContextMenuSubTrigger>
-                                Show StaticProp Data
-                            </ContextMenuSubTrigger>
-                            <ContextMenuSubContent>
-                                <StaticPropData staticPropKey={trackKey} />
-                            </ContextMenuSubContent>
-                        </>
-                    }
-                </ContextMenuSub>
-                {isPropertyTracked &&
-                    <>
-                        {onKeyframeKey &&
-                            <ContextMenuItem
-                                onClick={() => removeKeyframe({ keyframeKey: onKeyframeKey, vxkey, propertyPath, reRender: true })}
-                                variant="warning"
-                            >
-                                Delete Keyframe
-                            </ContextMenuItem>
-                        }
-                            <ContextMenuItem
-                                onClick={(e) => pushDialogStatic({
-                                    content: <ALERT_MakePropertyStatic vxkey={vxkey} propertyPath={propertyPath} />,
-                                type: "alert"
-                            })}
-                            variant="destructive"
-                        >
-                            Make Property Static
-                        </ContextMenuItem>
-                    </>
-                }
-                {(isPropertyTracked || isPropertyStatic) &&
-                    <ContextMenuItem
-                        onClick={() => pushDialogStatic({
-                            content: <ALERT_ResetProperty vxkey={vxkey} propertyPath={propertyPath} />,
-                            type: "alert"
-                        })}
-                        variant="destructive"
-                    >
-                        Remove Property
-                    </ContextMenuItem>
-                }
-            </>
-                :
-                <>
-                    <ContextMenuItem onClick={() => handleOnCopyColor(vxkey, param, vxRefObj)}>
-                        Copy Color
-                    </ContextMenuItem>
-                    {isParamInClipboard &&
-                        <ContextMenuItem onClick={() => handleOnPasteColor(vxkey, param, vxRefObj)}>
-                            Paste Color
-                        </ContextMenuItem>
-                    }
-                </>
-            }
-        </ContextMenuContent>
-    )
-}
-
-// return the keyframeKey if found, else return null
-const isOverKeyframe = (trackKey: string, orderedKeyframeKeys: string[]) => {
-    const currentTime = animationEngineInstance.currentTime
-    const track = useTimelineManagerAPI.getState().tracks[trackKey]
-    if(!track) return false
-    
-    let leftIndex = 0;
-    let rightIndex = orderedKeyframeKeys.length - 1
-    let foundIndex = -1;
-
-    while (leftIndex <= rightIndex) {
-        const mid = Math.floor((leftIndex + rightIndex) / 2)
-        const midKey = orderedKeyframeKeys[mid];
-        const midTime = track.keyframes[midKey].time;
-
-        if (midTime === currentTime) {
-            foundIndex = mid;
-            break
-        } else if (midTime < currentTime) {
-            leftIndex = mid + 1;
-        } else {
-            rightIndex = mid - 1;
-        }
-    }
-
-    return foundIndex !== -1 ? orderedKeyframeKeys[foundIndex] : null
-}

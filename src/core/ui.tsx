@@ -43,7 +43,7 @@ export const VXStudio = () => {
 
             <VXEngineWindow
                 vxWindowId="VXEngineLeftPanel"
-                title="VXEngine: LeftPanel"
+                title="VXStudio: LeftPanel"
                 windowClasses='width=310,height=702,left=200,top=200,resizable=0'
                 className="w-60 h-[686px] top-32 left-6 pt-3"
                 detachedClassName="!top-0 !left-0 !w-[calc(100%_-_60px)] h-full"
@@ -53,7 +53,7 @@ export const VXStudio = () => {
 
             <VXEngineWindow
                 vxWindowId="VXEngineRightPanel"
-                title="VXEngine: RightPanel"
+                title="VXStudio: RightPanel"
                 windowClasses='width=256,height=702,right=200,top=200,resizable=0'
                 className="w-60 h-[686px] top-32 right-6 pt-3"
                 noPadding={true}
@@ -64,7 +64,7 @@ export const VXStudio = () => {
 
             <VXEngineWindow
                 vxWindowId="VXEngineBottomRightBar"
-                title="VXEngine: TimelineEditor"
+                title="VXStudio: TimelineEditor"
                 windowClasses='width=950,height=516,left=200,top=200'
                 noStyling={true}
             >
@@ -73,7 +73,7 @@ export const VXStudio = () => {
 
             <VXEngineWindow
                 vxWindowId={"stateVisualizerWindow"}
-                title="VXEngine: State Visualizer"
+                title="VXStudio: State Visualizer"
                 windowClasses='width=717,height=450,left=100,top=200,resizable=0'
                 className="text-sm min-w-[500px] bottom-[24px] max-w-96 left-[300px] rounded-2xl"
                 detachedClassName="!top-0 !left-0 h-[100%]! min-w-[100%]! "
@@ -146,7 +146,7 @@ const VXBottomRightBar = () => {
                 style={{
                     boxShadow: "0px 0px 5px 5px rgba(0,0,0, 0.3)",
                     transition: 'height 300ms ease-in-out',
-                    height: timelineEditorOpen ? "400px" : "45px"
+                    height: timelineEditorOpen ? "400px" : "40px"
                 }}
             >
 

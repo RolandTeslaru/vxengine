@@ -4,7 +4,7 @@ import { BloomEffectOptions } from "postprocessing";
 import { withVX } from "../withVX";
 import { BloomEffect } from "postprocessing";
 
-export type EditableBloomProps = Omit<VXElementPropsWithoutRef<BloomEffectOptions>, "vxkey"> & {
+export type EditableBloomProps = Omit<VXElementPropsWithoutRef<BloomEffectOptions>, "vxkey" | "ref"> & {
   ref?: React.RefObject<typeof BloomEffect>
   vxkey?: string
   name?: string
@@ -26,8 +26,7 @@ const BaseBloom = ({ref, ...props}) => {
   return <primitive object={effect} {...props} />
 }
 
-// @ts-ignore
-export const EditableBloom = withVX<BloomEffectOptions>(BaseBloom, {
+export const EditableBloom = withVX(BaseBloom, {
   type: "effect",
   vxkey: "bloom",
   params: bloomParams,

@@ -5,7 +5,7 @@
 import React from 'react'
 import { TransformParams } from './Panels/TransformParams'
 import { GeometryParams } from './Panels/GeometryParams'
-import MaterialParams from './Panels/MaterialParams'
+import MaterialTreePanel from './Panels/MaterialPanels/MaterialTreePanel'
 import NodeTransformParams from './Panels/NodeTransformParams'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
@@ -14,19 +14,20 @@ import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/
 import SplineParams from './Panels/SplineParams'
 import SplineNodeParams from './Panels/SplineNodeParams'
 import ParamList from './Panels/ParamList'
-
+import MaterialParams from './Panels/MaterialPanels/MaterialParamsPanel'
+import MaterialPanels from './Panels/MaterialPanels'
 const ObjectParamsConfig = {
   entity: [
       TransformParams, 
       ParamList,
+      MaterialPanels,
       GeometryParams, 
-      MaterialParams,
   ],
   virtualEntity: [
     TransformParams, 
     ParamList,
+    MaterialPanels,
     GeometryParams, 
-    MaterialParams
   ],
   spline: [
       SplineParams, 
@@ -56,7 +57,7 @@ export const ObjectParamsPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
     return null
 
   const components = (ObjectParamsConfig[vxobject.type] || []).filter((Component) => {
-    if (Component === MaterialParams && (!refObject || !refObject.material)) {
+    if (Component === MaterialPanels && (!refObject || !refObject.material)) {
       return false;
     }
     if(Component === GeometryParams && (!refObject || !refObject?.geometry?.parameters))

@@ -12,16 +12,21 @@ import animationEngineInstance from "@vxengine/singleton";
 import { vxObjectProps, vxSplineNodeProps } from "./types/objectStore";
 import { useTimelineManagerAPI } from "../TimelineManager";
 import { dispatchVirtualEntityChangeEvent } from "./utils/driver";
+import { shallow } from "zustand/shallow";
 
 const excludedObjectTypes = ["effect"]
 
 export const ObjectManagerDriver = () => {
-    const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0]);
+    const { vxkey, transformSpace, transformMode, setTransformMode } = useObjectManagerAPI(state => {
+        return {
+            vxkey: state.selectedObjectKeys[0],
+            transformSpace: state.transformSpace,
+            transformMode: state.transformMode,
+            setTransformMode: state.setTransformMode
+        }
+    } , shallow)
+    
     const vxobject = useVXObjectStore(state => state.objects[vxkey]);
-
-    const transformSpace = useObjectManagerAPI(state => state.transformSpace)
-    const transformMode = useObjectManagerAPI(state => state.transformMode);
-    const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
 
     const transformControlsRef = useRefStore(state => state.transformControlsRef)
 
@@ -52,7 +57,7 @@ export const ObjectManagerDriver = () => {
             // @ts-expect-error
             controlsImpl.removeEventListener('dragging-changed', handleDraggingChanged)
         }
-    }, [vxobject])
+    }, [])
 
     useEffect(() => {
         if (!vxobject) return

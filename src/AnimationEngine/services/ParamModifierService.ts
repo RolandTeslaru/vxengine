@@ -123,6 +123,8 @@ export class ParamModifierService {
         const track = state.tracks[trackKey];
         const isPropertyTracked = !!track;
 
+        
+
         if (isPropertyTracked) {
             const keyframesOnTracks = Object.values(track.keyframes);
             let targetKeyframe: EditorKeyframe | undefined;

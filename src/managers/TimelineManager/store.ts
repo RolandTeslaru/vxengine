@@ -14,8 +14,10 @@ import { v4 as uuidv4 } from 'uuid';
 import animationEngineInstance from '@vxengine/singleton';
 import { EditorKeyframe, EditorKeyframeHandles, EditorObject, EditorSpline, EditorStaticProp, EditorTrack } from '@vxengine/types/data/editorData';
 import { TimelineManagerAPIProps } from './types/store';
+import { createWithEqualityFn } from 'zustand/traditional';
+import { shallow } from 'zustand/shallow';
 
-export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) => ({
+export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProps>((set, get) => ({
     editorObjects: {},
     tracks: {},
     staticProps: {},
@@ -611,13 +613,10 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
         else
             set(produce((state: TimelineManagerAPIProps) =>
                 createStaticPropLogic(state, vxkey, propertyPath, value)))
-
-        animationEngineInstance.hydrationService.hydrateStaticProp({
-            action: "create",
-            vxkey,
-            propertyPath,
-            value
-        })
+        
+        animationEngineInstance
+            .hydrationService
+            .hydrateStaticProp({ action: "create", vxkey, propertyPath, value})
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -672,7 +671,7 @@ export const useTimelineManagerAPI = create<TimelineManagerAPIProps>((set, get) 
 
         get().addChange()
     },
-}))
+}), shallow)
 
 
 

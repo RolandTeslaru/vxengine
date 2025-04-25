@@ -1,11 +1,11 @@
-import React, { useEffect, useState, memo, useRef } from 'react'
+import React, { useEffect, useState, memo, useRef, useCallback } from 'react'
 import s from "./s.module.scss"
 import classNames from 'classnames'
-import { TreeNodeDataType, TreeNodeProps, TreeProps } from './types'
+import { CreateNodeDataFnType, TreeNodeDataType, TreeNodeProps, TreeProps } from './types'
 import { TreeCollapseButton, TreeLine, TreeLineConnect, TreeLineCorner } from './Elements'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
 import JsonView from 'react18-json-view'
-import { createBranch, CreateNodeDataFnType } from './utils'
+import { createBranch } from './utils'
 
 const Tree: React.FC<TreeProps> = ({
     tree,
@@ -14,8 +14,14 @@ const Tree: React.FC<TreeProps> = ({
     className,
     ...restNodeProps
 }) => {
+    if (!tree) {
+        return null
+    }
     const childrenLength = Object.values(tree).length
 
+    if (childrenLength === 0) {
+        return null
+    }
     return (
         <ul
             role="tree"
@@ -40,8 +46,8 @@ const Tree: React.FC<TreeProps> = ({
 export default Tree
 
 
-const loadBranch = (nodeKey: string, node: TreeNodeDataType, createNodeDataFn: CreateNodeDataFnType) => {
-    const loadedChildren = createBranch(node.refObject, node.currentPath, nodeKey, createNodeDataFn);
+const loadBranch = (node: TreeNodeDataType, createNodeDataFn: CreateNodeDataFnType) => {
+    const loadedChildren = createBranch(node, createNodeDataFn);
     node.children = loadedChildren
 }
 
@@ -60,8 +66,22 @@ const TreeNode: React.FC<TreeNodeProps> =
 
         const [isExpanded, setIsExpanded] = useState(defaultExpandedKeys[node.key] || false)
 
-        const canBeExpanded = ("refObject" in node && node.children === null) || Object.values(node.children).length > 0
-        const branchNeedsLazyLoading = canBeExpanded && !node.children
+        let canBeExpanded = false
+        if ("refObject" in node && node.children === null) {
+            canBeExpanded = true
+        }
+        else if (node.children && Object.values(node.children).length > 0) {
+            canBeExpanded = true
+        }
+        const branchNeedsLazyLoading = createNodeDataFn && canBeExpanded && !node.children
+
+        const handleOnCollapseCallback = useCallback(() => {
+            setIsExpanded((prev: boolean) => {
+                if(prev === false && branchNeedsLazyLoading)
+                    loadBranch(node, createNodeDataFn)
+                return !prev;
+            })
+        }, [node])
 
         return (
             <>
@@ -83,12 +103,7 @@ const TreeNode: React.FC<TreeNodeProps> =
                                 >
                                     {canBeExpanded ?
                                         <TreeCollapseButton
-                                            onClick={() => {
-                                                setIsExpanded(!isExpanded)
-                                                if (!isExpanded && branchNeedsLazyLoading) {
-                                                    loadBranch(node.key, node, createNodeDataFn)
-                                                }
-                                            }}
+                                            onClick={handleOnCollapseCallback}
                                             isFinalSibling={isFinalSibling}
                                             isExpanded={isExpanded}
                                             level={level}
@@ -111,7 +126,7 @@ const TreeNode: React.FC<TreeNodeProps> =
                                 {/* Render Children */}
                                 {isExpanded && canBeExpanded && (
                                     <ul role="group" className='m-0 p-0'>
-                                        {node.children && Object.values(node.children).map((child, i) =>
+                                        {!!node.children && Object.values(node.children).map((child, i) =>
                                             <TreeNode
                                                 key={`tree-${node.key}-${i}`}
                                                 node={child}

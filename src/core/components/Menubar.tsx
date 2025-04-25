@@ -234,3 +234,4 @@ const updateProjectionMatrix = () => {
         `Updated Projection Matrix`, { module: LOG_MODULE, functionName: "updateProjectionMatrix" }
     )
 }
+

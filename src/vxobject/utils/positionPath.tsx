@@ -8,11 +8,12 @@ import { EditorKeyframe } from "@vxengine/types/data/editorData";
 const PositionPath = ({ vxkey }: { vxkey: string }) => {
     const lineRef = useRef<THREE.Line>(null);
 
-    const trackX = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.x`]);
-    const trackY = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.y`]);
-    const trackZ = useTimelineManagerAPI(state => state.tracks[`${vxkey}.position.z`]);
-
-    const staticProps = useTimelineManagerAPI(state => state.staticProps);
+    const { trackX, trackY, trackZ, staticProps } = useTimelineManagerAPI(state => { return {
+        trackX: state.tracks[`${vxkey}.position.x`],
+        trackY: state.tracks[`${vxkey}.position.y`],
+        trackZ: state.tracks[`${vxkey}.position.z`],
+        staticProps: state.staticProps
+    }})
 
     const getAxisValueAtTime = (
         keyframesForAxis: Record<string, EditorKeyframe>, 

@@ -28,7 +28,7 @@ const VXEngineContext = createContext<VXEngineContextProps>({
   composer: { current: null },
   animationEngine: null,
   IS_PRODUCTION: false,
-  IS_DEVELOPMENT: false
+  IS_DEVELOPMENT: false,
 })
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {

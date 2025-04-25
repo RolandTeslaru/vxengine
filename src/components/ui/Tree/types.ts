@@ -1,4 +1,20 @@
-import { CreateNodeDataFnType } from "@vxengine/managers/ObjectManager/utils/createPropertyTree"
+
+export interface TreeNodeType {
+    key: string;
+    currentPath: string;
+    children: Record<string, TreeNodeType> | null;
+    refObject: any
+    data: null | any
+}
+
+export type CreateNodeDataFnType = (
+    props: {
+        key: string, 
+        currentPath: string, 
+        value: any, 
+        parentNode: TreeNodeDataType,
+    }
+) => Record<string, any>
 
 export type TreeNodeDataType = {
     key: string

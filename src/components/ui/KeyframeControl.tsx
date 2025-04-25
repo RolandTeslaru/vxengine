@@ -5,6 +5,8 @@ import { useAnimationEngineEvent } from '@vxengine/AnimationEngine';
 import animationEngineInstance from '@vxengine/singleton';
 import { ChevronLeft, ChevronRight, Lambda, Square } from './icons';
 import { EditorTrack } from '@vxengine/types/data/editorData';
+import { useTrack } from '@vxengine/managers/TimelineManager/useTrack';
+import { shallow } from 'zustand/shallow';
 
 interface TimelineKeyframeControlProps {
     vxkey: string,
@@ -13,23 +15,81 @@ interface TimelineKeyframeControlProps {
     horizontal?: boolean
 }
 
-const handleMiddleButton = (vxkey: string, propertyPath: string, isPropertyTracked: boolean) => {
-
-    if (isPropertyTracked === true)
-        useTimelineManagerAPI
-            .getState()
-            .createKeyframe({ vxkey, propertyPath, overlapKeyframeCheck: true })
-    else if (isPropertyTracked === false)
-        useTimelineManagerAPI
-            .getState()
-            .makePropertyTracked(vxkey, propertyPath)
-}
 
 interface KeyrameState {
     isOnKeyframe: boolean
     hasLeftKeyframe: boolean
     hasRightKeyframe: boolean
 }
+
+const EMPTY_KEYFRAME_KEYS: readonly string[] = []
+
+
+const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled, horizontal = false }) => {
+    const trackKey = `${vxkey}.${propertyPath}`;
+    const [keyframeState, setKeyframeState] = useState<KeyrameState>({
+        isOnKeyframe: false,
+        hasLeftKeyframe: false,
+        hasRightKeyframe: false,
+    });
+
+    const { track, orderedKeyframeKeys, isPropertyTracked } = useTrack(vxkey, propertyPath)
+
+
+    const hasSideEffect = useMemo(() => {
+        return animationEngineInstance
+                .propertyControlService
+                .hasSideEffect(trackKey)
+    }, [trackKey])
+    // Initialize
+    useLayoutEffect(() => {
+        const time = animationEngineInstance.currentTime
+        handleTimeChange(time, track, isPropertyTracked, orderedKeyframeKeys, setKeyframeState);
+    }, [vxkey, propertyPath, orderedKeyframeKeys])
+
+    useAnimationEngineEvent("timeUpdated", ({ time }) => handleTimeChange(time, track, isPropertyTracked, orderedKeyframeKeys, setKeyframeState))
+
+    return (
+        <div className={`flex ${horizontal && "flex-col-reverse"} gap-2`}>
+            {hasSideEffect && <Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} text-neutral-500!`} />}
+            <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
+                {isPropertyTracked &&
+                    <button
+                        onClick={() => moveToPreviousKeyframeSTATIC(trackKey)}
+                        className={`hover:*:stroke-5 hover:*:stroke-white  disabled:opacity-20`}
+                        disabled={disabled || !keyframeState.hasLeftKeyframe}
+                    >
+                        <ChevronLeft className='!text-label-primary w-2 h-2 scale-150' />
+                    </button>
+                }
+                <button
+                    onClick={() => handleMiddleButton(vxkey, propertyPath, isPropertyTracked)}
+                    className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
+                    disabled={disabled}
+                >
+                    <Square className={`rotate-45 w-2 h-2 !text-label-primary ${keyframeState.isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-primary-regular stroke-neutral-600"}`} />
+                </button>
+                {isPropertyTracked &&
+                    <button
+                        onClick={() => moveToNextKeyframeSTATIC(trackKey)}
+                        className={`hover:*:stroke-5 hover:*:stroke-white  disabled:opacity-20`}
+                        disabled={disabled || !keyframeState.hasRightKeyframe}
+                    >
+                        <ChevronRight className='w-2 h-2 scale-150 !text-label-primary' />
+                    </button>
+
+                }
+            </div>
+        </div>
+
+    )
+});
+
+export default KeyframeControl;
+
+
+
+
 
 const handleTimeChange = (
     time: number,
@@ -87,66 +147,17 @@ const handleTimeChange = (
     });
 }
 
-const KeyframeControl: FC<TimelineKeyframeControlProps> = memo(({ vxkey, param: { propertyPath }, disabled, horizontal = false }) => {
-    const trackKey = `${vxkey}.${propertyPath}`;
-    const [keyframeState, setKeyframeState] = useState<KeyrameState>({
-        isOnKeyframe: false,
-        hasLeftKeyframe: false,
-        hasRightKeyframe: false,
-    });
 
 
-    const track = useTimelineManagerAPI(state => state.tracks[trackKey]);
-    const orderedKeyframeKeys = track?.orderedKeyframeKeys
-    const isPropertyTracked = !!track;
 
-    const hasSideEffect = useMemo(() => {
-        return animationEngineInstance
-                .propertyControlService
-                .hasSideEffect(trackKey)
-    }, [vxkey, propertyPath])
-    // Initialize
-    useLayoutEffect(() => {
-        const time = animationEngineInstance.currentTime
-        handleTimeChange(time, track, isPropertyTracked, orderedKeyframeKeys, setKeyframeState);
-    }, [vxkey, propertyPath, orderedKeyframeKeys])
+const handleMiddleButton = (vxkey: string, propertyPath: string, isPropertyTracked: boolean) => {
 
-    useAnimationEngineEvent("timeUpdated", ({ time }) => handleTimeChange(time, track, isPropertyTracked, orderedKeyframeKeys, setKeyframeState))
-
-    return (
-        <div className={`flex ${horizontal && "flex-col-reverse"} gap-2`}>
-            {hasSideEffect && <Lambda size={10} className={`${horizontal ? "mx-auto" : "my-auto"} text-neutral-500!`} />}
-            <div className={`flex gap-[1px] h-[12px] w-[26px] ${disabled && "opacity-0"}`}>
-                {isPropertyTracked &&
-                    <button
-                        onClick={() => moveToPreviousKeyframeSTATIC(trackKey)}
-                        className={`hover:*:stroke-5 hover:*:stroke-white  disabled:opacity-20`}
-                        disabled={disabled || !keyframeState.hasLeftKeyframe}
-                    >
-                        <ChevronLeft className='!text-label-primary w-2 h-2 scale-150' />
-                    </button>
-                }
-                <button
-                    onClick={() => handleMiddleButton(vxkey, propertyPath, isPropertyTracked)}
-                    className="hover:*:stroke-5 mx-auto hover:*:stroke-white "
-                    disabled={disabled}
-                >
-                    <Square className={`rotate-45 w-2 h-2 !text-label-primary ${keyframeState.isOnKeyframe ? "fill-blue-500 stroke-blue-400 scale-110" : ""} ${!isPropertyTracked && " scale-90 fill-primary-regular stroke-neutral-600"}`} />
-                </button>
-                {isPropertyTracked &&
-                    <button
-                        onClick={() => moveToNextKeyframeSTATIC(trackKey)}
-                        className={`hover:*:stroke-5 hover:*:stroke-white  disabled:opacity-20`}
-                        disabled={disabled || !keyframeState.hasRightKeyframe}
-                    >
-                        <ChevronRight className='w-2 h-2 scale-150 !text-label-primary' />
-                    </button>
-
-                }
-            </div>
-        </div>
-
-    )
-});
-
-export default KeyframeControl;
+    if (isPropertyTracked === true)
+        useTimelineManagerAPI
+            .getState()
+            .createKeyframe({ vxkey, propertyPath, overlapKeyframeCheck: true })
+    else if (isPropertyTracked === false)
+        useTimelineManagerAPI
+            .getState()
+            .makePropertyTracked(vxkey, propertyPath)
+}

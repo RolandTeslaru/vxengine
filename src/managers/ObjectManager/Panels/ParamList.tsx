@@ -9,6 +9,7 @@ import { VXElementParam } from '@vxengine/vxobject/types'
 import Tree from '@vxengine/components/ui/Tree'
 import { TreeNodeType } from '../utils/createPropertyTree'
 import JsonView from 'react18-json-view'
+import { paramRenderer } from '@vxengine/components/ui/Tree/nodeRenderers'
 
 interface Props {
     vxobject: vxObjectProps
@@ -68,7 +69,7 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
             <div className='flex flex-col'>
                 <Tree
                     tree={tree}
-                    renderNodeContent={renderNodeContent}
+                    renderNodeContent={paramRenderer}
                 />
             </div>
 
@@ -78,27 +79,3 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
 
 // Export a memoized version of ParamList
 export default React.memo(ParamList)
-
-
-
-const renderNodeContent = (node: ParamNodeProps, { NodeTemplate }) => {
-    return (
-        <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-            <div className={`flex ${node?.data?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
-                {node?.data?.param?.type !== "slider" &&
-                    <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
-                        {node.key}
-                    </p>
-                }
-                {node?.data?.param && (
-                    <ParamInput
-                        vxkey={node.data.vxobject.vxkey}
-                        vxRefObj={node.data.vxobject.ref}
-                        param={node.data.param}
-                        className=""
-                    />
-                )}
-            </div>
-        </NodeTemplate>
-    )
-}

@@ -48,7 +48,6 @@ const TimelineProgressSlider = () => {
   // Create a debounced function for updating state from animation engine changes
   const debouncedSetTime = useRef(
     debounce((time) => {
-      console.log("Set current time ")
       setCurrentTime(time);
     }, 5)
   ).current;

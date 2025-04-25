@@ -6,10 +6,16 @@ import * as THREE from "three"
 import { vxElementProps, vxObjectProps } from "../types/objectStore";
 import Tree from "@vxengine/components/ui/Tree";
 import Search from "@vxengine/components/ui/Search";
-import { createParamTree, createParamTreeLevelWithFunction, getValueType, ParamTreeNodeDataType, TreeNodeType } from "../utils/createPropertyTree";
+import { getValueType, ParamTreeNodeDataType, TreeNodeType } from "../utils/createPropertyTree";
 import { filterParamTree } from "../utils/filterParamTree";
 import { VXElementParam } from "@vxengine/vxobject/types";
-import { createBranch } from "@vxengine/components/ui/Tree/utils";
+import { createBranch, createTree } from "@vxengine/components/ui/Tree/utils";
+import { CreateNodeDataFnType } from "@vxengine/components/ui/Tree/types"
+    ;
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
+import JsonView from "react18-json-view";
+import { InfoPopover } from "./helpers";
+import { paramRenderer } from "@vxengine/components/ui/Tree/nodeRenderers";
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 
@@ -24,22 +30,25 @@ interface GeometryParamNodeProps extends TreeNodeType {
     }
 }
 
-
 export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const refObject = (vxobject.ref.current as THREE.Mesh);
     const geometry = refObject.geometry as ValidGeometries
 
-    const propertiesTree = useMemo(() => {
-        return createBranch(geometry.parameters, "geometry", "", (key, currentPath, value) => {
-            return {
-                param: {
-                    propertyPath: currentPath,
-                    type: getValueType(value),
-                },
-                vxobject
-            }
+    const [propertiesTree, createNodeDataFn] = useMemo(() => {
+        const __createNodeDataFn: CreateNodeDataFnType = ({ key, currentPath, value }) => ({
+            param: {
+                propertyPath: currentPath,
+                type: getValueType(value),
+                title: key,
+            },
+            vxobject
         })
+
+        return [
+            createTree(geometry.parameters, "geometry", "", __createNodeDataFn),
+            __createNodeDataFn
+        ]
     }, [vxobject])
 
     const filteredPropertiesTree = useMemo(() =>
@@ -47,13 +56,7 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
         [geometry, searchQuery])
 
 
-    const createNodeDataFn = (key: string, currentPath: string, value: any) => ({
-        param: {
-            propertyPath: currentPath,
-            type: getValueType(value),
-        },
-        vxobject
-    })
+
 
     return (
         <CollapsiblePanel
@@ -66,33 +69,12 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
             <div className='flex flex-col'>
-                <Tree 
-                    tree={filteredPropertiesTree} 
-                    renderNodeContent={renderNodeContent} 
-                    createNodeDataFn={createNodeDataFn} 
+                <Tree
+                    tree={filteredPropertiesTree}
+                    renderNodeContent={paramRenderer}
+                    createNodeDataFn={createNodeDataFn}
                 />
             </div>
         </CollapsiblePanel>
-    )
-}
-
-
-const renderNodeContent = (node: GeometryParamNodeProps, { NodeTemplate }) => {
-    return (
-        <NodeTemplate className="hover:bg-neutral-950/40 px-2">
-            <div className='flex flex-row w-full h-[22px]'>
-                <p className={`text-xs my-auto font-light text-neutral-400`}>
-                    {node.key}
-                </p>
-                {node?.data?.param &&
-                    <ParamInput
-                        vxkey={node.data.vxobject.vxkey}
-                        vxRefObj={node.data.vxobject.ref}
-                        param={node.data.param}
-                        className="ml-auto w-fit"
-                    />
-                }
-            </div>
-        </NodeTemplate>
     )
 }

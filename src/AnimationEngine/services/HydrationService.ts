@@ -8,6 +8,8 @@ import { logReportingService } from "./LogReportingService";
 import { RawKeyframe, RawObject, RawSpline, RawTimeline, RawTrack } from "@vxengine/types/data/rawData";
 import { EditorStaticProp } from "@vxengine/types/data/editorData";
 import { SplineService } from "./SplineService";
+import { AnimationEngine } from "../engine";
+import { PropertyControlService } from "./PropertyControlService";
 
 
 const LOG_MODULE = "HydrationService"
@@ -24,7 +26,9 @@ export class HydrationService {
     private _currentTimeline: RawTimeline = null;
 
     constructor(
+        private _rawObjectCache: Map<string, RawObject>,
         private _splineService: SplineService,
+        private _propertyControlService: PropertyControlService
     ) { }
 
     public setMode(nodeEnv: "production" | "development") {
@@ -59,8 +63,9 @@ export class HydrationService {
             tracks: [],
             staticProps: [],
             settings: {}
-        };
+        }
 
+        this._rawObjectCache.set(vxkey, rawObject);
         this._currentTimeline.objects.push(rawObject);
 
         return rawObject;
@@ -72,7 +77,7 @@ export class HydrationService {
    * @param action - The action to perform: 'create' or 'remove'.
    * @param reRender - Whether to re-render after the refresh (default is true).
    */
-    hydrateTrack(params: HydrateTrackParams) {
+    public hydrateTrack(params: HydrateTrackParams) {
         if (this._IS_PRODUCTION) {
             logReportingService.logError("Timeline Hydration is NOT allowed in Production Mode", {
                 module: LOG_MODULE, functionName: "hydrateTrack"
@@ -97,6 +102,15 @@ export class HydrationService {
 
         switch (action) {
             case 'create': {
+                // Check if setter is present
+                const propertyHasSetter = this._propertyControlService
+                    .hasSetter(vxkey, propertyPath)
+
+                if (!propertyHasSetter) {
+                    this._propertyControlService
+                        .generatePropertySetter(null, vxkey, propertyPath)
+                }
+
                 const rawTrack: RawTrack = {
                     propertyPath: propertyPath,
                     keyframes: [],
@@ -140,7 +154,7 @@ export class HydrationService {
      * @param keyframeKey - The key identifying the keyframe.
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
-    hydrateKeyframe(params: HydrateKeyframeParams) {
+    public hydrateKeyframe(params: HydrateKeyframeParams) {
         if (this._IS_PRODUCTION) {
             logReportingService.logError("Keyframe Hydration is NOT allowed in Production Mode", {
                 module: LOG_MODULE, functionName: "hydrateKeyframe"
@@ -255,7 +269,7 @@ export class HydrationService {
      * @param staticPropKey - The key identifying the static property.
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
-    hydrateStaticProp(params: HydrateStaticPropParams) {
+    public hydrateStaticProp(params: HydrateStaticPropParams) {
         if (this._IS_PRODUCTION) {
             logReportingService.logError(
                 "StaticProp Hydration is NOT allowed in Production Mode",
@@ -279,6 +293,14 @@ export class HydrationService {
 
         switch (action) {
             case 'create': {
+                const propertyHasSetter = this._propertyControlService
+                    .hasSetter(vxkey, propertyPath)
+
+                if (!propertyHasSetter) {
+                    this._propertyControlService
+                        .generatePropertySetter(null, vxkey, propertyPath)
+                }
+
                 const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
                 if (propExists) {
                     logReportingService.logWarning(
@@ -342,7 +364,7 @@ export class HydrationService {
      * @param splineKey - The key identifying the spline.
      * @param reRender - Whether to re-render after the refresh (default is true).
      */
-    hydrateSpline(params: HydrateSplineParams) {
+    public hydrateSpline(params: HydrateSplineParams) {
         const { action, splineKey } = params
         if (this._IS_PRODUCTION) {
             logReportingService.logError(
@@ -353,13 +375,6 @@ export class HydrationService {
         const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSpline", additionalData: { action } }
 
         const timelineManagerAPI = useTimelineManagerAPI.getState();
-
-        const hydrateWasmSpline = () => {
-            const rawSpline = this._currentTimeline.splines[splineKey]
-            this._splineService.removeSpline(splineKey)
-
-            this._splineService.createSpline(rawSpline, 0.5);
-        }
 
         switch (action) {
             case "create": {
@@ -377,17 +392,21 @@ export class HydrationService {
 
                 this._currentTimeline.splines[splineKey] = newRawSpline;
 
-                if (this._splineService.hasSpline(splineKey))
+                if (this._splineService
+                    .hasSpline(splineKey)
+                )
                     logReportingService.logError(`Spline ${splineKey} already exists in spline cache. This should not be the case`, { module: "HydrationService", functionName: "hydrateSpline create", additionalData: this })
                 else
-                    this._splineService.createSpline(newRawSpline, initialTension);
+                    this._splineService
+                        .createSpline(newRawSpline, initialTension);
 
                 break;
             }
             case "remove": {
                 delete this._currentTimeline.splines[splineKey];
 
-                this._splineService.removeSpline(splineKey);
+                this._splineService
+                    .removeSpline(splineKey);
                 break;
             }
             case "clone": {
@@ -407,7 +426,7 @@ export class HydrationService {
                     }
                 };
 
-                hydrateWasmSpline();
+                this._hydrateWasmSpline(splineKey);
 
                 break;
             }
@@ -423,7 +442,7 @@ export class HydrationService {
                 // Reassign the modified spline back to the splines object
                 this._currentTimeline.splines[splineKey] = rawSpline;
 
-                hydrateWasmSpline();
+                this._hydrateWasmSpline(splineKey);
                 break;
             }
             case "removeNode": {
@@ -434,7 +453,7 @@ export class HydrationService {
 
                 rawSpline.nodes = newNodes
 
-                hydrateWasmSpline();
+                this._hydrateWasmSpline(splineKey);
                 break;
             }
             default: {
@@ -448,6 +467,14 @@ export class HydrationService {
         useSourceManagerAPI.getState().saveDataToLocalStorage();
     }
 
+    
+
+    private _hydrateWasmSpline(splineKey: string){
+        const rawSpline = this._currentTimeline.splines[splineKey]
+        this._splineService
+            .removeSpline(splineKey)
+            .createSpline(rawSpline, 0.5)
+    }
 
 
 
@@ -459,20 +486,20 @@ export class HydrationService {
      * @param settingKey - The key identifying the setting.
      * @param vxkey - The unique identifier for the object.
      */
-    hydrateSetting(params: HydrateSettingParams) {
-        const { vxkey, action, settingKey  } = params
+    public hydrateSetting(params: HydrateSettingParams) {
+        const { vxkey, action, settingKey } = params
         const LOG_CONTEXT = { module: "HydrationService", functionName: "hydrateSetting", additionalData: { action, settingKey, vxkey } }
         if (this._IS_PRODUCTION) {
-            logReportingService.logError("Setting Hydration is NOT allowed in Production Mode",LOG_CONTEXT);
+            logReportingService.logError("Setting Hydration is NOT allowed in Production Mode", LOG_CONTEXT);
             return;
         }
 
         const rawObject = this._currentTimeline.objects.find(obj => obj.vxkey === vxkey);
-        if(!rawObject){
+        if (!rawObject) {
             logReportingService.logWarning(`Could not hydrate setting because the rawObject doesn't exist.`, LOG_CONTEXT)
             return;
         }
-        
+
         if (DEBUG_SETTING_HYDRATION)
             logReportingService.logInfo(
                 `Hydrating setting ${settingKey}`, LOG_CONTEXT)
@@ -486,9 +513,9 @@ export class HydrationService {
                     return;
                 }
                 const rawSettings = rawObject.settings;
-                if(!rawSettings)
+                if (!rawSettings)
                     rawObject.settings = {};
-                
+
                 rawObject.settings[settingKey] = value;
 
                 break;
@@ -496,11 +523,11 @@ export class HydrationService {
 
             case 'remove': {
                 const rawSettings = rawObject.settings;
-                if(!rawSettings) 
+                if (!rawSettings)
                     return
 
                 delete rawSettings[settingKey];
-                if(Object.entries(rawSettings).length === 0)
+                if (Object.entries(rawSettings).length === 0)
                     delete rawObject.settings;
 
                 break;

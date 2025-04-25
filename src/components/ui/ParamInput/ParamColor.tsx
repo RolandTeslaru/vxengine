@@ -44,7 +44,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         const lighterLightness = Math.min(hsl.l + 10, 100);
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
         colorPreviewRef.current.style.borderColor = `hsl(${hsl.h}, ${hsl.s}%, ${lighterLightness}%)`;
-    }, [vxkey])
+    }, [vxkey, propertyPath])
 
     useLayoutEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state) => {

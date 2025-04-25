@@ -15,11 +15,10 @@ interface ValueRendererProps {
 }
 
 const ValueRenderer: FC<ValueRendererProps> = memo(
-    ({ vxkey, param, inputProps, onChange, vxRefObj }) => {
-        const { propertyPath } = param;
+    ({ vxkey, param: {propertyPath}, inputProps, onChange, vxRefObj }) => {
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)
         const trackKey = `${vxkey}.${propertyPath}`
-        const addItemToClipboard = useClipboardManagerAPI(state => state.addItem);
+        // const addItemToClipboard = useClipboardManagerAPI(state => state.addItem);
 
         const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,11 +28,9 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {
                 const newValue = state.properties[trackKey];
 
-                if (inputRef.current && newValue) {
-                    if (newValue.toString() !== inputRef.current.value) {
+                if (inputRef.current && newValue)
+                    if (newValue.toString() !== inputRef.current.value)
                         inputRef.current.value = newValue.toString()
-                    }
-                }
             });
 
             return () => unsubscribe();
@@ -42,21 +39,20 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
         const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseFloat(e.target.value);
 
-            if (onChange) {
+            if (onChange)
                 onChange(newValue);
-            } else{
+            else
                 animationEngineInstance
                     .paramModifierService
                     .modifyParamValue(vxkey, propertyPath, newValue, true)
                     .flushTimelineStateUpdates()
-            }
-        }, [vxkey]);
+        }, [vxkey, onChange, propertyPath]);
 
-        const handleOnCopy = useCallback(() => {
-            addItemToClipboard('number', {
-                data: parseFloat(inputRef.current.value)
-            })
-        }, [vxkey])
+        // const handleOnCopy = useCallback(() => {
+        //     addItemToClipboard('number', {
+        //         data: parseFloat(inputRef.current.value)
+        //     })
+        // }, [vxkey])
 
         return (
             <Input

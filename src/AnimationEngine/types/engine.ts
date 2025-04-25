@@ -1,6 +1,6 @@
 import { Emitter } from "../emitter";
 import { EventTypes } from "../events";
-import { RawProject, RawTimeline } from "../../types/data/rawData";
+import { RawProject, RawTimeline, RawObject } from "../../types/data/rawData";
 import { AnimationEngine } from "../engine";
 
 export interface IAnimationEngine extends Emitter<EventTypes> {

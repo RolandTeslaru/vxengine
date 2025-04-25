@@ -21,13 +21,17 @@ import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from "@vxengine/compone
 const TRACK_HEIGHT = 34;
 
 const TrackVerticalList = memo(() => {
-    const trackTree = useTimelineEditorAPI(state => state.trackTree);
-    const searchQuery = useTimelineEditorAPI(state => state.searchQuery)
-    const setSearchQuery = useTimelineEditorAPI(state => state.setSearchQuery)
+    const { trackTree, searchQuery, setSearchQuery } = useTimelineEditorAPI(state => { return {
+        trackTree: state.trackTree,
+        searchQuery: state.searchQuery,
+        setSearchQuery: state.setSearchQuery
+    }})
 
-    const trackListRef = useRefStore(state => state.trackListRef)
-    const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
-    const scrollSyncId = useRefStore(state => state.scrollSyncId)
+    const { trackListRef, timelineAreaRef, scrollSyncId } = useRefStore(state => { return {
+        trackListRef: state.trackListRef,
+        timelineAreaRef: state.timelineAreaRef,
+        scrollSyncId: state.scrollSyncId
+    }})
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target as HTMLDivElement;
@@ -125,7 +129,7 @@ const TreeNode = React.memo(({ node, level }: { node: EditorTrackTreeNode, level
     )
 })
 
-const RenderPaths = ({ paths, isLinearTrack, trackKey }: { paths: string[], isLinearTrack: boolean, trackKey: string }) => {
+const RenderPaths = memo(({ paths, isLinearTrack, trackKey }: { paths: string[], isLinearTrack: boolean, trackKey: string }) => {
     return paths.map((path, index) => {
         const isFinal = index === paths.length - 1;
         const showArrow = index < paths.length - (isLinearTrack ? 2 : 1);
@@ -136,9 +140,9 @@ const RenderPaths = ({ paths, isLinearTrack, trackKey }: { paths: string[], isLi
 
         return <Path key={index} pathKey={path} showArrow={showArrow} />;
     });
-};
+})
 
-const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
+const Path = memo(({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) => {
     return (
         <div className="flex items-center h-full">
             <p className="antialiased font-medium text-label-quaternary" style={{ fontSize: "11px" }}>
@@ -149,14 +153,14 @@ const Path = ({ pathKey, showArrow }: { pathKey: string, showArrow: boolean }) =
             }
         </div>
     )
-}
+})
 
 interface FinaNodeProps {
     pathKey: string
     trackKey: string
 }
 
-const FinalPath: React.FC<FinaNodeProps> = (props) => {
+const FinalPath: React.FC<FinaNodeProps> = memo((props) => {
     const { pathKey, trackKey } = props;
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
 
@@ -175,8 +179,8 @@ const FinalPath: React.FC<FinaNodeProps> = (props) => {
             <FinalPathContextMenu {...props} />
         </ContextMenu>
     )
-}
-const FinalPathContextMenu: React.FC<{trackKey: string}> = (props) => {
+})
+const FinalPathContextMenu: React.FC<{trackKey: string}> = memo((props) => {
     const { trackKey } = props;
     const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey)
 
@@ -215,10 +219,10 @@ const FinalPathContextMenu: React.FC<{trackKey: string}> = (props) => {
             </ContextMenuSub>
         </ContextMenuContent>
     )
-}
+})
 
 
-const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string, isCollapsed: boolean }) => {
+const TreeCollapseButton = memo(({ nodeKey, isCollapsed = false }: { nodeKey: string, isCollapsed: boolean }) => {
     return (
         <div className="mr-[3px] h-[16px] my-auto">
             <button
@@ -238,7 +242,7 @@ const TreeCollapseButton = ({ nodeKey, isCollapsed = false }: { nodeKey: string,
             </button>
         </div>
     )
-}
+})
 
 export default TrackVerticalList;
 

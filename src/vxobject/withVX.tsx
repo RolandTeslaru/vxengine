@@ -11,6 +11,7 @@ import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/t
 import animationEngineInstance from "@vxengine/singleton";
 import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
+import { addObjectToStoreSTATIC, removeObjectFromStoreSTATIC } from "@vxengine/managers/ObjectManager/stores/objectStore";
 
 declare module 'three' {
     interface Object3D {
@@ -46,8 +47,6 @@ export function withVX<P extends object>(
 
         const { IS_DEVELOPMENT } = useVXEngine()
         const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
-        const addObjectToStore = useVXObjectStore(state => state.addObject);
-        const removeObjectFromStore = useVXObjectStore(state => state.removeObject);
 
         // Initialize timeline editor object
         useLayoutEffect(() => {
@@ -61,7 +60,7 @@ export function withVX<P extends object>(
             return () => { cleanupEditorObject(finalProps.vxkey); };
         }, [currentTimelineID, props.settings, props.vxkey, IS_DEVELOPMENT]);
 
-        useLayoutEffect(() => {
+        useEffect(() => {
             let parentKey;
 
             switch (finalProps.type) {
@@ -97,13 +96,13 @@ export function withVX<P extends object>(
                 usingHOC: true
             }
 
-            addObjectToStore(newVXEntity, IS_DEVELOPMENT, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
+            addObjectToStoreSTATIC(newVXEntity, IS_DEVELOPMENT, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
 
             animationEngineInstance.handleObjectMount(newVXEntity);
 
             return () => {
                 animationEngineInstance.handleObjectUnMount(finalProps.vxkey);
-                removeObjectFromStore(finalProps.vxkey, IS_DEVELOPMENT, finalProps.modifyObjectTree)
+                removeObjectFromStoreSTATIC(finalProps.vxkey, IS_DEVELOPMENT, finalProps.modifyObjectTree)
             }
         }, [internalRef.current, finalProps.type, finalProps.vxkey, finalProps.name, finalProps.params, finalProps.disabledParams, finalProps.overrideNodeTreeParentKey, IS_DEVELOPMENT])
 

@@ -153,13 +153,10 @@ export const DIALOG_rotationDegrees: React.FC<DialogProps> = (props) => {
         return { tracks, staticProps };
     }, [])
 
-    const { removeTrack, removeStaticProp, }
-        = useTimelineManagerAPI(state => ({
-            removeTrack: state.removeTrack,
-            removeStaticProp: state.removeStaticProp,
-            createSpline: state.createSpline,
-            removeSpline: state.removeSpline
-        }));
+    const [ removeTrack, removeStaticProp ] = useTimelineManagerAPI(state => [
+        state.removeTrack,
+        state.removeStaticProp
+    ]);
 
 
     const handleOnCancel = () => {

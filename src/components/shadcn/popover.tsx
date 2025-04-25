@@ -26,13 +26,14 @@ const PopoverTrigger: FC<PopoverTriggerProps> =
         ref={ref}
         {...rest}
       >
-        {disableStyling ?
+        {children}
+        {/* {disableStyling ?
           <>{children}</>
           :
           <PopoverItem icon={icon}>
             {children}
           </PopoverItem>
-        }
+        } */}
       </PopoverPrimitive.Trigger>
     )
   }

@@ -2,10 +2,12 @@ import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import React from 'react'
 import { Text } from '@vxengine/components/shadcn/Text';
 import { Tabs, TabsList, TabsTrigger } from '@vxengine/components/shadcn/tabs';
-
+import { shallow } from 'zustand/shallow';
 export const SettingsAppearance = () => {
-  const theme = useUIManagerAPI(state => state.theme);
-  const setTheme = useUIManagerAPI(state => state.setTheme)
+  const {theme, setTheme} = useUIManagerAPI(state => ({
+    theme: state.theme,
+    setTheme: state.setTheme
+  }), shallow)
   return (
     <>
       <div className='flex flex-row justify-between'>

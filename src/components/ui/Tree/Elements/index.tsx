@@ -63,7 +63,7 @@ export const TreeLineCorner = memo(({ level, size }: TreeLineCornerProps) => {
 })
 
 export const TreeLineConnect = memo(() => {
-    return <div className={`ml-2 w-2 h-[1px] content-[" "] bg-neutral-500`}></div>
+    return <div className={`ml-2 w-2 min-w-2 h-[1px] content-[" "] bg-neutral-500`}></div>
 })
 
 
