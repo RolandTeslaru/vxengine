@@ -196,8 +196,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         `Timeline with id ${timelineId} was not found`, LOG_CONTEXT)
 
     // Set the states in the store
-    useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline })
-    useAnimationEngineAPI.setState({ currentTimelineID: timelineId });
+    useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline, currentTimelineID: timelineId })
     this._currentTimeline = selectedTimeline;
 
     if (isMounting === false) {

@@ -9,12 +9,24 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
 import ParamInput from '.';
 import animationEngineInstance from '@vxengine/singleton';
+import { Button } from '@vxengine/components/shadcn/button';
 
 interface ParamColorProps {
     vxkey: string
     vxRefObj: React.RefObject<any>
     param: { propertyPath: string }
 }
+
+// Helper function to convert a single 0-1 value to a 2-digit hex string
+const toHex = (value: number): string => {
+    const hex = Math.round(value * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+};
+
+// Helper function to convert 0-1 RGB to hex string #RRGGBB
+const rgbToHexString = (r: number, g: number, b: number): string => {
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
 
 const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     const isColorInClipboard = useClipboardManagerAPI(state => state.items.has("color"));
@@ -31,6 +43,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
     const colorRef = useRef({ h: 1, s: 1, l: 1 })
     const colorPreviewRef = useRef<HTMLDivElement>(null);
     const colorPickerRef = useRef<{ updateRefs: (hsl: hsl) => void }>(null)
+    const [buttonText, setButtonText] = useState("Get Hex");
 
 
     // Initialize
@@ -42,9 +55,11 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         const hsl = rgbToHsl(r, g, b);
         colorRef.current = hsl
         const lighterLightness = Math.min(hsl.l + 10, 100);
-        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-        colorPreviewRef.current.style.borderColor = `hsl(${hsl.h}, ${hsl.s}%, ${lighterLightness}%)`;
-    }, [vxkey, propertyPath])
+        if (colorPreviewRef.current) {
+            colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+            colorPreviewRef.current.style.borderColor = `hsl(${hsl.h}, ${hsl.s}%, ${lighterLightness}%)`;
+        }
+    }, [vxkey, propertyPath, vxRefObj, rPropertyPath, gPropertyPath, bPropertyPath])
 
     useLayoutEffect(() => {
         const unsubscribe = useObjectPropertyAPI.subscribe((state) => {
@@ -63,10 +78,10 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
         });
 
         return () => unsubscribe();
-    }, [vxkey]);
+    }, [vxkey, rTrackKey, gTrackKey, bTrackKey]); // Added dependencies for track keys
+
 
     // Handle color changes from ColorPicker
-
     const handleColorChange = useCallback((hsl: hsl) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
@@ -75,12 +90,13 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
             .paramModifierService
             .modifyParamValue(vxkey, rPropertyPath, r, false)
             .modifyParamValue(vxkey, gPropertyPath, g, false)
-            .modifyParamValue(vxkey, bPropertyPath, b, true)
+            .modifyParamValue(vxkey, bPropertyPath, b, true) // Assuming last one flushes or invalidates implicitly
 
         colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
 
-        invalidate();
-    }, [])
+        invalidate(); // Invalidate R3F
+    }, [vxkey, rPropertyPath, gPropertyPath, bPropertyPath]) // Added dependencies
+
     const handleColorChangeEnd = useCallback((hsl: hsl) => {
         colorRef.current = hsl
         const { r, g, b } = hslToRgb(hsl.h, hsl.s, hsl.l);
@@ -90,24 +106,40 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
             .modifyParamValue(vxkey, rPropertyPath, r, false)
             .modifyParamValue(vxkey, gPropertyPath, g, false)
             .modifyParamValue(vxkey, bPropertyPath, b, true)
-            .flushTimelineStateUpdates()
+            .flushTimelineStateUpdates() // Finalize timeline state update
 
-        colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+        if (colorPreviewRef.current) {
+            colorPreviewRef.current.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+        }
 
-        invalidate();
-    }, [])
+        invalidate(); // Invalidate R3F
+    }, [vxkey, rPropertyPath, gPropertyPath, bPropertyPath]) // Added dependencies
+
+    const handleGetHexClick = useCallback(() => {
+        const currentHsl = colorRef.current;
+        const { r, g, b } = hslToRgb(currentHsl.h, currentHsl.s, currentHsl.l);
+        const hexString = rgbToHexString(r, g, b);
+
+        navigator.clipboard.writeText(hexString).then(() => {
+            setButtonText("Copied!");
+            setTimeout(() => setButtonText("Get Hex"), 1500); // Revert after 1.5s
+        }).catch(err => {
+            console.error('Failed to copy hex code: ', err);
+            setButtonText("Copy Failed");
+            setTimeout(() => setButtonText("Get Hex"), 1500);
+        });
+    }, []); // No dependencies needed as it reads from ref
+
 
     return (
         <>
             <Popover>
-                <ContextMenu>
-                    <PopoverTrigger disableStyling>
-                        <div
-                            ref={colorPreviewRef}
-                            className={`w-10 h-5 rounded-md border shadow-md`}
-                        />
-                    </PopoverTrigger>
-                </ContextMenu>
+                <PopoverTrigger disableStyling>
+                    <div
+                        ref={colorPreviewRef}
+                        className={`w-10 h-5 rounded-md border shadow-md`}
+                    />
+                </PopoverTrigger>
                 <PopoverContent className='w-52'>
                     <ColorPicker
                         ref={colorPickerRef}
@@ -141,6 +173,10 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                                 param={{ title: "blue", propertyPath: bPropertyPath, type: "number", min: 0, max: 1, step: 0.005 }}
                             />
                         </div>
+                        {/* Get Hex Button */}
+                        <Button variant="default" className='w-full' size="sm" onClick={handleGetHexClick}>
+                            {buttonText}
+                        </Button>
                     </div>
                 </PopoverContent>
             </Popover>

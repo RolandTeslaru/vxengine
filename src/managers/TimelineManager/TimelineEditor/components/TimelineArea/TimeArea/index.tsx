@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './timeArea.scss';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_prefix';
@@ -24,7 +24,7 @@ export const TimeArea = () => {
   const OneSecondUnitSplitCount = Math.max(1, Math.floor(10 / scale));
   const totalUnits = OneSecondUnitSplitCount * currentTimelineLength;
 
-  const handleOnClick = (e) => {
+  const handleOnClick = useCallback((e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = e.clientX - rect.x;
 
@@ -33,11 +33,11 @@ export const TimeArea = () => {
     if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + timeAreaStartLeft - scrollLeft) return;
 
     setTimeByPixel(left)
-  };
+  }, [setTimeByPixel])
 
   const displayInterval = Math.ceil(scale); // Adjust display interval smoothly with scale
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const div = e.currentTarget;
     const divRect = div.getBoundingClientRect(); // Get div position
 
@@ -58,7 +58,7 @@ export const TimeArea = () => {
 
     targetDocument.addEventListener("mousemove", handleMouseMove);
     targetDocument.addEventListener("mouseup", handleMouseUp);
-  };
+  }, [setTimeByPixel, externalContainer])
 
   return (
     <div

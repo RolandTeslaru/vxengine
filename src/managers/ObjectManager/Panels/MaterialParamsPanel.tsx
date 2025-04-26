@@ -3,12 +3,13 @@ import * as THREE from "three"
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import ParamInput from '@vxengine/components/ui/ParamInput';
 import Search from '@vxengine/components/ui/Search';
-import { vxElementProps, vxObjectProps } from '../../types/objectStore';
+import { vxObjectProps } from '../types/objectStore';
 import Tree from '@vxengine/components/ui/Tree';
-import { getValueType, ParamTreeNodeDataType, TreeNodeType } from '../../utils/createPropertyTree';
+import { getValueType, ParamTreeNodeDataType, TreeNodeType } from '../utils/createPropertyTree';
 import { VXElementParam } from '@vxengine/vxobject/types';
 import { CreateNodeDataFnType } from '@vxengine/components/ui/Tree/types';
-import {paramRendererWithVxObject } from '@vxengine/components/ui/Tree/nodeRenderers';
+import { paramRendererWithVxObject } from '@vxengine/components/ui/Tree/nodeRenderers';
+import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
 
 
 interface MaterialParamNodeProps extends TreeNodeType {
@@ -67,9 +68,12 @@ const MATERIAL_PARAM_TREE_TYPES = {
         "reflectivity": { key: "reflectivity", currentPath: "reflectivity", data: { param: { propertyPath: "material.reflectivity", type: "number", title: "Reflectivity" } } },
         "refractionRatio": { key: "refractionRatio", currentPath: "refractionRatio", data: { param: { propertyPath: "material.refractionRatio", type: "number", title: "Refraction Ratio" } } },
     },
-    "MeshToonMateri al": {
+    "MeshToonMaterial": {
         "color": { key: "color", currentPath: "color", data: { param: { propertyPath: "material.color", type: "color", title: "Color" } } },
         "opacity": { key: "opacity", currentPath: "opacity", data: { param: { propertyPath: "material.opacity", type: "number", title: "Opacity" } } },
+    },
+    "ShaderMaterial": {
+
     },
     default: {}
 }
@@ -90,20 +94,21 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
         })
 
         const baseTree = MATERIAL_PARAM_TREE_TYPES[material.type as keyof typeof MATERIAL_PARAM_TREE_TYPES] as Record<string, ParamTreeNodeDataType> || {}
-        if ("uniforms" in baseTree && !!(material as THREE.ShaderMaterial).uniforms) {
+        if (!!(material as THREE.ShaderMaterial).uniforms) {
             baseTree["uniforms"] = { key: "uniforms", currentPath: "material.uniforms", children: null, refObject: (material as THREE.ShaderMaterial).uniforms }
-
         }
 
+        baseTree["instance"] = { key: "instance", currentPath: "", children: null, refObject: material }
+
         return [baseTree, __createNodeDataFn]
-    }, [material])
+    }, [vxobject, material])
 
 
     const [searchQuery, setSearchQuery] = useState("");
 
     return (
         <CollapsiblePanel
-            title="Material Params"
+            title={`${material.type}`}
             defaultOpen={true}
             noPadding={true}
             contentClassName=' gap-2 min-h-0'
@@ -112,12 +117,14 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
-            <Tree
-                // @ts-ignore
-                tree={tree}
-                renderNodeContent={(node, { NodeTemplate }) => paramRendererWithVxObject(vxobject, node, { NodeTemplate })}
-                createNodeDataFn={createNodeDataFn}
-            />
+            <div className='max-h-96 overflow-y-scroll'>
+                <Tree
+                    // @ts-ignore
+                    tree={tree}
+                    renderNodeContent={(node, { NodeTemplate }) => paramRendererWithVxObject(vxobject, node, { NodeTemplate })}
+                    createNodeDataFn={createNodeDataFn}
+                />
+            </div>
         </CollapsiblePanel>
     )
 }

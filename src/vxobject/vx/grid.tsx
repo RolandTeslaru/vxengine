@@ -13,12 +13,18 @@ import { version } from '@react-three/drei/helpers/constants'
 import { useMemo } from 'react'
 
 export type GridMaterialType = {
-  /** Cell size, default: 0.5 */
-  cellSize?: number
-  /** Cell color, default: black */
-  cellColor?: THREE.ColorRepresentation
+  /** Cross size, default: 0.5 */
+  crossSize?: number
+  /** Cross thickness, default: 0.1 */
+  crossThickness?: number
+  /** Cross arm length as a factor of cross size, default: 0.1 */
+  crossArmLength?: number
+  /** Cross color, default: black */
+  crossColor?: THREE.ColorRepresentation
   /** Section size, default: 1 */
   sectionSize?: number
+  /** Section thickness, default: 0.75 */
+  sectionThickness?: number
   /** Section color, default: #2080ff */
   sectionColor?: THREE.ColorRepresentation
   /** Follow camera, default: false */
@@ -41,20 +47,18 @@ export type GridProps = Omit<ThreeElements['mesh'], 'ref' | 'args'> &
     args?: ConstructorParameters<typeof THREE.PlaneGeometry>
   }
 
-declare module '@react-three/fiber' {
-  interface ThreeElements {
-    gridMaterial: ThreeElements['shaderMaterial'] & GridMaterialType
-  }
-}
 
 const GridMaterial = /* @__PURE__ */ shaderMaterial(
   {
-    cellSize: 0.5,
+    crossSize: 0.5,
+    crossThickness: 0.1,
+    crossArmLength: 0.1,
     sectionSize: 1,
+    sectionThickness: 0.75,
     fadeDistance: 100,
     fadeStrength: 1,
     fadeFrom: 1,
-    cellColor: /* @__PURE__ */ new THREE.Color(),
+    crossColor: /* @__PURE__ */ new THREE.Color(),
     sectionColor: /* @__PURE__ */ new THREE.Color(),
     infiniteGrid: false,
     followCamera: false,
@@ -89,18 +93,19 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
     varying vec4 worldPosition;
 
     uniform vec3 worldCamProjPosition;
-    uniform float cellSize;
+    uniform float crossSize;
+    uniform float crossThickness;
+    uniform float crossArmLength;
     uniform float sectionSize;
-    uniform vec3 cellColor;
+    uniform float sectionThickness;
+    uniform vec3 crossColor;
     uniform vec3 sectionColor;
     uniform float fadeDistance;
     uniform float fadeStrength;
     uniform float fadeFrom;
 
     // Function to calculate continuous grid line intensity
-    float getGrid(float size) {
-      // Use a slightly smaller thickness for the lines compared to the crosses
-      float lineThicknessFactor = 0.75; // Adjust as needed
+    float getGrid(float size, float thickness) {
       vec2 r = localPosition.xz / size;
       // Calculate distance to cell center lines, normalized by fwidth
       vec2 grid = abs(fract(r - 0.5) - 0.5) / fwidth(r);
@@ -108,44 +113,57 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
       float lineDist = min(grid.x, grid.y);
       // Use smoothstep for anti-aliased lines
       // Intensity is 1 on the line, fading smoothly to 0
-      return smoothstep(lineThicknessFactor, 0.0, lineDist);
+      return smoothstep(thickness, 0.0, lineDist);
     }
 
     void main() {
-      // --- Cross Calculation (from previous step) ---
-      vec2 distFromCellCenterLines = abs(fract(localPosition.xz / cellSize) - 0.5) * cellSize;
-      float crossArmHalfLength = cellSize * 0.1;
+      // --- Cross Calculation ---
+      vec2 distFromCellCenterLines = abs(fract(localPosition.xz / crossSize) - 0.5) * crossSize;
+      
+      // Calculate the cross arms with proper thickness
+      float armLength = crossSize * crossArmLength; // Arm length controlled by parameter
+      float lineWidth = crossThickness * crossSize * 0.05; // Scale thickness relative to cross size
       float fw = length(fwidth(localPosition.xz));
-      float intensityX = smoothstep(fw, 0.0, distFromCellCenterLines.x);
-      float maskZ = smoothstep(crossArmHalfLength + fw, crossArmHalfLength - fw, distFromCellCenterLines.y);
+      
+      // Calculate thickness-adjusted intensity for vertical arm
+      float vertLineThickness = lineWidth + fw;
+      float intensityX = smoothstep(vertLineThickness, 0.0, distFromCellCenterLines.x);
+      
+      // Limit vertical line's length
+      float maskZ = smoothstep(armLength + fw, armLength - fw, distFromCellCenterLines.y);
       float verticalArm = intensityX * maskZ;
-      float intensityZ = smoothstep(fw, 0.0, distFromCellCenterLines.y);
-      float maskX = smoothstep(crossArmHalfLength + fw, crossArmHalfLength - fw, distFromCellCenterLines.x);
+      
+      // Calculate thickness-adjusted intensity for horizontal arm
+      float horizLineThickness = lineWidth + fw;
+      float intensityZ = smoothstep(horizLineThickness, 0.0, distFromCellCenterLines.y);
+      
+      // Limit horizontal line's length
+      float maskX = smoothstep(armLength + fw, armLength - fw, distFromCellCenterLines.x);
       float horizontalArm = intensityZ * maskX;
+      
       float crossIntensity = clamp(verticalArm + horizontalArm, 0.0, 1.0);
       // --- End Cross Calculation ---
 
       // --- Line Calculation ---
-      float g2 = getGrid(sectionSize);
+      float g2 = getGrid(sectionSize, sectionThickness);
       // --- End Line Calculation ---
 
-      // --- Combined Intensity ---
-      // Take the maximum intensity of the cross or the lines
-      float combinedIntensity = max(crossIntensity, g2);
-      // --- End Combined Intensity ---
-
-      // --- Section Color Logic (Applied to crosses) ---
-      vec2 distFromSectionCenterLines = abs(fract(localPosition.xz / sectionSize) - 0.5) * sectionSize;
-      float sectionIntensityX = smoothstep(fw, 0.0, distFromSectionCenterLines.x);
-      float sectionMaskZ = smoothstep(crossArmHalfLength + fw, crossArmHalfLength - fw, distFromSectionCenterLines.y);
-      float sectionVerticalArm = sectionIntensityX * sectionMaskZ;
-      float sectionIntensityZ = smoothstep(fw, 0.0, distFromSectionCenterLines.y);
-      float sectionMaskX = smoothstep(crossArmHalfLength + fw, crossArmHalfLength - fw, distFromSectionCenterLines.x);
-      float sectionHorizontalArm = sectionIntensityZ * sectionMaskX;
-      float sectionCrossIntensity = clamp(sectionVerticalArm + sectionHorizontalArm, 0.0, 1.0);
-      // Blend color based on whether the *cross* is on a section intersection
-      vec3 color = mix(cellColor, sectionColor, sectionCrossIntensity);
-      // --- End Section Color Logic ---
+      // --- Calculate Final Color and Alpha ---
+      // Start with cross color for all crosses
+      vec3 color = crossColor;
+      float alpha = crossIntensity;
+      
+      // If section grid is visible at this pixel, blend in the section color
+      if (g2 > 0.0) {
+        color = sectionColor;
+        alpha = g2;
+      }
+      
+      // If both are visible, use the stronger one
+      if (crossIntensity > 0.0 && g2 > 0.0) {
+        alpha = max(crossIntensity, g2);
+      }
+      // --- End Color Calculation ---
 
       // --- Fading Logic (unchanged) ---
       vec3 from = worldCamProjPosition * vec3(fadeFrom);
@@ -155,7 +173,7 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
       // --- End Fading Logic ---
 
       // Final fragment color: Use combined intensity for alpha
-      gl_FragColor = vec4(color, combinedIntensity * fade);
+      gl_FragColor = vec4(color, alpha * fade);
 
       // Discard pixels with zero alpha
       if (gl_FragColor.a <= 0.0) discard;
@@ -170,14 +188,17 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
 export const VXGrid = ({
       ref,  
       args,
-      cellColor = '#000000',
+      crossColor = '',
       sectionColor = '#2080ff',
-      cellSize = 0.5,
-      sectionSize = 1,
+      crossSize = 1.0,
+      crossThickness = 0.1,
+      crossArmLength = 0.1,
+      sectionSize = 6,
+      sectionThickness = 0.75,
       followCamera = false,
       infiniteGrid = false,
-      fadeDistance = 100,
-      fadeStrength = 1,
+      fadeDistance = 40,
+      fadeStrength = 2.1,
       fadeFrom = 1,
       side = THREE.BackSide,
       ...props
@@ -202,7 +223,17 @@ export const VXGrid = ({
       worldPlanePosition.value.set(0, 0, 0).applyMatrix4(internalRef.current.matrixWorld)
     })
 
-    const uniforms2 = { fadeDistance, fadeStrength, fadeFrom, infiniteGrid, followCamera }
+    const uniforms2 = { 
+      fadeDistance, 
+      fadeStrength, 
+      fadeFrom, 
+      infiniteGrid, 
+      followCamera,
+      crossSize,
+      crossThickness,
+      crossArmLength,
+      sectionThickness
+    }
 
     return (
       <mesh ref={internalRef} frustumCulled={false} {...props}>
@@ -210,11 +241,11 @@ export const VXGrid = ({
           transparent
           extensions-derivatives
           side={side}
-          cellSize={cellSize}
           sectionSize={sectionSize}
-          cellColor={cellColor}
+          crossColor={crossColor}
           sectionColor={sectionColor}
           {...uniforms2}
+          {...({} as any)}
         />
         <planeGeometry args={args} />
       </mesh>

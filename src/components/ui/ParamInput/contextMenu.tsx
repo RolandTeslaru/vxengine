@@ -39,7 +39,7 @@ const ParamInputContextMenuContent = memo(({ param, vxkey, vxRefObj }: Props) =>
         ]
     });
 
-    const onKeyframeKey = useMemo(() => isOverKeyframe(trackKey, orderedKeyframeKeys), [orderedKeyframeKeys])
+    const onKeyframeKey = useMemo(() => isOverKeyframe(trackKey, orderedKeyframeKeys), [trackKey, orderedKeyframeKeys])
 
     return (
         <>

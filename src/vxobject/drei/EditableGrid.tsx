@@ -15,24 +15,27 @@ const defaultSettings: VXObjectSettings = {
 }
 
 const gridParams: VXElementParams = [
-    { type: "number", title: "cell size", propertyPath: "material.uniforms.cellSize.value" },
-    { type: "number", title: "cell thickness", propertyPath: "material.uniforms.cellThickness.value" },
-    { type: "color", title: "cell color", propertyPath: "material.uniforms.cellColor.value" },
+    { type: "number", title: "cross size", propertyPath: "material.uniforms.crossSize.value" },
+    { type: "number", title: "cross thickness", propertyPath: "material.uniforms.crossThickness.value" },
+    { type: "slider", title: "cross arm length", propertyPath: "material.uniforms.crossArmLength.value", min: 0, max: 0.5, step: 0.01 },
+    { type: "color", title: "cross color", propertyPath: "material.uniforms.crossColor.value" },
     { type: "number", title: "section size", propertyPath: "material.uniforms.sectionSize.value" },
+    { type: "number", title: "section thickness", propertyPath: "material.uniforms.sectionThickness.value" },
     { type: "color", title: "section color", propertyPath: "material.uniforms.sectionColor.value" },
-    { type: "number", title: "fade distance", propertyPath: "material.uniforms.fadeDistance.value" },
-    { type: "number", title: "fade strength", propertyPath: "material.uniforms.fadeStrength.value" },
+    { type: "slider", title: "fade distance", propertyPath: "material.uniforms.fadeDistance.value", min: 0, max: 100, step: 1 },
+    { type: "slider", title: "fade strength", propertyPath: "material.uniforms.fadeStrength.value", min: 0.01, max: 2, step: 0.01 },
 ]
 
 const gridConfig = {
-    cellSize: 0.6,
-    cellThickness: 1.0,
-    cellColor: '#525252',
-    sectionSize: 3.3,
+    crossSize: 2,
+    crossThickness: 0.1,
+    crossArmLength: 0.12,
+    crossColor: "rgb(64, 64, 64)",
+    sectionSize: 12,
     sectionThickness: 1.5,
-    sectionColor: '#d6d6d6',
-    fadeDistance: 25,
-    fadeStrength: 1,
+    sectionColor: '#CFCFCF',
+    fadeDistance: 75,
+    fadeStrength: 0.95,
     followCamera: false,
     infiniteGrid: true
 }

@@ -31,6 +31,7 @@ export const ParamInput: FC<Props> = memo((props) => {
 
     const components = COMPONENT_MAP[param.type ?? "number"] || []
 
+
     return (
         <ContextMenu>
             <ContextMenuTrigger style={props.style} className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>

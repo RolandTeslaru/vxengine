@@ -311,9 +311,9 @@ export class HydrationService {
                 const { value } = params
 
                 const staticProp: EditorStaticProp = {
-                    value: value,
-                    vxkey: vxkey,
-                    propertyPath: propertyPath
+                    value,
+                    vxkey,
+                    propertyPath
                 }
                 rawObject.staticProps.push(staticProp);
 

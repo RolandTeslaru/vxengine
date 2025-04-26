@@ -51,7 +51,6 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
             <SliderPrimitive.Root
                 className={cn(
                     "relative flex w-full touch-none select-none items-center ",
-                    className
                 )}
                 value={[value]}
                 onValueChange={(newValue) => {
