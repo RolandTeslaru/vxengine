@@ -98,7 +98,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
             baseTree["uniforms"] = { key: "uniforms", currentPath: "material.uniforms", children: null, refObject: (material as THREE.ShaderMaterial).uniforms }
         }
 
-        baseTree["instance"] = { key: "instance", currentPath: "", children: null, refObject: material }
+        baseTree["instance"] = { key: "instance", currentPath: "material", children: null, refObject: material }
 
         return [baseTree, __createNodeDataFn]
     }, [vxobject, material])

@@ -77,7 +77,7 @@ const TreeNode: React.FC<TreeNodeProps> =
 
         const handleOnCollapseCallback = useCallback(() => {
             setIsExpanded((prev: boolean) => {
-                if(prev === false && branchNeedsLazyLoading)
+                if (prev === false && branchNeedsLazyLoading)
                     loadBranch(node, createNodeDataFn)
                 return !prev;
             })
@@ -152,7 +152,7 @@ const TreeNode: React.FC<TreeNodeProps> =
 
 const TreeNodeContextMenu = ({ node }) => {
     return (
-        <ContextMenuContent className='gap-1 text-xs'>
+        <ContextMenuContent className='gap-1 text-xs max-w-[300px] max-h-[500px] overflow-scroll'>
             <p className='font-roboto-mono'>Node Object</p>
             <JsonView className='bg-neutral-900' src={node} collapsed={({ depth }) => depth > 1} />
         </ContextMenuContent>

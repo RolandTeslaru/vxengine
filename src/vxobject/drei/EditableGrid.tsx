@@ -44,9 +44,8 @@ const gridConfig = {
 const BaseGrid = (props) => {
     const vxkey = props.vxkey;
     const isShown = useObjectSetting(vxkey, "show");
-
-    return <VXGrid {...props} position={[0, -0.01, 0]} args={[10.5, 10.5]} {...gridConfig} />
-
+    
+    return <VXGrid {...props} visible={isShown} position={[0, -0.01, 0]} args={[10.5, 10.5]} {...gridConfig} />
 }
 
 const EditableGrid = withVX<EditableGridProps>(BaseGrid, {

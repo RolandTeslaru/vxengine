@@ -30,33 +30,26 @@ interface GeometryParamNodeProps extends TreeNodeType {
     }
 }
 
-export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
+export const GeometryParams: FC<VXGeometryProps> = React.memo(({ vxobject }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const refObject = (vxobject.ref.current as THREE.Mesh);
     const geometry = refObject.geometry as ValidGeometries
 
-    const [propertiesTree, createNodeDataFn] = useMemo(() => {
-        const __createNodeDataFn: CreateNodeDataFnType = ({ key, currentPath, value }) => ({
-            param: {
-                propertyPath: currentPath,
-                type: getValueType(value),
-                title: key,
-            },
-            vxobject
-        })
+    // Calculate createNodeDataFn directly
+    const createNodeDataFn: CreateNodeDataFnType = ({ key, currentPath, value }) => ({
+        param: {
+            propertyPath: currentPath,
+            type: getValueType(value),
+            title: key,
+        },
+        vxobject
+    });
 
-        return [
-            createTree(geometry.parameters, "geometry", "", __createNodeDataFn),
-            __createNodeDataFn
-        ]
-    }, [vxobject])
+    // Calculate propertiesTree directly
+    const propertiesTree = createTree(geometry.parameters, "geometry", "", createNodeDataFn);
 
-    const filteredPropertiesTree = useMemo(() =>
-        filterParamTree(propertiesTree, searchQuery),
-        [geometry, searchQuery])
-
-
-
+    // Calculate filteredPropertiesTree directly
+    const filteredPropertiesTree = filterParamTree(propertiesTree, searchQuery);
 
     return (
         <CollapsiblePanel
@@ -77,4 +70,4 @@ export const GeometryParams: FC<VXGeometryProps> = ({ vxobject }) => {
             </div>
         </CollapsiblePanel>
     )
-}
+})

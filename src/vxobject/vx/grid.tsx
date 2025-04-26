@@ -39,6 +39,8 @@ export type GridMaterialType = {
   fadeFrom?: number
   /** Material side, default: THREE.BackSide */
   side?: THREE.Side
+  /** Controls grid visibility, default: true */
+  visible?: boolean
 }
 
 export type GridProps = Omit<ThreeElements['mesh'], 'ref' | 'args'> &
@@ -64,6 +66,7 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
     followCamera: false,
     worldCamProjPosition: /* @__PURE__ */ new THREE.Vector3(),
     worldPlanePosition: /* @__PURE__ */ new THREE.Vector3(),
+    visible: true,
   },
   /* glsl */ `
     varying vec3 localPosition;
@@ -74,6 +77,7 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
     uniform float fadeDistance;
     uniform bool infiniteGrid;
     uniform bool followCamera;
+    uniform bool visible;
 
     void main() {
       localPosition = position.xzy;
@@ -103,6 +107,7 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
     uniform float fadeDistance;
     uniform float fadeStrength;
     uniform float fadeFrom;
+    uniform bool visible;
 
     // Function to calculate continuous grid line intensity
     float getGrid(float size, float thickness) {
@@ -117,6 +122,7 @@ const GridMaterial = /* @__PURE__ */ shaderMaterial(
     }
 
     void main() {
+      if (!visible) discard;
       // --- Cross Calculation ---
       vec2 distFromCellCenterLines = abs(fract(localPosition.xz / crossSize) - 0.5) * crossSize;
       
@@ -201,6 +207,7 @@ export const VXGrid = ({
       fadeStrength = 2.1,
       fadeFrom = 1,
       side = THREE.BackSide,
+      visible = true,
       ...props
   }) => {
     extend({ GridMaterial })
@@ -213,6 +220,7 @@ export const VXGrid = ({
     }, [])
 
     useFrame((state) => {
+      if (!visible) return;
       plane.setFromNormalAndCoplanarPoint(upVector, zeroVector).applyMatrix4(internalRef.current.matrixWorld)
 
       const gridMaterial = internalRef.current.material as THREE.ShaderMaterial
@@ -232,7 +240,8 @@ export const VXGrid = ({
       crossSize,
       crossThickness,
       crossArmLength,
-      sectionThickness
+      sectionThickness,
+      visible,
     }
 
     return (
@@ -244,6 +253,7 @@ export const VXGrid = ({
           sectionSize={sectionSize}
           crossColor={crossColor}
           sectionColor={sectionColor}
+          visible={visible}
           {...uniforms2}
           {...({} as any)}
         />

@@ -30,14 +30,12 @@ const SplineNodeParams: React.FC<Props> = ({ vxobject: vxSplineNode }) => {
     const nodeIndex = vxSplineNode.index
     const splineKey = nodeKey.includes('.node') ? nodeKey.split('.node')[0] : nodeKey;
 
-    const setSplineNodeAxisValue = useTimelineManagerAPI(state => state.setSplineNodeAxisValue);
-
     const onPositionPropChange = useCallback((axis: "x" | "y" | "z", newValue: number) => {
-        setSplineNodeAxisValue(splineKey, nodeIndex, axis, newValue, true);
-    }, [vxSplineNode])
+        useTimelineManagerAPI
+            .getState()
+            .setSplineNodeAxisValue(splineKey, nodeIndex, axis, newValue, true);
+    }, [nodeIndex, splineKey])
     
-    const vxSpline = useVXObjectStore(state => state.objects[splineKey]) as vxSplineProps;
-
     return (
         <>
             <CollapsiblePanel

@@ -20,30 +20,31 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
 
     const settings = useObjectSettingsAPI(state => state.settings[vxkey])
 
-    const filteredSettings = useMemo(() => {
-        if(!settings) return {};
+    const [filteredSettingsArray, filteredSettingsLength] = useMemo(() => {
+        if (!settings) return [null, 0];
 
-        return Object.entries(settings)
+        const filteredSettings = Object.entries(settings)
             .filter(([key]) => !excludeSettingsKeys.includes(key))
             .reduce((acc, [key, value]) => {
                 acc[key] = value;
                 return acc;
             }, {} as VXObjectSettings);
+
+        const filteredSettingsArray = Object.entries(filteredSettings)
+
+        return [filteredSettingsArray, filteredSettingsArray.length];
     }, [settings]);
 
+    if (filteredSettingsLength === 0) return null
+
     return (
-        <>
-            {Object.values(filteredSettings).length > 0 &&
-                <CollapsiblePanel title="Settings">
-                    <div className="flex flex-col">
-                        {Object.entries(settings).map(([settingKey, setting]) => (
-                            !excludeSettingsKeys.includes(settingKey) && 
-                                <SettingNode key={settingKey} vxkey={vxkey} settingKey={settingKey} setting={setting}/>
-                        ))}
-                    </div>
-                </CollapsiblePanel>
-            }
-        </>
+        <CollapsiblePanel title="Settings">
+            <div className="flex flex-col">
+                {filteredSettingsArray.map(([settingKey, setting]) => (
+                    <SettingNode key={settingKey} vxkey={vxkey} settingKey={settingKey} setting={setting} />
+                ))}
+            </div>
+        </CollapsiblePanel>
     )
 }
 

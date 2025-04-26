@@ -33,12 +33,9 @@ const excludeParamKeys = [
 const ParamList: React.FC<Props> = ({ vxobject }) => {
     const refObject = vxobject?.ref?.current as THREE.Object3D;
 
-    const threeObjectType = refObject?.type
-
-    const params = vxobject?.params ?? []
-
-    const tree = useMemo(() => {
+    const [tree, treeLength] = useMemo(() => {
         const tree: Record<string, ParamNodeProps> = {}
+        const params = vxobject?.params ?? []
         params.forEach((param) => {
             if (!excludeParamKeys.includes(param.propertyPath))
                 
@@ -53,17 +50,15 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
                     currentPath: param.propertyPath
                 }
         })
-        return tree;
-    // Only depend on params and necessary vxobject properties, not the entire vxobject
-    }, [params, vxobject.vxkey, refObject])
+        return [tree, Object.keys(tree).length];
+    }, [vxobject, refObject])
 
-    if (Object.entries(tree).length === 0) return null
     if(!refObject) return null
 
-
+    if(treeLength === 0) return null
     return (
         <CollapsiblePanel
-            title={threeObjectType ? threeObjectType : "Object Params"}
+            title={vxobject.name ? `${vxobject.name} Params` : "Object Params"}
             noPadding={true}
         >
             <div className='flex flex-col'>

@@ -211,6 +211,11 @@ export class PropertyControlService {
             target = object3DRef;
         } else {
             target = this._object3DCache.get(vxkey);
+            if(!target){
+                console.warn(`Object '${vxkey}' not found in object3DCache`)
+                setter = (newValue: number) => { }
+                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+            }
         }
 
         // Traverse the object

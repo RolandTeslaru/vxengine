@@ -2,6 +2,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/sh
 import { Info } from '@vxengine/components/ui/icons'
 import React from 'react'
 import JsonView from 'react18-json-view';
+
 export const InfoPopover = ({object}: {object: Record<string, any>}) => {
     return (
         <Popover>

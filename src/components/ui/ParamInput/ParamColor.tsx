@@ -140,7 +140,7 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
                         className={`w-10 h-5 rounded-md border shadow-md`}
                     />
                 </PopoverTrigger>
-                <PopoverContent className='w-52'>
+                <PopoverContent className='w-52' side="left">
                     <ColorPicker
                         ref={colorPickerRef}
                         colorRef={colorRef}
