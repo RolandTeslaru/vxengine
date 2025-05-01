@@ -33,7 +33,7 @@ const gridConfig = {
     crossColor: "rgb(64, 64, 64)",
     sectionSize: 12,
     sectionThickness: 1.5,
-    sectionColor: '#CFCFCF',
+    sectionColor: 'rgb(78, 78, 78)',
     fadeDistance: 75,
     fadeStrength: 0.95,
     followCamera: false,

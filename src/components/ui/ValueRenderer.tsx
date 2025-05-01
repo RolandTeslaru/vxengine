@@ -13,7 +13,6 @@ interface ValueRendererProps {
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
     onChange?: (newValue: number) => void;
 }
-
 const ValueRenderer: FC<ValueRendererProps> = memo(
     ({ vxkey, param: {propertyPath}, inputProps, onChange, vxRefObj }) => {
         // Always use the vxkey and NOT vxobject.vxkey because the vxkey prop can be overwritten (for good reasons)

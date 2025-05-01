@@ -16,7 +16,7 @@ import { shallow } from 'zustand/shallow';
 
 export type IObjectSettings = Record<string, ISetting>
 
-interface ObjectSettingsStoreProps {
+export interface ObjectSettingsStoreProps {
     settings: Record<string, IObjectSettings>
     initialValues: Record<string, Record<string, boolean>>
 

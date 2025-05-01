@@ -1,7 +1,6 @@
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel, parserPixelToTime } from '@vxengine/managers/TimelineManager/utils/deal_data';
 import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
-import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { isEqual } from 'lodash';
 import { produce } from 'immer';
 import { segmentStartLeft } from '../Track/TrackSegment';
@@ -85,7 +84,9 @@ export const handleKeyframeDrag = (
     trackKey: string,
     keyframeKey: string,
     mutateUI = true,
-    hydrateKeyframeOrder = true
+    hydrateKeyframeOrder = true,
+    keyframesMap: Map<string, HTMLElement>,
+    trackSegmentsMap: Map<string, HTMLElement>
 ) => {
     const { selectedKeyframesFlatMap, scale } = useTimelineEditorAPI.getState();
 
@@ -113,7 +114,7 @@ export const handleKeyframeDrag = (
         animationEngineInstance.reRender({force: true})
 
         if(mutateUI)
-            handleKeyframeMutation(keyframeKey, newLeft, newSafeTime, scale, true);
+            handleKeyframeMutation(keyframeKey, newLeft, newSafeTime, scale, true, keyframesMap, trackSegmentsMap);
     }
     // Multiple Keyframe Drag
     else if (selectedKeyframesFlatMap.length > 1) {
@@ -126,7 +127,7 @@ export const handleKeyframeDrag = (
         let lastKf = { keyframeKey: "", time: 0, left: boundsLeft };
 
         selectedKeyframesFlatMap.forEach((_selectedKf) => {
-            const _kfElement = keyframesRef.get(_selectedKf.keyframeKey);
+            const _kfElement = keyframesMap.get(_selectedKf.keyframeKey);
             const time = parseFloat(_kfElement.dataset.time);
             const _kfLeft = parseFloat(_kfElement.dataset.left);
 
@@ -156,7 +157,7 @@ export const handleKeyframeDrag = (
         // Apply the safe time shift to all keyframes
         selectedKeyframesFlatMap.forEach(({ keyframeKey: _kfKey, trackKey: _trackKey }, index) => {
             const isFinalKf = selectedKeyframesFlatMap.length - 1 === index;
-            const _kfDataset = keyframesRef.get(_kfKey).dataset;
+            const _kfDataset = keyframesMap.get(_kfKey).dataset;
             const originalTime = parseFloat(_kfDataset.time);
             const newKfTime = originalTime + safeDeltaTime;
 
@@ -182,20 +183,20 @@ export const handleKeyframeDrag = (
             }
 
             if (mutateUI) {
-                handleKeyframeMutation(_kfKey, newKfLeft, clampedNewKfTime, scale, true);
+                handleKeyframeMutation(_kfKey, newKfLeft, clampedNewKfTime, scale, true, keyframesMap, trackSegmentsMap);
             }
         });
 
         // Handle keyframe order in track
         if (hydrateKeyframeOrder) {
-            hydrateKeyframeKeysOrder();
+            hydrateKeyframeKeysOrder(keyframesMap);
         }
     }
 
     useTimelineManagerAPI.getState().addChange()
 }
 
-export const hydrateKeyframeKeysOrder = () => {
+export const hydrateKeyframeKeysOrder = (keyframesMap: Map<string, HTMLElement>) => {
     const selectedKeyframeKeys = useTimelineEditorAPI.getState().selectedKeyframeKeys
     useTimelineManagerAPI.setState(
         produce((state: TimelineManagerAPIProps) => {
@@ -205,7 +206,7 @@ export const hydrateKeyframeKeysOrder = () => {
 
                 const hydratedKeyframeDataset: Record<string, DOMStringMap> = {};
                 staleOrderedKeyframeKeys.forEach((_keyframeKey) => {
-                    const keyframeDataset = keyframesRef.get(_keyframeKey)?.dataset;
+                    const keyframeDataset = keyframesMap.get(_keyframeKey)?.dataset;
                     hydratedKeyframeDataset[_keyframeKey] = keyframeDataset;
                 })
                 const hydratedSortedKeys = Object.keys(hydratedKeyframeDataset).sort(
@@ -223,22 +224,26 @@ export const hydrateKeyframeKeysOrder = () => {
 export const handleKeyframeMutationByTime = (
     keyframeKey: string,
     newTime: number,
-    mutateTrackSegments: boolean
+    mutateTrackSegments: boolean,
+    keyframesMap: Map<string, HTMLElement>,
+    trackSegmentsMap: Map<string, HTMLElement>
 ) => {
     const scale = useTimelineEditorAPI.getState().scale
     const newKfLeft = parserTimeToPixel(newTime, keyframeStartLeft, scale)
 
-    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments)
+    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments, keyframesMap, trackSegmentsMap)
 }
 
 export const handleKeyframeMutationByPixel = (
     keyframeKey: string,
     newKfLeft: number,
-    mutateTrackSegments: boolean
+    mutateTrackSegments: boolean,
+    keyframesMap: Map<string, HTMLElement>,
+    trackSegmentsMap: Map<string, HTMLElement>
 ) => {
     const scale = useTimelineEditorAPI.getState().scale;
     const newTime = parserPixelToTime(newKfLeft, keyframeStartLeft)
-    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments)
+    handleKeyframeMutation(keyframeKey, newKfLeft, newTime, scale, mutateTrackSegments, keyframesMap, trackSegmentsMap)
 }
 
 export const handleKeyframeMutation = (
@@ -246,9 +251,11 @@ export const handleKeyframeMutation = (
     newKfLeft: number,
     newTime: number,
     scale: number,
-    mutateTrackSegments: boolean
+    mutateTrackSegments: boolean,
+    keyframesMap: Map<string, HTMLElement>,
+    trackSegmentsMap: Map<string, HTMLElement>
 ) => {
-    const keyframeElement = keyframesRef.get(keyframeKey);
+    const keyframeElement = keyframesMap.get(keyframeKey);
 
     // Handle Keyframe Mutation
     keyframeElement.style.left = `${newKfLeft}px`
@@ -262,7 +269,7 @@ export const handleKeyframeMutation = (
             const secondKfKey = keyframeKey;
             const secondKfLeft = newKfLeft
 
-            const firstKf = keyframesRef.get(firstKfKey)
+            const firstKf = keyframesMap.get(firstKfKey)
             const firstKfLeft = parseFloat(firstKf.dataset.left)
 
             const newWidth = secondKfLeft - firstKfLeft
@@ -270,7 +277,8 @@ export const handleKeyframeMutation = (
             handleTrackSegmentMutation({
                 firstKeyframeKey: firstKfKey,
                 secondKeyframeKey: secondKfKey,
-                newWidth
+                newWidth,
+                trackSegmentsMap
             })
         }
         // kf ---> secondKf
@@ -279,7 +287,7 @@ export const handleKeyframeMutation = (
             const newSgLeft = parserTimeToPixel(newTime, segmentStartLeft, scale)
             const secondKfKey = keyframeElement.dataset.nextKeyframeKey;
 
-            const secondKf = keyframesRef.get(secondKfKey);
+            const secondKf = keyframesMap.get(secondKfKey);
             const secondKfLeft = parseFloat(secondKf.dataset.left);
 
             const newWidth = secondKfLeft - newKfLeft;
@@ -288,7 +296,8 @@ export const handleKeyframeMutation = (
                 firstKeyframeKey: firstKfKey,
                 secondKeyframeKey: secondKfKey,
                 newWidth,
-                newLeft: newSgLeft
+                newLeft: newSgLeft,
+                trackSegmentsMap
             })
         }
     }

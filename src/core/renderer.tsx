@@ -35,6 +35,7 @@ import animationEngineInstance from '@vxengine/singleton'
 import { EffectComposerDriver } from '@vxengine/managers/EffectsManager/driver'
 import { vx } from '@vxengine/vxobject'
 import SplineManagerDriver from '@vxengine/managers/SplineManager/driver'
+import { vxengine } from '@vxengine/singleton'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -54,8 +55,6 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
   className
 }) => {
   const { gl: glProps, ...restCanvasProps } = canvasProps
-
-  const { IS_DEVELOPMENT } = useVXEngine();
 
   return (
     <div className={"w-screen h-screen fixed top-0 z-[-1]" + " " + className}>
@@ -78,7 +77,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
       >
         <vx.scene vxkey="scene"/>
         {/* <color attach="background" args={['gray']} /> */}
-        {IS_DEVELOPMENT && <>
+        {vxengine.isDevelopment && <>
           <VXRendererUtils />
           <ObjectManagerDriver/>
           <vx.grid vxkey="grid" name="Grid" />
@@ -88,6 +87,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
           {effectsNode}
         </EffectComposerDriver>
 
+        <GLDriver/>
 
         <CameraManagerDriver />
         {children}
@@ -95,3 +95,16 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
     </div>
   )
 })
+
+
+const GLDriver = () => {
+  const {gl} = useThree();
+
+  const { gl: glRef } = useVXEngine(); 
+
+  useEffect(() => {
+    glRef.current = gl;
+  }, [gl])
+
+  return null
+}

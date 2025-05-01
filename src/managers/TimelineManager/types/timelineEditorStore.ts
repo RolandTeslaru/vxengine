@@ -44,7 +44,10 @@ export interface TimelineEditorAPIProps {
     moveToPreviousKeyframe: (trackKey: string) => void;
 
     setTime: (time: number, cursorLockOn?: boolean) => void;
+    
     setTimeByPixel: (left: number) => void
+
+    cursorLockedOnTime: number
 
     collapsedTrackNodes: Record<string, boolean>
     setCollapsedTrackNodes: (groupKey: string) => void;

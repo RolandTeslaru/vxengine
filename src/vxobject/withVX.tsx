@@ -11,8 +11,8 @@ import { vxObjectProps, vxObjectTypes } from "@vxengine/managers/ObjectManager/t
 import animationEngineInstance from "@vxengine/singleton";
 import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
-import { addObjectToStoreSTATIC, removeObjectFromStoreSTATIC } from "@vxengine/managers/ObjectManager/stores/objectStore";
-
+import { vxengine } from "@vxengine/singleton";
+import { ObjectManagerService } from "@vxengine/managers/ObjectManager/service";
 declare module 'three' {
     interface Object3D {
         vxkey: string;
@@ -45,12 +45,11 @@ export function withVX<P extends object>(
 
         useImperativeHandle(ref, () => internalRef.current, [])
 
-        const { IS_DEVELOPMENT } = useVXEngine()
         const currentTimelineID = useAnimationEngineAPI(state => state.currentTimelineID)
 
         // Initialize timeline editor object
         useLayoutEffect(() => {
-            if (currentTimelineID === undefined || IS_DEVELOPMENT === false) 
+            if (currentTimelineID === undefined || vxengine.isProduction) 
                 return;
 
             const mergedSettings = { ...defaultProps.settings, ...finalProps.settings }
@@ -58,7 +57,7 @@ export function withVX<P extends object>(
             initTimelineEditorObject(finalProps.vxkey, mergedSettings);
 
             return () => { cleanupEditorObject(finalProps.vxkey); };
-        }, [currentTimelineID, props.settings, props.vxkey, IS_DEVELOPMENT]);
+        }, [currentTimelineID, props.settings, props.vxkey]);
 
         useEffect(() => {
             let parentKey;
@@ -96,15 +95,16 @@ export function withVX<P extends object>(
                 usingHOC: true
             }
 
-            addObjectToStoreSTATIC(newVXEntity, IS_DEVELOPMENT, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
+
+            ObjectManagerService.addObjectToStore(newVXEntity, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
 
             animationEngineInstance.handleObjectMount(newVXEntity);
 
             return () => {
                 animationEngineInstance.handleObjectUnMount(finalProps.vxkey);
-                removeObjectFromStoreSTATIC(finalProps.vxkey, IS_DEVELOPMENT, finalProps.modifyObjectTree)
+                ObjectManagerService.removeObjectFromStore(finalProps.vxkey, finalProps.modifyObjectTree)
             }
-        }, [internalRef.current, finalProps.type, finalProps.vxkey, finalProps.name, finalProps.params, finalProps.disabledParams, finalProps.overrideNodeTreeParentKey, IS_DEVELOPMENT])
+        }, [internalRef.current, finalProps.type, finalProps.vxkey, finalProps.name, finalProps.params, finalProps.disabledParams, finalProps.overrideNodeTreeParentKey])
 
 
         return (
@@ -115,7 +115,7 @@ export function withVX<P extends object>(
                     ref={internalRef}
                 />
                 
-                {IS_DEVELOPMENT && finalProps.type !== "htmlElement" && (
+                {vxengine.isDevelopment && finalProps.type !== "htmlElement" && (
                     <ObjectUtils vxkey={finalProps.vxkey}/>
                 )}
             </>

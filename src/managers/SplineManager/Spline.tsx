@@ -10,11 +10,9 @@ import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { useVXObjectStore } from '../ObjectManager';
 import { vxSplineProps } from '../ObjectManager/types/objectStore';
 import { useObjectPropertyAPI } from '../ObjectManager/stores/managerStore';
-import { SplineCurve } from 'three';
-import { extend } from '@react-three/fiber';
 import { debounce } from 'lodash';
-import { useVXEngine } from '@vxengine/engine';
 import { EditorSpline } from '@vxengine/types/data/editorData';
+import { ObjectManagerService } from '../ObjectManager/service';
 
 interface SplineProps {
     edSpline: EditorSpline
@@ -31,7 +29,6 @@ interface SplineProps {
 // This handles only the vxObject part
 
 const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) => {
-    const { IS_DEVELOPMENT } = useVXEngine();
     const splineKey = `${vxkey}.spline`
 
     const nodes = edSpline.nodes;
@@ -64,9 +61,6 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
         const currentTimeline = useAnimationEngineAPI.getState().currentTimeline;
         const rawSpline = currentTimeline.splines?.[splineKey]
 
-        const addObject = useVXObjectStore.getState().addObject;
-        const removeObject = useVXObjectStore.getState().removeObject;
-
         const vxSpline: vxSplineProps = {
             objectVxKey: vxkey,
             vxkey: splineKey,
@@ -81,8 +75,8 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
             parentKey: "splines"
         }
 
-        addObject(vxSpline, IS_DEVELOPMENT);
-        return () => removeObject(splineKey, IS_DEVELOPMENT);
+        ObjectManagerService.addObjectToStore(vxSpline);
+        return () => ObjectManagerService.removeObjectFromStore(splineKey);
     }, [])
 
     if (!nodes) return

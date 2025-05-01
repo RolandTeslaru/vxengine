@@ -32,7 +32,7 @@ const fadeProps: VXElementParams = [
     { propertyPath: "uniforms.fadeIntensity", title: "fadeIntensity", type: "slider", min: 0, max: 1, step: 0.01 }
 ]
 
-export type VXElementFadeEffect = Omit<VXElementPropsWithoutRef<ThreeElements["primitive"]>, "vxkey"> & {
+export type EditableFaderProps = Omit<VXElementPropsWithoutRef<ThreeElements["primitive"]>, "vxkey"> & {
     ref?: React.RefObject<FadeShaderEffectImpl>
     vxkey?: string
     name?: string
@@ -48,4 +48,4 @@ export const EditableFadeEffect =  withVX(BaseFadeEffect, {
     params: fadeProps,
     vxkey: "fadeEffect",
     icon: "FadeEffect"
-})
+}) as React.ComponentType<EditableFaderProps>

@@ -4,10 +4,6 @@ import { RawProject, RawTimeline, RawObject } from "../../types/data/rawData";
 import { AnimationEngine } from "../engine";
 
 export interface IAnimationEngine extends Emitter<EventTypes> {
-  readonly isPlaying: boolean;
-  readonly isPaused: boolean;
-  readonly playRate: number;
-  readonly timelines: Record<string, RawTimeline>;
 
   reRender(param?: {
     time?: number;

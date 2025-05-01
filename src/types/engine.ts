@@ -21,8 +21,5 @@ export interface VXEngineStoreProps {
     setMountCoreRenderer: (value: boolean) => void;
 
     composer: React.RefObject<EffectComposer | null>;
-
-    IS_DEVELOPMENT: boolean;
-    IS_PRODUCTION: boolean;
 }
 

@@ -10,7 +10,7 @@ import React, {
   useImperativeHandle,
   memo,
 } from 'react'
-import { useThree, useFrame, useInstanceHandle, Instance } from '@react-three/fiber'
+import { useThree, useFrame, Instance } from '@react-three/fiber'
 import {
   EffectComposer as EffectComposerImpl,
   RenderPass,
@@ -24,10 +24,8 @@ import {
 } from 'postprocessing'
 import { isWebGL2Available } from 'three-stdlib'
 import * as THREE from "three"
-import { useVXEngine } from "@vxengine/engine"
-
-import { useObjectManagerAPI, useVXObjectStore } from '../ObjectManager'
 import { vxEffectProps, vxObjectProps } from '../ObjectManager/types/objectStore'
+import { ObjectManagerService } from '../ObjectManager/service'
 
 export const EffectComposerContext = createContext<{
   composer: EffectComposerImpl
@@ -79,8 +77,6 @@ export const EffectComposerDriver = /* @__PURE__ */ memo(
   ) => {
     const vxkey = "effects"
     const { gl, scene, camera, size } = useThree()
-
-    const { IS_DEVELOPMENT } = useVXEngine();
 
     const composerRef = useRef<EffectComposerImpl>(null)
 
@@ -143,10 +139,6 @@ export const EffectComposerDriver = /* @__PURE__ */ memo(
     const group = useRef(null)
 
     useLayoutEffect(() => {
-
-      const addObject = useVXObjectStore.getState().addObject;
-      const removeObject = useVXObjectStore.getState().removeObject;
-
       const newVXEntity: vxEffectProps = {
         type: "effect",
         ref: composerRef,
@@ -157,9 +149,9 @@ export const EffectComposerDriver = /* @__PURE__ */ memo(
         parentKey: "global",
       };
 
-      addObject(newVXEntity, IS_DEVELOPMENT, { icon: "Effects" });
+      ObjectManagerService.addObjectToStore(newVXEntity, { icon: "Effects" });
 
-      return () => removeObject(newVXEntity.vxkey, IS_DEVELOPMENT);
+      return () => ObjectManagerService.removeObjectFromStore(newVXEntity.vxkey);
     }, [])
 
     useLayoutEffect(() => {

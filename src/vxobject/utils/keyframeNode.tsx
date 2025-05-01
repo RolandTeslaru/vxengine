@@ -5,9 +5,10 @@ import { useObjectManagerAPI } from "@vxengine/managers/ObjectManager/stores/man
 import { selectKeyframeSTATIC as selectKeyframe } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import * as THREE from "three"
 import { Html } from "@react-three/drei";
-import { addObjectToStoreSTATIC, removeObjectFromStoreSTATIC, useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
+import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { vxKeyframeNodeProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useVXEngine } from "@vxengine/engine";
+import { ObjectManagerService } from "@vxengine/managers/ObjectManager/service";
 
 export interface KeyframeNodeProps {
     keyframeKeys: string[];
@@ -28,7 +29,6 @@ const axisColors = {
 
 const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, index, axis, position, color = "yellow", size = 0.3 }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-    const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef<THREE.Mesh>(null);
 
@@ -46,9 +46,9 @@ const KeyframeNode: React.FC<KeyframeNodeProps> = ({ keyframeKeys, parentVxKey, 
             },
             parentKey: parentVxKey
         }
-        addObjectToStoreSTATIC(keyframeNode, IS_DEVELOPMENT, { icon: "Keyframe"});
+        ObjectManagerService.addObjectToStore(keyframeNode, { icon: "Keyframe"});
 
-        return () => removeObjectFromStoreSTATIC(nodeKey, IS_DEVELOPMENT)
+        return () => ObjectManagerService.removeObjectFromStore(nodeKey)
     }, [keyframeKeys])
 
     const handleOnClick = useCallback((e) => {

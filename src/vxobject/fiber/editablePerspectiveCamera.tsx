@@ -8,7 +8,7 @@ import { invalidate, ThreeElements, useFrame } from "@react-three/fiber";
 import { CameraHelper } from "three";
 
 import * as THREE from "three"
-import { useVXEngine } from "@vxengine/engine";
+import { vxengine } from "@vxengine/singleton";
 import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
 import { withVX } from "../withVX";
 
@@ -46,8 +46,6 @@ export const defaultSettings: VXObjectSettings = {
 const BasePerspectiveCamera = ({ref, ...props}) => {
     const cameraTargetRef = useVXObjectStore(state => state.objects["cameraTarget"]?.ref)
 
-    const { IS_DEVELOPMENT } = useVXEngine();
-
     const cameraUpdate = useCallback(() => {
         if (!ref.current || !cameraTargetRef) 
             return
@@ -65,7 +63,7 @@ const BasePerspectiveCamera = ({ref, ...props}) => {
     useFrame(cameraUpdate)
 
     const mode = useCameraManagerAPI(state => state.mode)
-    const showHelper = mode === "free" && IS_DEVELOPMENT
+    const showHelper = mode === "free" && vxengine.isDevelopment
     useHelper(ref, showHelper && CameraHelper)
 
     invalidate();

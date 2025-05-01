@@ -17,21 +17,14 @@ import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/util
 import JsonView from "react18-json-view";
 import { pushDialogStatic } from "@vxengine/managers/UIManager/store";
 import { ALERT_MakePropertyStatic, ALERT_ResetProperty } from "@vxengine/components/ui/DialogAlerts/Alert";
-
+import { useTimelineEditorContext } from "../../context";
+import { vxengine } from "@vxengine/singleton";
 const TRACK_HEIGHT = 34;
 
 const TrackVerticalList = memo(() => {
-    const { trackTree, searchQuery, setSearchQuery } = useTimelineEditorAPI(state => { return {
-        trackTree: state.trackTree,
-        searchQuery: state.searchQuery,
-        setSearchQuery: state.setSearchQuery
-    }})
+    const { trackListRef, timelineAreaRef, scrollSyncId } = useTimelineEditorContext()
+    const [trackTree, searchQuery, setSearchQuery] = useTimelineEditorAPI(state => [state.trackTree, state.searchQuery, state.setSearchQuery])
 
-    const { trackListRef, timelineAreaRef, scrollSyncId } = useRefStore(state => { return {
-        trackListRef: state.trackListRef,
-        timelineAreaRef: state.timelineAreaRef,
-        scrollSyncId: state.scrollSyncId
-    }})
 
     const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const scrollContainer = e.target as HTMLDivElement;
@@ -57,8 +50,6 @@ const TrackVerticalList = memo(() => {
         }, {})
     }, [trackTree, searchQuery])
 
-    const { IS_PRODUCTION } = useVXEngine()
-
     return (
         <div
             className={`antialiased w-[29%] h-full flex flex-col rounded-2xl relative overflow-y-scroll 
@@ -76,7 +67,7 @@ const TrackVerticalList = memo(() => {
                     setSearchQuery={setSearchQuery}
                 />
             </div>
-            {IS_PRODUCTION &&
+            {vxengine.isProduction &&
                 <div className="absolute top-1/2 -translate-y-1/2">
                     <p className="text-xs font-roboto-mono text-center text-red-600 px-2">
                         Track Tree is not generated in Production Mode!

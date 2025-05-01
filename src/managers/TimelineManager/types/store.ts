@@ -45,7 +45,7 @@ export interface TimelineManagerAPIProps {
     // Keyframe functions
     createKeyframe: (props: {state?: TimelineManagerAPIProps, vxkey: string, propertyPath: string, value?: number, reRender?: boolean, handles?: EditorKeyframeHandles, time?: number, overlapKeyframeCheck?: boolean}) => void;
     removeKeyframe: (props: {state?: TimelineManagerAPIProps, keyframeKey: string, vxkey: string, propertyPath: string, reRender: boolean}) => void;
-    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender?: boolean, mutateUI?: boolean) => void;
+    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, keyframesMap: Map<string, HTMLElement>, trackSegementsMap: Map<string, HTMLElement>, reRender?: boolean) => void;
     setKeyframeValue: (keyframeKey: string, trackKey: string, newValue: number, reRender?: boolean, updateStore?: boolean) => void;
     setKeyframeHandles: (keyframeKey: string, trackKey: string, inHandle: EditorVector2, outHandle: EditorVector2, reRender?: boolean) => void;
     // StaticProp function

@@ -15,7 +15,7 @@ interface ListItemProps extends React.LiHTMLAttributes<HTMLLIElement> {}
 
 export const ListItem: React.FC<ListItemProps> = ({children, className, ...rest}) => {
     return (
-        <li className={classNames(className, " p-2 flex flex-row justify-between even:bg-secondary-thin")} {...rest}>
+        <li className={classNames(className, "text-tertiary-opaque px-2 py-[6px] flex flex-row justify-between even:bg-secondary-thin")} {...rest}>
             {children}
         </li>
     )

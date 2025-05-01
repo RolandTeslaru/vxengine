@@ -2,7 +2,7 @@ export enum LogLevel {
     INFO = 'info',
     WARN = 'warn',
     ERROR = 'error',
-    FATAL = `fatal`
+    FATAL = `error`
 }
 
 
@@ -27,9 +27,9 @@ class LogReportingService {
         };
 
         // For development, you might want to log to the console:
-        if (!this._IS_PRODUCTION) {
-            console[level](`${logMessage}`, context && logEntry);
-        }
+        // if (!this._IS_PRODUCTION) {
+        // }
+        console[level](`${logMessage}`, context && logEntry);
 
         
 

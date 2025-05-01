@@ -9,6 +9,7 @@ import { useTimelineManagerAPI } from "..";
 export const DIALOG_setKeyframeTime = () => {
     const setKeyframeTime = useTimelineManagerAPI((state) => state.setKeyframeTime);
 
+
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const trackKey = e.target.trackKey.value;
@@ -28,7 +29,7 @@ export const DIALOG_setKeyframeTime = () => {
             return;
         }
 
-        setKeyframeTime(keyframeKey, trackKey, newTime);
+        // setKeyframeTime(keyframeKey, trackKey, newTime);
     };
 
     return (

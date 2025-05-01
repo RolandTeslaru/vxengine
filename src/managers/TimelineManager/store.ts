@@ -31,7 +31,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
         set({ currentTimelineLength: length })
     },
 
-    setEditorData: (rawObjects, rawSplines, IS_DEVELOPMENT) => {
+    setEditorData: (rawObjects, rawSplines) => {
         const { splines } = processRawData(rawObjects, rawSplines);
 
         set({
@@ -506,7 +506,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
     },
 
     // TODO: Find a way to batch and throttle the state updates 
-    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, reRender = true, mutateUI = true) => {
+    setKeyframeTime: (keyframeKey: string, trackKey: string, newTime: number, keyframesMap, trackSegementsMap, reRender = true) => {
         const { vxkey, propertyPath } = extractDataFromTrackKey(trackKey);
         newTime = truncateToDecimals(newTime)
         // Handle State Update
@@ -537,8 +537,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
         })
 
         // Handle UI Mutation
-        if (mutateUI)
-            handleKeyframeMutationByTime(keyframeKey, newTime, true);
+        handleKeyframeMutationByTime(keyframeKey, newTime, true, keyframesMap, trackSegementsMap);
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })

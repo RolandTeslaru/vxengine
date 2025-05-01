@@ -13,12 +13,13 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/Timelin
 import animationEngineInstance from '@vxengine/singleton';
 import { handlePasteKeyframes } from '../EditArea/Keyframe/utils';
 import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
+import { useTimelineEditorContext } from '../../../context';
 
 const EditorCursor = () => {
   const elementRef = useRef<HTMLDivElement>(null)
   const interactableRef = useRef<Interactable>(null)
   const { externalContainer } = useWindowContext();
-  const timelineAreaRef = useRefStore(state => state.timelineAreaRef)
+  const { timelineAreaRef } = useTimelineEditorContext()
 
   const deltaX = useRef(0)
 

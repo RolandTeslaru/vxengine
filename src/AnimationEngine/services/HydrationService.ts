@@ -303,8 +303,8 @@ export class HydrationService {
 
                 const propExists = rawObject.staticProps.some(prop => prop.propertyPath === propertyPath);
                 if (propExists) {
-                    logReportingService.logWarning(
-                        `StaticProp ${staticPropKey} already exists`, LOG_CONTEXT)
+                    console.warn(`VXEngine Hydration Service: Could not find staticProp ${staticPropKey}`)
+
                     return;
                 }
 
@@ -325,8 +325,7 @@ export class HydrationService {
                     `${vxkey}.${sp.propertyPath}` === staticPropKey)
 
                 if (!targetStaticProp) {
-                    logReportingService.logWarning(
-                        `Could not find staticProp ${staticPropKey}`, LOG_CONTEXT)
+                    console.warn(`VXEngine Hydration Service: Could not find staticProp ${staticPropKey}`)
                     return;
                 }
 

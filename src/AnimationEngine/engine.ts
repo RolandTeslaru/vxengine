@@ -9,7 +9,6 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import * as THREE from "three"
 import { IAnimationEngine, TrackSideEffectCallback } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
-import { useAnimationEngineAPI } from './store';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 import { cloneDeep } from 'lodash';
 
@@ -23,6 +22,8 @@ import { SplineService } from './services/SplineService';
 import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
 import { PropertyControlService } from './services/PropertyControlService';
 import { ParamModifierService } from './services/ParamModifierService';
+import { create } from 'zustand';
+import { TimelineStoreStateProps, useAnimationEngineAPI } from './store';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
@@ -30,6 +31,10 @@ const DEBUG_OBJECT_INIT = false;
 const LOG_MODULE = "AnimationEngine"
 
 export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEngine {
+
+  public useAnimationEngine = useAnimationEngineAPI
+  private get _state() { return useAnimationEngineAPI.getState() }
+
   // ====================================================
   // Public Static Members
   // ====================================================
@@ -42,10 +47,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // ====================================================
   // Public Instance Getters (API)
   // ====================================================
-  public get timelines() { return useAnimationEngineAPI.getState().timelines; }
-  public get isPlaying() { return useAnimationEngineAPI.getState().isPlaying; }
-  public get isPaused() { return !this.isPlaying; }
-  public get playRate() { return useAnimationEngineAPI.getState().playRate }
   public get currentTimeline() { return this._currentTimeline }
   public get rawObjectCache() { return this._rawObjectCache }
   public get currentTime() { return this._currentTime }
@@ -121,6 +122,16 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._paramModifierService = new ParamModifierService(this, this._hydrationService)
   }
 
+  public initialize(nodeEnv: "production" | "development"){
+    if (nodeEnv === "production")
+      this._IS_PRODUCTION = true;
+    else if (nodeEnv === "development")
+      this._IS_DEVELOPMENT = true;
+
+    this._hydrationService.setMode(nodeEnv);
+    this._paramModifierService.setMode(nodeEnv)
+    this._propertyControlService.setMode(nodeEnv)   
+  }
 
 
   // ====================================================
@@ -161,7 +172,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     const firstTimeline = Object.values(timelines)[0];
     const firstTimelineID = firstTimeline.id;
 
-    this.setCurrentTimeline(firstTimelineID, isMounting);
+    this.setCurrentTimeline(firstTimelineID);
 
     logReportingService.logInfo(
       `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`, LOG_CONTEXT)
@@ -180,33 +191,31 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param timelineId - The identifier of the timeline to set as current.
    * @param isMounting - During the initial mount phase, the Canvas element isn't mounted.
    */
-  public setCurrentTimeline(timelineId: string, isMounting: boolean = false) {
+  public setCurrentTimeline(timelineId: string) {
     const LOG_CONTEXT = {
       module: "AnimationEngine",
       functionName: "setCurrentTimeline",
-      additionalData: { timelines: this.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION }
+      additionalData: { timelines: this._state.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION }
     }
     // Update the current timeline ID in the state
 
     logReportingService.logInfo(`Setting current timeline to ${timelineId}`, LOG_CONTEXT)
 
-    const selectedTimeline: RawTimeline = this.timelines[timelineId];
+    const selectedTimeline: RawTimeline = this._state.timelines[timelineId];
     if (!selectedTimeline)
       logReportingService.logFatal(
         `Timeline with id ${timelineId} was not found`, LOG_CONTEXT)
 
     // Set the states in the store
-    useAnimationEngineAPI.setState({ currentTimeline: selectedTimeline, currentTimelineID: timelineId })
+    useAnimationEngineAPI
+      .setState({ currentTimeline: selectedTimeline, currentTimelineID: timelineId })
+ 
     this._currentTimeline = selectedTimeline;
 
-    if (isMounting === false) {
-      this._propertyControlService.recomputeAllPropertySetters(
-        this._currentTimeline,
-        this._object3DCache
-      )
-      this._applyTracksOnTimeline(this.currentTime, true)
-    }
+    this._propertyControlService
+        .recomputeAllPropertySetters(this._currentTimeline, this._object3DCache)
 
+    this._applyTracksOnTimeline(this.currentTime, true)
 
     this._currentTimeline.objects.forEach(rawObject => {
       this._rawObjectCache.set(rawObject.vxkey, rawObject);
@@ -272,7 +281,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   public reRender(params: { time?: number; force?: boolean; cause?: string; } = {}) {
     const { time, force = false, cause } = params;
 
-    if (this.isPlaying && !force)
+    if (this._state.isPlaying && !force)
       return;
 
     if (DEBUG_RERENDER)
@@ -336,7 +345,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    */
   public pause() {
     logReportingService.logInfo("Pause triggered", { module: LOG_MODULE, functionName: "pause" })
-    if (this.isPlaying) { // Only act if it was playing
+    if (this._state.isPlaying) { // Only act if it was playing
       useAnimationEngineAPI.setState({ isPlaying: false })
       cancelAnimationFrame(this._timerId); // Stop the animation loop
 
@@ -358,9 +367,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   public handleObjectMount(vxObject: vxObjectProps) {
     const vxkey = vxObject.vxkey;
 
-    if (!this._isReady)
-      return;
-
     // Initialize all Side Effects
     vxObject.params.forEach((param) => {
       const sideEffect = param.sideEffect;
@@ -375,7 +381,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (DEBUG_OBJECT_INIT)
       logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: { vxObject } })
 
-    const rawObject = this.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    const rawObject = this._state.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
 
     if (!rawObject)
       return
@@ -421,12 +427,12 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    *   - to: The time to play up to.
    */
   private _tick(now: number, to: number, autoEnd: boolean = false) {
-    if (this.isPaused) {
+    if (this._state.isPlaying === false) {
       return;
     }
 
     const deltaTime = Math.min(1000, now - this._prevTime) / 1000;
-    let newCurrentTime = this._currentTime + deltaTime * this.playRate;
+    let newCurrentTime = this._currentTime + deltaTime * this._state.playRate;
     this._prevTime = now;
 
     let isFinished = false;

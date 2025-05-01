@@ -1,4 +1,10 @@
+import { useAnimationEngineAPI } from "./AnimationEngine";
 import { AnimationEngine } from "./AnimationEngine/engine";
+import { logReportingService } from "./AnimationEngine/services/LogReportingService";
+import { useSourceManagerAPI } from "./managers/SourceManager";
+import { pushProjectNameUnSyncDialog } from "./managers/SourceManager/ui";
+import { pushDialogStatic, useUIManagerAPI } from "./managers/UIManager/store";
+import { RawProject } from "./types/data/rawData";
 
 declare global {
   var __animationEngineInstance: AnimationEngine | undefined;
@@ -14,3 +20,83 @@ if (!globalThis.__animationEngineInstance) {
 animationEngineInstance = globalThis.__animationEngineInstance;
 
 export default animationEngineInstance;
+
+
+
+
+export class VXEngine {
+
+  private constructor() {} 
+
+  private static _instance: VXEngine;
+  private _IS_PRODUCTION: boolean = false;
+  private _IS_DEVELOPMENT: boolean = false;
+
+  public get isDevelopment(): boolean {
+    return this._IS_DEVELOPMENT;
+  }
+
+  public get isProduction(): boolean {
+    return this._IS_PRODUCTION;
+  }
+
+  public static getInstance(): VXEngine {
+    if (!VXEngine._instance)
+      VXEngine._instance = new VXEngine();
+  
+    return VXEngine._instance;
+  }
+
+  public initialize(nodeEnv: "production" | "development" ){
+    if (nodeEnv === "production")
+      this._IS_PRODUCTION = true;
+    else if (nodeEnv === "development")
+      this._IS_DEVELOPMENT = true;
+
+    animationEngineInstance.initialize(nodeEnv);
+
+    return this;
+  }
+
+
+  
+  public loadProject(diskData: RawProject, projectName: string) {
+
+    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
+
+    logReportingService.logInfo(
+      `Loading Project ${diskData.projectName} in ${(this._IS_PRODUCTION) && "production mode"} ${(this._IS_DEVELOPMENT) && "dev mode"}`, LOG_CONTEXT)
+
+    const timelines = diskData.timelines
+    useAnimationEngineAPI.setState({ projectName: diskData.projectName })
+
+    if (this._IS_DEVELOPMENT) {
+      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
+      if (syncResult?.status === 'out_of_sync')
+        useAnimationEngineAPI.setState({ isPlaying: false })
+    }
+    else
+      useAnimationEngineAPI.setState({ timelines: timelines })
+
+    logReportingService.logInfo(
+      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`, LOG_CONTEXT)
+
+    // Initialize the core UI
+    useUIManagerAPI.getState().setMountCoreUI(true);
+
+
+    if(projectName !== diskData.projectName){
+      pushProjectNameUnSyncDialog(diskData.projectName, projectName)
+    }
+
+    return this;
+  }
+
+  public setCurrentTimeline(timelineId: string) {
+    animationEngineInstance.setCurrentTimeline(timelineId);
+    return this;
+  }
+}
+
+
+export const vxengine = VXEngine.getInstance();

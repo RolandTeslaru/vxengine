@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef } from 'react'
+import React, { createContext, useCallback, useEffect, useRef } from 'react'
 import TimelineEditorHeader from './components/Header'
 import TimelineEditorFooter from './components/Footer'
 import TrackVerticalList from './components/TrackVerticalList'
@@ -7,10 +7,13 @@ import TimelineArea from './components/TimelineArea'
 import { GripVertical } from 'lucide-react'
 import { useRefStore } from '@vxengine/utils'
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow'
+import { TimelineEditorProvider, useTimelineEditorContext } from './context'
+import { useTimelineManagerAPI } from '..'
 
 const TimelineEditor = React.memo(() => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { externalContainer } = useWindowContext();
+    const { trackListRef, timelineAreaRef } = useTimelineEditorContext();
 
 
     const handleMouseDown = (e) => {
@@ -27,10 +30,6 @@ const TimelineEditor = React.memo(() => {
     };
 
     const handleMouseMove = (e) => {
-        const refState = useRefStore.getState()
-        const trackListRef = refState.trackListRef;
-        const timelineAreaRef = refState.timelineAreaRef;
-        
         if (!containerRef.current || !trackListRef.current || !timelineAreaRef.current) return;
 
         const containerRect = containerRef.current.getBoundingClientRect();
@@ -46,7 +45,7 @@ const TimelineEditor = React.memo(() => {
         trackListRef.current.style.width = `${newLeftWidth}px`;
         // The right panel takes the rest of the space
         timelineAreaRef.current.style.width = `${containerRect.width - newLeftWidth}px`;
-    };
+    }
 
     const handleMouseUp = () => {
         // Clean up the event listeners

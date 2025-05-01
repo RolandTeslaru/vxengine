@@ -1,5 +1,4 @@
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
-import { keyframesRef, trackSegmentsRef } from '@vxengine/utils/useRefStore';
 import { handleKeyframeDrag } from '../Keyframe/utils';
 import { segmentStartLeft } from './TrackSegment';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
@@ -8,6 +7,7 @@ import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/Timelin
 export interface updateUIProps {
     firstKeyframeKey: string;
     secondKeyframeKey: string;
+    trackSegmentsMap: Map<string, HTMLElement>;
     newLeft?: number;
     newWidth?: number;
 }
@@ -16,12 +16,13 @@ export interface updateUIProps {
 export const handleTrackSegmentMutation = ({
     firstKeyframeKey, 
     secondKeyframeKey, 
+    trackSegmentsMap,
     newLeft, 
-    newWidth
+    newWidth,
 }: updateUIProps) => {
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
 
-    const tsElement = trackSegmentsRef.get(trackSegmentKey);
+    const tsElement = trackSegmentsMap.get(trackSegmentKey);
     if(newLeft){
         tsElement.style.left = `${newLeft}px`
         Object.assign(tsElement.dataset, { left: newLeft + segmentStartLeft })
@@ -38,7 +39,9 @@ export const handleTrackDrag = (
     prevLeft: number, 
     trackKey: string, 
     firstKeyframeKey: string, 
-    secondKeyframeKey: string
+    secondKeyframeKey: string,
+    keyframesMap: Map<string, HTMLElement>,
+    trackSegmentsMap: Map<string, HTMLElement>
 ) => {
     const { selectedKeyframeKeys, selectKeyframe, clearSelectedKeyframes , clearSelectedTrackSegments, selectTrackSegment, selectedTrackSegments} = useTimelineEditorAPI.getState();
 
@@ -76,7 +79,7 @@ export const handleTrackDrag = (
     }
 
 
-    const staleFirstKfLeft = parseFloat(keyframesRef.get(firstKeyframeKey).dataset.left);
+    const staleFirstKfLeft = parseFloat(keyframesMap.get(firstKeyframeKey).dataset.left);
     const deltaPixel = newLeft - prevLeft;
     const hydratedFirstKfLeft = staleFirstKfLeft + deltaPixel;
 
@@ -86,6 +89,8 @@ export const handleTrackDrag = (
         trackKey,
         firstKeyframeKey,
         true,
-        true
+        true,
+        keyframesMap,
+        trackSegmentsMap
     )
 }

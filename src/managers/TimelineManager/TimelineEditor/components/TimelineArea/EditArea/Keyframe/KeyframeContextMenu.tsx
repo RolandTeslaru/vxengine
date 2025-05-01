@@ -18,12 +18,12 @@ const KeyframeContextMenu: React.FC<Props> = React.memo(({ trackKey, keyframeKey
 
     return (
         <ContextMenuContent>
-            {/* <ContextMenuSub>
+            <ContextMenuSub>
                 <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <KeyframeData trackKey={trackKey} keyframeKey={keyframeKey} />
                 </ContextMenuSubContent>
-            </ContextMenuSub> */}
+            </ContextMenuSub>
 
             <ContextMenuSub>
                 <ContextMenuSubTrigger>

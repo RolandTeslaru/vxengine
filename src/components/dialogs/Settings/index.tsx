@@ -7,6 +7,7 @@ import { Box, Brush, Display, Engine, Film, Video } from '@vxengine/components/u
 import VexrLogo from '@vxengine/components/ui/VexrLogo'
 // @ts-expect-error
 import packageJson from "../../../../package.json"
+import { ScrollArea } from '@vxengine/components/shadcn/scrollArea'
 
 export const DialogSettings = () => {
     const [selectedElementKey, setSelectedElementKey] = useState(Object.keys(SIDEBAR_ELEMENT_MAP)[0])
@@ -102,9 +103,9 @@ const SettingsContent = ({ selectedElementKey }: { selectedElementKey: string })
             <div className='h-[50px] px-8  flex border-b border-black bg-primary-thin'>
                 <h1 className='text-base h-auto my-auto antialiased font-bold font-roboto-mono text-label-primary'>{SIDEBAR_ELEMENT_MAP[selectedElementKey].title}</h1>
             </div>
-            <div className='p-2 px-4 z-10 flex flex-col'>
+            <ScrollArea className='p-2 px-4 z-10 flex flex-col h-[550px] overflow-scroll'>
                 <Component />
-            </div>
+            </ScrollArea>
             <VexrLogo className='h-20 dark:text-black/10 text-white/20 absolute z-0 top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2' />
         </div>
     )

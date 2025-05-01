@@ -1,12 +1,14 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
 import { Input } from '@vxengine/components/shadcn/input';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
+import { useTimelineEditorContext } from '@vxengine/managers/TimelineManager/TimelineEditor/context';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { keyframesRef } from '@vxengine/utils/useRefStore';
 import React, { useCallback, useMemo } from 'react'
 import JsonView from 'react18-json-view'
 
 const KeyframeData = ({ trackKey, keyframeKey }: { trackKey: string, keyframeKey: string }) => {
+
+    const { keyframesMap, trackSegmentsMap } = useTimelineEditorContext();
 
     const customizeNode = useCallback(({ node, indexOrName, depth }) => {
         const key = indexOrName
@@ -20,7 +22,7 @@ const KeyframeData = ({ trackKey, keyframeKey }: { trackKey: string, keyframeKey
                     setKeyframeValue(keyframeKey, trackKey, newValue, true);
                 } else if (key === "time") {
                     const setKeyframeTime = useTimelineManagerAPI.getState().setKeyframeTime;
-                    setKeyframeTime(keyframeKey, trackKey, newValue, true);
+                    setKeyframeTime(keyframeKey, trackKey, newValue, keyframesMap, trackSegmentsMap, true);
                 }
             };
 
@@ -40,7 +42,7 @@ const KeyframeData = ({ trackKey, keyframeKey }: { trackKey: string, keyframeKey
 
         // Default rendering for other keys
         return undefined;
-    }, [trackKey, keyframeKey]);
+    }, [trackKey, keyframeKey, keyframesMap]);
 
     const keyframe = useTimelineManagerAPI(state => state.tracks[trackKey]?.keyframes[keyframeKey]);
 

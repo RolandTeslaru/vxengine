@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { ContextMenu, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { parserTimeToPixel } from '@vxengine/managers/TimelineManager/utils/deal_data';
@@ -9,26 +9,28 @@ import interact from 'interactjs';
 import { hydrateKeyframeKeysOrder } from '../Keyframe/utils';
 import { handleTrackDrag } from './utils';
 import { produce } from 'immer';
-import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import TrackSegmentContextMenu from './TrackSegmentContextMenu';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { useTimelineEditorContext } from '@vxengine/managers/TimelineManager/TimelineEditor/context';
 
 export const segmentStartLeft = 22;
 
 interface Props {
     trackKey: string;
     firstKeyframeKey: string;
-    secondKeyframeKey: string
+    secondKeyframeKey: string;
+    handleOnMove: (e, deltaX, trackKey, firstKeyframeKey, secondKeyframeKey) => void
+    handleOnMoveEnd: (e) => void
 }
 
 const TrackSegment: React.FC<Props> = (props) => {
-    const { trackKey, firstKeyframeKey, secondKeyframeKey } = props
+    const { trackKey, firstKeyframeKey, secondKeyframeKey, handleOnMove, handleOnMoveEnd } = props
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
     const elementRef = useRef<HTMLElement>(null);
     const interactableRef = useRef<Interactable>(null)
-
+    const { trackSegmentsMap } = useTimelineEditorContext()
     const { externalContainer } = useWindowContext();
 
     const deltaX = useRef(0);
@@ -41,8 +43,7 @@ const TrackSegment: React.FC<Props> = (props) => {
         const secondKeyframe = timelineManagerAPI.tracks[trackKey].keyframes[secondKeyframeKey];
 
         // Handle Centralized Ref Store for DOM Mutations
-        const trackSegmentsRef = useRefStore.getState().trackSegmentsRef;
-        trackSegmentsRef.set(trackSegmentKey, elementRef.current)
+        trackSegmentsMap.set(trackSegmentKey, elementRef.current)
 
         // 
         const startX = parserTimeToPixel(firstKeyframe.time, segmentStartLeft, initialScale)
@@ -73,7 +74,7 @@ const TrackSegment: React.FC<Props> = (props) => {
             if (interactableRef.current)
                 interactableRef.current.unset();
 
-            trackSegmentsRef.delete(trackSegmentKey)
+            trackSegmentsMap.delete(trackSegmentKey)
         }
     }, [firstKeyframeKey, secondKeyframeKey])
 
@@ -147,49 +148,4 @@ const handleOnClick = (
         state.selectTrackSegment(firstKeyframeKey, secondKeyframeKey, trackKey);
     }
     
-}
-
-
-
-const handleOnMove = (
-    e: DragEvent,
-    deltaXRef: { current: number },
-    trackKey: string,
-    firstKeyframeKey: string,
-    secondKeyframeKey: string,
-) => {
-    const target = e.target;
-    if (!target.dataset.left) {
-        target.dataset.left = target.style.left.replace('px', '') || '0';
-    }
-    if (!target.dataset.width) {
-        target.dataset.width = target.style.width.replace('px', '') || '0';
-    }
-
-    const prevLeft = parseFloat(target.dataset.left);
-    deltaXRef.current += e.dx;
-
-    let newLeft = prevLeft + e.dx;
-
-    handleTrackDrag(newLeft, prevLeft, trackKey, firstKeyframeKey, secondKeyframeKey)
-}
-
-const handleOnMoveEnd = (e: DragEvent) => {
-    const selectedKeyframesFlatMap = useTimelineEditorAPI.getState().selectedKeyframesFlatMap
-
-    useTimelineManagerAPI.setState(
-        produce((state: TimelineManagerAPIProps) => {
-            selectedKeyframesFlatMap.forEach(selectKeyframeFlat => {
-                const { trackKey, keyframeKey } = selectKeyframeFlat;
-                const kfElement = keyframesRef.get(keyframeKey);
-                const hydratedKfTime = parseFloat(kfElement.dataset.time);
-
-                if (hydratedKfTime !== null && hydratedKfTime !== undefined && !isNaN(hydratedKfTime)) {
-                    state.tracks[trackKey].keyframes[keyframeKey].time = hydratedKfTime;
-                }
-            })
-        })
-    )
-
-    hydrateKeyframeKeysOrder();
 }

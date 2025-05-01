@@ -32,4 +32,4 @@ export const EditableBloom = withVX(BaseBloom, {
   params: bloomParams,
   icon: "BloomEffect",
   name: "Bloom",
-});
+}) as React.ComponentType<EditableBloomProps>

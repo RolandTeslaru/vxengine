@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei';
 import { vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
 import { useVXEngine } from '@vxengine/engine';
 import { handleOnVxObjectClick } from '@vxengine/managers/ObjectManager/utils/handleVxObject';
+import { ObjectManagerService } from '@vxengine/managers/ObjectManager/service';
 
 export interface SplineNodeProps {
     splineKey: string;
@@ -15,7 +16,6 @@ export interface SplineNodeProps {
 
 const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, color = "white" }) => {
     const firstObjectSelected = useVXObjectStore(state => state.objects[0])
-    const { IS_DEVELOPMENT } = useVXEngine();
 
     const ref = useRef(null);
 
@@ -23,9 +23,6 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
 
 
     useLayoutEffect(() => {
-        const addObject = useVXObjectStore.getState().addObject;
-        const removeObject = useVXObjectStore.getState().removeObject;
-
         const splineNodeObject: vxSplineNodeProps = {
             type: "splineNode",
             ref,
@@ -36,9 +33,9 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
             name: `node ${index}`
         }
 
-        addObject(splineNodeObject, IS_DEVELOPMENT, { icon: "SplineNode"});
+        ObjectManagerService.addObjectToStore(splineNodeObject, { icon: "SplineNode"});
 
-        return () => removeObject(nodeKey, IS_DEVELOPMENT)
+        return () => ObjectManagerService.removeObjectFromStore(nodeKey)
     }, [])
 
     return (

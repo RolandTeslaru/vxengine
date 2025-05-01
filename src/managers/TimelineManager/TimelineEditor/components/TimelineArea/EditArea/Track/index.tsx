@@ -3,14 +3,24 @@ import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import Keyframe from '../Keyframe';
 import TrackSegment from './TrackSegment';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
+import { DragEvent } from "@interactjs/types"
 
 export type EditRowProps = {
     trackKey: string
     style?: React.CSSProperties;
     snap?: boolean
+    handleOnTrackSegmentMove: (e, deltaX, trackKey, firstKeyframeKey, secondKeyframeKey) => void
+    handleOnTrackSegmentMoveEnd: (e) => void,
+    handleOnKeyframeMove: (
+        e: DragEvent, 
+        deltaXRef: { current: number }, 
+        trackKey: string, 
+        keyframeKey: string, 
+    ) => void
+    handleOnKeyframeMoveEnd: (e: DragEvent) => void 
 };
 
-const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
+const Track: FC<EditRowProps> = memo(({ trackKey, snap, handleOnTrackSegmentMove, handleOnTrackSegmentMoveEnd, handleOnKeyframeMove, handleOnKeyframeMoveEnd }) => {
     const orderedKeyframeKeys = useTimelineManagerAPI(state => state.tracks[trackKey]?.orderedKeyframeKeys);
     const selectedKeyframeKeysOnTrack = useTimelineEditorAPI(state => state.selectedKeyframeKeys[trackKey])
 
@@ -28,6 +38,8 @@ const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
                     trackKey={trackKey}
                     snap={snap}
                     isSelected={selectedKeyframeKeysOnTrack?.[keyframeKey]}
+                    handleOnMove={handleOnKeyframeMove}
+                    handleOnMoveEnd={handleOnKeyframeMoveEnd}
                 />
             )}
 
@@ -44,6 +56,8 @@ const Track: FC<EditRowProps> = memo(({ trackKey, snap }) => {
                         firstKeyframeKey={firstKeyframeKey}
                         secondKeyframeKey={secondKeyframeKey}
                         trackKey={trackKey}
+                        handleOnMove={handleOnTrackSegmentMove}
+                        handleOnMoveEnd={handleOnTrackSegmentMoveEnd}
                     />
                 )
             })}

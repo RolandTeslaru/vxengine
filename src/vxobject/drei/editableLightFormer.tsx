@@ -7,7 +7,7 @@ import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStor
 import { Lightformer } from "./lightFormerImpl";
 import { useObjectSetting, useObjectSettingsAPI } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 import { withVX } from "../withVX";
-import { useVXEngine } from "@vxengine/engine";
+import { vxengine } from "@vxengine/singleton";
 
 export type EditableLightformerProps = VXElementProps<LightProps> & {
     ref?: React.RefObject<THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>>;
@@ -37,9 +37,8 @@ const BaseLightFormer = ({ref, ...props}) => {
         setting_isShowingAll: state.settings[vxkey]?.showAll ?? false
     }})
 
-    const { IS_DEVELOPMENT } = useVXEngine();
 
-    const isVisibleInScene = ( setting_isShown || setting_isShowingAll ) && IS_DEVELOPMENT;
+    const isVisibleInScene = ( setting_isShown || setting_isShowingAll ) && vxengine.isDevelopment;
 
     const vxSceneEntity = useVXObjectStore(state => state.objects["scene"]);
 

@@ -44,4 +44,4 @@ export const EditableLUT = withVX(BaseLUT, {
     vxkey: "lut",
     name: "LUT",
     icon: "LUTEffect",
-})
+}) as React.ComponentType<VXElementLUT>

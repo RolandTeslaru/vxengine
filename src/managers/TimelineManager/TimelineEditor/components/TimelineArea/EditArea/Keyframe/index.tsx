@@ -9,10 +9,10 @@ import { DragEvent, Interactable } from "@interactjs/types";
 import { useRefStore } from '@vxengine/utils';
 import { handleKeyframeDrag, hydrateKeyframeKeysOrder } from './utils';
 import { produce } from 'immer';
-import { keyframesRef } from '@vxengine/utils/useRefStore';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { selectKeyframeSTATIC as selectKeyframe, useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { TimelineManagerAPIProps } from '@vxengine/managers/TimelineManager/types/store';
+import { useTimelineEditorContext } from '@vxengine/managers/TimelineManager/TimelineEditor/context';
 
 export type EditKeyframeProps = {
     keyframeKey: string;
@@ -21,6 +21,13 @@ export type EditKeyframeProps = {
     trackKey: string;
     snap: boolean
     isSelected: boolean
+    handleOnMove: (
+        e: DragEvent, 
+        deltaXRef: { current: number }, 
+        trackKey: string, 
+        keyframeKey: string, 
+    ) => void
+    handleOnMoveEnd: (e: DragEvent) => void 
 };
 
 export const keyframeStartLeft = 15;
@@ -31,11 +38,14 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
     prevKeyframeKey,
     trackKey,
     snap,
-    isSelected
+    isSelected,
+    handleOnMove,
+    handleOnMoveEnd
 }) => {
     const elementRef = useRef<SVGSVGElement>(null);
     const interactableRef = useRef<Interactable>(null)
     const { externalContainer } = useWindowContext();
+    const { keyframesMap } = useTimelineEditorContext();
 
     const deltaX = useRef(0)
 
@@ -45,9 +55,8 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
         const initialScale = timelineEditorAPI.scale
         const initialKeyframeTime = timelineManagerAPI.tracks[trackKey]?.keyframes[keyframeKey].time
 
-        // Handle Centralized Ref Store for DOM Mutations
-        const keyframesRef = useRefStore.getState().keyframesRef;
-        keyframesRef.set(keyframeKey, elementRef.current as any);
+        // Handle Centralized Ref Store for DOM Mutations        keyframesRef.set(keyframeKey, elementRef.current as any);
+        keyframesMap.set(keyframeKey, elementRef.current as any)
 
         // Handle dataset initialization
         const left = parserTimeToPixel(initialKeyframeTime, keyframeStartLeft, initialScale)
@@ -78,7 +87,7 @@ const Keyframe: React.FC<EditKeyframeProps> = memo(({
             if (interactableRef.current)
                 interactableRef.current.unset();
 
-            keyframesRef.delete(keyframeKey);
+            keyframesMap.delete(keyframeKey);
         };
     }, [externalContainer])
 
@@ -213,38 +222,3 @@ const rowHeight = DEFAULT_ROW_HEIGHT
 //     else if (boundsRight < mostOnRight)
 //         return boundsRight;
 // }
-
-const handleOnMove = (e: DragEvent, deltaXRef: { current: number }, trackKey: string, keyframeKey: string) => {
-    const target = e.target;
-    if (!target.dataset.left) {
-        target.dataset.left = target.style.left.replace('px', '') || '0';
-    }
-    const { left } = target.dataset;
-    const prevLeft = parseFloat(left);
-
-    deltaXRef.current += e.dx
-    let newLeft = prevLeft + e.dx;
-
-    // Handle TimelineEditor Data and UI Mutation
-    handleKeyframeDrag(newLeft, prevLeft, trackKey, keyframeKey)
-}
-
-const handleOnMoveEnd = (e: DragEvent) => {
-    const { selectedKeyframesFlatMap } = useTimelineEditorAPI.getState();
-
-    useTimelineManagerAPI.setState(
-        produce((state: TimelineManagerAPIProps) => {
-            selectedKeyframesFlatMap.forEach(selectKeyframeFlat => {
-                const { trackKey, keyframeKey } = selectKeyframeFlat;
-                const kfElement = keyframesRef.get(keyframeKey);
-                const hydratedKfTime = parseFloat(kfElement.dataset.time);
-
-                if (hydratedKfTime !== null && hydratedKfTime !== undefined && !isNaN(hydratedKfTime)) {
-                    state.tracks[trackKey].keyframes[keyframeKey].time = hydratedKfTime;
-                }
-            })
-        })
-    )
-
-    hydrateKeyframeKeysOrder();
-}

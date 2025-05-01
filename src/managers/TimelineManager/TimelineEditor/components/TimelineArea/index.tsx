@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { useEffect } from 'react';
+import React, { memo, useCallback, useEffect } from 'react';
 import { useAnimationEngineEvent } from '@vxengine/AnimationEngine/utils/useAnimationEngineEvent';
 import { useRefStore } from '@vxengine/utils/useRefStore';
 import { useTimelineManagerAPI } from '../../..';
@@ -11,13 +11,13 @@ import { EditArea } from './EditArea';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
 import Cursor from './EditorCursor';
 import { useTimelineEditorAPI } from '../../store';
-import { useClipboardManagerAPI } from '@vxengine/managers/ClipboardManager/store';
+import { useTimelineEditorContext } from '../../context';
+import animationEngineInstance from '@vxengine/singleton';
 
 export const startLeft = 0;
 
-const TimelineArea = (() => {
-  const timelineAreaRef = useRefStore(state => state.timelineAreaRef);
-  const scrollLeftRef = useRefStore(state => state.scrollLeftRef)
+const TimelineArea = memo(() => {
+  const { timelineAreaRef, scrollLeftRef, trackListRef, scrollSyncId } = useTimelineEditorContext()
 
   // Sync Cursor with Engine time
   useAnimationEngineEvent(
@@ -32,6 +32,36 @@ const TimelineArea = (() => {
       scrollLeftRef.current = left
     }
   );
+
+  useEffect(() => {
+    const unsubscribe = useTimelineEditorAPI.subscribe((state, prevState) => {
+      if(state.cursorLockedOnTime != prevState.cursorLockedOnTime){
+          const clientWidth = timelineAreaRef.current.offsetWidth
+          const autoScrollFrom = clientWidth * 70 / 100;
+          const time = animationEngineInstance.currentTime
+          const left = time * (ONE_SECOND_UNIT_WIDTH / state.scale) - autoScrollFrom;
+          timelineAreaRef.current.scrollLeft = left;
+          scrollLeftRef.current = left
+      }
+    })
+
+    return () => unsubscribe()
+  }, [timelineAreaRef])
+
+  const handleOnScroll = useCallback((e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+    const scrollContainer = e.target;
+
+    if (!trackListRef.current)
+      return;
+
+    if (scrollSyncId.current)
+      cancelAnimationFrame(scrollSyncId.current);
+
+    scrollSyncId.current = requestAnimationFrame(() => {
+      // @ts-expect-error
+      trackListRef.current.scrollTop = scrollContainer.scrollTop;
+    })
+  }, [trackListRef, scrollSyncId])
 
   return (
     <div
@@ -51,24 +81,3 @@ const TimelineArea = (() => {
 
 
 export default TimelineArea
-
-
-const handleOnScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-  const scrollContainer = e.target;
-  const refStoreState = useRefStore.getState();
-  const trackListRef = refStoreState.trackListRef;
-  const scrollSyncId = refStoreState.scrollSyncId;
-
-  if (!trackListRef.current)
-    return;
-
-  if (scrollSyncId.current)
-    cancelAnimationFrame(scrollSyncId.current);
-
-  scrollSyncId.current = requestAnimationFrame(() => {
-    // @ts-expect-error
-    trackListRef.current.scrollTop = scrollContainer.scrollTop;
-  })
-}
-
-

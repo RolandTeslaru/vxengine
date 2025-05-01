@@ -23,22 +23,13 @@ import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoP
 import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
+import { TimelineEditorProvider } from "@vxengine/managers/TimelineManager/TimelineEditor/context"
 
 export const VXStudio = () => {
-    const { IS_PRODUCTION } = useVXEngine();
     const theme = useUIManagerAPI(state => state.theme)
     return (
         <div id="VXEngineStudio" className={`${theme} fixed top-0 left-0 z-50`}>
-            {IS_PRODUCTION && (
-                <div className="fixed top-[130px] left-[330px] flex gap-4 text-red-600">
-                    <AlertTriangle size={30} className="h-auto my-auto" />
-                    <div className="text-xs font-roboto-mono">
-                        <p>VXEngine Running in Production Mode!</p>
-                        <p>VXStudio should not be mounted!</p>
-
-                    </div>
-                </div>
-            )}
+            {/* Minimal content to test rendering */}
             <VXMenubar />
 
             <VXEngineWindow
@@ -68,7 +59,7 @@ export const VXStudio = () => {
                 windowClasses='width=950,height=516,left=200,top=200'
                 noStyling={true}
             >
-                <VXBottomRightBar />
+                <VXBottomRightBar /> 
             </VXEngineWindow>
 
             <VXEngineWindow
@@ -81,13 +72,8 @@ export const VXStudio = () => {
                 <StateVisualizer />
             </VXEngineWindow>
 
-
             <CameraManagerUI />
-
-            {/* <VXThemeSwitcher/> */}
-
             <UIManagerDialogLayer />
-
             <Watermark />
         </div>
     )
@@ -153,7 +139,9 @@ const VXBottomRightBar = () => {
                 <WindowControlDots
                     isAttached={timelineEditorAttached}
                 />
-                <TimelineEditor />
+                <TimelineEditorProvider>
+                    <TimelineEditor />
+                </TimelineEditorProvider>
 
             </StandardWindowStyling>
         </>

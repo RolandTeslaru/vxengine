@@ -7,17 +7,17 @@ import { useRefStore } from '@vxengine/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
 import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { cursorBoundsLeft } from '../EditorCursor/utils';
-
+import { useTimelineEditorContext } from '../../../context';
 const maxScaleCount = 100;
 
 const timeAreaStartLeft = 20;
 
 export const TimeArea = () => {
-  const scale = useTimelineEditorAPI((state) => state.scale);
-  const setTimeByPixel = useTimelineEditorAPI(state => state.setTimeByPixel)
+  const [scale, setTimeByPixel] = useTimelineEditorAPI(state => [state.scale, state.setTimeByPixel])
 
   const currentTimelineLength = useTimelineManagerAPI((state) => state.currentTimelineLength);
   const { externalContainer } = useWindowContext();
+  const { scrollLeftRef } = useTimelineEditorContext()
   
   const timelineClientWidth = timeAreaStartLeft + currentTimelineLength * ONE_SECOND_UNIT_WIDTH / scale
 
@@ -28,12 +28,12 @@ export const TimeArea = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = e.clientX - rect.x;
 
-    const scrollLeft = useRefStore.getState().scrollLeftRef.current
+    const scrollLeft = scrollLeftRef.current
     const left = Math.max(position, timeAreaStartLeft);
     if (left > maxScaleCount * ONE_SECOND_UNIT_WIDTH + timeAreaStartLeft - scrollLeft) return;
 
     setTimeByPixel(left)
-  }, [setTimeByPixel])
+  }, [setTimeByPixel, scrollLeftRef])
 
   const displayInterval = Math.ceil(scale); // Adjust display interval smoothly with scale
 

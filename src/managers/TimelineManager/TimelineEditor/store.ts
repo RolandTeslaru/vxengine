@@ -7,11 +7,10 @@ import { produce } from "immer";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
-import { TimelineManagerAPIProps } from "../types/store";
-import { useRefStore } from "@vxengine/utils";
 import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 import { createWithEqualityFn } from "zustand/traditional";
 import { shallow } from "zustand/shallow";
+
 export type SelectedKeyframe = {
     trackKey: string;
     keyframeKey: string;
@@ -114,18 +113,14 @@ export const useTimelineEditorAPI = createWithEqualityFn<TimelineEditorAPIProps>
             const cursorLeft = parserTimeToPixel(time, cursorStartLeft, get().scale);
             handleCursorMutation(cursorLeft);
 
-            if (cursorLockOn) {
-                const refStoreState = useRefStore.getState()
-                const timelineAreaRef = refStoreState.timelineAreaRef;
-                const scrollLeftRef = refStoreState.scrollLeftRef;
-                const clientWidth = timelineAreaRef.current.offsetWidth
-                const autoScrollFrom = clientWidth * 70 / 100;
-                const left = time * (ONE_SECOND_UNIT_WIDTH / get().scale) - autoScrollFrom;
-                timelineAreaRef.current.scrollLeft = left;
-                scrollLeftRef.current = left
-
-            }
+            if (cursorLockOn)
+                set(produce((state: TimelineEditorAPIProps) => {
+                    state.cursorLockedOnTime = time;
+                }))
         },
+
+        cursorLockedOnTime: 0,
+
         setTimeByPixel: (left) => {
             let time = parserPixelToTime(left, cursorStartLeft)
             time = truncateToDecimals(time);
