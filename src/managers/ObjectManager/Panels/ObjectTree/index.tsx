@@ -13,7 +13,7 @@ import { handleOnVxObjectClick, handleOnVxObjectContextMenu } from '../../utils/
 import ICON_MAP from './icons'
 import { OBJECT_TREE_CONTEXT_MENUS } from './contextMenus'
 import Search from '@vxengine/components/ui/Search'
-
+import { vxengine } from '@vxengine/singleton'
 interface ObjectTreeNode {
     vxkey: string
     name: string
@@ -32,8 +32,6 @@ const defaultExpandedKeys = {
 const ObjectTree = () => {
     const objectsLength = useVXObjectStore(state => Object.entries(state.objects).length)
     const tree = useObjectManagerAPI(state => state.tree);
-
-    const { IS_PRODUCTION } = useVXEngine();
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -59,7 +57,7 @@ const ObjectTree = () => {
                     size='md' 
                 />
             </div>
-            {IS_PRODUCTION &&
+            {vxengine.isProduction &&
                 <div>
                     <p className='text-xs text-center font-roboto-mono text-red-600'>
                         Object Tree is not generated in Production Mode!

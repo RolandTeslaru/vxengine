@@ -12,7 +12,7 @@ import { useRefStore } from "@vxengine/utils";
 import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/TimelineEditor/store";
 import { useVXEngine } from "@vxengine/engine";
 import { useClipboardManagerAPI } from "@vxengine/managers/ClipboardManager/store";
-import animationEngineInstance from "@vxengine/singleton";
+import animationEngineInstance, { vxengine } from "@vxengine/singleton";
 import { AlertTriangle } from "../icons";
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
 import { useWindowContext } from "@vxengine/core/components/VXEngineWindow";
@@ -54,7 +54,6 @@ const ObjectManagerVisualizer = () => {
 // Component for ObjectPropertyAPI
 const State_ObjectPropertyAPI = () => {
   const state = useObjectPropertyAPI();
-  const { IS_PRODUCTION } = useVXEngine();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Function to filter the state based on the search query
@@ -95,7 +94,7 @@ const State_ObjectPropertyAPI = () => {
             <p>Rendering this will cause lag!</p>
           </div>
         </div>
-        {IS_PRODUCTION &&
+        {vxengine.isProduction &&
           <div className="text-red-600 flex gap-2">
             <AlertTriangle size={30} />
             <p className="text-xs my-auto font-roboto-mono">This store is not updated in Production Mode!</p>

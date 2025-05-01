@@ -35,10 +35,4 @@ export const TimelineEditorProvider = ({ children }: { children: React.ReactNode
     )
 }
 
-export const useTimelineEditorContext = (): TimelineEditorContextProps => {
-    const context = useContext(TimelineEditorContext);
-    if (!context) {
-        throw new Error('useTimelineEditorContext must be used within a TimelineEditorProvider');
-    }
-    return context;
-}
+export const useTimelineEditorContext = () => useContext(TimelineEditorContext);

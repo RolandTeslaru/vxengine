@@ -1,11 +1,13 @@
-import { trackSegmentsRef } from '@vxengine/utils/useRefStore'
-import React from 'react'
+import { useTimelineEditorContext } from '@vxengine/managers/TimelineManager/TimelineEditor/context'
+import React, { use } from 'react'
 import JsonView from 'react18-json-view'
 
 const TrackSegmentData = ({ firstKeyframeKey, secondKeyframeKey }: { firstKeyframeKey: string, secondKeyframeKey: string }) => {
     const trackSegmentKey = `${firstKeyframeKey}.${secondKeyframeKey}`
 
-    const trackSegmentElement = trackSegmentsRef.get(trackSegmentKey)
+    const { trackSegmentsMap } = useTimelineEditorContext()
+
+    const trackSegmentElement = trackSegmentsMap.get(trackSegmentKey)
 
     return (
         <div className='w-72 flex flex-col'>
