@@ -21,7 +21,7 @@ const ValueRenderer: FC<ValueRendererProps> = memo(
 
         const inputRef = useRef<HTMLInputElement>(null);
 
-        useLayoutEffect(() => {
+        useLayoutEffect(() => {    
             inputRef.current.value = getDefaultParamValue(vxkey, propertyPath, vxRefObj.current);
 
             const unsubscribe = useObjectPropertyAPI.subscribe((state, prevState) => {

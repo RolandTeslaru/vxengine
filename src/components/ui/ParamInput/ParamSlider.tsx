@@ -17,9 +17,11 @@ interface Props {
     className?: string
     param: VXSliderInputType
     vxRefObj: React.RefObject<any>
+    paramSliderRangeClassname?: string
+    titleClassname?: string
 }
 
-const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => {
+const ParamSlider: React.FC<Props> = ({ param, vxkey, paramSliderRangeClassname, titleClassname, className, vxRefObj }) => {
     const { propertyPath } = param;
     const trackKey = `${vxkey}.${propertyPath}`
 
@@ -69,13 +71,14 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, className, vxRefObj }) => 
                 step={param.step ?? 0.1}
             >
                 <div className='absolute left-0 z-10 flex w-full ml-1'>
-                    <p className=' text-neutral-300/80 '>{param.title ?? param.propertyPath}</p>
+                    <p className={' text-neutral-300/80 text-xs ' + titleClassname}>{param.title ?? param.propertyPath}</p>
                 </div>
                 <SliderPrimitive.Track className="relative bg-neutral-800/70 cursor-ew-resize h-[17px] w-full grow overflow-hidden rounded-full "
                 >
                     <SliderPrimitive.Range className={`
                         absolute h-full bg-blue-700 
                         border-l border-t border-b rounded-l-full border-blue-600
+                        ${paramSliderRangeClassname}
                          `}
                     />
                 </SliderPrimitive.Track>

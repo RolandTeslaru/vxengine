@@ -1,6 +1,8 @@
 import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../shadcn/alertDialog"
 import React, { useMemo, useState } from "react"
+import { EditorStaticProp, EditorTrack } from "@vxengine/types/data/editorData";
+import animationEngineInstance from "@vxengine/singleton";
 
 interface Props {
     vxkey: string,
@@ -13,7 +15,7 @@ export const ALERT_MakePropertyStatic: React.FC<Props> = ({ vxkey, propertyPath 
     const initTrackState = useMemo(() => {
         return useTimelineManagerAPI.getState().tracks[trackKey]
     }, [vxkey, propertyPath])
-    
+
     const keyframesLengthForTrack = Object.entries(initTrackState?.keyframes || {}).length;
 
     return (
@@ -46,12 +48,12 @@ const handleMakePropertyStatic = (vxkey: string, propertyPath: string) => {
 
 export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) => {
     const generalKey = `${vxkey}.${propertyPath}`
-    
+
     const [initTrackState, initStaticPropState] = useMemo(() => {
         const initState = useTimelineManagerAPI.getState()
         return [initState.tracks[generalKey], initState.staticProps[generalKey]]
     }, [vxkey, propertyPath])
-    
+
     const keyframes = initTrackState?.keyframes;
 
     return (
@@ -92,6 +94,86 @@ export const ALERT_ResetProperty: React.FC<Props> = ({ vxkey, propertyPath }) =>
     )
 }
 
-const handleRemoveProperty = (vxkey:string, propertyPath: string) => {
+const handleRemoveProperty = (vxkey: string, propertyPath: string) => {
     useTimelineManagerAPI.getState().removeProperty(vxkey, propertyPath, true)
+}
+
+
+export const ALERT_ResetColor = ({ vxkey, propertyPath }) => {
+    const baseKey = `${vxkey}.${propertyPath}`
+
+    const [collectedColorTracks, collectedColorStaticProps] = useMemo(() => {
+        const state = useTimelineManagerAPI.getState();
+        const channels = ['r', 'g', 'b'];
+        const collectedColorTracks = [];
+        const collectedColorStaticProps = [];
+
+        for (const channel of channels) {
+            const generalKey = `${baseKey}.${channel}`;
+            if (state.tracks[generalKey]) {
+                collectedColorTracks.push(state.tracks[generalKey]);
+            }
+            if (state.staticProps[generalKey]) {
+                collectedColorStaticProps.push(state.staticProps[generalKey]);
+            }
+        }
+
+        return [
+            collectedColorTracks,
+            collectedColorStaticProps,
+        ];
+    }, [])
+
+    const [ removeTrack, removeStaticProp ]
+        = useTimelineManagerAPI(state => [
+            state.removeTrack,
+            state.removeStaticProp
+        ]);
+
+    const handleReset = () => {
+        collectedColorTracks.forEach((track: EditorTrack) => {
+            removeTrack({ vxkey, propertyPath: track.propertyPath, reRender: false})
+        })
+        collectedColorStaticProps.forEach((staticProps: EditorStaticProp) => {
+            removeStaticProp({ vxkey, propertyPath: staticProps.propertyPath, reRender: false})
+        })
+
+        animationEngineInstance.reRender({force: true});
+    }
+
+    return (
+        <>
+            <div className='flex flex-col gap-4'>
+                <AlertDialogHeader className='flex flex-col'>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                </AlertDialogHeader>
+
+                <AlertDialogDescription className="flex flex-col">
+                    {collectedColorTracks.map((track: EditorTrack, index) =>
+                        <span className="h-auto" key={index}>
+                            Track <span className="text-yellow-400">{`${vxkey}.${track.propertyPath}`}</span> with <span className="text-yellow-400">{`${Object.values(track.keyframes).length}`}</span> keyframes will be <span className="text-yellow-400">deleted</span>!
+                        </span>
+                    )}
+                    {collectedColorStaticProps.map((staticProp: EditorStaticProp, index) =>
+                        <span className="h-auto" key={index}>
+                            StaticProp <span className="text-yellow-400">{`${vxkey}.${staticProp.propertyPath}`}</span> will be <span className="text-yellow-400">deleted</span>!
+                        </span>
+                    )}
+                </AlertDialogDescription>
+
+                <AlertDialogDescription>
+                    These changes will take affect after a refresh.
+                </AlertDialogDescription>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        //@ts-expect-error
+                        type="warning"
+                        onClick={handleReset}
+                    >Continue</AlertDialogAction>
+                </AlertDialogFooter>
+            </div>
+        </>
+    )
 }

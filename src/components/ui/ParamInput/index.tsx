@@ -15,6 +15,9 @@ interface Props extends InputProps {
     param: VXElementParam
     horizontal?: boolean
     disableTracking?: boolean
+    showTitle?: boolean
+    titleClassname?: string
+    paramSliderRangeClassname?: string
 }
 
 
@@ -27,30 +30,38 @@ const COMPONENT_MAP = {
 }
 
 export const ParamInput: FC<Props> = memo((props) => {
-    const { vxkey, vxRefObj, param, className, horizontal, disableTracking = false, disabled = false, ...inputProps } = props
+    const { vxkey, vxRefObj, param, className, horizontal, disableTracking = false, disabled = false, showTitle = true, titleClassname, paramSliderRangeClassname, ...inputProps } = props
 
     const components = COMPONENT_MAP[param.type ?? "number"] || []
 
-
     return (
-        <ContextMenu>
-            <ContextMenuTrigger style={props.style} className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
-                {components.map((Component, index) =>
-                    <Component
-                        key={index}
-                        vxkey={vxkey}
-                        vxRefObj={vxRefObj}
-                        param={param}
-                        disabled={disabled || disableTracking}
-                        horizontal={horizontal}
-                        inputProps={{ ...inputProps, disabled }}
-                    />
-                )}
-            </ContextMenuTrigger>
-            <ContextMenuContent forceMount={false as true}>
-                <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
-            </ContextMenuContent>
-        </ContextMenu>
+        <div className={`w-full flex ${param.type !== "slider" ? "flex-row" : "flex-col"}`}>
+            {param.type !== "slider" && showTitle &&
+                <p className={'text-xs w-auto mr-auto my-auto text-label-quaternary ' + titleClassname}>
+                    {param.title ?? param.propertyPath}
+                </p>
+            }
+            <ContextMenu>
+                <ContextMenuTrigger style={props.style} className={`flex ${horizontal ? "flex-col-reverse gap-1" : "flex-row gap-2"} ${className}`}>
+                    {components.map((Component, index) =>
+                        <Component
+                            key={index}
+                            vxkey={vxkey}
+                            vxRefObj={vxRefObj}
+                            param={param}
+                            disabled={disabled || disableTracking}
+                            horizontal={horizontal}
+                            paramSliderRangeClassname={paramSliderRangeClassname}
+                            titleClassname={titleClassname}
+                            inputProps={{ ...inputProps, disabled }}
+                        />
+                    )}
+                </ContextMenuTrigger>
+                <ContextMenuContent forceMount={false as true}>
+                    <ParamInputContextMenuContent param={param} vxkey={vxkey} vxRefObj={vxRefObj} />
+                </ContextMenuContent>
+            </ContextMenu>
+        </div>
     )
 })
 export default ParamInput

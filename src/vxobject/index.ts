@@ -12,6 +12,7 @@ import editablePrimitive from './fiber/editablePrimitive';
 import { EditableScene } from './fiber/EditableScene';
 import { LayerMaterial, DepthLayer, ColorLayer, NoiseLayer, FresnelLayer, GradientLayer, MatcapLayer, TextureLayer, DisplaceLayer, NormalLayer } from './layerMaterials';
 import * as LAYERS from './layerMaterials/vanilla';
+import EditableRoundedBox from './drei/EditableRoundedBox';
 
 export const vx = {
     primitive: editablePrimitive,
@@ -33,6 +34,7 @@ export const vx = {
 
     grid: EditableGrid,
     lightFormer: EditableLightFormer,
+    roundedBox: EditableRoundedBox,
 
     environment: VXEnvironment,
     environmentPortal: VXEnvironmentPortal,
@@ -44,16 +46,17 @@ export const vx = {
     div: EditableDiv,
 
     
-    layerMaterialImpl: LAYERS.LayerMaterial,
-    depthLayerImpl: LAYERS.Depth,
+    LayerMaterialImpl: LAYERS.LayerMaterial,
+    DepthLayerImpl: LAYERS.Depth,
     colorLayerImpl: LAYERS.Color,
     noiseLayerImpl: LAYERS.Noise,
-    fresnelLayerImpl: LAYERS.Fresnel,
+    FresnelLayerImpl: LAYERS.Fresnel,
     gradientLayerImpl: LAYERS.Gradient,
-    matcapLayerImpl: LAYERS.Matcap,
+    MatcapLayerImpl: LAYERS.Matcap,
     textureLayerImpl: LAYERS.Texture,
     displaceLayerImpl: LAYERS.Displace,
     normalLayerImpl: LAYERS.Normal,
+    glassLayerImpl: LAYERS.Glass,
 
     layerMaterial: LayerMaterial,
     depthLayer: DepthLayer,

@@ -57,7 +57,7 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
   const { gl: glProps, ...restCanvasProps } = canvasProps
 
   return (
-    <div className={"w-screen h-screen fixed top-0 z-[-1]" + " " + className}>
+    <div className={"w-screen h-screen fixed top-0" + " " + className}>
       <Canvas
         gl={{
           antialias: true,

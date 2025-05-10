@@ -4,6 +4,7 @@ import { useClipboardManagerAPI } from "@vxengine/managers/ClipboardManager/stor
 import { getProperty } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { getNestedProperty } from "@vxengine/utils";
 import animationEngineInstance from "@vxengine/singleton";
+import { useTimelineManagerAPI } from "@vxengine/managers/TimelineManager";
 
 
 
@@ -100,4 +101,32 @@ export const rgbToHsl = (r: number, g: number, b: number): hsl => {
 
 export const getDefaultParamValue = (vxkey: string, propertyPath: string,  vxRefObj: any) => {
     return getProperty(vxkey, propertyPath) ?? getNestedProperty(vxRefObj, propertyPath) ?? 0
+}
+
+// return the keyframeKey if found, else return null
+export const isOverKeyframe = (trackKey: string, orderedKeyframeKeys: string[]) => {
+    const currentTime = animationEngineInstance.currentTime
+    const track = useTimelineManagerAPI.getState().tracks[trackKey]
+    if (!track) return false
+
+    let leftIndex = 0;
+    let rightIndex = orderedKeyframeKeys.length - 1
+    let foundIndex = -1;
+
+    while (leftIndex <= rightIndex) {
+        const mid = Math.floor((leftIndex + rightIndex) / 2)
+        const midKey = orderedKeyframeKeys[mid];
+        const midTime = track.keyframes[midKey].time;
+
+        if (midTime === currentTime) {
+            foundIndex = mid;
+            break
+        } else if (midTime < currentTime) {
+            leftIndex = mid + 1;
+        } else {
+            rightIndex = mid - 1;
+        }
+    }
+
+    return foundIndex !== -1 ? orderedKeyframeKeys[foundIndex] : null
 }

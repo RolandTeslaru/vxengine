@@ -81,7 +81,7 @@ const TreeNode: React.FC<TreeNodeProps> =
                     loadBranch(node, createNodeDataFn)
                 return !prev;
             })
-        }, [node])
+        }, [node, createNodeDataFn, branchNeedsLazyLoading])
 
         return (
             <>

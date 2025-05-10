@@ -11,6 +11,7 @@ import * as THREE from "three"
 import { vxengine } from "@vxengine/singleton";
 import { TrackSideEffectCallback } from "@vxengine/AnimationEngine/types/engine";
 import { withVX } from "../withVX";
+import { useObjectSetting } from "@vxengine/managers/ObjectManager/stores/settingsStore";
 
 declare module 'three' {
     interface PerspectiveCamera {
@@ -41,6 +42,7 @@ const perspectiveCameraParams: VXElementParams = [
 export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
+    showHelper: { title: "show helper", storage: "localStorage", value: false},
 }
 
 const BasePerspectiveCamera = ({ref, ...props}) => {
@@ -62,8 +64,10 @@ const BasePerspectiveCamera = ({ref, ...props}) => {
 
     useFrame(cameraUpdate)
 
+    const isHelperEnabled = useObjectSetting("perspectiveCamera", "showHelper");
+
     const mode = useCameraManagerAPI(state => state.mode)
-    const showHelper = mode === "free" && vxengine.isDevelopment
+    const showHelper = mode === "free" && vxengine.isDevelopment && isHelperEnabled
     useHelper(ref, showHelper && CameraHelper)
 
     invalidate();

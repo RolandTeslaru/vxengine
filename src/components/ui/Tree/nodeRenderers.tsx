@@ -2,17 +2,14 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import React from 'react'
 import ParamInput from '../ParamInput'
 import { TreeNodeType } from './types'
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/components/shadcn/contextMenu'
+import JsonView from 'react18-json-view'
 
 export const paramRendererWithVxObject = (vxobject: vxObjectProps, node: TreeNodeType, { NodeTemplate }) => {
     if (node.data)
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className={`flex ${node?.data?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
-                    {node.data.param.type !== "slider" &&
-                        <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
-                            {node.key}
-                        </p>
-                    }
                     {node.data.param && (
                         <ParamInput
                             vxkey={vxobject.vxkey}
@@ -40,11 +37,11 @@ export const paramRenderer = (node: TreeNodeType, { NodeTemplate }) => {
         return (
             <NodeTemplate className="hover:bg-neutral-950/40 px-2">
                 <div className={`flex ${node?.data?.param?.type !== "slider" ? "flex-row" : "flex-col"} w-full min-h-[22px]`}>
-                    {node.data.param.type !== "slider" &&
+                    {/* {node.data.param.type !== "slider" &&
                         <p className={`text-xs w-auto mr-auto my-auto font-light text-label-quaternary`}>
                             {node.key}
                         </p>
-                    }
+                    } */}
                     {node.data.param && (
                         <ParamInput
                             vxkey={node.data.vxobject.vxkey}
@@ -64,5 +61,14 @@ export const paramRenderer = (node: TreeNodeType, { NodeTemplate }) => {
                 </p>
             </div>
         </NodeTemplate>
+    )
+}
+
+
+const ParamContextMenuContent = ({ node }: { node: TreeNodeType }) => {
+    return (
+        <ContextMenuContent>
+            <JsonView src={node.data} />
+        </ContextMenuContent>
     )
 }

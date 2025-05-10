@@ -53,7 +53,7 @@ export const GeometryParams: FC<VXGeometryProps> = React.memo(({ vxobject }) => 
 
     return (
         <CollapsiblePanel
-            title={geometry.type + " Params"}
+            title={geometry.type}
             noPadding={true}
             contentClassName="gap-2"
         >

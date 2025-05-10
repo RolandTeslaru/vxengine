@@ -108,6 +108,12 @@ export interface DepthProps extends LayerProps {
   mapping?: 'vector' | 'world' | 'camera'
 }
 
+export interface GlassProps extends LayerProps {
+  blur: number
+  thickness: number
+  refraction: number
+}
+
 export interface NoiseProps extends LayerProps {
   colorA?: THREE.ColorRepresentation | THREE.Color
   colorB?: THREE.ColorRepresentation | THREE.Color

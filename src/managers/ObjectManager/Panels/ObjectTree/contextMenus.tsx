@@ -18,12 +18,12 @@ const SplineContextMenu = ({ vxkey }: { vxkey: string }) => {
     }
     return (
         <ContextMenuContent className='font-roboto-mono'>
-            <ContextMenuSub>
+            {/* <ContextMenuSub>
                 <ContextMenuSubTrigger icon={<Info size={17} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub>
+            </ContextMenuSub> */}
             <ContextMenuItem 
                 className='text-xs antialiased font-medium gap-2 text-red-600'
                 variant={"destructive"} 
@@ -61,12 +61,12 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
 
     return (
         <ContextMenuContent className='font-roboto-mono'>
-            <ContextMenuSub>
+            {/* <ContextMenuSub>
                 <ContextMenuSubTrigger>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={nodeKey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub>
+            </ContextMenuSub> */}
             {nodeIndex !== 0 &&
                 <ContextMenuItem onClick={handleInsertBefore} className='text-xs antialiased font-medium gap-2'>
                     <ArrowUp size={15} className='stroke-2'/>
@@ -88,12 +88,12 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
 const DefaultContextMenu = ({ vxkey }) => {
     return (
         <ContextMenuContent className='text-xs font-roboto-mono'>
-            <ContextMenuSub>
+            {/* <ContextMenuSub>
                 <ContextMenuSubTrigger icon={<Info size={17} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub>
+            </ContextMenuSub> */}
             <ContextMenuSub>
                 <ContextMenuSubTrigger>Debug</ContextMenuSubTrigger>
                 <ContextMenuSubContent>

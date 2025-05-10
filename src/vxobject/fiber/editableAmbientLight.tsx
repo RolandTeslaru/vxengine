@@ -15,9 +15,15 @@ export const defaultSettings: VXObjectSettings = {
 }
 
 const ambientLightParams: VXElementParams = [
-    {propertyPath: 'intensity', type: "number"},
+    {propertyPath: 'intensity', type: "slider", min: 0, max: 5, step: 0.01},
     {propertyPath: "color", type: "color"}
 ];
+
+const disabledParams = [
+    "position",
+    "rotation",
+    "scale"
+]
 
 const BaseAmbientLight = (props) => {
   return <ambientLight {...props} />;
@@ -27,4 +33,5 @@ export const EditableAmbientLight = withVX<ThreeElements["ambientLight"]>(BaseAm
     type: "entity",
     params: ambientLightParams,
     icon: "AmbientLight",
+    disabledParams
 });

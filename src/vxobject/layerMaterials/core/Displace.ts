@@ -12,7 +12,7 @@ export default class Displace extends Abstract {
   static u_scale = 1
   static u_offset = new Vector3(0, 0, 0)
 
-  static vertexShader = `
+  static vertexShader = /* glsl */`
        
       uniform float u_strength;
       uniform float u_scale;

@@ -29,8 +29,6 @@ const rgbToHexString = (r: number, g: number, b: number): string => {
 };
 
 const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
-    const isColorInClipboard = useClipboardManagerAPI(state => state.items.has("color"));
-
     const { propertyPath } = param;
     const rPropertyPath = propertyPath !== "" ? `${propertyPath}.r` : "r"
     const gPropertyPath = propertyPath !== "" ? `${propertyPath}.g` : "g"
@@ -150,27 +148,30 @@ const ParamColor: React.FC<ParamColorProps> = ({ vxkey, vxRefObj, param }) => {
 
                     <div className='flex flex-col gap-2'>
                         <div className='flex gap-2 mt-2 justify-between'>
-                            <p className='text-xs my-auto'>red</p>
                             <ParamInput
                                 vxkey={vxkey}
                                 vxRefObj={vxRefObj}
-                                param={{ title: "red", propertyPath: rPropertyPath, type: "number", min: 0, max: 1, step: 0.005 }}
+                                param={{ title: "red", propertyPath: rPropertyPath, type: "slider", min: 0, max: 1, step: 0.005 }}
+                                titleClassname=' !text-white font-medium'
+                                paramSliderRangeClassname='!bg-red-500 border-red-400'
                             />
                         </div>
                         <div className='flex gap-2 justify-between'>
-                            <p className='text-xs my-auto'>green</p>
                             <ParamInput
                                 vxkey={vxkey}
                                 vxRefObj={vxRefObj}
-                                param={{ title: "green", propertyPath: gPropertyPath, type: "number", min: 0, max: 1, step: 0.005 }}
+                                param={{ title: "green", propertyPath: gPropertyPath, type: "slider", min: 0, max: 1, step: 0.005 }}
+                                titleClassname=' !text-white font-medium'
+                                paramSliderRangeClassname='!bg-green-500 border-green-400'
                             />
                         </div>
                         <div className='flex gap-2 justify-between'>
-                            <p className='text-xs my-auto'>blue</p>
                             <ParamInput
                                 vxkey={vxkey}
                                 vxRefObj={vxRefObj}
-                                param={{ title: "blue", propertyPath: bPropertyPath, type: "number", min: 0, max: 1, step: 0.005 }}
+                                param={{ title: "blue", propertyPath: bPropertyPath, type: "slider", min: 0, max: 1, step: 0.005 }}
+                                titleClassname=' !text-white font-medium'
+                                paramSliderRangeClassname='!bg-blue-500 border-blue-400'
                             />
                         </div>
                         {/* Get Hex Button */}

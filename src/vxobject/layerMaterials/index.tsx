@@ -33,6 +33,7 @@ extend({
   textureLayer: LAYERS.Texture,
   displaceLayer: LAYERS.Displace,
   normalLayer: LAYERS.Normal,
+  glassLayer: LAYERS.Glass
 })
 
 // Update type declarations for R3F - using lowercase to match JSX usage
@@ -49,6 +50,7 @@ declare module '@react-three/fiber' {
     textureLayer: ThreeElement<typeof LAYERS.Texture>
     displaceLayer: ThreeElement<typeof LAYERS.Displace>
     normalLayer: ThreeElement<typeof LAYERS.Normal>
+    glassLayer: ThreeElement<typeof LAYERS.Glass>
   }
 }
 
@@ -106,6 +108,7 @@ const DisplaceLayer = (props) => <displaceLayer args={getNonUniformArgs(props)} 
 
 const NormalLayer = (props) => <normalLayer args={getNonUniformArgs(props)} {...props} />
 
+const GlassLayer = (props) => <glassLayer args={getNonUniformArgs(props)} {...props}/>
 // Export with naming matching the usage
 export { 
   // DebugLayerMaterial, 
@@ -120,4 +123,5 @@ export {
   TextureLayer,
   DisplaceLayer,
   NormalLayer,
+  GlassLayer
 }

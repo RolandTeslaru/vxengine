@@ -23,6 +23,7 @@ export const defaultSettings: VXObjectSettings = {
     showPositionPath: { title:"show position path", storage: "localStorage", value: false},
     useSplinePath: { title:"use spline path", storage: "disk", value: false },
     useRotationDegrees: { title:"use rotation degrees", storage: "disk", value: false },
+    showHelper: { title: "show helper", storage: "localStorage", value: false},
 }
 
 const BaseSpotLight = ({ref, ...props}) => {

@@ -36,6 +36,7 @@ export const TransformParams: React.FC<Props> = memo(({ vxobject }) => {
                     key={`${property}-${axis}`}
                     param={{ propertyPath: `${property}.${axis}`, type: "number" }}
                     horizontal={true}
+                    showTitle={false}
                     disabled={disabled}
                 />
 

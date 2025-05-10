@@ -10,6 +10,7 @@ import Matcap from './core/Matcap'
 import Texture from './core/Texture'
 import Displace from './core/Displace'
 import Normal from './core/Normal'
+import Glass from './core/Glass'
 
 import BlendModesChunk from './chunks/BlendModes'
 import NoiseChunk from './chunks/Noise'
@@ -35,6 +36,7 @@ type AllMaterialParams =
   | MeshLambertMaterialParameters
   | MeshStandardMaterialParameters
 
+
 class LayerMaterial extends CustomShaderMaterial {
   name: string = 'LayerMaterial'
   layers: Abstract[] = []
@@ -43,6 +45,7 @@ class LayerMaterial extends CustomShaderMaterial {
   constructor({ color, alpha, lighting, layers, name, ...props }: LayerMaterialParameters & AllMaterialParams = {}) {
     super({
       baseMaterial: ShadingTypes[lighting || 'basic'],
+      isLayerMaterial: true,
       ...props,
     })
 
@@ -163,4 +166,4 @@ class LayerMaterial extends CustomShaderMaterial {
   }
 }
 
-export { LayerMaterial, Abstract, Depth, Color, Noise, Fresnel, Gradient, Matcap, Texture, Displace, Normal }
+export { LayerMaterial, Abstract, Depth, Color, Noise, Fresnel, Gradient, Matcap, Texture, Displace, Normal, Glass }

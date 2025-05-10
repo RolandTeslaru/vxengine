@@ -13,6 +13,7 @@ import { logReportingService } from '@vxengine/AnimationEngine/services/LogRepor
 import { RawProject } from '@vxengine/types/data/rawData'
 
 const DEBUG = true;
+const FORCE_LOCAL_STORAGE = true;
 
 let PAUSE_DISK_SAVING = false;
 const LOG_MODULE = "SourceManagerAPI"
@@ -186,7 +187,7 @@ export const useSourceManagerAPI = create<SourceManagerAPIProps>((set, get) => (
       const localStorageTimelines = localStorageProject.timelines;
       const areTimelinesInSync = deepEqual(diskData.timelines, localStorageTimelines)
 
-      if (areTimelinesInSync) {
+      if (areTimelinesInSync || FORCE_LOCAL_STORAGE) {
         useAnimationEngineAPI.setState({
           timelines: localStorageProject.timelines,
           projectName: localStorageProject.projectName
