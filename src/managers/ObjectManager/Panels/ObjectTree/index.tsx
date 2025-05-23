@@ -14,6 +14,7 @@ import ICON_MAP from './icons'
 import { OBJECT_TREE_CONTEXT_MENUS } from './contextMenus'
 import Search from '@vxengine/components/ui/Search'
 import { vxengine } from '@vxengine/singleton'
+
 interface ObjectTreeNode {
     vxkey: string
     name: string

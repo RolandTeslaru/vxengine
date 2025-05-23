@@ -62,7 +62,7 @@ export const VXStudio = () => {
                 <VXBottomRightBar /> 
             </VXEngineWindow>
 
-            <VXEngineWindow
+            {/* <VXEngineWindow
                 vxWindowId={"stateVisualizerWindow"}
                 title="VXStudio: State Visualizer"
                 windowClasses='width=717,height=450,left=100,top=200,resizable=0'
@@ -70,7 +70,7 @@ export const VXStudio = () => {
                 detachedClassName="!top-0 !left-0 h-[100%]! min-w-[100%]! "
             >
                 <StateVisualizer />
-            </VXEngineWindow>
+            </VXEngineWindow> */}
 
             <CameraManagerUI />
             <UIManagerDialogLayer />

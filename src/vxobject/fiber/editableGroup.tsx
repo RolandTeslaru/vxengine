@@ -22,5 +22,21 @@ export const EditableGroup = withVX<ThreeElements["group"]>(BaseGroup, {
     type: "entity",
     icon: "Group",
     settings: defaultSettings,
-    vxkey: "group",
+    initialInterpolatedParams: [
+        {
+            paramName: "position",
+            type: "vector3",
+            partialPropertyPath: "position",
+        },
+        {
+            paramName: "rotation",
+            type: "vector3",
+            partialPropertyPath: "rotation",
+        },
+        {
+            paramName: "scale",
+            type: "vector3",
+            partialPropertyPath: "scale",
+        },
+    ]
 });

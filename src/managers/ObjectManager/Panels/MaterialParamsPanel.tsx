@@ -132,13 +132,13 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
             noPadding={true}
             contentClassName=' gap-2 min-h-0'
         >
-            {/* {isLayerMaterial &&
+            {isLayerMaterial &&
                 <ul className='flex flex-col gap-1 p-1 px-2'>
                     {(material as LayerMaterial).layers.map((layer, index) => 
                         <LayerView layer={layer} key={index} index={index} vxobject={vxobject} />
                     ) }
                 </ul>
-            } */}
+            }
             <div className='text-xs px-2 flex flex-row text-neutral-400'>
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -191,7 +191,7 @@ const LayerPopoverContent = ({layer, index, vxobject}: LayerProps) => {
     
     return (
         <PopoverContent className='w-[200px]'>
-            <p className='text-white antialiased text-xs font-semibold  text-center'>{layer.name} Layer</p>
+            <p className='text-white antialiased text-xs font-semibold font-roboto-mono text-center '>{layer.name} Layer</p>
             <div className='flex flex-col gap-1 w-full'>
                 {isMatcap && <MatcapImageViewer layer={layer as Matcap & { map: THREE.Texture }}/>}
                 {LAYER_PARAMS[layer.name]?.map((param, index) => 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { memo, useRef, useImperativeHandle, useEffect, useLayoutEffect, useCallback } from "react";
 import { VXElementParams, VXObjectSettings, VXPrimitiveProps } from "./types";
 import { useVXEngine } from "@vxengine/engine";
@@ -13,11 +13,18 @@ import ObjectUtils from "./utils/ObjectUtils";
 import { merge } from "lodash";
 import { vxengine } from "@vxengine/singleton";
 import { ObjectManagerService } from "@vxengine/managers/ObjectManager/service";
+
 declare module 'three' {
     interface Object3D {
         vxkey: string;
         rotationDegrees: THREE.Vector3
     }
+}
+
+type InterpolationParamType = {
+    paramName: string
+    partialPropertyPath: string
+    type: "number" | "vector3"
 }
 
 // Make this type more generic - it takes the component's props type and extends it
@@ -29,6 +36,7 @@ export type WithVXProps<P, R = any> = P & VXPrimitiveProps & {
 export type WithVXDefaultProps = Omit<VXPrimitiveProps, 'vxkey' | 'type' | 'ref'> & {
     type: vxObjectTypes
     vxkey?: string
+    initialInterpolatedParams?: InterpolationParamType[]
 }
 
 export function withVX<P extends object>(
@@ -37,6 +45,7 @@ export function withVX<P extends object>(
 ) {
     const WithVX = memo(({ ref, ...props }: WithVXProps<P>) => {
         const finalProps = { ...defaultProps, ...props }
+        const initialInterpolatedParams = finalProps.initialInterpolatedParams ?? [];
 
         if (finalProps.vxkey === undefined)
             throw new Error("withVX: vxkey was not passed to the component")
@@ -106,11 +115,23 @@ export function withVX<P extends object>(
             }
         }, [internalRef.current, finalProps.type, finalProps.vxkey, finalProps.name, finalProps.params, finalProps.disabledParams, finalProps.overrideNodeTreeParentKey])
 
+        // Mount props are passed to the underlyng instance
+        const initialInterpolatedValues = useMemo(() => {
+            const obj: Record<string, number | [number, number, number]> = {};
+            initialInterpolatedParams.forEach(mountParam => {
+                const value = animationEngineInstance
+                                .getInterpolatedValue(finalProps.vxkey, mountParam.partialPropertyPath, mountParam.type);
+                obj[mountParam.paramName] = value;
+            })
+            return obj;
+        }, [])
+
 
         return (
             <>
                 <WrappedComponent
                     {...props as P }
+                    {...initialInterpolatedValues}
                     vxkey={finalProps.vxkey}
                     ref={internalRef}
                 />

@@ -19,7 +19,7 @@ import { HydrationService } from './services/HydrationService';
 import { logReportingService } from './services/LogReportingService';
 import { WasmService } from './services/WasmService';
 import { SplineService } from './services/SplineService';
-import { RawKeyframe, RawObject, RawProject, RawTimeline } from '@vxengine/types/data/rawData';
+import { RawKeyframe, RawObject, RawProject, RawStaticProp, RawTimeline, RawTrack } from '@vxengine/types/data/rawData';
 import { PropertyControlService } from './services/PropertyControlService';
 import { ParamModifierService } from './services/ParamModifierService';
 import { create } from 'zustand';
@@ -64,8 +64,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _isReady: boolean = false
 
   private _object3DCache: Map<string, THREE.Object3D> = new Map();
-  private _rawObjectCache: Map<string, RawObject> = new Map();
   private _lastInterpolatedValues: Map<string, number> = new Map();
+  private _rawObjectCache: Map<string, RawObject> = new Map();
+  private _rawTracksCache: Map<string, RawTrack> = new Map();
+  private _rawStaticPropsCache: Map<string, RawStaticProp> = new Map();
 
   private _currentTimeline: RawTimeline = null;
   private _currentTime: number = 0;
@@ -122,7 +124,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._paramModifierService = new ParamModifierService(this, this._hydrationService)
   }
 
-  public initialize(nodeEnv: "production" | "development"){
+  public initialize(nodeEnv: "production" | "development") {
     if (nodeEnv === "production")
       this._IS_PRODUCTION = true;
     else if (nodeEnv === "development")
@@ -130,7 +132,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this._hydrationService.setMode(nodeEnv);
     this._paramModifierService.setMode(nodeEnv)
-    this._propertyControlService.setMode(nodeEnv)   
+    this._propertyControlService.setMode(nodeEnv)
   }
 
 
@@ -209,16 +211,24 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     // Set the states in the store
     useAnimationEngineAPI
       .setState({ currentTimeline: selectedTimeline, currentTimelineID: timelineId })
- 
+
     this._currentTimeline = selectedTimeline;
 
     this._propertyControlService
-        .recomputeAllPropertySetters(this._currentTimeline, this._object3DCache)
+      .recomputeAllPropertySetters(this._currentTimeline, this._object3DCache)
 
     this._applyTracksOnTimeline(this.currentTime, true)
 
     this._currentTimeline.objects.forEach(rawObject => {
       this._rawObjectCache.set(rawObject.vxkey, rawObject);
+
+      rawObject.tracks.forEach(rawTrack => {
+        this._rawTracksCache.set(`${rawObject.vxkey}.${rawTrack.propertyPath}`, rawTrack);
+      });
+
+      rawObject.staticProps.forEach(rawStaticProp => {
+        this._rawStaticPropsCache.set(`${rawObject.vxkey}.${rawStaticProp.propertyPath}`, rawStaticProp);
+      })
     })
 
 
@@ -238,6 +248,60 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT);
       useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
     }
+  }
+
+
+
+
+
+
+  public getInterpolatedValue(
+    vxkey: string,
+    partialPropertyPath: string,
+    type: "number" | "vector3",
+  ): number | [number, number, number]{
+    let result: number | [number, number, number];
+
+    switch (type) {
+      case "number":
+        const propertyPath = partialPropertyPath;
+        const generalKey = `${vxkey}.${propertyPath}`;
+        if (this._rawTracksCache.has(generalKey)) {
+          const rawTrack = this._rawTracksCache.get(generalKey);
+          const interpolatedValue = this._interpolateKeyframes(rawTrack.keyframes, this.currentTime);
+          return interpolatedValue;
+        }
+        break;
+
+      case "vector3":
+        const generalKeys = [
+          `${vxkey}.${partialPropertyPath}.x`,
+          `${vxkey}.${partialPropertyPath}.y`,
+          `${vxkey}.${partialPropertyPath}.z`,
+        ]
+
+        result = generalKeys.map(_generalKey => {
+          if (this._rawTracksCache.has(_generalKey)) {
+            const rawTrack = this._rawTracksCache.get(_generalKey)
+            const value = this._interpolateKeyframes(rawTrack.keyframes, this.currentTime);
+            return value;
+          }
+          else if (this._rawStaticPropsCache.has(_generalKey)) {
+            return this._rawStaticPropsCache.get(_generalKey).value;
+          }
+          else
+            return 0;
+        }) as [number, number, number]
+        break;
+        
+      default:
+        logReportingService.logWarning(
+          `RawObject with vxkey ${vxkey} not found in cache.`,
+          { module: LOG_MODULE, functionName: "getInterpolatedValue" }
+        );
+    }
+
+    return result;
   }
 
 
@@ -436,7 +500,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._prevTime = now;
 
     let isFinished = false;
-    if(newCurrentTime >= to){
+    if (newCurrentTime >= to) {
       newCurrentTime = to;
       isFinished = true;
     }
@@ -447,9 +511,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     this._propertyControlService.flushEngineUIUpdates();
     invalidate();
 
-    if(isFinished){
+    if (isFinished) {
       // Resolve Promise
-      if (this._playPromiseResolve){
+      if (this._playPromiseResolve) {
         this._playPromiseResolve();
         this._playPromiseResolve = null;
       }
@@ -533,12 +597,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param rawObject - The raw object containing the tracks to apply
    * @param force - Optional flag to force the application of tracks regardless of other conditions
    */
-  private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean
-  ) {
+  private _applyTracksOnObject(currentTime: number, rawObject: RawObject, force?: boolean) {
     const objectRef = this._object3DCache.get(rawObject.vxkey)
-    if (!objectRef) {
+    if (!objectRef)
       return;
-    }
+
     rawObject.tracks.forEach(rawTrack => {
       this._applyKeyframesOnTrack(
         rawObject.vxkey,

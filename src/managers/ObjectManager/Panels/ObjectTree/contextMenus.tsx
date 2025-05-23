@@ -88,12 +88,12 @@ const SplineNodeContextMenuContent = ({ vxkey }: { vxkey: string }) => {
 const DefaultContextMenu = ({ vxkey }) => {
     return (
         <ContextMenuContent className='text-xs font-roboto-mono'>
-            {/* <ContextMenuSub>
+            <ContextMenuSub>
                 <ContextMenuSubTrigger icon={<Info size={17} />}>Show Data</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
                     <VxObjectData vxkey={vxkey}/>
                 </ContextMenuSubContent>
-            </ContextMenuSub> */}
+            </ContextMenuSub>
             <ContextMenuSub>
                 <ContextMenuSubTrigger>Debug</ContextMenuSubTrigger>
                 <ContextMenuSubContent>
