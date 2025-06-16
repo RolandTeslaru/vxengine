@@ -2,7 +2,7 @@
 // (c) 2024 VEXR Labs. All Rights Reserved.
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
-import React, { Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { createContext, Suspense, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Canvas, extend, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { round } from 'lodash'
@@ -36,6 +36,7 @@ import { EffectComposerDriver } from '@vxengine/managers/EffectsManager/driver'
 import { vx } from '@vxengine/vxobject'
 import SplineManagerDriver from '@vxengine/managers/SplineManager/driver'
 import { vxengine } from '@vxengine/singleton'
+import VXRendererProvider from './rendererContext'
 
 export interface RendererCoreProps {
   canvasProps?: Partial<CanvasProps>;
@@ -45,6 +46,12 @@ export interface RendererCoreProps {
   effectsNode?: React.ReactElement
   className?: string
 }
+
+const VXRendererContext = createContext({
+  gl: { current: null },
+  opaqueRenderTarget: { current: null },
+  composer: { current: null }
+})
 
 // VXEngineCoreRenderer
 export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
@@ -75,36 +82,23 @@ export const VXRenderer: React.FC<RendererCoreProps> = React.memo(({
         }}
         {...restCanvasProps}
       >
-        <vx.scene vxkey="scene"/>
-        {/* <color attach="background" args={['gray']} /> */}
-        {vxengine.isDevelopment && <>
-          <VXRendererUtils />
-          <ObjectManagerDriver/>
-          <vx.grid vxkey="grid" name="Grid" />
-        </>
-        }
-        <EffectComposerDriver>
-          {effectsNode}
-        </EffectComposerDriver>
+        <VXRendererProvider>
+          <vx.scene vxkey="scene"/>
+          {/* <color attach="background" args={['gray']} /> */}
+          {vxengine.isDevelopment && <>
+            <VXRendererUtils />
+            <ObjectManagerDriver/>
+            <vx.grid vxkey="grid" name="Grid" />
+          </>
+          }
+          <EffectComposerDriver>
+            {effectsNode}
+          </EffectComposerDriver>
 
-        <GLDriver/>
-
-        <CameraManagerDriver />
-        {children}
+          <CameraManagerDriver />
+          {children}
+        </VXRendererProvider>
       </Canvas>
     </div>
   )
 })
-
-
-const GLDriver = () => {
-  const {gl} = useThree();
-
-  const { gl: glRef } = useVXEngine(); 
-
-  useEffect(() => {
-    glRef.current = gl;
-  }, [gl])
-
-  return null
-}

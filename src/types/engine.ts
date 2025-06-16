@@ -9,11 +9,6 @@ export interface EngineContextProps {
 
 export interface VXEngineProviderProps {
     children: React.ReactNode;
-    mount?: boolean;
-    projectName: string
-    animations_json: any;
-    autoWriteToDisk?: boolean
-    nodeEnv: 'development' | 'production' | 'test';
 }
 
 export interface VXEngineStoreProps {

@@ -71,7 +71,7 @@ const ParamSlider: React.FC<Props> = ({ param, vxkey, paramSliderRangeClassname,
                 step={param.step ?? 0.1}
             >
                 <div className='absolute left-0 z-10 flex w-full ml-1'>
-                    <p className={' text-neutral-300/80 text-xs ' + titleClassname}>{param.title ?? param.propertyPath}</p>
+                    <p className={'font-medium antialiased text-neutral-300/80 text-xs ' + titleClassname}>{param.title ?? param.propertyPath}</p>
                 </div>
                 <SliderPrimitive.Track className="relative bg-neutral-800/70 cursor-ew-resize h-[17px] w-full grow overflow-hidden rounded-full "
                 >

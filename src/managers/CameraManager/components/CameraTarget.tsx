@@ -4,7 +4,6 @@ import { vx } from '@vxengine/vxobject'
 import { useFrame } from '@react-three/fiber'
 import { TextureLoader } from 'three'
 import * as THREE from "three"
-import { useVXEngine } from '@vxengine/engine'
 import { useObjectSetting } from '@vxengine/managers/ObjectManager/stores/settingsStore'
 import { VXObjectSettings } from '@vxengine/vxobject/types'
 import { vxengine } from '@vxengine/singleton'

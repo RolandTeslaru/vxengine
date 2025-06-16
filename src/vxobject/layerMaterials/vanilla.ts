@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-import Abstract from './core/Abstract'
+import MaterialLayerAbstract from './core/MaterialLayerAbstract'
 import Depth from './core/Depth'
 import Color from './core/Color'
 import Noise from './core/Noise'
@@ -27,6 +27,7 @@ import {
 } from 'three'
 
 import CustomShaderMaterial from "three-custom-shader-material/vanilla"
+import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 
 type AllMaterialParams =
   | MeshPhongMaterialParameters
@@ -38,11 +39,16 @@ type AllMaterialParams =
 
 
 class LayerMaterial extends CustomShaderMaterial {
-  name: string = 'LayerMaterial'
-  layers: Abstract[] = []
-  lighting: ShadingType = 'basic'
+  public name: string = 'LayerMaterial'
+  public layers: MaterialLayerAbstract[] = []
+  public lighting: ShadingType = 'basic'
+  public isLayerMaterial = true
+  public vxkey: string
+  public addToVXObjectStore = true
 
-  constructor({ color, alpha, lighting, layers, name, ...props }: LayerMaterialParameters & AllMaterialParams = {}) {
+  constructor({ color, alpha, lighting, layers, name, vxkey, addToObjectStore = true, ...props }: LayerMaterialParameters & AllMaterialParams = {}) {
+    if(!vxkey && addToObjectStore)
+      throw new Error("LayerMaterail: vxkey was not passed")
     super({
       baseMaterial: ShadingTypes[lighting || 'basic'],
       isLayerMaterial: true,
@@ -63,42 +69,50 @@ class LayerMaterial extends CustomShaderMaterial {
 
     this.layers = layers || this.layers
     this.lighting = lighting || this.lighting
-    this.name = name || this.name
+    this.name = name ?? this.name
+    this.addToVXObjectStore = addToObjectStore
 
     this.refresh()
+
+    if(this.addToVXObjectStore){
+      const newVXEntity: vxObjectProps = {
+        vxkey,
+        type: "material",
+        ref: { current: this },
+        name: this.name,
+        parentKey: "materials",
+        parentMeshKeys: []
+      }
+    }
   }
 
-  genShaders() {
+  private _buildShader() {
     let vertexVariables = ''
     let fragmentVariables = ''
     let vertexShader = ''
     let fragmentShader = ''
-    let uniforms: any = {}
+    let uniqueUniforms: Record<string, THREE.IUniform> = {}
 
     this.layers
-      .filter((l) => l.visible)
-      .forEach((l) => {
+      .filter((layer) => layer.visible)
+      .forEach((_layer) => {
         // l.buildShaders(l.constructor)
 
-        vertexVariables += l.vertexVariables + '\n'
-        fragmentVariables += l.fragmentVariables + '\n'
-        vertexShader += l.vertexShader + '\n'
-        fragmentShader += l.fragmentShader + '\n'
+        vertexVariables += _layer.processedVertexVariables + '\n'
+        fragmentVariables += _layer.processedFragmentVariables + '\n'
+        vertexShader += _layer.processedVertexShader + '\n'
+        fragmentShader += _layer.processedFragmentShader + '\n'
 
-        uniforms = {
-          ...uniforms,
-          ...l.uniforms,
-        }
+        // Copy all the unique uniforms from the layer to the final uniforms Object
+        Object.assign(uniqueUniforms, _layer.uniqueUniforms)
       })
 
-    uniforms = {
-      ...uniforms,
-      ...this.uniforms,
-    }
+    // Copy all the CSM uniforms to the final uniforms object
+    Object.assign(uniqueUniforms, this.uniforms)
 
     return {
-      uniforms,
-      vertexShader: `
+      uniforms: uniqueUniforms,
+      vertexShader: `        
         ${HelpersChunk}
         ${NoiseChunk}
         ${vertexVariables}
@@ -134,12 +148,12 @@ class LayerMaterial extends CustomShaderMaterial {
     }
   }
 
-  refresh() {
-    const { uniforms, fragmentShader, vertexShader } = this.genShaders()
+  public refresh() {
+    const { uniforms, fragmentShader, vertexShader } = this._buildShader()
     super.update({ fragmentShader, vertexShader, uniforms })
   }
 
-  serialize(): SerializedLayer {
+  public serialize(): SerializedLayer {
     return {
       constructor: 'LayerMaterial',
       properties: {
@@ -151,19 +165,19 @@ class LayerMaterial extends CustomShaderMaterial {
     }
   }
 
-  set color(v: ColorRepresentation) {
+  public set color(v: ColorRepresentation) {
     if (this.uniforms?.u_lamina_color?.value)
       this.uniforms.u_lamina_color.value = typeof v === 'string' ? new THREE.Color(v).convertSRGBToLinear() : v
   }
-  get color() {
+  public get color() {
     return this.uniforms?.u_lamina_color?.value
   }
-  set alpha(v: number) {
+  public set alpha(v: number) {
     this.uniforms.u_lamina_alpha.value = v
   }
-  get alpha() {
+  public get alpha() {
     return this.uniforms.u_lamina_alpha.value
   }
 }
 
-export { LayerMaterial, Abstract, Depth, Color, Noise, Fresnel, Gradient, Matcap, Texture, Displace, Normal, Glass }
+export { LayerMaterial, MaterialLayerAbstract, Depth, Color, Noise, Fresnel, Gradient, Matcap, Texture, Displace, Normal, Glass }

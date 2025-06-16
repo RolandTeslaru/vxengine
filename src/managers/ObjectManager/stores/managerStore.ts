@@ -12,7 +12,7 @@ import { shallow } from 'zustand/shallow';
 
 const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
-const initialTree: Record<string, ObjectTreeNodeProps> = {
+const initialObjectTree: Record<string, ObjectTreeNodeProps> = {
     ["scene"]: {
         key: "scene",
         name: "Scene",
@@ -31,6 +31,13 @@ const initialTree: Record<string, ObjectTreeNodeProps> = {
         key: "html",
         name: "HTML",
         type: "HTML",
+        children: {},
+        isSelectable: false
+    },
+    ["materials"]: {
+        key: "materials",
+        name: "Materials",
+        type: "Material",
         children: {},
         isSelectable: false
     }
@@ -66,7 +73,7 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         hoveredObject: vxobject,
     })),
 
-    tree: initialTree,
+    tree: initialObjectTree,
     nodesPresent: {},
     pendingChildren: {},
     addToTree: (vxobject, icon) => {

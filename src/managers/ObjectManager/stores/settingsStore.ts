@@ -58,14 +58,18 @@ export const useObjectSettingsAPI = createWithEqualityFn<ObjectSettingsStoreProp
 
                 // Refresh the animation engine settings outside of the produce block
                 if (isUsingDisk && isDefaultValue)
-                    animationEngineInstance.hydrationService.hydrateSetting({ action: "remove", settingKey, vxkey });
+                    animationEngineInstance
+                        .hydrationService
+                        .hydrateSetting({ action: "remove", settingKey, vxkey });
                 else
-                    animationEngineInstance.hydrationService.hydrateSetting({
-                        action: "set",
-                        value: newValue,
-                        settingKey,
-                        vxkey
-                    });
+                    animationEngineInstance
+                        .hydrationService
+                        .hydrateSetting({
+                            action: "set",
+                            value: newValue,
+                            settingKey,
+                            vxkey
+                        });
 
                 // 7.36
                 // Add change to the timelineEditorAPI so that it triggers the disk write

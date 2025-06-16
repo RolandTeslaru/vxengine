@@ -30,7 +30,7 @@ const VXEngineContext = createContext<VXEngineContextProps>({
 })
 
 export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((props) => {
-  const { children, nodeEnv,} = props;
+  const { children} = props;
 
   const composer = useRef<EffectComposer | null>(null)
   const gl = useRef(null)

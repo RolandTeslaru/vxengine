@@ -24,6 +24,7 @@ import { PropertyControlService } from './services/PropertyControlService';
 import { ParamModifierService } from './services/ParamModifierService';
 import { create } from 'zustand';
 import { TimelineStoreStateProps, useAnimationEngineAPI } from './store';
+import { vxengine } from '@vxengine/singleton';
 
 const DEBUG_RERENDER = false;
 const DEBUG_OBJECT_INIT = false;
@@ -140,53 +141,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // Public API Methods
   // ====================================================
 
-  /**
-  * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
-  * @param timelines - A record of timelines to load.
-  */
-  public loadProject(diskData: RawProject, nodeEnv: "production" | "development", isMounting = false) {
-    if (nodeEnv === "production")
-      this._IS_PRODUCTION = true;
-    else if (nodeEnv === "development")
-      this._IS_DEVELOPMENT = true;
-
-    this._hydrationService.setMode(nodeEnv);
-    this._paramModifierService.setMode(nodeEnv)
-    this._propertyControlService.setMode(nodeEnv)
-
-    const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
-
-    logReportingService.logInfo(
-      `Loading Project ${diskData.projectName} in ${(nodeEnv === "production") && "production mode"} ${(nodeEnv === "development") && "dev mode"}`, LOG_CONTEXT)
-
-    const timelines = diskData.timelines
-    useAnimationEngineAPI.setState({ projectName: diskData.projectName })
-
-    if (this._IS_DEVELOPMENT) {
-      const syncResult: any = useSourceManagerAPI.getState().syncLocalStorage(diskData);
-      if (syncResult?.status === 'out_of_sync')
-        useAnimationEngineAPI.setState({ isPlaying: false })
-    }
-    else
-      useAnimationEngineAPI.setState({ timelines: timelines })
-
-    // Load the first timeline
-    const firstTimeline = Object.values(timelines)[0];
-    const firstTimelineID = firstTimeline.id;
-
-    this.setCurrentTimeline(firstTimelineID);
-
-    logReportingService.logInfo(
-      `Finished loading project: ${diskData.projectName} with ${Object.entries(diskData.timelines).length} timelines`, LOG_CONTEXT)
-
-    // Initialize the core UI
-    useUIManagerAPI.getState().setMountCoreUI(true);
-    this._isReady = true;
-  }
-
-
-
-
 
   /**
    * Sets the current timeline by updating the state, caching splines, and re-rendering.
@@ -280,6 +234,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
           `${vxkey}.${partialPropertyPath}.z`,
         ]
 
+        const defaultValue = partialPropertyPath === "scale" ? 1 : 0;
+
         result = generalKeys.map(_generalKey => {
           if (this._rawTracksCache.has(_generalKey)) {
             const rawTrack = this._rawTracksCache.get(_generalKey)
@@ -290,7 +246,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
             return this._rawStaticPropsCache.get(_generalKey).value;
           }
           else
-            return 0;
+            return defaultValue;
         }) as [number, number, number]
         break;
         
@@ -429,6 +385,18 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
    * @param vxObject - The object to initialize.
    */
   public handleObjectMount(vxObject: vxObjectProps) {
+    const LOG_CONTEXT = {
+      functionName: "handleObjectMount",
+      additionalData: {
+        currentTimeline: this._state.currentTimeline,
+        vxengine: vxengine
+      }
+    }
+
+    if(!vxengine.readyToMountObjects)
+      logReportingService.logFatal(
+        "VXEngine is not ready to mount vxobejcts. Ensure your project is loaded and you have set the currentTimeline", LOG_CONTEXT )
+
     const vxkey = vxObject.vxkey;
 
     // Initialize all Side Effects
@@ -445,10 +413,13 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (DEBUG_OBJECT_INIT)
       logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: { vxObject } })
 
-    const rawObject = this._state.currentTimeline.objects.find(obj => obj.vxkey === vxkey);
+    const rawObject = this._state.currentTimeline?.objects?.find(obj => obj.vxkey === vxkey);
 
-    if (!rawObject)
+    if (!rawObject){
+      logReportingService.logWarning(
+        `Failed to find rawObject with vxkey: ${vxkey}`, LOG_CONTEXT)
       return
+    }
 
     this._propertyControlService.generateObjectPropertySetters(vxObject, rawObject)
 

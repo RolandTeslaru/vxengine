@@ -37,7 +37,7 @@ export const ParamInput: FC<Props> = memo((props) => {
     return (
         <div className={`w-full flex ${param.type !== "slider" ? "flex-row" : "flex-col"}`}>
             {param.type !== "slider" && showTitle &&
-                <p className={'text-xs w-auto mr-auto my-auto text-label-quaternary ' + titleClassname}>
+                <p className={'text-xs font-normal antialiased w-auto mr-auto my-auto text-label-quaternary ' + titleClassname}>
                     {param.title ?? param.propertyPath}
                 </p>
             }

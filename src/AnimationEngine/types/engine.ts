@@ -16,8 +16,6 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   pause(): void;
 
   setCurrentTimeline(timelineId: string): void;
-  loadProject(diskData: RawProject, nodeEnv: "production" | "development"
-  ): void;
   setCurrentTime(time: number, isTick?: boolean);
 }
 

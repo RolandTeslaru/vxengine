@@ -20,7 +20,6 @@ import { ObjectTransformControls } from "@vxengine/managers/ObjectManager/compon
 import TimelineEditor from "@vxengine/managers/TimelineManager/TimelineEditor"
 import TrackSegmentProperties from "@vxengine/managers/TimelineManager/TrackSegmentProperties"
 import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoPanel"
-import { useVXEngine } from "@vxengine/engine"
 import { AlertTriangle } from "@vxengine/components/ui/icons"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import { TimelineEditorProvider } from "@vxengine/managers/TimelineManager/TimelineEditor/context"
@@ -62,7 +61,7 @@ export const VXStudio = () => {
                 <VXBottomRightBar /> 
             </VXEngineWindow>
 
-            {/* <VXEngineWindow
+            <VXEngineWindow
                 vxWindowId={"stateVisualizerWindow"}
                 title="VXStudio: State Visualizer"
                 windowClasses='width=717,height=450,left=100,top=200,resizable=0'
@@ -70,7 +69,7 @@ export const VXStudio = () => {
                 detachedClassName="!top-0 !left-0 h-[100%]! min-w-[100%]! "
             >
                 <StateVisualizer />
-            </VXEngineWindow> */}
+            </VXEngineWindow>
 
             <CameraManagerUI />
             <UIManagerDialogLayer />

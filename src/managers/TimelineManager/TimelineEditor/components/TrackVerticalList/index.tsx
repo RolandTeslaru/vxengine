@@ -10,7 +10,6 @@ import Search from "@vxengine/components/ui/Search";
 import { DEFAULT_ROW_HEIGHT } from "@vxengine/AnimationEngine/interface/const";
 import { ContextMenu, ContextMenuContent, ContextMenuSub, ContextMenuItem, ContextMenuTrigger, ContextMenuSubTrigger, ContextMenuSubContent } from "@vxengine/components/shadcn/contextMenu";
 import { selectAllKeyframesOnObject, selectAllKeyframesOnTrack } from "../TimelineArea/EditArea/Keyframe/utils";
-import { useVXEngine } from "@vxengine/engine";
 import { useTimelineEditorAPI } from "../../store";
 import { EditorTrackTreeNode } from "@vxengine/types/data/editorData";
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";

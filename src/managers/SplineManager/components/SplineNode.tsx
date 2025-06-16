@@ -3,7 +3,6 @@ import { useObjectManagerAPI, useVXObjectStore } from '@vxengine/managers/Object
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Html } from '@react-three/drei';
 import { vxObjectProps, vxSplineNodeProps } from '@vxengine/managers/ObjectManager/types/objectStore';
-import { useVXEngine } from '@vxengine/engine';
 import { handleOnVxObjectClick } from '@vxengine/managers/ObjectManager/utils/handleVxObject';
 import { ObjectManagerService } from '@vxengine/managers/ObjectManager/service';
 

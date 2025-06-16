@@ -129,7 +129,7 @@ const DebugLayerMaterial = React.forwardRef<
       const property = path[1]
       const id = ref.current.layers[index].uuid
       const uniform = ref.current.uniforms[`u_${id}_${property}`]
-      const layer = ref.current.layers[index] as LAYERS.Abstract & {
+      const layer = ref.current.layers[index] as LAYERS.MaterialLayerAbstract & {
         [key: string]: any
       }
 

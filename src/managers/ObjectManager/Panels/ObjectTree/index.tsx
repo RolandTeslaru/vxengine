@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useVXObjectStore } from '../../stores/objectStore'
 import { useObjectManagerAPI } from '../../stores/managerStore'
-import { useVXEngine } from '@vxengine/engine'
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
 import Tree from '@vxengine/components/ui/Tree'
 import { RenderNodeContentProps } from '@vxengine/components/ui/Tree/types'

@@ -7,7 +7,6 @@ import * as THREE from "three"
 import { Html } from "@react-three/drei";
 import { useVXObjectStore } from "../../managers/ObjectManager/stores/objectStore";
 import { vxKeyframeNodeProps, vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useVXEngine } from "@vxengine/engine";
 import { ObjectManagerService } from "@vxengine/managers/ObjectManager/service";
 
 export interface KeyframeNodeProps {

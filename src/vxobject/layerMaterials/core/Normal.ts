@@ -1,12 +1,34 @@
 import { Vector3 } from 'three'
 import { NormalProps } from '../types'
-import Abstract from './Abstract'
+import MaterialLayerAbstract from './MaterialLayerAbstract'
 
-export default class Normal extends Abstract {
+export default class Normal extends MaterialLayerAbstract {
   static u_alpha = 1
   static u_direction = new Vector3(1, 1, 1)
 
-  static vertexShader = `   
+  protected get definition(){
+    return {
+      name: "Normal",
+      uniforms: {
+        alpha: { type: "float", default: 1 },
+        direction: { type: "vec3", default: new Vector3(0, 0, 0) }
+      },
+      vertexShader,
+      fragmentShader
+    }
+  }
+
+  public vertexShader = vertexShader
+  public fragmentShader = fragmentShader
+
+  constructor(props?: NormalProps) {
+    super(props)
+  }
+}
+
+
+
+const vertexShader = `   
   varying vec3 v_normals; 
 
   void main() {
@@ -14,7 +36,7 @@ export default class Normal extends Abstract {
   }
 `
 
-  static fragmentShader = `   
+  const fragmentShader = `   
   	uniform float u_alpha;
   	uniform vec3 u_color;
   	uniform vec3 u_direction;
@@ -30,11 +52,3 @@ export default class Normal extends Abstract {
       return vec4(f_normalColor, u_alpha);
     }
   `
-
-  constructor(props?: NormalProps) {
-    super(Normal, {
-      name: 'Normal',
-      ...props,
-    })
-  }
-}

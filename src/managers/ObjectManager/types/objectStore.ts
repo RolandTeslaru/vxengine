@@ -32,6 +32,10 @@ export interface vxSplineProps extends BaseVxProps {
     objectVxKey: string // the vxkey for the object it is controlling
 }
 
+export interface vxMaterialProps extends BaseVxProps {
+    type: "material",
+}
+
 export interface vxSplineNodeProps extends BaseVxProps {
     type: "splineNode";
     index: number
@@ -58,6 +62,7 @@ export type vxObjectProps = vxEffectProps
     | vxSplineNodeProps 
     | vxVirtualEntityProps
     | vxSplineProps
+    | vxMaterialProps
 
 export interface ObjectStoreStateProps {
     objects: Record<string, vxObjectProps>

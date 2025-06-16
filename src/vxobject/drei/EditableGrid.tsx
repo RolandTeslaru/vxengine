@@ -15,15 +15,15 @@ const defaultSettings: VXObjectSettings = {
 }
 
 const gridParams: VXElementParams = [
-    { type: "number", title: "cross size", propertyPath: "material.uniforms.crossSize.value" },
-    { type: "number", title: "cross thickness", propertyPath: "material.uniforms.crossThickness.value" },
-    { type: "slider", title: "cross arm length", propertyPath: "material.uniforms.crossArmLength.value", min: 0, max: 0.5, step: 0.01 },
-    { type: "color", title: "cross color", propertyPath: "material.uniforms.crossColor.value" },
-    { type: "number", title: "section size", propertyPath: "material.uniforms.sectionSize.value" },
-    { type: "number", title: "section thickness", propertyPath: "material.uniforms.sectionThickness.value" },
-    { type: "color", title: "section color", propertyPath: "material.uniforms.sectionColor.value" },
-    { type: "slider", title: "fade distance", propertyPath: "material.uniforms.fadeDistance.value", min: 0, max: 100, step: 1 },
-    { type: "slider", title: "fade strength", propertyPath: "material.uniforms.fadeStrength.value", min: 0.01, max: 2, step: 0.01 },
+    { type: "number", title: "cross size", propertyPath: "material.uniforms.crossSize.value", propInitializeName: "crossSize"},
+    { type: "number", title: "cross thickness", propertyPath: "material.uniforms.crossThickness.value", propInitializeName: "crossThickness" },
+    { type: "slider", title: "cross arm length", propertyPath: "material.uniforms.crossArmLength.value", min: 0, max: 0.5, step: 0.01, propInitializeName: "crossArmLength" },
+    { type: "color", title: "cross color", propertyPath: "material.uniforms.crossColor.value", propInitializeName: "crossColor" },
+    { type: "number", title: "section size", propertyPath: "material.uniforms.sectionSize.value", propInitializeName: "sectionSize" },
+    { type: "number", title: "section thickness", propertyPath: "material.uniforms.sectionThickness.value", propInitializeName: "sectionThickness" },
+    { type: "color", title: "section color", propertyPath: "material.uniforms.sectionColor.value", propInitializeName: "sectionColor" },
+    { type: "slider", title: "fade distance", propertyPath: "material.uniforms.fadeDistance.value", min: 0, max: 100, step: 1, propInitializeName: "fadeDistance" },
+    { type: "slider", title: "fade strength", propertyPath: "material.uniforms.fadeStrength.value", min: 0.01, max: 2, step: 0.01, propInitializeName: "fadeStrength" },
 ]
 
 const gridConfig = {
@@ -53,6 +53,11 @@ const EditableGrid = withVX<EditableGridProps>(BaseGrid, {
     icon: "Grid",
     params: gridParams,
     settings: defaultSettings,
+    initialInterpolatedParams: [
+        { paramName: "position", type: "vector3", partialPropertyPath: "position" },
+        { paramName: "rotation", type: "vector3", partialPropertyPath: "rotation" },
+        { paramName: "scale", type: "vector3", partialPropertyPath: "scale" },
+    ]
 })
 
 export default EditableGrid;

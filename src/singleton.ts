@@ -32,6 +32,12 @@ export class VXEngine {
   private _IS_PRODUCTION: boolean = false;
   private _IS_DEVELOPMENT: boolean = false;
 
+  private _readyToMountObjects: boolean = false;
+  public get readyToMountObjects(): boolean {
+    return this._readyToMountObjects
+  }
+
+
   public get isDevelopment(): boolean {
     return this._IS_DEVELOPMENT;
   }
@@ -59,7 +65,10 @@ export class VXEngine {
   }
 
 
-  
+  /**
+  * Loads timelines into the animation engine, synchronizes local storage, and initializes the first timeline.
+  * @param timelines - A record of timelines to load.
+  */
   public loadProject(diskData: RawProject, projectName: string) {
 
     const LOG_CONTEXT = { module: "AnimationEngine", functionName: "loadProject", additionalData: { IS_PRODUCTION: this._IS_PRODUCTION, IS_DEVELOPMENT: this._IS_DEVELOPMENT } }
@@ -85,15 +94,15 @@ export class VXEngine {
     useUIManagerAPI.getState().setMountCoreUI(true);
 
 
-    if(projectName !== diskData.projectName){
+    if(projectName !== diskData.projectName)
       pushProjectNameUnSyncDialog(diskData.projectName, projectName)
-    }
 
     return this;
   }
 
   public setCurrentTimeline(timelineId: string) {
     animationEngineInstance.setCurrentTimeline(timelineId);
+    this._readyToMountObjects = true;
     return this;
   }
 }

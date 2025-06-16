@@ -28,6 +28,7 @@ export type VXBaseInputType = {
     sideEffect?: TrackSideEffectCallback
     title?: string
     propertyPath: string
+    propInitializeName?: string // prop name for the underlyng threejs instance object when it is created
 }
 export type VXNumberInputType = VXBaseInputType & {
     type: "number"

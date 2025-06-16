@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Abstract } from './vanilla'
+import { MaterialLayerAbstract } from './vanilla'
 
 export const BlendModes: {
   [key: string]: string
@@ -74,11 +74,12 @@ export interface BaseProps {
 }
 
 export interface LayerMaterialParameters {
-  layers?: Abstract[]
+  layers?: MaterialLayerAbstract[]
   color?: THREE.ColorRepresentation | THREE.Color
   alpha?: number
   lighting?: ShadingType
   name?: string
+  vxkey?: string
 }
 export type LayerMaterialProps = Omit<LayerMaterialParameters, 'layers'>
 
@@ -109,9 +110,14 @@ export interface DepthProps extends LayerProps {
 }
 
 export interface GlassProps extends LayerProps {
-  blur: number
-  thickness: number
-  refraction: number
+  blur?: number
+  thickness?: number
+  refraction?: number
+  roughness?: number
+  alpha?: number
+  reflectivity?: number
+  tint?: THREE.ColorRepresentation | THREE.Color | [number, number, number]
+  transmissionSamplerMap: THREE.Texture
 }
 
 export interface NoiseProps extends LayerProps {

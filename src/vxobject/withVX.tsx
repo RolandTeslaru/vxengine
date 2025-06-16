@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { memo, useRef, useImperativeHandle, useEffect, useLayoutEffect, useCallback } from "react";
 import { VXElementParams, VXObjectSettings, VXPrimitiveProps } from "./types";
-import { useVXEngine } from "@vxengine/engine";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import { initTimelineEditorObject } from "./utils/handleObjectEditorData";
 import { cleanupEditorObject } from "./utils/handleObjectEditorData";
@@ -38,6 +37,7 @@ export type WithVXDefaultProps = Omit<VXPrimitiveProps, 'vxkey' | 'type' | 'ref'
     vxkey?: string
     initialInterpolatedParams?: InterpolationParamType[]
 }
+
 
 export function withVX<P extends object>(
     WrappedComponent: React.ComponentType<P>,
@@ -118,7 +118,10 @@ export function withVX<P extends object>(
         // Mount props are passed to the underlyng instance
         const initialInterpolatedValues = useMemo(() => {
             const obj: Record<string, number | [number, number, number]> = {};
-            initialInterpolatedParams.forEach(mountParam => {
+            [
+                ...(DEFAULT_INITIAL_INTERPOLATED_PROPS[finalProps.type] as InterpolationParamType[]), 
+                ...initialInterpolatedParams
+            ].forEach(mountParam => {
                 const value = animationEngineInstance
                                 .getInterpolatedValue(finalProps.vxkey, mountParam.partialPropertyPath, mountParam.type);
                 obj[mountParam.paramName] = value;
@@ -182,10 +185,25 @@ const htmlDefaultParams: VXElementParams = [
     { type: "number", propertyPath: "rotation.y" }
 ]
 
+const ENTITY_INITIAL_INTERPOLATED_PROPS = [
+    {paramName: "position", type: "vector3", partialPropertyPath: "position"},
+    {paramName: "rotation", type: "vector3", partialPropertyPath: "rotation"},
+    {paramName: "scale", type: "vector3", partialPropertyPath: "scale"},
+]
+
+
 const DEFAULT_PARAMS = {
     entity: entityDefaultParams,
     effect: effectDefaultParams,
     htmlElement: htmlDefaultParams,
     virtualEntity: entityDefaultParams,
     custom: []
+}
+
+const DEFAULT_INITIAL_INTERPOLATED_PROPS = {
+    entity: ENTITY_INITIAL_INTERPOLATED_PROPS,
+    effect: [],
+    htmlElement: [],
+    virtualEntity:ENTITY_INITIAL_INTERPOLATED_PROPS,
+    custom: [],
 }

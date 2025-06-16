@@ -1,5 +1,5 @@
 import { getSpecialParameters, getUniform, isSerializableType, serializeProp } from '../utils/Functions'
-import { Color, IUniform, MathUtils, Texture, Vector3 } from 'three'
+import * as THREE from 'three'
 import { BlendMode, BlendModes, LayerProps, SerializedLayer } from '../types'
 
 import tokenize from 'glsl-tokenizer'
@@ -7,133 +7,98 @@ import descope from 'glsl-token-descope'
 import stringify from 'glsl-token-string'
 import tokenFunctions from 'glsl-token-functions'
 
-export default class Abstract {
-  uuid: string = MathUtils.generateUUID().replace(/-/g, '_')
-  name: string = 'LayerMaterial'
-  mode: BlendMode = 'normal'
-  visible: boolean = true
-  uniforms: {
-    [key: string]: IUniform<any>
+export interface LayerMaterialDefinition {
+  name: string
+  uniforms: Record<string, { type: string, default: any }>,
+  fragmentShader?: string,
+  vertexShader?: string
+}
+
+type LayerMaterialSchemaType = {
+  value: any
+  label: string,
+  options?: any[]
+}[]
+
+type onParseCallbackType = (
+  self: MaterialLayerAbstract & any,
+  fragmentShader: string,
+  vertexShader: string,
+) => void
+
+export default abstract class MaterialLayerAbstract {
+
+  protected abstract get definition(): LayerMaterialDefinition
+  
+  protected fragmentShader: string = ""
+  protected vertexShader: string = ""
+  protected vertexVariables = ""
+  protected fragmentVariables = ""
+
+  public uuid: string = THREE.MathUtils.generateUUID().replace(/-/g, '_')
+  public name: string = 'LayerMaterialAbstract'
+  public mode: BlendMode = 'normal'
+  public visible: boolean = true
+  public uniforms: Record<string, THREE.IUniform> = {}
+  public schema: LayerMaterialSchemaType = []
+  public properties = new Map<string, any>()
+
+  private _uniqueUniforms: Record<string, THREE.IUniform> = {}
+  public get uniqueUniforms() { return this._uniqueUniforms }
+  public get processedFragmentShader() { return this.fragmentShader}
+  public get processedVertexShader() { return this.vertexShader}
+  public get processedFragmentVariables() { return this.fragmentVariables}
+  public get processedVertexVariables() { return this.vertexVariables}
+
+  constructor(
+    props?: LayerProps | null, 
+  ){
+    this.initialize(props)
+    this.buildUniforms()
+    this.buildShaders() 
   }
 
-  onParse?: (self: Abstract & any) => void
+  private initialize(props: LayerProps){
+    const definition = this.definition
+    this.name = definition.name
+    this.mode = props.mode ?? "normal"
+    this.visible = props.visible ?? true
+  }
 
-  fragmentShader: string
-  vertexShader: string
-  vertexVariables: string
-  fragmentVariables: string
 
-  schema: {
-    value: any
-    label: any
-    options?: any[]
-  }[]
+  private buildUniforms(){
+    const definition = this.definition
+    Object.entries(definition.uniforms).forEach(([_uniformKey, _uniform]) => {
+      let value = _uniform.default
 
-  constructor(c: new () => Abstract, props?: LayerProps | null, onParse?: (self: Abstract & any) => void) {
-    const defaults = Object.getOwnPropertyNames(c).filter((e) => e.startsWith('u_'))
-    const uniforms: { [key: string]: any } = defaults.reduce((a, v) => {
-      let value = Object.getOwnPropertyDescriptor(c, v)?.value
+      if(isSerializableType(value) || value instanceof THREE.Color)
+        value = value.clone()
 
-      if (isSerializableType(value) || value instanceof Color) value = value.clone()
+      // For example
+      // u_090b89a7_ab54_42f0_aac9_3ce2a63386c1_near
+      const _uniqueUniformKey = `u_${this.uuid}_${_uniformKey}`
 
-      return {
-        ...a,
-        [v.slice(1)]: value,
-      }
-    }, {})
+      const threeUniformObj = new THREE.Uniform(getUniform(value))
 
-    for (const key in uniforms) {
-      const propName = key.split('_')[1]
-      if (props?.[propName] !== undefined) uniforms[key] = props[propName]
-    }
-
-    if (props) {
-      Object.keys(props).map((key) => {
-        if (props[key] !== undefined) {
-          // @ts-ignore
-          this[key] = props[key]
-        }
-      })
-    }
-
-    this.uniforms = {}
-    this.schema = []
-    const properties: PropertyDescriptorMap & ThisType<any> = {}
-    Object.keys(uniforms).map((key) => {
-      const propName = key.split('_')[1]
-
-      this.uniforms[`u_${this.uuid}_${propName}`] = {
-        value: getUniform(uniforms[key]),
-      }
-
-      this.schema.push({
-        value: uniforms[key],
-        label: propName,
-      })
-
-      properties[propName] = {
-        set: (v: any) => {
-          this.uniforms[`u_${this.uuid}_${propName}`].value = getUniform(v)
-        },
-        get: () => {
-          return this.uniforms[`u_${this.uuid}_${propName}`].value
-        },
-      }
-    })
-
-    if (props?.name) this.name = props.name
-    if (props?.mode) this.mode = props.mode
-    if (props?.visible) this.visible = props.visible
-
-    Object.defineProperties(this, properties)
-
-    this.vertexShader = ''
-    this.fragmentShader = ''
-    this.vertexVariables = ''
-    this.fragmentVariables = ''
-    this.onParse = onParse
-
-    this.buildShaders(c)
-
-    // Remove Name field from Debugger until a way to
-    // rename Leva folders is found
-    // this.schema.push({
-    //   value: this.name,
-    //   label: 'name',
-    // })
-    this.schema.push({
-      value: this.mode,
-      label: 'mode',
-      options: Object.values(BlendModes),
-    })
-    this.schema.push({
-      value: this.visible,
-      label: 'visible',
+      this._uniqueUniforms[_uniqueUniformKey] = threeUniformObj;
+      this.uniforms[_uniformKey] = threeUniformObj;
     })
   }
 
-  buildShaders(constructor: any) {
-    const shaders = Object.getOwnPropertyNames(constructor)
-      .filter((e) => e === 'fragmentShader' || e === 'vertexShader')
-      .reduce(
-        (a, v) => ({
-          ...a,
-          [v]: Object.getOwnPropertyDescriptor(constructor, v)?.value,
-        }),
-        {}
-      ) as {
-      fragmentShader: string
-      vertexShader: string
-    }
+  protected buildShaders() {
+    const definition = this.definition
+
+    const defFragmentShader = definition.fragmentShader ?? ""
+    const defVertexShader = definition.vertexShader ?? ""
 
     const tokens = {
-      vert: tokenize(shaders.vertexShader || ''),
-      frag: tokenize(shaders.fragmentShader || ''),
+      vert: tokenize(defVertexShader || ''),
+      frag: tokenize(defFragmentShader || ''),
     }
 
     const descoped = {
-      vert: descope(tokens.vert, this.renameTokens.bind(this)),
-      frag: descope(tokens.frag, this.renameTokens.bind(this)),
+      vert: descope(tokens.vert, this._renameTokens.bind(this)),
+      frag: descope(tokens.frag, this._renameTokens.bind(this)),
     }
 
     const funcs = {
@@ -168,20 +133,10 @@ export default class Abstract {
     this.fragmentShader = this.processFinal(funcBodies.frag)
     this.vertexVariables = variables.vert
     this.fragmentVariables = variables.frag
-
-    this.onParse?.(this)
-    this.schema = this.schema.filter((value, index) => {
-      const _value = value.label
-      return (
-        index ===
-        this.schema.findIndex((obj) => {
-          return obj.label === _value
-        })
-      )
-    })
   }
 
-  renameTokens(name: string) {
+
+  private _renameTokens(name: string) {
     if (name.startsWith('u_')) {
       const slice = name.slice(2)
       return `u_${this.uuid}_${slice}`
@@ -196,7 +151,7 @@ export default class Abstract {
     }
   }
 
-  processFinal(shader: string, isVertex?: boolean) {
+  private processFinal(shader: string, isVertex?: boolean) {
     const s: string = shader.replace(/\sf_/gm, ` f_${this.uuid}_`).replace(/\(f_/gm, `(f_${this.uuid}_`)
 
     const returnValue = s.match(/^.*return.*$/gm)
@@ -212,11 +167,11 @@ export default class Abstract {
     return sReplaced
   }
 
-  getShaderFromIndex(tokens: any, index: number[]) {
+  private getShaderFromIndex(tokens: any, index: number[]) {
     return stringify(tokens.slice(index[0], index[1]))
   }
 
-  getBlendMode(b: string, a: string) {
+  private getBlendMode(b: string, a: string) {
     switch (this.mode) {
       default:
       case 'normal':
@@ -246,20 +201,6 @@ export default class Abstract {
     }
   }
 
-  getSchema() {
-    const latestSchema = this.schema.map(({ label, options, ...rest }) => {
-      return {
-        label,
-        options,
-        ...getSpecialParameters(label),
-        ...rest,
-        // @ts-ignore
-        value: serializeProp(this[label]),
-      }
-    })
-
-    return latestSchema
-  }
 
   serialize(): SerializedLayer {
     const name = this.constructor.name.split('$')[0]

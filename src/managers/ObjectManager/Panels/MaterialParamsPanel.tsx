@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from "three"
 import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel';
 import ParamInput from '@vxengine/components/ui/ParamInput';
@@ -10,8 +10,12 @@ import { VXElementParam, VXElementParams } from '@vxengine/vxobject/types';
 import { CreateNodeDataFnType } from '@vxengine/components/ui/Tree/types';
 import { paramRendererWithVxObject } from '@vxengine/components/ui/Tree/nodeRenderers';
 import { ScrollArea } from '@vxengine/components/shadcn/scrollArea';
-import { Abstract, LayerMaterial, Matcap } from '@vxengine/vxobject/layerMaterials/vanilla';
+import { MaterialLayerAbstract, LayerMaterial, Matcap } from '@vxengine/vxobject/layerMaterials/vanilla';
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
+import { useObjectPropertyAPI } from '../stores/managerStore';
+import { getDefaultParamValue } from '@vxengine/components/ui/ParamInput/utils';
+import ICON_MAP from './ObjectTree/icons';
+import { invalidate } from '@react-three/fiber';
 
 
 interface MaterialParamNodeProps extends TreeNodeType {
@@ -135,7 +139,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
             {isLayerMaterial &&
                 <ul className='flex flex-col gap-1 p-1 px-2'>
                     {(material as LayerMaterial).layers.map((layer, index) => 
-                        <LayerView layer={layer} key={index} index={index} vxobject={vxobject} />
+                        <LayerView material={material as LayerMaterial} layer={layer} key={index} index={index} vxobject={vxobject} />
                     ) }
                 </ul>
             }
@@ -160,29 +164,50 @@ export default MaterialParams
 
 
 interface LayerProps {
-    layer: Abstract;
+    layer: MaterialLayerAbstract;
     index: number;
     vxobject: vxObjectProps
+    material: LayerMaterial
 }
 
-const LayerView: React.FC<LayerProps> = ({layer, index, ...rest}) => {
-    
+const LayerView: React.FC<LayerProps> = (props) => {
+    const {layer, index, material} = props
+    const [isVisible, setIsVisible] = useState(layer.visible)
+
+    const onVisibilityChange = useCallback((event: React.MouseEvent) => {
+        event.stopPropagation()
+        setIsVisible(visibility => {
+            layer.visible = !visibility
+            material.refresh()
+            invalidate()
+            return !visibility
+        })
+
+    }, [layer])
+
     return (
         <li>
             <Popover>
-                <PopoverTrigger>
-                    <div className='w-full h-6 relative flex flex-row p-1 px-2 shadow-md bg-secondary-opaque hover:bg-secondary-thin rounded-lg'>
+                <PopoverTrigger className='cursor-pointer'>
+                    <div className='font-roboto-mono antialiased w-full h-6 relative flex flex-row p-1 px-2 shadow-md bg-secondary-opaque hover:bg-secondary-thin rounded-lg'>
                         <p className='font-bold text-md mr-1 absolute top-1/2 -translate-y-1/2 '>{index}</p>
-                        <p className='h-auto my-auto ml-5 font-roboto-mono font-normal antialiased'>
+                        <p className='h-auto my-auto ml-5 font-medium '>
                             {layer.name}
                         </p>
+                        <button 
+                            className='absolute top-1/2 -translate-y-1/2 right-0 cursor-pointer hover:bg-neutral-700 rounded-lg p-1'
+                            onClick={onVisibilityChange}
+                        >
+                            {isVisible ? ICON_MAP["eyeOpen"] : ICON_MAP["eyeClosed"]}
+                        </button>
                     </div>
                 </PopoverTrigger>
-                <LayerPopoverContent layer={layer} index={index} {...rest}/>
+                <LayerPopoverContent {...props}/>
             </Popover>
         </li>
     )
 }
+
 
 const LayerPopoverContent = ({layer, index, vxobject}: LayerProps) => {
     const currentPath = `material.layers.${index}`;
@@ -190,9 +215,9 @@ const LayerPopoverContent = ({layer, index, vxobject}: LayerProps) => {
     const isMatcap = layer.name === "Matcap";
     
     return (
-        <PopoverContent className='w-[200px]'>
+        <PopoverContent className='w-[200px] mr-2 pt-1' side="left" align='start'>
             <p className='text-white antialiased text-xs font-semibold font-roboto-mono text-center '>{layer.name} Layer</p>
-            <div className='flex flex-col gap-1 w-full'>
+            <div className='flex flex-col gap-1 w-full pt-1'>
                 {isMatcap && <MatcapImageViewer layer={layer as Matcap & { map: THREE.Texture }}/>}
                 {LAYER_PARAMS[layer.name]?.map((param, index) => 
                     <ParamInput  
@@ -247,35 +272,38 @@ const MatcapImageViewer = ({layer}: {layer: Matcap & { map: THREE.Texture }}) =>
     );
 }
 
+
 const LAYER_PARAMS = {
     Depth: [
-        { title: "intensity", propertyPath: "alpha", type: "slider", min: 0, max: 1, step: 0.01 },
-        { title: "colorA", propertyPath: "colorA", type: "color" },
-        { title: "colorB", propertyPath: "colorB", type: "color" },
-        { title: "near", propertyPath: "near", type: "number" },
-        { title: "far", propertyPath: "far", type: "number" },
+        { title: "colorA", propertyPath: "uniforms.colorA.value", type: "color" },
+        { title: "colorB", propertyPath: "uniforms.colorB.value", type: "color" },
+        { title: "near", propertyPath: "uniforms.near.value", type: "number" },
+        { title: "far", propertyPath: "uniforms.far.value", type: "number" },
+        { title: "intensity", propertyPath: "uniforms.alpha.value", type: "slider", min: 0, max: 1, step: 0.01 },
     ],
     Color: [
-        { title: "intensity", propertyPath: "alpha", type: "slider", min: 0, max: 1, step: 0.01 },
-        { title: "color", propertyPath: "color", type: "color" },
+        { title: "color", propertyPath: "uniforms.color.value", type: "color" },
+        { title: "intensity", propertyPath: "uniforms.alpha.value", type: "slider", min: 0, max: 1, step: 0.01 },
     ],
     Displace: [
-        { title: "strength", propertyPath: "strength", type: "number" },
-        { title: "scale", propertyPath: "scale", type: "number" },
+        { title: "strength", propertyPath: "uniforms.strength.value", type: "number" },
+        { title: "scale", propertyPath: "uniforms.scale.value", type: "number" },
+        { title: "intensity", propertyPath: "uniforms.alpha.value", type: "slider", min: 0, max: 1, step: 0.01 },
     ],
     Fresnel: [
-        { title: "color", propertyPath: "color", type: "color" },
-        { title: "intensity", propertyPath: "intensity", type: "slider", min: 0, max: 10, step: 0.01 },
-        { title: "bias", propertyPath: "bias", type: "slider", min: -1, max: 1, step: 0.01 },
-        { title: "power", propertyPath: "power", type: "slider", min: 0, max: 10, step: 0.01 },
-        { title: "factor", propertyPath: "factor", type: "slider", min: 0, max: 10, step: 0.01 },
+        { title: "color", propertyPath: "uniforms.color.value", type: "color" },
+        { title: "bias", propertyPath: "uniforms.bias.value", type: "slider", min: -1, max: 1, step: 0.01 },
+        { title: "power", propertyPath: "uniforms.power.value", type: "slider", min: 0, max: 10, step: 0.01 },
+        { title: "factor", propertyPath: "uniforms.factor.value", type: "slider", min: 0, max: 10, step: 0.01 },
+        { title: "intensity", propertyPath: "uniforms.intensity.value", type: "slider", min: 0, max: 10, step: 0.01 },
     ],
     Matcap: [
-        { title: "intensity", propertyPath: "alpha", type: "slider", min: 0, max: 1, step: 0.01 },
+        { title: "intensity", propertyPath: "uniforms.alpha.value", type: "slider", min: 0, max: 1, step: 0.01 },
     ],
     Glass: [
-        { title: "Blur", propertyPath: "blur", type: "number" },
-        { title: "Thickness", propertyPath: "thickness", type: "number" },
-        { title: "Refraction", propertyPath: "refraction", type: "number" },
+        { title: "Blur", propertyPath: "uniforms.blur.value", type: "number" },
+        { title: "Thickness", propertyPath: "uniforms.thickness.value", type: "number" },
+        { title: "Refraction", propertyPath: "uniforms.refraction.value", type: "number" },
+        { title: "intensity", propertyPath: "uniforms.alpha.value", type: "slider", min: 0, max: 1, step: 0.01 },
     ]
 } as Record<string, VXElementParams>
