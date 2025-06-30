@@ -56,7 +56,6 @@ const ObjectParamsConfig = {
   ],
   splineNode: [
     SplineNodeParams, 
-    ParamList
   ],
   keyframeNode: [
     NodeTransformParams, 

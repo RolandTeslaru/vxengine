@@ -177,24 +177,23 @@ const CheckVisualizer = ({ show }: { show: boolean }) => {
         return null;
 }
 
-const ViewButton = () => {
-    const vxWindows = useUIManagerAPI(state => state.vxWindows);
-    const openVXWindow = useUIManagerAPI(state => state.openVXWindow);
-    const closeVXWindow = useUIManagerAPI(state => state.closeVXWindow);
+const handleOnClickViewButton = (id: string) => {
+    const state = useUIManagerAPI.getState();
+    if (state.vxWindows[id].isOpen)
+        state.closeVXWindow(id);
+    else
+        state.openVXWindow(id);
+}
 
-    const handleClick = (id: string) => {
-        if (vxWindows[id].isOpen)
-            closeVXWindow(id);
-        else
-            openVXWindow(id);
-    }
+const ViewButton = () => {
+    const vxWindows = useUIManagerAPI(state => state.vxWindows)
 
     return (
         <MenubarMenu>
             <MenubarTrigger><p className='font-roboto-mono'>View</p></MenubarTrigger>
             <MenubarContent>
                 {Object.entries(vxWindows).map(([id, vxwindow]) =>
-                    <MenubarItem key={id} onClick={() => handleClick(id)}>
+                    <MenubarItem key={id} onClick={() => handleOnClickViewButton(id)}>
                         {vxwindow.title} <MenubarShortcut><CheckVisualizer show={vxwindow.isOpen} /></MenubarShortcut>
                     </MenubarItem>
                 )}

@@ -18,18 +18,15 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
     const { children, title = "VXEngine Window", windowClasses, vxWindowId, className,
            detachedClassName, noStyling = false, noPadding = false } = props;
 
-    const registerWindow = useUIManagerAPI(state => state.registerWindow);
-    const theme = useUIManagerAPI(state => state.theme)
+    const [theme, registerWindow, vxWindow, isStoreHydrated, attachVXWindow] = useUIManagerAPI(state => [
+        state.theme, state.registerWindow, state.vxWindows[vxWindowId], state.hydrated, state.attachVXWindow
+    ])
 
     const isRegistered = useRef(false);
     if (!isRegistered.current) {
         registerWindow(vxWindowId, title);
         isRegistered.current = true;
     }
-
-    const vxWindow = useUIManagerAPI(state => state.vxWindows[vxWindowId]);
-    const isStoreHydrated = useUIManagerAPI(state => state.hydrated);
-    const attachVXWindow = useUIManagerAPI(state => state.attachVXWindow);
 
     const [externalContainer, setExternalContainer] = useState<HTMLElement | null>(null);
 

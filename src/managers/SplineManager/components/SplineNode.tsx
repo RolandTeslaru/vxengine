@@ -29,10 +29,12 @@ const SplineNode: React.FC<SplineNodeProps> = ({ splineKey, position, index, col
             index,
             splineKey,
             parentKey: splineKey,
-            name: `node ${index}`
+            name: `node ${index}`,
+            params: [],
+            icon: "SplineNode"
         }
 
-        ObjectManagerService.addObjectToStore(splineNodeObject, { icon: "SplineNode"});
+        ObjectManagerService.addObjectToStore(splineNodeObject);
 
         return () => ObjectManagerService.removeObjectFromStore(nodeKey)
     }, [])
