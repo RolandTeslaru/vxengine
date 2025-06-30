@@ -10,6 +10,7 @@ import Tree from '@vxengine/components/ui/Tree'
 import { TreeNodeType } from '../utils/createPropertyTree'
 import JsonView from 'react18-json-view'
 import { paramRenderer } from '@vxengine/components/ui/Tree/nodeRenderers'
+import ICON_MAP from '../components/ObjectTree/icons'
 
 interface Props {
     vxobject: vxObjectProps
@@ -60,6 +61,8 @@ const ParamList: React.FC<Props> = ({ vxobject }) => {
         <CollapsiblePanel
             title={vxobject.name ? `${vxobject.name} Params` : "Object Params"}
             noPadding={true}
+            icon={ICON_MAP["Slider"]}
+            iconClassName='text-white !text-blue-400 '
         >
             <div className='flex flex-col'>
                 <Tree

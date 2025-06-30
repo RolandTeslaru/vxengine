@@ -37,6 +37,7 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
         set({
             splines,
         });
+        return get()
     },
 
     changes: 0,

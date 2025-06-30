@@ -5,8 +5,7 @@
 "use client"
 
 import React from "react"
-import { ObjectParamsPanel } from "../managers/ObjectManager/ui"
-import ObjectList from "../managers/ObjectManager/Panels/ObjectTree"
+import { ObjectManagerUI, ObjectParamsPanel } from "../managers/ObjectManager/ui"
 import { StandardWindowStyling, VXEngineWindow } from "@vxengine/core/components/VXEngineWindow"
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store"
 import CameraManagerUI from "@vxengine/managers/CameraManager/ui"
@@ -23,6 +22,7 @@ import ObjectInfoPanel from "@vxengine/managers/ObjectManager/Panels/ObjectInfoP
 import { AlertTriangle } from "@vxengine/components/ui/icons"
 import StateVisualizer from "@vxengine/components/ui/StateVisualizer"
 import { TimelineEditorProvider } from "@vxengine/managers/TimelineManager/TimelineEditor/context"
+import ObjectTree from "@vxengine/managers/ObjectManager/components/ObjectTree"
 
 export const VXStudio = () => {
     const theme = useUIManagerAPI(state => state.theme)
@@ -72,6 +72,7 @@ export const VXStudio = () => {
             </VXEngineWindow>
 
             <CameraManagerUI />
+            <ObjectManagerUI/>
             <UIManagerDialogLayer />
             <Watermark />
         </div>
@@ -103,7 +104,7 @@ const VXLeftPanel = () => {
         <>
             <div className="h-full overflow-y-scroll rounded-2xl ">
                 <div className="flex flex-col gap-2 h-fit">
-                    <ObjectList />
+                    <ObjectTree />
                     <TrackSegmentProperties />
                 </div>
             </div>

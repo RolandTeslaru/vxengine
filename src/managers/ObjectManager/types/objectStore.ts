@@ -11,10 +11,11 @@ export type vxObjectTypes = "entity"
 export interface BaseVxProps {
     ref: React.RefObject<any>
     vxkey: string
-    params?: VXElementParams
+    params: VXElementParams
     disabledParams?: string[]
     name: string
     parentKey: string;
+    icon: string
 }
 
 export interface vxElementProps extends BaseVxProps {
@@ -34,6 +35,7 @@ export interface vxSplineProps extends BaseVxProps {
 
 export interface vxMaterialProps extends BaseVxProps {
     type: "material",
+    parentMeshKeys: string[]
 }
 
 export interface vxSplineNodeProps extends BaseVxProps {

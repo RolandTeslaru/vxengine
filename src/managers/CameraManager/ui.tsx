@@ -15,7 +15,7 @@ const CameraManagerUI = () => {
                 className='top-6 right-6 w-[240px] px-2! py-1! flex-row!'
                 style={{ boxShadow: "0 4px 15px -3px rgb(0 0 0 / 0.6), 0 1px 6px -2px rgb(0 0 0 / 0.6" }}
             >
-                <p className='font-roboto-mono text-xs my-auto mx-auto h-auto text-label-primary'>Camera</p>
+                <p className='font-roboto-mono font-semibold antialiased text-xs my-auto mx-auto h-auto text-label-primary'>Camera</p>
                 <div className='h-auto my-auto'>
                     <Tabs
                         defaultValue={mode}

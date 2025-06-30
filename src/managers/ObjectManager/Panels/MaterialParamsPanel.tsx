@@ -14,8 +14,9 @@ import { MaterialLayerAbstract, LayerMaterial, Matcap } from '@vxengine/vxobject
 import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover';
 import { useObjectPropertyAPI } from '../stores/managerStore';
 import { getDefaultParamValue } from '@vxengine/components/ui/ParamInput/utils';
-import ICON_MAP from './ObjectTree/icons';
 import { invalidate } from '@react-three/fiber';
+import ICON_MAP from '../components/ObjectTree/icons';
+import { AlertTriangle } from '@vxengine/components/ui/icons';
 
 
 interface MaterialParamNodeProps extends TreeNodeType {
@@ -101,7 +102,7 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
     const refObject = (vxobject.ref.current as THREE.Mesh)
     const material = refObject.material as THREE.Material;
 
-    const isLayerMaterial = material.name === "LayerMaterial"
+    const isLayerMaterial = material instanceof LayerMaterial
 
     console.log("Material ", material)
 
@@ -129,12 +130,16 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
 
     const [searchQuery, setSearchQuery] = useState("");
 
+    const panelTitle = `${MATERIAL_TITLES[material.type as keyof typeof MATERIAL_TITLES]}`
+
     return (
         <CollapsiblePanel
-            title={`${MATERIAL_TITLES[material.type as keyof typeof MATERIAL_TITLES]}`}
+            title={panelTitle}
             defaultOpen={true}
             noPadding={true}
             contentClassName=' gap-2 min-h-0'
+            icon={ICON_MAP["Material"]}
+            iconClassName='text-purple-400'
         >
             {isLayerMaterial &&
                 <ul className='flex flex-col gap-1 p-1 px-2'>
@@ -185,15 +190,23 @@ const LayerView: React.FC<LayerProps> = (props) => {
 
     }, [layer])
 
+    // @ts-expect-error
+    const isWarning = layer.name === "Matcap" && (!layer.map || (!layer.map?.source?.data && !layer.map?.image))
+
     return (
         <li>
             <Popover>
                 <PopoverTrigger className='cursor-pointer'>
-                    <div className='font-roboto-mono antialiased w-full h-6 relative flex flex-row p-1 px-2 shadow-md bg-secondary-opaque hover:bg-secondary-thin rounded-lg'>
+                    <div className='font-roboto-mono antialiased w-full h-6 relative flex flex-row p-1 px-2 shadow-md bg-secondary-opaque border border-primary-thin hover:bg-secondary-thin rounded-lg'>
                         <p className='font-bold text-md mr-1 absolute top-1/2 -translate-y-1/2 '>{index}</p>
                         <p className='h-auto my-auto ml-5 font-medium '>
                             {layer.name}
                         </p>
+                        {isWarning && <>
+                            <AlertTriangle size={17} className='text-red-600 font-bold absolute top-1/2 -translate-y-1/2 right-8 animate-ping'/>
+                            <AlertTriangle size={17} className='text-red-600 font-bold absolute top-1/2 -translate-y-1/2 right-8 '/>
+                        </>
+                            }
                         <button 
                             className='absolute top-1/2 -translate-y-1/2 right-0 cursor-pointer hover:bg-neutral-700 rounded-lg p-1'
                             onClick={onVisibilityChange}
@@ -255,7 +268,7 @@ const MatcapImageViewer = ({layer}: {layer: Matcap & { map: THREE.Texture }}) =>
     }, [layer]);
 
     if (!layer || !layer.map || (!layer.map.source?.data && !layer.map.image)) {
-        return <p className='text-xs text-neutral-500 text-center'>No Matcap Texture</p>;
+        return <p className='text-xs text-red-600 font-semibold text-center'>No Matcap Texture Loaded</p>;
     }
 
     // Check if the source data or image is an HTMLImageElement

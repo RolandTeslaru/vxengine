@@ -26,7 +26,8 @@ const defaultExpandedKeys = {
     scene: {},
     splines: {},
     effects: {},
-    environment: {}
+    environment: {},
+    materials: {}
 }
 
 const ObjectTree = () => {
@@ -40,6 +41,8 @@ const ObjectTree = () => {
             title="Object Tree"
             noPadding={true}
             contentClassName='pb-0 px-0! gap-2'
+            icon={ICON_MAP["Tree"]}
+            iconClassName='!text-neutral-400'
         >
             {/* Head */}
             <div className='text-xs flex flex-row px-2 text-label-quaternary w-full'>

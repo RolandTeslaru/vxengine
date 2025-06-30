@@ -20,12 +20,6 @@ type LayerMaterialSchemaType = {
   options?: any[]
 }[]
 
-type onParseCallbackType = (
-  self: MaterialLayerAbstract & any,
-  fragmentShader: string,
-  vertexShader: string,
-) => void
-
 export default abstract class MaterialLayerAbstract {
 
   protected abstract get definition(): LayerMaterialDefinition

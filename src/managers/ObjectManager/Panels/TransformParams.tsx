@@ -4,6 +4,7 @@ import ParamInput from "@vxengine/components/ui/ParamInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
 import SettingNode from "../components/SettingNode";
+import ICON_MAP from "../components/ObjectTree/icons";
 
 interface Props {
     vxobject: vxObjectProps
@@ -46,6 +47,8 @@ export const TransformParams: React.FC<Props> = memo(({ vxobject }) => {
     return (
         <CollapsiblePanel
             title="Transform"
+            icon={ICON_MAP["Axis"]}
+            iconClassName="!text-neutral-400"
         >
             <div className="w-full h-auto flex flex-col gap-2">
                 <div className="flex gap-1 flex-row ml-auto">

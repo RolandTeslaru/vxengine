@@ -31,6 +31,7 @@ export class VXEngine {
   private static _instance: VXEngine;
   private _IS_PRODUCTION: boolean = false;
   private _IS_DEVELOPMENT: boolean = false;
+  private _IS_INTIAILIZED = false
 
   private _readyToMountObjects: boolean = false;
   public get readyToMountObjects(): boolean {
@@ -38,17 +39,18 @@ export class VXEngine {
   }
 
 
-  public get isDevelopment(): boolean {
-    return this._IS_DEVELOPMENT;
+  public get isDevelopment(): boolean{
+    return this._IS_DEVELOPMENT
   }
 
   public get isProduction(): boolean {
-    return this._IS_PRODUCTION;
+    return this._IS_PRODUCTION
   }
 
   public static getInstance(): VXEngine {
-    if (!VXEngine._instance)
+    if (!VXEngine._instance){
       VXEngine._instance = new VXEngine();
+    }
   
     return VXEngine._instance;
   }
@@ -59,7 +61,10 @@ export class VXEngine {
     else if (nodeEnv === "development")
       this._IS_DEVELOPMENT = true;
 
+    this._IS_INTIAILIZED = true;
     animationEngineInstance.initialize(nodeEnv);
+
+    console.log("VXEngine has been initialized")
 
     return this;
   }

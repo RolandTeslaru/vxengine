@@ -36,9 +36,8 @@ export const VXEngineProvider: React.FC<VXEngineProviderProps> = React.memo((pro
   const gl = useRef(null)
 
   useEffect(() => {
-    if (vxengine.isDevelopment){
+    if (vxengine.isDevelopment)
       window.addEventListener('beforeunload', beforeUnloadMasterCallback)
-    }
 
     return () => {
       if (vxengine.isDevelopment)

@@ -100,12 +100,13 @@ export function withVX<P extends object>(
                     : DEFAULT_PARAMS[finalProps.type] ?? [],
                 disabledParams: finalProps.disabledParams || [],
                 parentKey: finalProps.overrideNodeTreeParentKey ?? parentKey,
+                icon: finalProps.icon ?? " ",
                 ref: internalRef,
                 usingHOC: true
             }
 
 
-            ObjectManagerService.addObjectToStore(newVXEntity, { icon: finalProps.icon, modifyObjectTree: finalProps.modifyObjectTree })
+            ObjectManagerService.addObjectToStore(newVXEntity)
 
             animationEngineInstance.handleObjectMount(newVXEntity);
 

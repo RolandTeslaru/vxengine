@@ -147,9 +147,10 @@ export const EffectComposerDriver = /* @__PURE__ */ memo(
         params: [],
         disabledParams: [],
         parentKey: "global",
+        icon: "Effects"
       };
 
-      ObjectManagerService.addObjectToStore(newVXEntity, { icon: "Effects" });
+      ObjectManagerService.addObjectToStore(newVXEntity);
 
       return () => ObjectManagerService.removeObjectFromStore(newVXEntity.vxkey);
     }, [])

@@ -23,18 +23,8 @@ class _ObjectManagerService {
     public get objectManagerState() { return useObjectManagerAPI.getState() }
     public get objectSettingsState(): ObjectSettingsStoreProps { return useObjectSettingsAPI.getState() }
 
-    public addObjectToStore(vxobject: vxObjectProps, props: {icon?: string, modifyObjectTree?: boolean} = {}) {
-        const { icon, modifyObjectTree } = props
-
-        // Generate Object Tree 
-        if (vxengine.isDevelopment) {
-            if (modifyObjectTree === undefined || modifyObjectTree === true) {
-                const addToTreeFunc = useObjectManagerAPI.getState().addToTree;
-                addToTreeFunc(vxobject, icon)
-            }
-        }
-
-        return useVXObjectStore.setState(state => ({
+    public addObjectToStore(vxobject: vxObjectProps) {
+        useVXObjectStore.setState(state => ({
             ...state,
             objects: {
                 ...state.objects,

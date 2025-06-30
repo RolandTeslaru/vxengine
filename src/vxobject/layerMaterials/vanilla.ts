@@ -27,7 +27,9 @@ import {
 } from 'three'
 
 import CustomShaderMaterial from "three-custom-shader-material/vanilla"
-import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { vxMaterialProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
+import { ObjectManagerService } from '@vxengine/managers/ObjectManager/service'
+import animationEngineInstance from '@vxengine/singleton'
 
 type AllMaterialParams =
   | MeshPhongMaterialParameters
@@ -46,9 +48,10 @@ class LayerMaterial extends CustomShaderMaterial {
   public vxkey: string
   public addToVXObjectStore = true
 
-  constructor({ color, alpha, lighting, layers, name, vxkey, addToObjectStore = true, ...props }: LayerMaterialParameters & AllMaterialParams = {}) {
-    if(!vxkey && addToObjectStore)
+  constructor({ color, alpha, lighting, layers, name, vxkey, ...props }: LayerMaterialParameters & AllMaterialParams) {
+    if(!vxkey)
       throw new Error("LayerMaterail: vxkey was not passed")
+
     super({
       baseMaterial: ShadingTypes[lighting || 'basic'],
       isLayerMaterial: true,
@@ -69,21 +72,25 @@ class LayerMaterial extends CustomShaderMaterial {
 
     this.layers = layers || this.layers
     this.lighting = lighting || this.lighting
-    this.name = name ?? this.name
-    this.addToVXObjectStore = addToObjectStore
+    this.name = name ?? vxkey ?? this.name
 
     this.refresh()
 
-    if(this.addToVXObjectStore){
-      const newVXEntity: vxObjectProps = {
-        vxkey,
-        type: "material",
-        ref: { current: this },
-        name: this.name,
-        parentKey: "materials",
-        parentMeshKeys: []
-      }
+    const newVXEntity: vxMaterialProps = {
+      vxkey,
+      type: "material",
+      ref: { current: this },
+      name: this.name,
+      parentKey: "materials",
+      parentMeshKeys: [],
+      params: [],
+      icon: "Material"
     }
+    
+    animationEngineInstance.handleObjectMount(newVXEntity);
+    
+    ObjectManagerService
+      .addObjectToStore(newVXEntity);
   }
 
   private _buildShader() {

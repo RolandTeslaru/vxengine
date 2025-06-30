@@ -16,6 +16,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/c
 import JsonView from "react18-json-view";
 import { InfoPopover } from "./helpers";
 import { paramRenderer } from "@vxengine/components/ui/Tree/nodeRenderers";
+import ICON_MAP from "../components/ObjectTree/icons";
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 
@@ -56,6 +57,7 @@ export const GeometryParams: FC<VXGeometryProps> = React.memo(({ vxobject }) => 
             title={geometry.type}
             noPadding={true}
             contentClassName="gap-2"
+            icon={<svg className=" stroke-green-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 4m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z" /><path d="M3 17m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z" /><path d="M17 17m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z" /><path d="M6.5 17.1l5 -9.1" /><path d="M17.5 17.1l-5 -9.1" /><path d="M7 19l10 0" /></svg>}
         >
             <div className='text-xs px-2 flex flex-row'>
                 {/* Search input */}

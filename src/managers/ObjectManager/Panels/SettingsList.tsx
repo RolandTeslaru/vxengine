@@ -6,6 +6,7 @@ import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStor
 import { ISetting } from '@vxengine/AnimationEngine/types/engine'
 import { VXObjectSettings } from '@vxengine/vxobject/types'
 import SettingNode from '../components/SettingNode'
+import ICON_MAP from '../components/ObjectTree/icons'
 
 const excludeSettingsKeys = [
     "showPositionPath"
@@ -38,7 +39,11 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
     if (filteredSettingsLength === 0) return null
 
     return (
-        <CollapsiblePanel title="Settings">
+        <CollapsiblePanel 
+        title="Settings"
+        icon={ICON_MAP["Switch"]}
+        iconClassName='text-cyan-400'
+        >
             <div className="flex flex-col">
                 {filteredSettingsArray.map(([settingKey, setting]) => (
                     <SettingNode key={settingKey} vxkey={vxkey} settingKey={settingKey} setting={setting} />

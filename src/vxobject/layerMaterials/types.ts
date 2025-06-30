@@ -79,7 +79,7 @@ export interface LayerMaterialParameters {
   alpha?: number
   lighting?: ShadingType
   name?: string
-  vxkey?: string
+  vxkey: string
 }
 export type LayerMaterialProps = Omit<LayerMaterialParameters, 'layers'>
 

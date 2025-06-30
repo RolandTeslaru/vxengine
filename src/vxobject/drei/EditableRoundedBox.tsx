@@ -1,6 +1,6 @@
 import React from 'react'
 import { RoundedBox, RoundedBoxProps } from "@react-three/drei"
-import { withVX } from '@vxengine/index'
+import { withVX } from '../withVX'
 import { MeshBasicMaterial } from 'three';
 import { BufferGeometry } from 'three';
 import { Mesh } from 'three';

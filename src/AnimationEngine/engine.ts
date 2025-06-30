@@ -11,9 +11,6 @@ import { IAnimationEngine, TrackSideEffectCallback } from './types/engine';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager/store';
 import { js_interpolateNumber } from './utils/interpolateNumber';
 import { cloneDeep } from 'lodash';
-
-import { useSourceManagerAPI } from '../managers/SourceManager/store'
-import { useUIManagerAPI } from '@vxengine/managers/UIManager/store';
 import { invalidate } from '@react-three/fiber';
 import { HydrationService } from './services/HydrationService';
 import { logReportingService } from './services/LogReportingService';
@@ -22,8 +19,7 @@ import { SplineService } from './services/SplineService';
 import { RawKeyframe, RawObject, RawProject, RawStaticProp, RawTimeline, RawTrack } from '@vxengine/types/data/rawData';
 import { PropertyControlService } from './services/PropertyControlService';
 import { ParamModifierService } from './services/ParamModifierService';
-import { create } from 'zustand';
-import { TimelineStoreStateProps, useAnimationEngineAPI } from './store';
+import { useAnimationEngineAPI } from './store';
 import { vxengine } from '@vxengine/singleton';
 
 const DEBUG_RERENDER = false;
@@ -199,8 +195,9 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (this._IS_DEVELOPMENT) {
       this.hydrationService.setCurrentTimeline(selectedTimeline);
       // Set the editor data
-      useTimelineManagerAPI.getState().setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT);
-      useTimelineManagerAPI.getState().setCurrentTimelineLength(selectedTimeline.length)
+      useTimelineManagerAPI.getState()
+        .setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT)
+        .setCurrentTimelineLength(selectedTimeline.length)
     }
   }
 
@@ -252,9 +249,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         
       default:
         logReportingService.logWarning(
-          `RawObject with vxkey ${vxkey} not found in cache.`,
-          { module: LOG_MODULE, functionName: "getInterpolatedValue" }
-        );
+          `RawObject with vxkey ${vxkey} not found in cache.`, { module: LOG_MODULE, functionName: "getInterpolatedValue" });
     }
 
     return result;
@@ -393,9 +388,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       }
     }
 
-    if(!vxengine.readyToMountObjects)
-      logReportingService.logFatal(
-        "VXEngine is not ready to mount vxobejcts. Ensure your project is loaded and you have set the currentTimeline", LOG_CONTEXT )
+    // Not necesarry
+    // if(!vxengine.readyToMountObjects)
+    //   logReportingService.logFatal(
+    //     `VXEngine is NOT ready to mount vxobject with key${vxObject.vxkey}. Ensure your project is loaded and you have set the currentTimeline`, LOG_CONTEXT )
 
     const vxkey = vxObject.vxkey;
 
@@ -423,8 +419,11 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
 
     this._propertyControlService.generateObjectPropertySetters(vxObject, rawObject)
 
-    this._applyTracksOnObject(this._currentTime, rawObject)
-    this._applyStaticPropsOnObject(rawObject, object3DRef);
+    // Apply now or later if a timeline isnt loaded. this usually happens for vxobjects defined outside the react render cycle like vx.layerMaterial.
+    if(this._currentTimeline){
+      this._applyTracksOnObject(this._currentTime, rawObject)
+      this._applyStaticPropsOnObject(rawObject, object3DRef);
+    }
 
     this._propertyControlService.flushEngineUIUpdates();
   }

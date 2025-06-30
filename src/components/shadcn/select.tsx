@@ -41,7 +41,7 @@ function SelectTrigger({
       className={cn(
         `flex w-full items-center justify-between rounded-xl border border-primary-thin  bg-secondary-regular px-2 text-xs
        ring-offset-background placeholder:text-white disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
-        shadow-md shadow-black/20 !h-6
+        shadow-md shadow-black/20 !h-6 antialiased font-normal
       `,
         className
       )}

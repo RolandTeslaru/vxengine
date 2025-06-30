@@ -37,7 +37,14 @@ const initialObjectTree: Record<string, ObjectTreeNodeProps> = {
     ["materials"]: {
         key: "materials",
         name: "Materials",
-        type: "Material",
+        type: "Materials",
+        children: {},
+        isSelectable: false
+    },
+    ["environment"]: {
+        key: "environment",
+        name: "Environment",
+        type: "Environment",
         children: {},
         isSelectable: false
     }
@@ -76,11 +83,11 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
     tree: initialObjectTree,
     nodesPresent: {},
     pendingChildren: {},
-    addToTree: (vxobject, icon) => {
+    addToTree: (vxobject) => {
         const { vxkey } = vxobject
         let { parentKey } = vxobject
 
-        const type = icon ?? vxobject.ref?.current?.type;
+        const type = vxobject.icon ?? vxobject.ref?.current?.type;
         const name = (vxobject as vxElementProps).name ?? vxkey;
 
         if (nodesPresent[vxkey] === true) {

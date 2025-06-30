@@ -40,4 +40,5 @@ export const EditableSpotLight = withVX<ThreeElements["spotLight"]>(BaseSpotLigh
     type: "entity",
     params: spotLightParams,
     settings: defaultSettings,
+    icon: "SpotLight"
 })
