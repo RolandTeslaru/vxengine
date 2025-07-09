@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import ParamInput from "@vxengine/components/ui/ParamInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import { useObjectSettingsAPI } from "../stores/settingsStore";
 import ValueRenderer from "@vxengine/components/ui/ValueRenderer";
 
 interface Props {

@@ -8,7 +8,7 @@ import { useTimelineEditorAPI } from "@vxengine/managers/TimelineManager/Timelin
 interface DialogProps {
     vxkey: string
     settingKey: string
-    setting: ISetting,
+    setting: ISetting | { value: boolean },
     onConfirm?: () => void
     onCancel?: () => void
 }

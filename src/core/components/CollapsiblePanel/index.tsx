@@ -52,7 +52,7 @@ const CollapsiblePanel: React.FC<Props> = memo(
                         { "scale-[30%] opacity-0 pointer-events-none ": open === false },
                         { "scale-100 opacity-100 ": open === true },
                         { "px-1": noPadding === false },
-                        'text-xs h-auto border-t  flex flex-col py-2 bg-none !transform-gpu transition-all text-label-quaternary')}
+                        'text-xs h-auto border-t duration-300 flex flex-col py-2 bg-none !transform-gpu transition-all text-label-quaternary')}
                     style={{ borderImage: "linear-gradient(90deg, rgba(64,64,64,0) 0%, rgba(64,64,64,1) 50%, rgba(64,64,64,0) 100%) 1" }}
                 >
                     {children}

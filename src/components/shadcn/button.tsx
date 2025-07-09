@@ -10,7 +10,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: `border border-transparent hover:border-primary-thin bg-secondary-thin text-white text-xs font-roboto-mono gap-2
+        default: `cursor-pointer border border-transparent hover:border-primary-thin bg-secondary-thin text-white text-xs font-roboto-mono gap-2
                   hover:bg-secondary-opaque text-label-secondary`,
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",

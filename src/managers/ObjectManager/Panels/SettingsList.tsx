@@ -40,9 +40,9 @@ const SettingsList: React.FC<Props> = ({ vxobject }) => {
 
     return (
         <CollapsiblePanel 
-        title="Settings"
-        icon={ICON_MAP["Switch"]}
-        iconClassName='text-cyan-400'
+            title="Settings"
+            icon={ICON_MAP["Switch"]}
+            iconClassName='text-cyan-400'
         >
             <div className="flex flex-col">
                 {filteredSettingsArray.map(([settingKey, setting]) => (

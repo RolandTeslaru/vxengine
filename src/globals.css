@@ -11,6 +11,10 @@
 
 
 .dark {
+  --popover: color-mix(in oklab, var(--color-neutral-600) 70%, transparent);
+  --border-popover: color-mix(in oklab, var(--color-neutral-500) 60%, transparent);
+
+
   --primary-opaque: var(--color-neutral-700);
   --primary-thick: color-mix(in oklab, var(--color-neutral-700) 90%, transparent);
   --primary-regular: color-mix(in oklab, var(--color-neutral-700) 80%, transparent);

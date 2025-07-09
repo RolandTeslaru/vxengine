@@ -8,6 +8,9 @@ import { VXElementParam } from '@vxengine/vxobject/types'
 import { useVXObjectStore } from '../stores/objectStore'
 import SettingsList from './SettingsList'
 import { invalidate } from '@react-three/fiber'
+import { Button } from '@vxengine/components/shadcn/button'
+import { splinePathToggleCallback } from '../utils/deufaltSettingsCallbacks'
+import { ISetting } from '@vxengine/AnimationEngine/types/engine'
 
 interface Props {
     vxobject: vxSplineProps
@@ -59,9 +62,18 @@ const SplineParams: React.FC<Props> = ({ vxobject: vxSpline }) => {
                     vxRefObj={vxSpline.ref}
                     vxkey={vxSpline.objectVxKey}
                 />
+                <Button className='text-red-600' 
+                    onClick={() => {
+                        splinePathToggleCallback(targetObjectVXKey, "splinePath", {
+                            value: true,
+                            storage: "disk",
+                            title: "Spline Path"
+                        } as ISetting)
+                    }}
+                >
+                    Delete Spline
+                </Button>
             </CollapsiblePanel>
-
-            <SettingsList vxobject={targetVXObject}/>
         </>
     )
 }

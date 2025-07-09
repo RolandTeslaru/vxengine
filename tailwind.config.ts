@@ -21,6 +21,10 @@ const config = {
     },
     extend: {
       colors: {
+        'popover': 'var(--popover)',
+        'border-popover': 'var(--border-popover)',
+
+
         'primary-opaque': 'var(--primary-opaque)',
         'primary-thick': 'var(--primary-thick)',
         'primary-regular': 'var(--primary-regular)',

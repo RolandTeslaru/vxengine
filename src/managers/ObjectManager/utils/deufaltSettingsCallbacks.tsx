@@ -3,7 +3,9 @@ import { DIALOG_rotationDegrees, DIALOG_UseSplinePath } from "@vxengine/componen
 import { pushDialogStatic } from "@vxengine/managers/UIManager/store"
 import React from "react"
  
-export const splinePathToggleCallback: OnBeforeToggleType = (vxkey: string, settingKey: string, setting: ISetting) => {
+export const splinePathToggleCallback: OnBeforeToggleType = (
+    vxkey: string, settingKey: string, setting: ISetting | { value: boolean }
+) => {
     return new Promise<boolean>((resolve) => {
         pushDialogStatic({
             content: <DIALOG_UseSplinePath 
