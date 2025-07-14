@@ -17,6 +17,7 @@ import { AlertTriangle } from '@vxengine/ui/icons';
 import { MATERIAL_TITLES, MATERIALS_PARAM_MAP } from './maps';
 import LayerView from './LayerView';
 import { cloneDeep } from 'lodash';
+import { useObjectManagerAPI } from '../../stores/managerStore';
 
 interface MaterialParamNodeProps extends TreeNodeType {
     data: {
@@ -172,6 +173,15 @@ const MaterialParams = ({ vxobject }: { vxobject: vxObjectProps }) => {
                 </ul>
             }
             <div className='text-xs px-2 flex flex-row text-neutral-400'>
+                {(isVXMaterialObject || vxobjectHasVXMaterialObejct) &&
+                <button className='cursor-pointer flex flex-row bg-purple-600/20 border border-purple-400/20 rounded-md gap-1 px-1'
+                    onClick={() => {
+                        useObjectManagerAPI.getState().clearSelectedObjects().selectObject(materialVxkey)
+                    }}
+                >
+                    {ICON_MAP["Materials"]}
+                    <p className=' text-[11px] text-purple-300 h-auto my-auto'>vxMaterial</p>
+                </button>}
                 {/* Search input */}
                 <Search className='ml-auto' searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>

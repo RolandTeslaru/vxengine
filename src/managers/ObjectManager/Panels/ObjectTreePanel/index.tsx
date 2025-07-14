@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useVXObjectStore } from '../../stores/objectStore'
 import { useObjectManagerAPI } from '../../stores/managerStore'
 import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
@@ -34,6 +34,16 @@ const ObjectTree = () => {
     const tree = useObjectManagerAPI(state => state.tree);
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    // useEffect( () => {
+    //     const unsubscribe = useObjectManagerAPI.subscribe((state, prevState) => {
+    //         if(state.selectedObjectKeys.length !== prevState.selectedObjectKeys.length){
+    //             const lastSelectObjectKey = state.selectedObjectKeys.at(-1);                
+    //         }
+    //     })
+
+    //     return () => unsubscribe();
+    // }, [])
 
     return (
         <CollapsiblePanel

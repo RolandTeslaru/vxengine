@@ -61,19 +61,26 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
     setTransformSpace: (space: "world" | "local") => set({ transformSpace: space }),
 
     selectedObjectKeys: [],
-    selectObject: (vxkey) => set((state) => ({
-        ...state,
-        selectedObjectKeys: [vxkey, ...state.selectedObjectKeys]
-    })),
+    selectObject: (vxkey) => {
+        set((state) => ({
+            ...state,
+            selectedObjectKeys: [vxkey, ...state.selectedObjectKeys]
+        }))
+        return get();
+    }
+    ,
     unselectObject: (vxkey) => {
         if(get().selectedObjectKeys.includes(vxkey))
             set((state) => ({
                 ...state,
                 selectedObjectKeys: state.selectedObjectKeys.filter(_key => _key !== vxkey)
             }))
+        return get();
     },
-    clearSelectedObjects: () => set({ selectedObjectKeys: [] }),
-
+    clearSelectedObjects: () => {
+        set({ selectedObjectKeys: [] })
+        return get()
+    },
     hoveredObject: undefined,
     setHoveredObject: (vxobject: vxObjectProps) => set((state) => ({
         ...state,

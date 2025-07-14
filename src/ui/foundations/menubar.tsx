@@ -145,7 +145,7 @@ const MenubarItem: FC<MenubarItemProps> =
           { "dark": theme === "dark" },
           { "light": theme === "light" },
           `relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-xs outline-hidden border border-transparent
-        data-disabled:pointer-events-none data-disabled:opacity-50 text-label-primary
+        data-disabled:pointer-events-none data-disabled:opacity-50 text-label-primary font-medium
         focus:bg-blue-600 focus:text-neutral-50 focus:border-blue-500
        `,
           inset && "pl-8",

@@ -14,7 +14,7 @@ import { useTimelineManagerAPI } from "../TimelineManager";
 import { dispatchVirtualEntityChangeEvent } from "./utils/driver";
 import { shallow } from "zustand/shallow";
 
-const excludedObjectTypes = ["effect"]
+const excludedObjectTypes = ["effect", "material"]
 
 export const ObjectManagerDriver = () => {
     const { vxkey, transformSpace, transformMode, setTransformMode } = useObjectManagerAPI(state => {
