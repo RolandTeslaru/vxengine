@@ -1,17 +1,21 @@
 import { useObjectManagerAPI } from "../stores/managerStore";
 import React from "react";
 import { useVXObjectStore } from "../stores/objectStore";
-import { StandardWindowStyling } from "@vxengine/core/components/VXEngineWindow";
-import { Globe, Move, RefreshCcw } from "@vxengine/components/ui/icons";
+import { Globe, Move, RefreshCcw } from "@vxengine/ui/icons";
+import { StandardWindowStyling } from "@vxengine/ui/components/VXEngineWindow";
 
 export const ObjectTransformControls = () => {
-    const transformMode = useObjectManagerAPI(state => state.transformMode)
-    const setTransformMode = useObjectManagerAPI(state => state.setTransformMode)
-    const vxkey = useObjectManagerAPI(state => state.selectedObjectKeys[0])
+    
+    const [transformMode, setTransformMode, vxkey, transformSpace, setTransformSpace] = useObjectManagerAPI(state => [
+        state.transformMode,
+        state.setTransformMode,
+        state.selectedObjectKeys[0],
+        state.transformSpace,
+        state.setTransformSpace
+    ])
+    
     const selectedObjectType = useVXObjectStore(state => state.objects[vxkey]?.type)
-    const transformSpace = useObjectManagerAPI(state => state.transformSpace);
-    const setTransformSpace = useObjectManagerAPI(state => state.setTransformSpace);
-
+    
     const isEntity = selectedObjectType === "entity" || selectedObjectType === "virtualEntity"
 
     const handleSpaceChange = () => {

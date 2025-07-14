@@ -7,6 +7,7 @@ import { produce } from "immer";
 import { RawObject, RawTimeline } from "@vxengine/types/data/rawData";
 import { extractDataFromTrackKey } from "@vxengine/managers/TimelineManager/utils/trackDataProcessing";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
+import * as THREE from "three"
 
 /**
  * Service responsible for managing property updates and side effects in the animation engine.
@@ -22,7 +23,7 @@ export class PropertyControlService {
     private _sideEffects: Map<string, ParamSideEffectType> = new Map()
 
     public static defaultSideEffects: Map<string, ParamSideEffectType> = defaultSideEffectsMap;
-
+    public resolvedPropertyPaths: Map<string, boolean> = new Map()
     /**
      * Creates a new ParamControlService instance.
      * @param _animationEngine - Reference to the animation engine instance
@@ -119,22 +120,22 @@ export class PropertyControlService {
      * @param vxobject - The vxObject containing the properties
      * @param rawObject - The raw object data containing tracks and static properties
      */
-    public generateObjectPropertySetters(vxobject: vxObjectProps, rawObject: RawObject) {
+    public generateObjectPropertySetters(vxkey: string, refObject: any, rawObject: RawObject) {
         rawObject.tracks.forEach(_track => {
-            const trackKey = `${vxobject.vxkey}.${_track.propertyPath}`
+            const trackKey = `${vxkey}.${_track.propertyPath}`
             if (!this._propertySetterCache.has(trackKey))
                 this.generatePropertySetter(
-                    vxobject.ref.current,
-                    vxobject.vxkey,
+                    refObject,
+                    vxkey,
                     _track.propertyPath
                 )
         })
         rawObject.staticProps.forEach(_staticProp => {
-            const staticPropKey = `${vxobject.vxkey}.${_staticProp.propertyPath}`
+            const staticPropKey = `${vxkey}.${_staticProp.propertyPath}`
             if (!this._propertySetterCache.has(staticPropKey))
                 this.generatePropertySetter(
-                    vxobject.ref.current,
-                    vxobject.vxkey,
+                    refObject,
+                    vxkey,
                     _staticProp.propertyPath
                 )
         })
@@ -145,7 +146,7 @@ export class PropertyControlService {
 
     public rebuildObjectPropertySetters(vxobject: vxObjectProps, rawObject: RawObject) {
         this.removePropertySettersForObject(vxobject.vxkey)
-        this.generateObjectPropertySetters(vxobject, rawObject)
+        this.generateObjectPropertySetters(vxobject.vxkey, vxobject.ref.current, rawObject)
     }
 
 
@@ -180,11 +181,11 @@ export class PropertyControlService {
     public recomputeAllPropertySetters(rawTimeline: RawTimeline, object3DCache: Map<string, any>) {
         rawTimeline.objects.forEach(_rawObject => {
             const vxkey = _rawObject.vxkey
-            const objectRef = object3DCache.get(vxkey)
+            const objectRef = object3DCache.get(vxkey) as THREE.Object3D
             if (!objectRef)
                 return
 
-            this.generateObjectPropertySetters(objectRef, _rawObject);
+            this.generateObjectPropertySetters(vxkey, objectRef, _rawObject);
         })
     }
 
@@ -204,17 +205,18 @@ export class PropertyControlService {
         propertyPath: string
     ): (newValue: number) => void {
         const propertyKeys = propertyPath.split('.');
+        const trackKey = `${vxkey}.${propertyPath}`;
         let target;
         let setter: (newValue: number) => void;
 
         if(object3DRef){
             target = object3DRef;
         } else {
-            target = this._object3DCache.get(vxkey);
+            target = this._object3DCache.get(vxkey);2
             if(!target){
                 console.warn(`Object '${vxkey}' not found in object3DCache`)
                 setter = (newValue: number) => { }
-                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+                this._propertySetterCache.set(trackKey, setter)
             }
         }
 
@@ -224,7 +226,8 @@ export class PropertyControlService {
             if (target === undefined) {
                 console.warn(`Property '${propertyKeys[i]}' undefined in '${propertyPath}' for '${vxkey}'`);
                 setter = (newValue) => { };
-                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+                this._propertySetterCache.set(trackKey, setter)
+                this.resolvedPropertyPaths.set(trackKey, false);
                 return setter
             }
         }
@@ -236,14 +239,16 @@ export class PropertyControlService {
                 setter = (newValue: number) => {
                     entry.value = newValue;
                 }
-                this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+                this._propertySetterCache.set(trackKey, setter)
+                this.resolvedPropertyPaths.set(trackKey, true);
                 return setter
             }
         } else {
             setter = (newValue: number) => {
                 target[finalKey] = newValue;
             }
-            this._propertySetterCache.set(`${vxkey}.${propertyPath}`, setter)
+            this._propertySetterCache.set(trackKey, setter)
+            this.resolvedPropertyPaths.set(trackKey, true);
             return setter
         }
     }
@@ -290,5 +295,18 @@ export class PropertyControlService {
 
     public hasSetter(vxkey: string, propertyPath: string): boolean {
         return this._propertySetterCache.has(`${vxkey}.${propertyPath}`)
+    }
+
+
+    public isSetterResolved(vxkey: string, propertyPath){
+        const trackKey = `${vxkey}.${propertyPath}`
+        if(this.resolvedPropertyPaths.has(trackKey)){
+            if(this.resolvedPropertyPaths.get(trackKey))
+                return true;
+            else
+                return false;
+        } else {
+            return true;
+        }
     }
 }

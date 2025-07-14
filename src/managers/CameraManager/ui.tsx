@@ -1,7 +1,7 @@
 import React from 'react'
 import { useCameraManagerAPI } from './store'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/shadcn/tabs"
-import { StandardWindowStyling, VXEngineWindow } from '@vxengine/core/components/VXEngineWindow'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/foundations/tabs"
+import { StandardWindowStyling, VXEngineWindow } from '@vxengine/ui/components/VXEngineWindow';
 
 const CameraManagerUI = () => {
     const mode = useCameraManagerAPI(state => state.mode);

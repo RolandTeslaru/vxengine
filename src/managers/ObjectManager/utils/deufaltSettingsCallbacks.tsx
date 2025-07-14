@@ -1,6 +1,6 @@
 import { ISetting, OnBeforeToggleType } from "@vxengine/AnimationEngine/types/engine"
-import { DIALOG_rotationDegrees, DIALOG_UseSplinePath } from "@vxengine/components/ui/DialogAlerts/Danger"
 import { pushDialogStatic } from "@vxengine/managers/UIManager/store"
+import { DIALOG_rotationDegrees, DIALOG_UseSplinePath } from "@vxengine/ui/dialogs/Danger"
 import React from "react"
  
 export const splinePathToggleCallback: OnBeforeToggleType = (

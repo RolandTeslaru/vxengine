@@ -69,7 +69,7 @@ export function withVX<P extends object>(
         }, [currentTimelineID, props.settings, props.vxkey]);
 
         useEffect(() => {
-            let parentKey;
+            let parentKey: string;
 
             switch (finalProps.type) {
                 case "entity":
@@ -100,7 +100,7 @@ export function withVX<P extends object>(
                     : DEFAULT_PARAMS[finalProps.type] ?? [],
                 disabledParams: finalProps.disabledParams || [],
                 parentKey: finalProps.overrideNodeTreeParentKey ?? parentKey,
-                icon: finalProps.icon ?? " ",
+                icon: finalProps.icon ?? "",
                 ref: internalRef,
                 usingHOC: true
             }
@@ -129,7 +129,6 @@ export function withVX<P extends object>(
             })
             return obj;
         }, [])
-
 
         return (
             <>

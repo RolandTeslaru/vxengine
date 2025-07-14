@@ -1,7 +1,4 @@
-import { Button } from "@vxengine/components/shadcn/button";
-import { DialogFooter, DialogHeader, DialogTitle } from "@vxengine/components/shadcn/dialog";
-import { Input } from "@vxengine/components/shadcn/input";
-import { Label } from "@vxengine/components/shadcn/label";
+import { DialogHeader, Input, DialogFooter, Button, DialogTitle, Label } from "@vxengine/ui/foundations";
 import React from "react";
 import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";

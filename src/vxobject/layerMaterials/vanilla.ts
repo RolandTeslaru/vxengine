@@ -30,6 +30,7 @@ import CustomShaderMaterial from "three-custom-shader-material/vanilla"
 import { vxMaterialProps, vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { ObjectManagerService } from '@vxengine/managers/ObjectManager/service'
 import animationEngineInstance from '@vxengine/singleton'
+import { initTimelineEditorObject } from '../utils/handleObjectEditorData'
 
 type AllMaterialParams =
   | MeshPhongMaterialParameters
@@ -50,7 +51,7 @@ class LayerMaterial extends CustomShaderMaterial {
 
   constructor({ color, alpha, lighting, layers, name, vxkey, ...props }: LayerMaterialParameters & AllMaterialParams) {
     if(!vxkey)
-      throw new Error("LayerMaterail: vxkey was not passed")
+      throw new Error("VXLayerMaterial Error: vxkey was not passed")
 
     super({
       baseMaterial: ShadingTypes[lighting || 'basic'],
@@ -70,11 +71,15 @@ class LayerMaterial extends CustomShaderMaterial {
       },
     }
 
+
+    this.vxkey = vxkey;
     this.layers = layers || this.layers
     this.lighting = lighting || this.lighting
     this.name = name ?? vxkey ?? this.name
 
     this.refresh()
+
+    initTimelineEditorObject(vxkey)
 
     const newVXEntity: vxMaterialProps = {
       vxkey,
@@ -89,8 +94,7 @@ class LayerMaterial extends CustomShaderMaterial {
     
     animationEngineInstance.handleObjectMount(newVXEntity);
     
-    ObjectManagerService
-      .addObjectToStore(newVXEntity);
+    ObjectManagerService.addObjectToStore(newVXEntity);
   }
 
   private _buildShader() {

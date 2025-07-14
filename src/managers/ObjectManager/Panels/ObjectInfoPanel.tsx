@@ -1,7 +1,7 @@
-import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
 import React from 'react'
 import JsonView from 'react18-json-view'
-import ICON_MAP from '../components/ObjectTree/icons'
+import ICON_MAP from './ObjectTreePanel/icons'
 
 interface Props {
     vxobject: any
@@ -15,7 +15,9 @@ const ObjectInfoPanel: React.FC<Props> = ({ vxobject }) => {
         icon={ICON_MAP["Icon"]}
         iconClassName=" "
     >
-      <JsonView src={vxobject} collapsed={({ depth }) => depth > 1}/>
+      <div className='overflow-y-scroll h-auto'>
+        <JsonView src={vxobject} collapsed={({ depth }) => depth > 1}/>
+      </div>
     </CollapsiblePanel>
   )
 }

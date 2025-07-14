@@ -463,15 +463,17 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
             ? [handles.in.x, handles.in.y, handles.out.x, handles.out.y]
             : [0.7, 0.7, 0.3, 0.3]
 
-        animationEngineInstance.hydrationService.hydrateKeyframe({
-            action: "create",
-            vxkey,
-            propertyPath,
-            keyframeKey,
-            value,
-            time,
-            handles: rawHandles as [number, number, number, number]
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateKeyframe({
+                action: "create",
+                vxkey,
+                propertyPath,
+                keyframeKey,
+                value,
+                time,
+                handles: rawHandles as [number, number, number, number]
+            })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -494,12 +496,14 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
             }))
         }
 
-        animationEngineInstance.hydrationService.hydrateKeyframe({
-            action: "remove",
-            vxkey,
-            propertyPath,
-            keyframeKey
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateKeyframe({
+                action: "remove",
+                vxkey,
+                propertyPath,
+                keyframeKey
+            })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })
@@ -528,14 +532,15 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
         }))
 
         // Handle Raw Timeline Update
-
-        animationEngineInstance.hydrationService.hydrateKeyframe({
-            vxkey,
-            propertyPath,
-            action: "updateTime",
-            keyframeKey,
-            newTime
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateKeyframe({
+                vxkey,
+                propertyPath,
+                action: "updateTime",
+                keyframeKey,
+                newTime
+            })
 
         // Handle UI Mutation
         handleKeyframeMutationByTime(keyframeKey, newTime, true, keyframesMap, trackSegementsMap);
@@ -587,13 +592,15 @@ export const useTimelineManagerAPI = createWithEqualityFn<TimelineManagerAPIProp
             }
         }))
 
-        animationEngineInstance.hydrationService.hydrateKeyframe({
-            action: "updateHandles",
-            vxkey,
-            propertyPath,
-            keyframeKey,
-            newHandles: [inHandle.x, inHandle.y, outHandle.x, outHandle.y]
-        })
+        animationEngineInstance
+            .hydrationService
+            .hydrateKeyframe({
+                action: "updateHandles",
+                vxkey,
+                propertyPath,
+                keyframeKey,
+                newHandles: [inHandle.x, inHandle.y, outHandle.x, outHandle.y]
+            })
 
         if (reRender)
             animationEngineInstance.reRender({ force: true })

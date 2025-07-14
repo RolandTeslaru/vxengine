@@ -4,11 +4,8 @@ import TimelineEditorHeader from './components/Header'
 import TimelineEditorFooter from './components/Footer'
 import TrackVerticalList from './components/TrackVerticalList'
 import TimelineArea from './components/TimelineArea'
-import { GripVertical } from 'lucide-react'
-import { useRefStore } from '@vxengine/utils'
-import { useWindowContext } from '@vxengine/core/components/VXEngineWindow'
-import { TimelineEditorProvider, useTimelineEditorContext } from './context'
-import { useTimelineManagerAPI } from '..'
+import { useTimelineEditorContext } from './context'
+import { useWindowContext } from '@vxengine/utils/useWindowContext'
 
 const TimelineEditor = React.memo(() => {
     const containerRef = useRef<HTMLDivElement>(null);

@@ -31,6 +31,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/ui/foundations/alertDialog.tsx", "src/ui/foundations/button.tsx", "src/ui/foundations/contextMenu.tsx", "src/ui/foundations/dialog.tsx", "src/ui/foundations/input.tsx", "src/ui/foundations/label.tsx", "src/ui/foundations/list.tsx", "src/ui/foundations/menubar.tsx", "src/ui/foundations/popover.tsx", "src/ui/foundations/scrollArea.tsx", "src/ui/foundations/select.tsx", "src/ui/foundations/slider.tsx", "src/ui/foundations/switch.tsx", "src/ui/foundations/tabs.tsx", "src/ui/foundations/Text.tsx", "src/ui/components/ColorPicker", "src/ui/components/CollapsiblePanel", "src/ui/components/VXEngineWindow", "src/ui/components/Menubar.tsx", "src/ui/components/ValueRenderer.tsx", "src/ui/components/VXEngineWindow/WindowControlDots.tsx", "src/ui/components/DotPattern.tsx", "src/ui/components/KeyframeControl.tsx", "src/ui/components/Search.tsx", "src/ui/components/VexrLogo.tsx", "src/ui/components/VXEngineLogo.tsx", "src/ui/components/Watermark.tsx", "src/ui/dialogs/Alert.tsx", "src/ui/dialogs/Danger.tsx", "src/ui/components/DataContextContext", "src/ui/components/HazardStripes.tsx", "src/ui/icons/index.tsx"],
   "exclude": ["node_modules", "dist"]
 }

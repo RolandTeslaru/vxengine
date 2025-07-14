@@ -3,11 +3,11 @@ import './timeArea.scss';
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager';
 import { prefix } from '@vxengine/managers/TimelineManager/utils/deal_class_prefix';
 import { ONE_SECOND_UNIT_WIDTH } from '@vxengine/managers/constants';
-import { useRefStore } from '@vxengine/utils';
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store';
-import { useWindowContext } from '@vxengine/core/components/VXEngineWindow';
 import { cursorBoundsLeft } from '../EditorCursor/utils';
 import { useTimelineEditorContext } from '../../../context';
+import { useWindowContext } from '@vxengine/utils/useWindowContext';
+
 const maxScaleCount = 100;
 
 const timeAreaStartLeft = 20;

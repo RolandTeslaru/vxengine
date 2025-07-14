@@ -1,5 +1,5 @@
 import { useAnimationEngineAPI } from '@vxengine/AnimationEngine';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@vxengine/components/shadcn/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@vxengine/ui/foundations';
 import animationEngineInstance from '@vxengine/singleton';
 import React from 'react'
 

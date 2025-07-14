@@ -30,6 +30,7 @@ const EditableRoundedBox = withVX<EditableRoundedBoxProps>(BaseRoundedBox, {
     type: "entity",
     params,
     settings: defaultSettings,
+    icon: "Box",
     initialInterpolatedParams: [
         {
             paramName: "position",

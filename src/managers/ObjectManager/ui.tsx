@@ -7,7 +7,6 @@ import { TransformParams } from './Panels/TransformParams'
 import { GeometryParams } from './Panels/GeometryParams'
 import NodeTransformParams from './Panels/NodeTransformParams'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
-import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
 import { useUIManagerAPI } from '../UIManager/store'
 import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 import SplineParams from './Panels/SplineParams'
@@ -17,13 +16,13 @@ import MaterialParamsPanel from './Panels/MaterialParamsPanel'
 import { ObjectManagerService } from './service'
 import { useObjectManagerAPI } from './stores/managerStore'
 import { useVXObjectStore } from './stores/objectStore'
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar'
 
 export const ObjectManagerUI = () => {
 
   useEffect(() => {
     const unsubscribe = useVXObjectStore.subscribe((state, prevState) => {
       if(state.objects != prevState.objects){
-        console.log("Difrente")
         Object.entries(state.objects).forEach(([string, vxobject]) => {
 
           useObjectManagerAPI.getState().addToTree(vxobject)
@@ -49,6 +48,9 @@ const ObjectParamsConfig = {
     ParamList,
     MaterialParamsPanel,
     GeometryParams, 
+  ],
+  material: [
+    MaterialParamsPanel
   ],
   spline: [
       SplineParams, 
@@ -77,7 +79,7 @@ export const ObjectParamsPanel = ({ vxobject }: {vxobject: vxObjectProps}) => {
     return null
 
   const components = (ObjectParamsConfig[vxobject.type] || []).filter((Component) => {
-    if (Component === MaterialParamsPanel && (!refObject || !refObject.material)) {
+    if (Component === MaterialParamsPanel && (!refObject || !refObject.material) && vxobject.type !== "material") {
       return false;
     }
     if(Component === GeometryParams && (!refObject || !refObject?.geometry?.parameters))

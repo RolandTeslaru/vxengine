@@ -1,12 +1,7 @@
-import { Button } from "@vxengine/components/shadcn/button";
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@vxengine/components/shadcn/dialog";
-import { Input } from "@vxengine/components/shadcn/input";
-import { Label } from "@vxengine/components/shadcn/label";
+import { DialogHeader, Input, DialogFooter, Button, DialogTitle, Label, DialogDescription } from "@vxengine/ui/foundations";
 import React, { useRef } from "react";
-import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
 import { pushDialogStatic, useUIManagerAPI } from "@vxengine/managers/UIManager/store";
-import { ALERT_ResetProperty } from "@vxengine/components/ui/DialogAlerts/Alert";
 import { extractDataFromTrackKey } from "../utils/trackDataProcessing";
 
 export const DIALOG_createKeyframe = () => {

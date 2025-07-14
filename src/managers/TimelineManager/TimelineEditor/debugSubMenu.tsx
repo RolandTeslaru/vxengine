@@ -1,8 +1,7 @@
 import React from 'react'
-import { useTimelineEditorAPI } from './store'
-import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
 import { pushDialogStatic } from '@vxengine/managers/UIManager/store'
 import DIALOG_addTrackToTree from '../Dialogs/addTrackToTree'
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar'
 
 const TimelineEditorSubMenu = () => {
   return (

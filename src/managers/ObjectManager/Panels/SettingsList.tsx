@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react'
-import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
 import { Switch } from '@vxengine/components/shadcn/switch'
 import { useObjectSettingsAPI } from '..'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { ISetting } from '@vxengine/AnimationEngine/types/engine'
 import { VXObjectSettings } from '@vxengine/vxobject/types'
 import SettingNode from '../components/SettingNode'
-import ICON_MAP from '../components/ObjectTree/icons'
+import ICON_MAP from './ObjectTreePanel/icons'
 
 const excludeSettingsKeys = [
     "showPositionPath"

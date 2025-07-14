@@ -48,7 +48,7 @@ export default abstract class MaterialLayerAbstract {
     props?: LayerProps | null, 
   ){
     this.initialize(props)
-    this.buildUniforms()
+    this.buildUniforms(props)
     this.buildShaders() 
   }
 
@@ -60,10 +60,11 @@ export default abstract class MaterialLayerAbstract {
   }
 
 
-  private buildUniforms(){
+  private buildUniforms(props: LayerProps){
     const definition = this.definition
+
     Object.entries(definition.uniforms).forEach(([_uniformKey, _uniform]) => {
-      let value = _uniform.default
+      let value = props[_uniformKey] ?? _uniform.default
 
       if(isSerializableType(value) || value instanceof THREE.Color)
         value = value.clone()
@@ -71,7 +72,7 @@ export default abstract class MaterialLayerAbstract {
       // For example
       // u_090b89a7_ab54_42f0_aac9_3ce2a63386c1_near
       const _uniqueUniformKey = `u_${this.uuid}_${_uniformKey}`
-
+      
       const threeUniformObj = new THREE.Uniform(getUniform(value))
 
       this._uniqueUniforms[_uniqueUniformKey] = threeUniformObj;
@@ -192,47 +193,6 @@ export default abstract class MaterialLayerAbstract {
         return `lamina_blend_reflect(${a}, ${b}, ${b}.a)`
       case 'negation':
         return `lamina_blend_negation(${a}, ${b}, ${b}.a)`
-    }
-  }
-
-
-  serialize(): SerializedLayer {
-    const name = this.constructor.name.split('$')[0]
-    let nonUniformPropKeys = Object.keys(this)
-    nonUniformPropKeys = nonUniformPropKeys.filter(
-      (e) =>
-        ![
-          'uuid',
-          'uniforms',
-          'schema',
-          'fragmentShader',
-          'vertexShader',
-          'fragmentVariables',
-          'vertexVariables',
-          'attribs',
-          'events',
-          '__r3f',
-          'onParse',
-        ].includes(e)
-    )
-    const nonUniformProps = {}
-    nonUniformPropKeys.forEach((k) => {
-      // @ts-ignore
-      nonUniformProps[k] = this[k]
-    })
-
-    const props: { [key: string]: any } = {}
-    for (const key in this.uniforms) {
-      const name = key.replace(`u_${this.uuid}_`, '')
-      props[name] = serializeProp(this.uniforms[key].value)
-    }
-
-    return {
-      constructor: name,
-      properties: {
-        ...props,
-        ...nonUniformProps,
-      },
     }
   }
 }

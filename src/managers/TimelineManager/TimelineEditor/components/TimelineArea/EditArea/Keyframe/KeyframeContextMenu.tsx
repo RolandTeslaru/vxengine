@@ -1,11 +1,10 @@
-import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu'
+import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/ui/foundations'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
 
 import React, { useCallback, useMemo } from 'react'
 import { handleCopyKeyframes, selectAllKeyframesAfter, selectAllKeyframesBefore, selectAllKeyframesOnTrack } from './utils'
 import { useTimelineEditorAPI } from '@vxengine/managers/TimelineManager/TimelineEditor/store'
-import { ArrowLeft, ArrowRight, Info, Maximize2, X } from '@vxengine/components/ui/icons'
-import KeyframeData from '@vxengine/components/ui/DataContextContext/Keyframe'
+import { ArrowLeft, ArrowRight, Info, Maximize2, X } from '@vxengine/ui/icons'
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing'
 
 interface Props {

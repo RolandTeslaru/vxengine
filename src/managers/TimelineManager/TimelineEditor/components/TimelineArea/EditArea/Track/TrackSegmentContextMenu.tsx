@@ -1,11 +1,9 @@
-import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/components/shadcn/contextMenu';
-import { TrackData } from '@vxengine/components/ui/DataContextContext/Track';
-import TrackSegmentData from '@vxengine/components/ui/DataContextContext/TrackSegment';
-import { ALERT_MakePropertyStatic } from '@vxengine/components/ui/DialogAlerts/Alert';
+import { ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from '@vxengine/ui/foundations';
 import { TrackSegmentEditor } from '@vxengine/managers/TimelineManager/TrackSegmentProperties';
 import { extractDataFromTrackKey } from '@vxengine/managers/TimelineManager/utils/trackDataProcessing';
-import { pushDialogStatic, useUIManagerAPI } from '@vxengine/managers/UIManager/store';
+import { pushDialogStatic } from '@vxengine/managers/UIManager/store';
 import React from 'react'
+import { ALERT_MakePropertyStatic } from '@vxengine/ui/dialogs/Alert';
 
 interface Props {
     trackKey: string;

@@ -1,13 +1,9 @@
-import { useWindowContext } from '@vxengine/core/components/VXEngineWindow'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import ProgressionControls from './ProgressionControls'
 import TimelineSelect from './TimelineSelect'
-import { ChevronRight } from '@vxengine/components/ui/icons'
-import { Slider } from '@vxengine/components/shadcn/slider'
-import animationEngineInstance from '@vxengine/singleton'
-import { useAnimationEngineAPI } from '@vxengine/AnimationEngine'
-import { useTimelineEditorAPI } from '../store'
+import { ChevronRight } from '@vxengine/ui/icons'
+import { useWindowContext } from '@vxengine/utils/useWindowContext'
 
 const MinimizeButton = () => {
     const { vxWindowId } = useWindowContext();

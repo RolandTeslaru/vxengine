@@ -1,5 +1,5 @@
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar'
 import React from 'react'
-import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar'
 
 export const EffectsManagerSubMenu = () => {
   return (

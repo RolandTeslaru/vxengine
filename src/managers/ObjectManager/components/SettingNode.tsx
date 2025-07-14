@@ -1,8 +1,8 @@
 import { ISetting } from '@vxengine/AnimationEngine/types/engine'
-import { Switch } from '@vxengine/components/shadcn/switch'
 import React from 'react'
 import { toggleSettingSTATIC } from '../stores/settingsStore'
-import { HardDrive, Server } from "@vxengine/components/ui/icons";
+import { Switch } from '@vxengine/ui/foundations/switch'
+
 interface Props {
     vxkey: string
     settingKey: string

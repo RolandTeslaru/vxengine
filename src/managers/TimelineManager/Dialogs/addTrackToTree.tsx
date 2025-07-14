@@ -1,8 +1,4 @@
-import { Button } from '@vxengine/components/shadcn/button'
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/components/shadcn/dialog'
-import { Input } from '@vxengine/components/shadcn/input'
-import { Label } from '@vxengine/components/shadcn/label'
-import { pushDialogStatic } from '@vxengine/managers/UIManager/store'
+import { DialogHeader, Input, DialogFooter, Button, DialogTitle, Label } from "@vxengine/ui/foundations";
 import React from 'react'
 import { useTimelineEditorAPI } from '../TimelineEditor/store'
 

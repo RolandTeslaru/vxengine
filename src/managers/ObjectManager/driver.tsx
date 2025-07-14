@@ -43,11 +43,10 @@ export const ObjectManagerDriver = () => {
         if (!controlsImpl) return
 
         const handleDraggingChanged = (event: any) => {
-            if(!event.value) {
+            if(!event.value)
                 animationEngineInstance
                     .paramModifierService
                     .flushTimelineStateUpdates()
-            }
         }
 
         // @ts-expect-error
@@ -104,7 +103,7 @@ const handleOnVxObjectChange = (e: any, vxobject: vxObjectProps, transformSpace:
 
     // Additional logic can be added here if needed
 
-    VXOBJECT_TYPE_CALLBACKS[vxobject.type](e, vxobject, axes, transformMode, transformSpace, "changing")
+    VXOBJECT_ON_CHANGE_CALLBACKS[vxobject.type](e, vxobject, axes, transformMode, transformSpace, "changing")
 
     animationEngineInstance.paramModifierService.flushUiUpdates();
 }
@@ -145,7 +144,7 @@ const handleOnKeyframeNodeChange: ChangeFnType = (
 
 }
 
-const VXOBJECT_TYPE_CALLBACKS: Record<string, ChangeFnType> = {
+const VXOBJECT_ON_CHANGE_CALLBACKS: Record<string, ChangeFnType> = {
     entity: handleOnEntityChange,
     virtualEntity: handleOnVirtualEntityChange,
     splineNode: handleOnSplineNodeChange,

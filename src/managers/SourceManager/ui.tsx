@@ -1,14 +1,8 @@
-import { Button } from "@vxengine/components/shadcn/button"
-import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel"
-import React, { useEffect, useMemo, useRef, useState } from "react"
-import { LocalStorageDataType, useSourceManagerAPI } from "./store"
-import { useAnimationEngineAPI } from "@vxengine/AnimationEngine"
-import HardDrive from '@geist-ui/icons/hardDrive'
-import Server from '@geist-ui/icons/server'
-import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger } from "@vxengine/components/shadcn/menubar"
-import ReactDiffViewer from 'react-diff-viewer-continued';
-import { DANGER_ProjectNameUnSync } from "@vxengine/components/ui/DialogAlerts/Danger"
+import React from "react"
+import {  useSourceManagerAPI } from "./store"
 import { pushDialogStatic } from "../UIManager/store"
+import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger } from "@vxengine/ui/foundations/menubar"
+import { DANGER_ProjectNameUnSync } from "@vxengine/ui/dialogs/Danger"
 
 export const SourceManagerSubMenu = () => {
     const saveToDisk = useSourceManagerAPI(state => state.saveDataToDisk)

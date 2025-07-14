@@ -1,6 +1,6 @@
 import React from 'react'
 import { useUIManagerAPI } from '../UIManager/store';
-import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/components/shadcn/menubar';
+import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar';
 import { DIALOG_createKeyframe, DIALOG_createStaticProp, DIALOG_makePropertyStatic, DIALOG_makePropertyTracked, DIALOG_moveToNextKeyframe, DIALOG_moveToPreviousKeyframe, DIALOG_removeKeyframe, DIALOG_removeStaticProp, DIALOG_setKeyframeTime, DIALOG_setKeyframeValue, DIALOG_setStaticPropValue } from './Dialogs';
 
 

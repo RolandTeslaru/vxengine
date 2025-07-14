@@ -1,16 +1,13 @@
-import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
-import ParamInput from '@vxengine/components/ui/ParamInput'
-import React, { useMemo, useCallback } from 'react'
-import { useObjectManagerAPI } from '..'
+import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
+import React, { useMemo } from 'react'
 
 import * as THREE from "three"
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { VXElementParam } from '@vxengine/vxobject/types'
-import Tree from '@vxengine/components/ui/Tree'
 import { TreeNodeType } from '../utils/createPropertyTree'
-import JsonView from 'react18-json-view'
-import { paramRenderer } from '@vxengine/components/ui/Tree/nodeRenderers'
-import ICON_MAP from '../components/ObjectTree/icons'
+import ICON_MAP from './ObjectTreePanel/icons'
+import Tree from '@vxengine/ui/components/Tree'
+import { paramRenderer } from '@vxengine/ui/components/Tree/nodeRenderers'
 
 interface Props {
     vxobject: vxObjectProps

@@ -1,14 +1,11 @@
-import React from "react";
-
-
+import React, { memo } from "react";
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import TimeRender from "./TimeRender";
-import { useTimelineManagerAPI } from "../..";
 import { useTimelineEditorAPI } from "../store";
 import animationEngineInstance from "@vxengine/singleton";
-import { PauseFill, Play, SkipBack, SkipForward, Square } from "@vxengine/components/ui/icons";
+import { PauseFill, Play, SkipBack, SkipForward, Square } from "@vxengine/ui/icons";
 
-const ProgressionControls = React.memo(() => {
+const ProgressionControls = memo(() => {
     const isPlaying = useAnimationEngineAPI(state => state.isPlaying)
     const setTime = useTimelineEditorAPI(state => state.setTime)
     //Start or pause

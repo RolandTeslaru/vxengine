@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
+import React from "react";
+import CollapsiblePanel from "@vxengine/ui/components/CollapsiblePanel";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
-import ValueRenderer from "@vxengine/components/ui/ValueRenderer";
+import ValueRenderer from "@vxengine/ui/components/ValueRenderer";
 
 interface Props {
     vxobject: vxObjectProps

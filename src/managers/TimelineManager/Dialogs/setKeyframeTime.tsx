@@ -1,13 +1,8 @@
-import { Button } from "@vxengine/components/shadcn/button";
-import { DialogFooter, DialogHeader, DialogTitle } from "@vxengine/components/shadcn/dialog";
-import { Input } from "@vxengine/components/shadcn/input";
-import { Label } from "@vxengine/components/shadcn/label";
 import React from "react";
-import { useTimelineEditorAPI } from "../TimelineEditor/store";
 import { useTimelineManagerAPI } from "..";
+import { DialogHeader, Input, DialogFooter, Button, DialogTitle, Label } from "@vxengine/ui/foundations";
 
 export const DIALOG_setKeyframeTime = () => {
-    const setKeyframeTime = useTimelineManagerAPI((state) => state.setKeyframeTime);
 
 
     const handleSubmit = (e: any) => {

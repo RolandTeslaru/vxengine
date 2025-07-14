@@ -1,5 +1,5 @@
 import { useAnimationEngineEvent } from "@vxengine/AnimationEngine";
-import { Slider } from "@vxengine/components/shadcn/slider";
+import { Slider } from "@vxengine/ui/foundations/slider";
 import animationEngineInstance from "@vxengine/singleton";
 import { debounce } from "lodash";
 import React, { useEffect, useRef, useState } from "react";

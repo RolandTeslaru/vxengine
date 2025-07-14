@@ -1,4 +1,3 @@
-import { create } from "zustand";
 import { useTimelineManagerAPI } from "..";
 import { truncateToDecimals } from "../store";
 import { parserPixelToTime, parserTimeToPixel } from "../utils/deal_data";
@@ -7,7 +6,6 @@ import { produce } from "immer";
 import { TimelineEditorAPIProps } from "../types/timelineEditorStore";
 import animationEngineInstance from "@vxengine/singleton";
 import { EditorTrack, EditorTrackTreeNode } from "@vxengine/types/data/editorData";
-import { ONE_SECOND_UNIT_WIDTH } from "@vxengine/managers/constants";
 import { createWithEqualityFn } from "zustand/traditional";
 import { shallow } from "zustand/shallow";
 

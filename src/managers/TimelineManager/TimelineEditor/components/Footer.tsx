@@ -2,10 +2,8 @@ import React, { useCallback, useEffect } from 'react'
 import { useTimelineManagerAPI } from '../..'
 import { useTimelineEditorAPI } from '../store'
 import { useUIManagerAPI } from '@vxengine/managers/UIManager/store'
-import { Slider } from '@vxengine/components/shadcn/slider'
-import { Input } from '@vxengine/components/shadcn/input'
-import { Switch } from '@vxengine/components/shadcn/switch'
 import { extractDataFromTrackKey } from '../../utils/trackDataProcessing'
+import { Input, Slider, Switch } from '@vxengine/ui/foundations'
 
 
 const TimelineEditorFooter = () => {

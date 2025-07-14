@@ -22,7 +22,7 @@ export { useVXObjectStore } from "./managers/ObjectManager/stores/objectStore"
 export { useAnimationEngineEvent} from "./AnimationEngine"
 export { useAnimationFrame } from "./AnimationEngine"
 
-export { VXEngineWindow } from "./core/components/VXEngineWindow"
+export { VXEngineWindow } from "./ui/components/VXEngineWindow"
 
 export type { VXElementParams, VXElementParam } from "./vxobject/types"
 

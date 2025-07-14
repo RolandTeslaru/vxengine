@@ -87,7 +87,13 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
         const { vxkey } = vxobject
         let { parentKey } = vxobject
 
-        const type = vxobject.icon ?? vxobject.ref?.current?.type;
+        const type = 
+            vxobject.icon ||
+            vxobject.ref?.current?.type ||
+            vxobject.ref?.current?.geometry?.type ||
+            "default";
+
+        console.log("TYPE ", type)
         const name = (vxobject as vxElementProps).name ?? vxkey;
 
         if (nodesPresent[vxkey] === true) {

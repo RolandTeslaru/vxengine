@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from "react";
-import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import ParamInput from "@vxengine/components/ui/ParamInput";
+import CollapsiblePanel from "@vxengine/ui/components/CollapsiblePanel";
+import ParamInput from "@vxengine/ui/components/ParamInput";
 import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 import { useObjectSetting, useObjectSettingsAPI } from "../stores/settingsStore";
 import SettingNode from "../components/SettingNode";
-import ICON_MAP from "../components/ObjectTree/icons";
+import ICON_MAP from "./ObjectTreePanel/icons";
 
 interface Props {
     vxobject: vxObjectProps

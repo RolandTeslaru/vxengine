@@ -1,11 +1,11 @@
 import { useAnimationEngineAPI } from "@vxengine/AnimationEngine";
 import React, { useMemo } from "react";
 import { LocalStorageDataType, useSourceManagerAPI } from "../store";
-import { Button } from "@vxengine/components/shadcn/button";
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useUIManagerAPI } from "@vxengine/managers/UIManager/store";
-import { AlertDialogDescription, AlertDialogTitle } from "@vxengine/components/shadcn/alertDialog";
-import { HardDrive, Server } from "@vxengine/components/ui/icons";
+import { AlertDialogDescription, AlertDialogTitle } from "@vxengine/ui/foundations/alertDialog";
+import { Button } from "@vxengine/ui/foundations/button";
+import { HardDrive, Server } from "@vxengine/ui/icons";
 
 const defaultStyles = {
     variables: {

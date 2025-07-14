@@ -1,22 +1,17 @@
 import React, { useState, FC, useMemo } from "react";
-import CollapsiblePanel from "@vxengine/core/components/CollapsiblePanel";
-import ParamInput from "@vxengine/components/ui/ParamInput";
+import CollapsiblePanel from "@vxengine/ui/components/CollapsiblePanel";
 
 import * as THREE from "three"
 import { vxElementProps, vxObjectProps } from "../types/objectStore";
-import Tree from "@vxengine/components/ui/Tree";
-import Search from "@vxengine/components/ui/Search";
-import { getValueType, ParamTreeNodeDataType, TreeNodeType } from "../utils/createPropertyTree";
+import Tree from "@vxengine/ui/components/Tree";
+import Search from "@vxengine/ui/components/Search";
+import { getValueType, TreeNodeType } from "../utils/createPropertyTree";
 import { filterParamTree } from "../utils/filterParamTree";
 import { VXElementParam } from "@vxengine/vxobject/types";
-import { createBranch, createTree } from "@vxengine/components/ui/Tree/utils";
-import { CreateNodeDataFnType } from "@vxengine/components/ui/Tree/types"
-    ;
-import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@vxengine/components/shadcn/contextMenu";
-import JsonView from "react18-json-view";
-import { InfoPopover } from "./helpers";
-import { paramRenderer } from "@vxengine/components/ui/Tree/nodeRenderers";
-import ICON_MAP from "../components/ObjectTree/icons";
+import { createTree } from "@vxengine/ui/components/Tree/utils";
+import { CreateNodeDataFnType } from "@vxengine/ui/components/Tree/types"
+import { paramRenderer } from "@vxengine/ui/components/Tree/nodeRenderers";
+
 export type ValidGeometries = THREE.BoxGeometry | THREE.SphereGeometry | THREE.PlaneGeometry | THREE.CylinderGeometry | THREE.TorusGeometry;
 // Add any other geometry types you want to support
 

@@ -1,14 +1,13 @@
 import { useObjectPropertyAPI } from "@vxengine/managers/ObjectManager/stores/managerStore";
 import { defaultSideEffectsMap } from "../defaultSideEffects";
 import { AnimationEngine } from "../engine";
-import { ParamSetterType, ParamSideEffectType, PropertyUpdateType } from "../types/ParamControlService";
+import { ParamSideEffectType } from "../types/ParamControlService";
 import { ObjectPropertyStoreProps } from "@vxengine/types/objectPropertyStore";
 import { produce } from "immer";
 import { TimelineManagerAPIProps } from "@vxengine/managers/TimelineManager/types/store";
 import { HydrationService } from "./HydrationService";
 import { EditorKeyframe } from "@vxengine/types/data/editorData";
 import { truncateToDecimals, useTimelineManagerAPI } from "@vxengine/managers/TimelineManager/store";
-import { vxObjectProps } from "@vxengine/managers/ObjectManager/types/objectStore";
 
 /**
  * Service responsible for managing property updates and side effects in the animation engine.

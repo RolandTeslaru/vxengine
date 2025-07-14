@@ -1,5 +1,6 @@
-import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/components/shadcn/popover'
-import { Info } from '@vxengine/components/ui/icons'
+
+import { Popover, PopoverContent, PopoverTrigger } from '@vxengine/ui/foundations/popover';
+import { Info } from '@vxengine/ui/icons';
 import React from 'react'
 import JsonView from 'react18-json-view';
 

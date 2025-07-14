@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react'
 import { useUIManagerAPI } from './store'
-import { Dialog, DialogContent, DialogOverlay } from '@vxengine/components/shadcn/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@vxengine/components/shadcn/alertDialog';
-import classNames from 'classnames';
+import { Dialog, DialogContent, DialogOverlay } from '@vxengine/ui/foundations/dialog';
+import { AlertDialog, AlertDialogContent,} from '@vxengine/ui/foundations/alertDialog';
 
 const DIALOG_MAP = {
   normal: ({ id, content, open, closeDialog, className, index, dialogTotal, theme }) => {

@@ -3,9 +3,9 @@
 // See the LICENSE file in the root directory of this source tree for licensing information.
 
 import React from 'react'
-import { Ground, VXFrameLimiter } from '@vxengine/components/renderer'
-import { GizmoHelper } from '@vxengine/components/renderer/gizmoHelper'
-import { GizmoViewport } from '@vxengine/components/renderer/gizmoViewport'
+import { Ground, VXFrameLimiter } from '@vxengine/core/renderer/components'
+import { GizmoHelper } from '@vxengine/core/renderer/components/gizmoHelper'
+import { GizmoViewport } from '@vxengine/core/renderer/components/gizmoViewport'
 // import { Stats } from '@react-three/drei'
 
 const VXRendererUtils = () => {

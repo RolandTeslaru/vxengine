@@ -195,7 +195,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     if (this._IS_DEVELOPMENT) {
       this.hydrationService.setCurrentTimeline(selectedTimeline);
       // Set the editor data
-      useTimelineManagerAPI.getState()
+      useTimelineManagerAPI
+        .getState()
         .setEditorData(rawObjects, cloneDeep(rawSplines), this._IS_DEVELOPMENT)
         .setCurrentTimelineLength(selectedTimeline.length)
     }
@@ -210,7 +211,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
     vxkey: string,
     partialPropertyPath: string,
     type: "number" | "vector3",
-  ): number | [number, number, number]{
+  ): number | [number, number, number] {
     let result: number | [number, number, number];
 
     switch (type) {
@@ -246,7 +247,7 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
             return defaultValue;
         }) as [number, number, number]
         break;
-        
+
       default:
         logReportingService.logWarning(
           `RawObject with vxkey ${vxkey} not found in cache.`, { module: LOG_MODULE, functionName: "getInterpolatedValue" });
@@ -375,10 +376,10 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   // ====================================================
 
   /**
-   * Initializes object properties when the object mounts.
-   * Applies initial tracks and static properties to the object.
-   * @param vxObject - The object to initialize.
-   */
+ * Initializes object properties when the object mounts.
+ * Applies initial tracks and static properties to the object.
+ * @param vxObject - The object to initialize.
+ */
   public handleObjectMount(vxObject: vxObjectProps) {
     const LOG_CONTEXT = {
       functionName: "handleObjectMount",
@@ -386,45 +387,61 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         currentTimeline: this._state.currentTimeline,
         vxengine: vxengine
       }
-    }
-
-    // Not necesarry
-    // if(!vxengine.readyToMountObjects)
-    //   logReportingService.logFatal(
-    //     `VXEngine is NOT ready to mount vxobject with key${vxObject.vxkey}. Ensure your project is loaded and you have set the currentTimeline`, LOG_CONTEXT )
+    };
 
     const vxkey = vxObject.vxkey;
-
-    // Initialize all Side Effects
+    // ---------------------------------------
+    // 1. Register side effects for each param
+    // ---------------------------------------
     vxObject.params.forEach((param) => {
       const sideEffect = param.sideEffect;
-      const trackKey = `${vxkey}.${param.propertyPath}`
-      if (!!sideEffect) {
-        this._propertyControlService.registerSideEffect(trackKey, sideEffect)
+      const trackKey = `${vxkey}.${param.propertyPath}`;
+
+      if (sideEffect) {
+        this._propertyControlService.registerSideEffect(trackKey, sideEffect);
       }
-    })
-
-    // Cache the THREE.Object3D reference
+    });
+    // ---------------------------------------
+    // 2. Cache THREE.Object3D reference
+    // ---------------------------------------
     const object3DRef = this._cacheObject3DRef(vxObject);
-    if (DEBUG_OBJECT_INIT)
-      logReportingService.logInfo(`Initializing vxobject ${vxObject.name}`, { module: LOG_MODULE, functionName: "initObjectOnMount", additionalData: { vxObject } })
 
+    if (DEBUG_OBJECT_INIT) {
+      logReportingService.logInfo(
+        `Initializing vxobject ${vxObject.name}`,
+        {
+          module: LOG_MODULE,
+          functionName: "initObjectOnMount",
+          additionalData: { vxObject }
+        }
+      );
+    }
+    // ---------------------------------------
+    // 3. Locate raw object in current timeline
+    // ---------------------------------------
     const rawObject = this._state.currentTimeline?.objects?.find(obj => obj.vxkey === vxkey);
 
-    if (!rawObject){
+    if (!rawObject) {
       logReportingService.logWarning(
-        `Failed to find rawObject with vxkey: ${vxkey}`, LOG_CONTEXT)
-      return
+        `Failed to find rawObject with vxkey: ${vxkey}`,
+        LOG_CONTEXT
+      );
+      return;
     }
-
-    this._propertyControlService.generateObjectPropertySetters(vxObject, rawObject)
-
-    // Apply now or later if a timeline isnt loaded. this usually happens for vxobjects defined outside the react render cycle like vx.layerMaterial.
-    if(this._currentTimeline){
-      this._applyTracksOnObject(this._currentTime, rawObject)
+    // ---------------------------------------
+    // 4. Generate property setters for object
+    // ---------------------------------------
+    this._propertyControlService.generateObjectPropertySetters(vxkey, vxObject.ref.current, rawObject);
+    // ---------------------------------------
+    // 5. Apply initial values if timeline is loaded
+    // ---------------------------------------
+    if (this._currentTimeline) {
+      this._applyTracksOnObject(this._currentTime, rawObject);
       this._applyStaticPropsOnObject(rawObject, object3DRef);
     }
-
+    // ---------------------------------------
+    // 6. Flush any UI updates
+    // ---------------------------------------
     this._propertyControlService.flushEngineUIUpdates();
   }
 
@@ -800,14 +817,14 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
   private _applyAllStaticProps() {
     this._rawObjectCache.forEach(obj => {
       if (obj.staticProps.length === 0) {
-        return
+        return this
       }
 
       const vxkey = obj.vxkey;
       const object3DRef = this._object3DCache.get(vxkey);
 
       if (!object3DRef) {
-        return
+        return this
       }
 
       obj.staticProps.forEach(staticProp => {
@@ -819,6 +836,8 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
         );
       });
     });
+
+    return this
   }
 
 

@@ -1,10 +1,7 @@
 import React from 'react'
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/components/shadcn/dialog';
-import { Button } from '@vxengine/components/shadcn/button';
-import { Input } from '@vxengine/components/shadcn/input';
-import { Tabs, TabsList, TabsTrigger } from '@vxengine/components/shadcn/tabs';
+import { Tabs, TabsList, TabsTrigger, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/ui/foundations';
 import { useObjectManagerAPI } from '../stores/managerStore';
-import { Globe, Move, RefreshCcw } from '@vxengine/components/ui/icons';
+import { Globe, Move, RefreshCcw } from '@vxengine/ui/icons';
 
 export const DIALOG_setTransformMode = () => {
     const transformMode = useObjectManagerAPI(state => state.transformMode);

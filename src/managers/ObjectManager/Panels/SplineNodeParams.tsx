@@ -1,11 +1,10 @@
-import CollapsiblePanel from '@vxengine/core/components/CollapsiblePanel'
+import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
 import React, { useCallback } from 'react'
-import { vxObjectProps, vxSplineNodeProps, vxSplineProps } from '../types/objectStore'
+import { vxSplineNodeProps } from '../types/objectStore'
 import { useTimelineManagerAPI } from '@vxengine/managers/TimelineManager'
-import ValueRenderer from '@vxengine/components/ui/ValueRenderer'
-import { Button } from '@vxengine/components/shadcn/button'
-import { useVXObjectStore } from '../stores/objectStore'
-import { ArrowDown, ArrowUp, X } from '@vxengine/components/ui/icons'
+import ValueRenderer from '@vxengine/ui/components/ValueRenderer'
+import { Button } from '@vxengine/ui/foundations/button'
+import { ArrowDown, ArrowUp, X } from '@vxengine/ui/icons'
 
 interface Props {
     vxobject: vxSplineNodeProps

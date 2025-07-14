@@ -60,7 +60,7 @@ interface UIManagerProps {
 
 const MODULE = "UIManagerAPI";
 
-const checkWindowIsRegistered = (state: UIManagerProps, id, functionName: string) => {
+const checkWindowIsRegistered = (state: UIManagerProps, id: string, functionName: string) => {
     const vxWindow = state.vxWindows[id];
     if(!vxWindow){
         logReportingService.logError(
