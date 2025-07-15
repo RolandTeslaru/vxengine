@@ -8,7 +8,7 @@ import { GeometryParams } from './Panels/GeometryParams'
 import NodeTransformParams from './Panels/NodeTransformParams'
 import { vxObjectProps } from '@vxengine/managers/ObjectManager/types/objectStore'
 import { useUIManagerAPI } from '../UIManager/store'
-import { DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
+import { DIALOG_addObjectToTree, DIALOG_reattachTreeNode, DIALOG_setTransformMode, DIALOG_setTransformSpace } from './components/dialogs'
 import SplineParams from './Panels/SplineParams'
 import SplineNodeParams from './Panels/SplineNodeParams'
 import ParamList from './Panels/ParamList'
@@ -16,7 +16,7 @@ import MaterialParamsPanel from './Panels/MaterialParamsPanel'
 import { ObjectManagerService } from './service'
 import { useObjectManagerAPI } from './stores/managerStore'
 import { useVXObjectStore } from './stores/objectStore'
-import { MenubarItem, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar'
+import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger } from '@vxengine/ui/foundations/menubar'
 
 export const ObjectManagerUI = () => {
 
@@ -114,6 +114,14 @@ export const ObjectManagerSubMenu = () => {
         <MenubarItem onClick={() => pushDialog({content: <DIALOG_setTransformMode/>, type:"normal"})}>set Transform Mode</MenubarItem>
         <MenubarItem onClick={() => pushDialog({content: <DIALOG_setTransformSpace/>, type: "normal"})}>set Transform Space</MenubarItem>
         <MenubarItem>select Objects</MenubarItem>
+        <MenubarSeparator/>
+        <MenubarSub>
+          <MenubarSubTrigger>Object Tree</MenubarSubTrigger>
+          <MenubarSubContent>
+            <MenubarItem onClick={() => pushDialog({content: <DIALOG_addObjectToTree/>, type: "normal"})}>Add Object</MenubarItem>
+            <MenubarItem onClick={() => pushDialog({content: <DIALOG_reattachTreeNode/>, type: "normal"})}>Reattach Tree Node</MenubarItem>
+          </MenubarSubContent>
+        </MenubarSub>
       </MenubarSubContent>
     </MenubarSub>
   )

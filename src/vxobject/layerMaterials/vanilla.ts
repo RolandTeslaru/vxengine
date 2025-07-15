@@ -47,6 +47,7 @@ class LayerMaterial extends CustomShaderMaterial {
   public lighting: ShadingType = 'basic'
   public isLayerMaterial = true
   public vxkey: string
+  public vxobject: vxMaterialProps
   public addToVXObjectStore = true
 
   constructor({ color, alpha, lighting, layers, name, vxkey, ...props }: LayerMaterialParameters & AllMaterialParams) {
@@ -86,11 +87,13 @@ class LayerMaterial extends CustomShaderMaterial {
       type: "material",
       ref: { current: this },
       name: this.name,
-      parentKey: "materials",
-      parentMeshKeys: [],
+      parentKeys: new Set(["materials"]),
+      parentMeshKeys: new Set(),
       params: [],
       icon: "Material"
     }
+
+    this.vxobject = newVXEntity
     
     animationEngineInstance.handleObjectMount(newVXEntity);
     

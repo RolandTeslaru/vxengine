@@ -4,7 +4,7 @@ import { useObjectManagerAPI } from '../../stores/managerStore'
 import CollapsiblePanel from '@vxengine/ui/components/CollapsiblePanel'
 import Tree from '@vxengine/ui/components/Tree'
 import { RenderNodeContentProps } from '@vxengine/ui/components/Tree/types'
-import { ContextMenu, ContextMenuTrigger } from '@vxengine/ui/foundations'
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@vxengine/ui/foundations'
 import { ObjectTreeNodeProps } from '@vxengine/types/objectEditorStore'
 import classNames from 'classnames'
 import { handleOnVxObjectClick, handleOnVxObjectContextMenu } from '../../utils/handleVxObject'
@@ -12,6 +12,7 @@ import ICON_MAP from './icons'
 import { OBJECT_TREE_CONTEXT_MENUS } from './contextMenus'
 import Search from '@vxengine/ui/components/Search'
 import { vxengine } from '@vxengine/singleton'
+import DataViewerWrapper from '@vxengine/ui/components/DataContextContext/DataViewerWrapper'
 
 interface ObjectTreeNode {
     vxkey: string
@@ -116,7 +117,19 @@ const ObjectTreeNode = ({ node, NodeTemplate }: { node: ObjectTreeNodeProps, Nod
                     </div>
                 </NodeTemplate>
             </ContextMenuTrigger>
-            <ContextMenuContentComponent vxkey={vxkey}/>
+            {/* <DebugContextMenuContentComponent node={node}/> */}
+            <ContextMenuContentComponent vxkey={vxkey} node={node}/>
         </ContextMenu>
+    )
+}
+
+
+const DebugContextMenuContentComponent = ({node}: {node: ObjectTreeNodeProps}) => {
+    return (
+        <ContextMenuContent>
+            <DataViewerWrapper src={node} title="Tree Node Data">
+
+            </DataViewerWrapper>
+        </ContextMenuContent>
     )
 }

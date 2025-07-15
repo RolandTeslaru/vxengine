@@ -27,5 +27,6 @@ export interface ObjectManagerStoreProps {
     tree: Record<string, ObjectTreeNodeProps>;
     pendingChildren: Record<string, ObjectTreeNodeProps>;
     addToTree: (vxobject: vxObjectProps, icon?: string) => void
+    reattachTreeNode: (vxkey: string) => void
     removeFromTree: (vxkey: string) => void
 }

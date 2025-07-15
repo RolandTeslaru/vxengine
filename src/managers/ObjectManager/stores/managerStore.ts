@@ -9,39 +9,40 @@ import { produce } from "immer"
 import { ObjectPropertyStoreProps } from '@vxengine/types/objectPropertyStore';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/shallow';
+import { ObjectManagerService } from '../service';
 
 const nodesPresent: Record<string, boolean> = {};
 // This is only here so that the order is correct
 const initialObjectTree: Record<string, ObjectTreeNodeProps> = {
-    ["scene"]: {
+    "scene": {
         key: "scene",
         name: "Scene",
         type: "Scene",
         children: {},
         isSelectable: true
     },
-    ["splines"]: {
+    "splines": {
         key: "splines",
         name: "Splines",
         type: "Splines",
         children: {},
         isSelectable: false
     },
-    ["html"]: {
+    "html": {
         key: "html",
         name: "HTML",
         type: "HTML",
         children: {},
         isSelectable: false
     },
-    ["materials"]: {
+    "materials": {
         key: "materials",
         name: "Materials",
         type: "Materials",
         children: {},
         isSelectable: false
     },
-    ["environment"]: {
+    "environment": {
         key: "environment",
         name: "Environment",
         type: "Environment",
@@ -88,11 +89,11 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
     })),
 
     tree: initialObjectTree,
-    nodesPresent: {},
+    flatObjectTreeRecord: initialObjectTree,
     pendingChildren: {},
     addToTree: (vxobject) => {
         const { vxkey } = vxobject
-        let { parentKey } = vxobject
+        const { parentKeys } = vxobject
 
         const type = 
             vxobject.icon ||
@@ -100,20 +101,13 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
             vxobject.ref?.current?.geometry?.type ||
             "default";
 
-        console.log("TYPE ", type)
         const name = (vxobject as vxElementProps).name ?? vxkey;
 
-        if (nodesPresent[vxkey] === true) {
-            return;
-        } else {
-            nodesPresent[vxkey] = true;
-        }
-
-        if (parentKey === null)
-            parentKey = 'scene'
+        if (parentKeys.size === 0)
+            parentKeys.add('scene')
 
         set(
-            produce((state) => {
+            produce((state: ObjectManagerStoreProps) => {
                 const newNode: ObjectTreeNodeProps = {
                     key: vxkey,
                     name,
@@ -124,19 +118,17 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
 
                 // Check if the node has pending children to be added to itself
                 if (state.pendingChildren[vxkey]) {
+                    // @ts-expect-error
                     newNode.children = state.pendingChildren[vxkey];
                     delete state.pendingChildren[vxkey];
                 }
 
                 // If its global then we dont need to check for parents
-                if (parentKey === "global") {
+                if (parentKeys.has("global")) {
                     state.tree[vxkey] = newNode;
                     return;
                 }
 
-                // Resolve pending children
-
-                // Recursively find the parent node in the tree
                 const findParentNode = (key, tree) => {
                     for (const nodeKey in tree) {
                         const node = tree[nodeKey];
@@ -147,24 +139,34 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
                     return null;
                 };
 
-                const parentNode = findParentNode(parentKey, state.tree);
+                parentKeys.forEach(_parentKey => {
+                    const parentNode = findParentNode(_parentKey, state.tree);
+                    if(parentNode){
+                        parentNode.children[vxkey] = newNode;
+                    } else {
+                        // @ts-expect-error
+                        state.pendingChildren[_parentKey] = state.pendingChildren[_parentKey] || {};
+                        state.pendingChildren[_parentKey][vxkey] = newNode;
+                    }
+                })
+                // Resolve pending children
 
-                if (parentNode) {
-                    // Parent exists, add to its children
-                    parentNode.children[vxkey] = newNode;
-                    // console.log("Adding to tree ", vxkey);
-                } else {
-                    // Parent does not exist yet, store in pendingChildren
-                    state.pendingChildren[parentKey] = state.pendingChildren[parentKey] || {};
-                    state.pendingChildren[parentKey][vxkey] = newNode;
-                    // console.log("Adding to Pending ", vxkey);
-                }
+                // Recursively find the parent node in the tree
+                
             }))
+    },
+    reattachTreeNode: (vxkey: string) => {
+        const vxobject = ObjectManagerService.objectStoreState.objects[vxkey];
+        if(!vxobject)
+            console.error(`useObjectManagerAPI: Could not execute rebuildTreeNode because no vxobject with the vxkey "${vxkey}" was found in the store.`);
+
+        get().removeFromTree(vxkey);
+        get().addToTree(vxobject)
     },
     removeFromTree: (vxkey) => {
         set(
             produce((state) => {
-                const recursiveRemove = (nodeKey, parentNode: ObjectTreeNodeProps) => {
+                const recursiveRemove = (nodeKey: string, parentNode: ObjectTreeNodeProps) => {
                     // If the node has children, recursively remove them
                     const nodeToRemove = parentNode ? parentNode.children[nodeKey] : state.tree[nodeKey];
                     if (!nodeToRemove) return;
@@ -184,9 +186,6 @@ export const useObjectManagerAPI = createWithEqualityFn<ObjectManagerStoreProps>
                     if (state.pendingChildren[nodeKey]) {
                         delete state.pendingChildren[nodeKey];
                     }
-
-                    // Mark the node as no longer present
-                    delete nodesPresent[nodeKey];
                 };
 
                 // Find the node and its parent

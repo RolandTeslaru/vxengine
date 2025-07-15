@@ -1,7 +1,10 @@
-import React from 'react'
-import { Tabs, TabsList, TabsTrigger, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@vxengine/ui/foundations';
+import React, { useMemo, useState } from 'react'
+import { Tabs, TabsList, TabsTrigger, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Button } from '@vxengine/ui/foundations';
 import { useObjectManagerAPI } from '../stores/managerStore';
 import { Globe, Move, RefreshCcw } from '@vxengine/ui/icons';
+import { useVXObjectStore } from '../stores/objectStore';
+import Search from '@vxengine/ui/components/Search';
+import { ObjectManagerService } from '../service';
 
 export const DIALOG_setTransformMode = () => {
     const transformMode = useObjectManagerAPI(state => state.transformMode);
@@ -24,7 +27,7 @@ export const DIALOG_setTransformMode = () => {
                         onClick={() => setTransformMode("translate")}
                         className='gap-2'
                     >
-                        <Move className='h-[22px]'/>
+                        <Move className='h-[22px]' />
                         Translate
                     </TabsTrigger>
                     <TabsTrigger
@@ -32,7 +35,7 @@ export const DIALOG_setTransformMode = () => {
                         onClick={() => setTransformMode("rotate")}
                         className='gap-2'
                     >
-                        <RefreshCcw className='h-[22px] scale-75'/>
+                        <RefreshCcw className='h-[22px] scale-75' />
                         Rotate
                     </TabsTrigger>
                     <TabsTrigger
@@ -82,6 +85,149 @@ export const DIALOG_setTransformSpace = () => {
                     </TabsTrigger>
                 </TabsList>
             </Tabs>
+        </>
+    )
+}
+
+
+export const DIALOG_addObjectToTree = () => {
+    const objectsMap = useVXObjectStore(state => state.objects);
+
+    const [searchQuery, setSearchQuery] = useState();
+
+    // derive your array exactly when the map itself changes
+    const vxobjectsFlatMap = useMemo(
+        () => Object.values(objectsMap),
+        [objectsMap]
+    );
+
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+
+    const filteredVxobjectsFlatMap = useMemo(() => {
+        if (!searchQuery) return vxobjectsFlatMap;
+
+        // @ts-expect-error
+        const q = searchQuery.toLowerCase();
+        return vxobjectsFlatMap.filter((obj) => {
+            return obj.vxkey.toLowerCase().includes(q) || obj.name?.toLowerCase().includes(q);
+        });
+    }, [searchQuery, vxobjectsFlatMap]);
+
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle>Add Object To Tree</DialogTitle>
+            </DialogHeader>
+            <div className='font-roboto-mono text-xs font-medium flex flex-col gap-2 '>
+
+                <div className='flex flex-row justify-between'>
+                    <p className='font-roboto-mono'>{vxobjectsFlatMap.length} objects <span className='text-blue-500'>{selected.size} selected</span></p>
+                    <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery}></Search>
+                </div>
+                <div className='max-h-[300px] min-h-[300px] min-w-[300px] overflow-y-scroll flex flex-col gap-1'>
+                    {filteredVxobjectsFlatMap.map(vxobj =>
+                        <div className={`cursor-pointer flex flex-row gap-2 justify-between w-full bg-tertiary-opaque hover:bg-blue-600/30 ${selected.has(vxobj.vxkey) && "!bg-blue-600"} p-1 rounded-md transition-all duration-75`}
+                            onClick={() => {
+                                setSelected((prevSet) => {
+                                    if (prevSet.has(vxobj.vxkey)) {
+                                        const newSet = new Set(prevSet);
+                                        newSet.delete(vxobj.vxkey)
+                                        return newSet
+                                    }
+                                    else
+                                        return new Set([...prevSet, vxobj.vxkey])
+                                }
+                                )
+                            }}
+                        >
+                            <p className=''>
+                                {vxobj.name}
+                            </p>
+                            <p>{vxobj.vxkey}</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+            <Button
+                onClick={() => {
+                    selected.forEach(vxkey => {
+                        ObjectManagerService.objectManagerState.addToTree(objectsMap[vxkey])
+                    })
+                }}
+            >Add To Tree</Button>
+        </>
+    )
+}
+
+export const DIALOG_removeObjectFromTree = () => {
+
+}
+
+export const DIALOG_reattachTreeNode = () => {
+    const objectsMap = useVXObjectStore(state => state.objects);
+
+    const [searchQuery, setSearchQuery] = useState();
+
+    // derive your array exactly when the map itself changes
+    const vxobjectsFlatMap = useMemo(
+        () => Object.values(objectsMap),
+        [objectsMap]
+    );
+
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+
+    const filteredVxobjectsFlatMap = useMemo(() => {
+        if (!searchQuery) return vxobjectsFlatMap;
+
+        // @ts-expect-error
+        const q = searchQuery.toLowerCase();
+        return vxobjectsFlatMap.filter((obj) => {
+            return obj.vxkey.toLowerCase().includes(q) || obj.name?.toLowerCase().includes(q);
+        });
+    }, [searchQuery, vxobjectsFlatMap]);
+
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle>Reattach Tree Node</DialogTitle>
+            </DialogHeader>
+            <div className='font-roboto-mono text-xs font-medium flex flex-col gap-2 '>
+
+                <div className='flex flex-row justify-between'>
+                    <p className='font-roboto-mono'>{vxobjectsFlatMap.length} objects <span className='text-blue-500'>{selected.size} selected</span></p>
+                    <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery}></Search>
+                </div>
+                <div className='max-h-[300px] min-h-[300px] min-w-[300px] overflow-y-scroll flex flex-col gap-1'>
+                    {filteredVxobjectsFlatMap.map(vxobj =>
+                        <div className={`cursor-pointer flex flex-row gap-2 justify-between w-full bg-tertiary-opaque hover:bg-blue-600/30 ${selected.has(vxobj.vxkey) && "!bg-blue-600"} p-1 rounded-md transition-all duration-75`}
+                            onClick={() => {
+                                setSelected((prevSet) => {
+                                    if (prevSet.has(vxobj.vxkey)) {
+                                        const newSet = new Set(prevSet);
+                                        newSet.delete(vxobj.vxkey)
+                                        return newSet
+                                    }
+                                    else
+                                        return new Set([...prevSet, vxobj.vxkey])
+                                }
+                                )
+                            }}
+                        >
+                            <p className=''>
+                                {vxobj.name}
+                            </p>
+                            <p>{vxobj.vxkey}</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+            <Button
+                onClick={() => {
+                    selected.forEach(vxkey => {
+                        ObjectManagerService.objectManagerState.reattachTreeNode(vxkey)
+                    })
+                }}
+            >Reattach To Tree</Button>
         </>
     )
 }

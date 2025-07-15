@@ -99,7 +99,7 @@ export function withVX<P extends object>(
                     ...finalProps.params] 
                     : DEFAULT_PARAMS[finalProps.type] ?? [],
                 disabledParams: finalProps.disabledParams || [],
-                parentKey: finalProps.overrideNodeTreeParentKey ?? parentKey,
+                parentKeys: new Set([finalProps.overrideNodeTreeParentKey ?? parentKey]),
                 icon: finalProps.icon ?? "",
                 ref: internalRef,
                 usingHOC: true

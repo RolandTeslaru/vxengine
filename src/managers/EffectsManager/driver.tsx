@@ -146,7 +146,7 @@ export const EffectComposerDriver = /* @__PURE__ */ memo(
         name: "Effects",
         params: [],
         disabledParams: [],
-        parentKey: "global",
+        parentKeys: new Set(["global"]),
         icon: "Effects"
       };
 

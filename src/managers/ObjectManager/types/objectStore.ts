@@ -14,7 +14,7 @@ export interface BaseVxProps {
     params: VXElementParams
     disabledParams?: string[]
     name: string
-    parentKey: string;
+    parentKeys: Set<string>;
     icon: string
 }
 
@@ -35,7 +35,7 @@ export interface vxSplineProps extends BaseVxProps {
 
 export interface vxMaterialProps extends BaseVxProps {
     type: "material",
-    parentMeshKeys: string[]
+    parentMeshKeys: Set<string>
 }
 
 export interface vxSplineNodeProps extends BaseVxProps {

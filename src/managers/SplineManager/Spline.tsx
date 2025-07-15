@@ -72,7 +72,7 @@ const Spline: React.FC<SplineProps> = React.memo(({ vxkey, edSpline, visible }) 
             },
             type: "spline",
             name: `${vxkey} spline`,
-            parentKey: "splines",
+            parentKeys: new Set(["splines", vxkey]),
             icon: "Spline",
             params: []
         }
