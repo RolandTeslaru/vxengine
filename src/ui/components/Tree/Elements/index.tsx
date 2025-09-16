@@ -30,6 +30,7 @@ export const TreeCollapseButton = memo(({ onClick, level, isExpanded, isFinalSib
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="m10 8 4 4-4 4" /></svg>
             </button>
+            
             {!isExpanded && !isFinalSibling && (
                 <div className={classNames(
                     s.groupVerticalLine, `bg-neutral-500  ml-[7.5px] left-[${level * 16 + 4}px ]`,

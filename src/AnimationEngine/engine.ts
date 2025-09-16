@@ -149,7 +149,6 @@ export class AnimationEngine extends Emitter<EventTypes> implements IAnimationEn
       functionName: "setCurrentTimeline",
       additionalData: { timelines: this._state.timelines, IS_DEVELOPMENT: this._IS_DEVELOPMENT, IS_PRODUCTION: this._IS_PRODUCTION }
     }
-    // Update the current timeline ID in the state
 
     logReportingService.logInfo(`Setting current timeline to ${timelineId}`, LOG_CONTEXT)
 

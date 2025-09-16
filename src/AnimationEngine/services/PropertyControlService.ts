@@ -212,7 +212,7 @@ export class PropertyControlService {
         if(object3DRef){
             target = object3DRef;
         } else {
-            target = this._object3DCache.get(vxkey);2
+            target = this._object3DCache.get(vxkey);
             if(!target){
                 console.warn(`Object '${vxkey}' not found in object3DCache`)
                 setter = (newValue: number) => { }

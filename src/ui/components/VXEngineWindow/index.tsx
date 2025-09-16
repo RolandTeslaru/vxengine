@@ -51,7 +51,7 @@ export const VXEngineWindow: FC<VXEngineWindowProps> = memo((props) => {
 
     if(isStoreHydrated === false) return null;
 
-    if (vxWindow.isOpen === false) return null;
+    if (vxWindow?.isOpen === false) return null;
 
     return (
         <WindowContext.Provider value={{ externalContainer, setExternalContainer, vxWindowId }}>

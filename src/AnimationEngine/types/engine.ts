@@ -16,7 +16,7 @@ export interface IAnimationEngine extends Emitter<EventTypes> {
   pause(): void;
 
   setCurrentTimeline(timelineId: string): void;
-  setCurrentTime(time: number, isTick?: boolean);
+  setCurrentTime(time: number, isTick?: boolean): void;
 }
 
 
