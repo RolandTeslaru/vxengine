@@ -1,106 +1,79 @@
-# VXEngine
+## VXEngine (Monorepo)
 
-VXEngine is a powerful, proprietary animation engine designed exclusively for use with **React Three Fiber**. Built on **Zustand**, VXEngine offers advanced timeline and keyframe management features tailored for professional-grade 3D animations. This project is private and intended for commercial use only, with no public access or free versions.
+VXEngine is a React Three Fiber powered 3D animation engine and editor. It combines a runtime renderer, a timeline/keyframe animation system, and a desktop‑like editor UI ("VXStudio") to author, preview, and ship production‑grade 3D motion inside React applications.
 
-## Features
+🚀 **[Live Demo](https://vxengine-demo.vercel.app/)**
 
-- **React Three Fiber Integration**: Seamlessly animate 3D objects in your scenes using React Three Fiber.
-- **Advanced Timeline Editor**: Provides an intuitive timeline for creating and editing keyframe animations.
-- **Custom Tracks for Properties**: Animate position, rotation, scale, and material attributes with individual keyframes.
-- **Bezier Curve Keyframes**: Fine-tune animations with customizable Bezier curve handles for smooth transitions.
-- **Drag-and-Drop Keyframe Editing**: Easily adjust keyframe timings and values via the editor interface.
-- **Zustand-Based State Management**: Uses Zustand to efficiently manage animation states, ensuring optimal performance.
-- **Handle-Based Interpolation**: Supports linear and custom curve-based interpolations for precise control over animations.
-- **Optimized for Real-Time Playback**: Designed to handle complex 3D animations with real-time playback and minimal performance overhead.
+![ZeruelNet UI Demo](assets/demo.gif)
 
-## Installation
+### Purpose
 
-As VXEngine is a private project, installation is restricted. If you are a licensed user, you will have access to the repository and installation instructions.
+- **Single toolchain for 3D motion in React**: Author animations visually, manage objects/camera/effects, and render in the same runtime you deploy.
+- **Timeline‑driven workflow**: Keyframes with Bezier handles, layered tracks, snapping and scrubbing for precise control.
+- **Declarative JSX scene building**: Use `<vx.mesh>`, `<vx.light>`, `<vx.camera>` components to build 3D scenes with familiar declarative React patterns instead of imperative Three.js code.
 
-### Installation (For Licensed Users Only)
+### What it does
 
-To install VXEngine, access the private repository and install the package via your preferred package manager:
+- **Editor UI (VXStudio)**: Timeline editor, object tree, transform controls, material panels, state visualizer, detachable windows.
+- **Runtime Renderer (VXRenderer)**: High‑level R3F canvas with effects composer, camera/object drivers, and a small JSX DSL for scene nodes.
+- **Animation Engine**: Loads timelines from JSON, plays back with real‑time interpolation, integrates with engine managers (objects, camera, effects, UI).
+
+### Examples
+
+![BMW M4 Experience](assets/m4_experience.webp)
+
+**[BMW M4 Experience](https://m4-experience.vercel.app/)**
+
+![Vision Pro Experience](assets/m4_experience.webp)
+
+**[Vision Pro Experience](https://vxengine-vision-pro-experience.vercel.app/)**
+
+### Quick start (dev website)
+
+1) Install deps (monorepo workspaces):
 
 ```bash
-npm install vxengine-private @react-three/fiber zustand
+npm i
 ```
 
-Or using Yarn:
+2) Run the demo site:
 
 ```bash
-yarn add vxengine-private @react-three/fiber zustand
+cd packages/dev-website
+npm run dev
 ```
 
-## Getting Started
-
-### Initialization
-
-To start using VXEngine with React Three Fiber and Zustand in your 3D project:
+3) Minimal usage example (from the dev website layout):
 
 ```tsx
-import { Canvas } from '@react-three/fiber';
-import { VXEngineProvider, useVXEngine } from 'vxengine-private';
+import { VXEngineProvider, VXStudio, VXRenderer, vxengine } from 'vxengine'
+import animations from './vxengine_animations.json'
 
-const App = () => {
-  const { engine } = useVXEngine();
+vxengine
+  .initialize('development')
+  .loadProject(animations as any, 'DemoWebsite')
+  .setCurrentTimeline('demoTimeline')
 
-  useEffect(() => {
-    // Load timeline and animation data
-    engine.loadTimelineFromJSON(timelineData);
-  }, [engine]);
-
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <VXEngineProvider>
-      <Canvas>
-        {/* Your 3D scene goes here */}
-      </Canvas>
+    <VXEngineProvider animations_json={animations as any}>
+      <VXStudio />
+      <VXRenderer
+        canvasProps={{ dpr: [1.0, 1.0], frameloop: 'always', shadows: true }}
+      >
+        {children}
+      </VXRenderer>
     </VXEngineProvider>
-  );
-};
-
-export default App;
+  )
+}
 ```
 
-### Keyframe and Track Management
+### Tech stack
 
-Use the VXEngine API to control tracks and keyframes:
+- React 19, React Three Fiber, Three.js, Drei, Zustand
+- Post‑processing, GLSL pipeline, meshline
+- Vite/webpack build, TypeScript, Tailwind/Radix UI components
 
-```tsx
-const { engine } = useVXEngine();
+### Notes
 
-const addKeyframe = () => {
-  engine.addKeyframe({
-    trackKey: 'position.x',
-    time: 1,
-    value: 2,
-    handles: {
-      in: { x: 0, y: 0 },
-      out: { x: 1, y: 1 },
-    },
-  });
-};
-```
-
-## Key Concepts
-
-- **Tracks**: A track represents a property (e.g., position, rotation, scale) of an object. Each track contains keyframes that define how the property changes over time.
-- **Keyframes**: Define the value of a property at a specific time in the timeline. Keyframes can use Bezier handles for smooth transitions.
-- **Handles**: Handles control the Bezier curve for interpolation between keyframes, offering precise control over motion and easing.
-  
-## Licensing and Access
-
-VXEngine is a **private and proprietary** software package. Only licensed users are allowed access to the source code and usage rights. **Unauthorized distribution, duplication, or sharing is strictly prohibited**.
-
-If you are interested in purchasing a license or accessing VXEngine, please contact us at [your-contact-email] to discuss licensing options and pricing.
-
-## Contributing
-
-Since VXEngine is a private project, contributions are limited to licensed users and authorized developers. If you encounter issues or would like to suggest features, please reach out to the development team directly.
-
-## License
-
-VXEngine is licensed under a proprietary license. Usage is restricted to licensed users only. Unauthorized access or use is prohibited.
-
----
-
-This README makes it clear that VXEngine is a private, monetized project with limited access.
+- This repository includes private/proprietary engine code intended for licensed/internal use.
