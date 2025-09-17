@@ -6,17 +6,23 @@ VXEngine is a React Three Fiber powered 3D animation engine and editor. It combi
 
 ![ZeruelNet UI Demo](assets/demo.gif)
 
-### Purpose
+### Key Features
 
-- **Single toolchain for 3D motion in React**: Author animations visually, manage objects/camera/effects, and render in the same runtime you deploy.
-- **Timeline‑driven workflow**: Keyframes with Bezier handles, layered tracks, snapping and scrubbing for precise control.
-- **Declarative JSX scene building**: Use `<vx.mesh>`, `<vx.light>`, `<vx.camera>` components to build 3D scenes with familiar declarative React patterns instead of imperative Three.js code.
+#### Visual Editor (VXStudio)
+- Professional-grade timeline with Bezier keyframes and layered tracks
+- Object tree, transform controls, material panels
+- Detachable windows and state visualizer for your workflow
 
-### What it does
+#### Modern React Integration
+- Build scenes with JSX: `<vx.mesh>`, `<vx.light>`, `<vx.camera>`
+- Optimized Three.js renderer with post-processing pipeline
+- Built on React Three Fiber with custom scene management
+- Automatic camera and object state synchronization
 
-- **Editor UI (VXStudio)**: Timeline editor, object tree, transform controls, material panels, state visualizer, detachable windows.
-- **Runtime Renderer (VXRenderer)**: High‑level R3F canvas with effects composer, camera/object drivers, and a small JSX DSL for scene nodes.
-- **Animation Engine**: Loads timelines from JSON, plays back with real‑time interpolation, integrates with engine managers (objects, camera, effects, UI).
+#### Animation Engine
+- Real-time keyframe interpolation
+- Camera, object, and effects management
+- Timeline data as portable JSON
 
 ### Examples
 
