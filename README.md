@@ -1,4 +1,4 @@
-## VXEngine (Monorepo)
+## VXEngine
 
 VXEngine is a React Three Fiber powered 3D animation engine and editor. It combines a runtime renderer, a timeline/keyframe animation system, and a desktop‑like editor UI ("VXStudio") to author, preview, and ship production‑grade 3D motion inside React applications.
 
@@ -24,34 +24,45 @@ VXEngine is a React Three Fiber powered 3D animation engine and editor. It combi
 
 **[BMW M4 Experience](https://m4-experience.vercel.app/)**
 
-![Vision Pro Experience](assets/m4_experience.webp)
+![Vision Pro Experience](assets/vision_pro_experience.webp)
 
 **[Vision Pro Experience](https://vxengine-vision-pro-experience.vercel.app/)**
 
-### Quick start (dev website)
+### Quick start
 
-1) Install deps (monorepo workspaces):
-
-```bash
-npm i
-```
-
-2) Run the demo site:
+1) Install package
 
 ```bash
-cd packages/dev-website
-npm run dev
+npm install @vexr-labs/vxengine
 ```
 
-3) Minimal usage example (from the dev website layout):
+2) Install peer dependencies
+
+```bash
+npm install react@19.0.0 react-dom@19.0.0 @react-three/fiber @react-three/drei three zustand
+```
+
+3) Create a vxengine_animations.json file in your root
+This file defines your project's timelines, keyframes, and animation data.
+
+```json
+{
+  "projectName": "MyProject",
+  "timelines": {
+    "demoTimeline":{}
+  }
+}
+```
+
+4) Minimal usage example:
 
 ```tsx
-import { VXEngineProvider, VXStudio, VXRenderer, vxengine } from 'vxengine'
+import { VXEngineProvider, VXStudio, VXRenderer, vxengine } from '@vexr-labs/vxengine'
 import animations from './vxengine_animations.json'
 
 vxengine
   .initialize('development')
-  .loadProject(animations as any, 'DemoWebsite')
+  .loadProject(animations as any, 'MyProject')
   .setCurrentTimeline('demoTimeline')
 
 export default function Layout({ children }: { children: React.ReactNode }) {
