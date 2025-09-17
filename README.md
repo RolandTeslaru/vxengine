@@ -1,36 +1,49 @@
 ## VXEngine
 
-VXEngine is a React Three Fiber powered 3D animation engine and editor. It combines a runtime renderer, a timeline/keyframe animation system, and a desktop‑like editor UI ("VXStudio") to author, preview, and ship production‑grade 3D motion inside React applications.
+Create, animate and ship high-end 3D experiences using React. VXEngine combines the power of React Three Fiber with a professional timeline editor and a WASM-accelerated Animation Engine, letting you animate any property with precise keyframe control and performance.
 
 🚀 **[Live Demo](https://vxengine-demo.vercel.app/)**
 
-![ZeruelNet UI Demo](assets/demo.gif)
+![VXEngine Demo](assets/demo.gif)
 
-### Key Features
+### Core Systems
 
-#### Visual Editor ( VXStudio )
-- Professional-grade timeline editor with Bezier keyframes and layered tracks
-- Fine-grained parameter control for any object property:
-  - Transform controls (position, rotation, scale)
-  - Material properties (color, textures, shaders)
-  - Custom parameters with sliders, color pickers, and value inputs
+#### Studio (VXStudio)
+Professional timeline editor for any animatable property. Keyframe everything from transforms to material properties with Bezier curves and live preview.
 
-#### React Integration ( VXObjects )
-- Rich component library: `<vx.mesh>`, `<vx.light>`, `<vx.scene>`, `<vx.environment>`
-- Extend any component with `withVX` HOC for timeline/animation support
-- Optimized Three.js renderer with post-processing pipeline
-- Built on React Three Fiber with automatic state synchronization
+#### Objects (VXObject)
+Build scenes declaratively using React components (`<vx.mesh>`, `<vx.light>`, `<vx.scene>`, `<vx.environment>`).
 
-#### Renderer ( VXRenderer )
-- High-performance Three.js canvas with optimized settings
-- Built-in post-processing pipeline and effects composer
-- Automatic scene, camera, and object management
-- Development utilities (grid, object drivers) in dev mode
+Minimal scene:
 
-#### Animation Engine
-- Real-time Bezier keyframe interpolation with WASM acceleration
-- Property control system with side effects and caching
-- Automatic object lifecycle and state synchronization
+```tsx
+<VXRenderer>
+  <vx.scene vxkey="scene">
+    <vx.mesh vxkey="box" />
+    <vx.spotLight vxkey="key" />
+  </vx.scene>
+  {/* children... */}
+  {children}
+</VXRenderer>
+```
+
+Extend any component for timeline/animation support using the `withVX` HOC:
+
+```tsx
+import { withVX } from '@vexr-labs/vxengine'
+
+const MyMesh = (props: any) => <mesh {...props} />
+const AnimatedMesh = withVX(MyMesh, { type: 'entity', settings: {} })
+
+// Now addressable in the editor and timeline
+<AnimatedMesh vxkey="heroMesh" />
+```
+
+#### Engine (AnimationEngine)
+WASM‑accelerated Bezier interpolation for numeric tracks. Manages property setters, object lifecycle, and precise timeline control (play/pause/seek).
+
+#### Renderer (VXRenderer)
+Optimized Three.js canvas with post‑processing pipeline. Automatic scene/camera/effects setup and development utilities.
 
 ### Examples
 
@@ -58,12 +71,17 @@ npm install react@19.0.0 react-dom@19.0.0 @react-three/fiber @react-three/drei t
 
 3) Create a vxengine_animations.json file in your root
 This file defines your project's timelines, keyframes, and animation data.
+Ensure the timeline id you select in code exists in the JSON.
 
 ```json
 {
   "projectName": "MyProject",
   "timelines": {
-    "demoTimeline":{}
+    "demoTimeline": {
+      "length": 10,
+      "objects": [],
+      "splines": []
+    }
   }
 }
 ```
