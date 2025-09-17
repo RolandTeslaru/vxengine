@@ -9,9 +9,11 @@ VXEngine is a React Three Fiber powered 3D animation engine and editor. It combi
 ### Key Features
 
 #### Visual Editor ( VXStudio )
-- Professional-grade timeline with Bezier keyframes and layered tracks
-- Object tree, transform controls, material panels
-- Detachable windows and state visualizer for your workflow
+- Professional-grade timeline editor with Bezier keyframes and layered tracks
+- Fine-grained parameter control for any object property:
+  - Transform controls (position, rotation, scale)
+  - Material properties (color, textures, shaders)
+  - Custom parameters with sliders, color pickers, and value inputs
 
 #### React Integration ( VXObjects )
 - Rich component library: `<vx.mesh>`, `<vx.light>`, `<vx.scene>`, `<vx.environment>`
