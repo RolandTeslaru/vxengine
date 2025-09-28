@@ -1,18 +1,19 @@
 ## VXEngine
 
-Create, animate and ship high-end 3D experiences using React. VXEngine combines the power of React Three Fiber with a professional timeline editor and a WASM-accelerated Animation Engine, letting you animate any property with precise keyframe control and performance.
+Animation library for 3D cinematic web experiences in React. VXEngine is an easy to use motion design toolset that helps you create with ease any animation with R3F extended components.
 
 🚀 **[Live Demo](https://vxengine-demo.vercel.app/)**
 
 ![VXEngine Demo](assets/demo.gif)
 
-### Core Systems
+### Core Components
 
 #### Studio (VXStudio)
-Professional timeline editor for any animatable property. Keyframe everything from transforms to material properties with Bezier curves and live preview.
+
+Timeline Editor + Object Hierarchy + Property Control + Bezier Interplation Control. 
 
 #### Objects (VXObject)
-Build scenes declaratively using React components (`<vx.mesh>`, `<vx.light>`, `<vx.scene>`, `<vx.environment>`).
+Build scenes declaratively using R3F components (`<vx.mesh>`, `<vx.light>`, `<vx.scene>`, `<vx.environment>`).
 
 Minimal scene:
 
@@ -27,7 +28,7 @@ Minimal scene:
 </VXRenderer>
 ```
 
-Extend any component for timeline/animation support using the `withVX` HOC:
+Extend any component using the `withVX` HOC:
 
 ```tsx
 import { withVX } from '@vexr-labs/vxengine'
@@ -35,15 +36,15 @@ import { withVX } from '@vexr-labs/vxengine'
 const MyMesh = (props: any) => <mesh {...props} />
 const AnimatedMesh = withVX(MyMesh, { type: 'entity', settings: {} })
 
-// Now addressable in the editor and timeline
+// Now addressable in the editor
 <AnimatedMesh vxkey="heroMesh" />
 ```
 
 #### Engine (AnimationEngine)
-WASM‑accelerated Bezier interpolation for numeric tracks. Manages property setters, object lifecycle, and precise timeline control (play/pause/seek).
+WASM‑accelerated Bezier interpolation for numeric properties on any js object.
 
 #### Renderer (VXRenderer)
-Optimized Three.js canvas with post‑processing pipeline. Automatic scene/camera/effects setup and development utilities.
+R3F canvas with post‑processing pipeline. Automatic scene/camera/effects setup and development utilities.
 
 ### Examples
 
