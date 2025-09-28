@@ -20,8 +20,15 @@ Minimal scene:
 ```tsx
 <VXRenderer>
   <vx.scene vxkey="scene">
-    <vx.mesh vxkey="box" />
-    <vx.spotLight vxkey="key" />
+    <vx.mesh vxkey="box1" />
+    <vx.spotLight vxkey="spotlight1" />
+
+    <vx.group vxkey="sphereGroup">
+      <vx.mesh vxkey="sphere1"/>
+      <vx.mesh vxkey="sphere2"/>
+      <vx.mesh vxkey="sphere3"/>
+    </vx.group>
+    
   </vx.scene>
   {/* children... */}
   {children}
@@ -37,7 +44,7 @@ const MyMesh = (props: any) => <mesh {...props} />
 const AnimatedMesh = withVX(MyMesh, { type: 'entity', settings: {} })
 
 // Now addressable in the editor
-<AnimatedMesh vxkey="heroMesh" />
+<AnimatedMesh vxkey="mesh1" />
 ```
 
 #### Engine (AnimationEngine)
